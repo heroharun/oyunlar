@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Harun'un Oyun Salonu 🕹️</title>
+<style>
+  :root{ --bg:#141220; --card:#1e1b30; --card2:#252140; --ink:#f0edfa; --dim:#9a92b8;
+    --accent:#ffd166; --glow:#8c5fff; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{min-height:100vh;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    padding:max(20px,env(safe-area-inset-top)) 16px 40px;
+    background-image:radial-gradient(ellipse 80% 40% at 50% -10%,rgba(140,95,255,.25),transparent)}
+  main{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+  header{text-align:center;padding:18px 0 4px}
+  h1{font-size:clamp(30px,8vw,46px);font-weight:900;line-height:1.05;
+    background:linear-gradient(180deg,#ffd166,#ff8c5f);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--dim);font-size:14px;margin-top:8px}
+  .counter{display:inline-block;margin-top:12px;font-size:12px;font-weight:800;letter-spacing:.15em;
+    color:var(--accent);border:1.5px solid rgba(255,209,102,.35);border-radius:999px;padding:6px 16px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  a.game{display:flex;flex-direction:column;gap:8px;background:linear-gradient(180deg,var(--card2),var(--card));
+    border:1.5px solid rgba(240,237,250,.08);border-radius:18px;padding:18px 14px;
+    text-decoration:none;color:var(--ink);transition:transform .12s,border-color .12s}
+  a.game:hover,a.game:active{transform:translateY(-3px);border-color:rgba(255,209,102,.45)}
+  .emoji{font-size:34px;line-height:1}
+  .name{font-size:15px;font-weight:800;letter-spacing:.02em}
+  .desc{font-size:11.5px;color:var(--dim);line-height:1.45}
+  .tag{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--glow);margin-top:auto;padding-top:4px}
+  .tag.iki{color:#ff5f8a}
+  footer{text-align:center;color:var(--dim);font-size:12px;line-height:1.8;padding-top:10px}
+  footer a{color:var(--accent);text-decoration:none}
+</style>
+<main>
+  <header>
+    <h1>🕹️ Harun'un Oyun Salonu</h1>
+    <div class="sub">Telefonda, tablette, bilgisayarda — kurulum yok, üyelik yok, hepsi ücretsiz.</div>
+    <div class="counter">12 / 100 OYUN</div>
+  </header>
+
+  <div class="grid">
+    <a class="game" href="yilan/"><span class="emoji">🐍</span><span class="name">Yılan</span>
+      <span class="desc">Elmaları ye, uza, kendine çarpma. Klasiklerin klasiği.</span><span class="tag">Arcade</span></a>
+    <a class="game" href="2048/"><span class="emoji">🔢</span><span class="name">2048</span>
+      <span class="desc">Kaydır, birleştir, 2048'e ulaş. Kaldığın yerden devam eder.</span><span class="tag">Bulmaca</span></a>
+    <a class="game" href="mayin/"><span class="emoji">💣</span><span class="name">Mayın Tarlası</span>
+      <span class="desc">Sayıları oku, mayınları işaretle. İlk dokunuş hep güvenli.</span><span class="tag">Bulmaca</span></a>
+    <a class="game" href="kelime/"><span class="emoji">🔤</span><span class="name">Kelime Avı</span>
+      <span class="desc">5 harfli Türkçe kelimeyi 6 denemede bul. Seri yap!</span><span class="tag">Kelime</span></a>
+    <a class="game" href="hokey/"><span class="emoji">🏒</span><span class="name">Hava Hokeyi</span>
+      <span class="desc">Telefonu aranıza koyun, düello başlasın. Tek kişilik mod da var.</span><span class="tag iki">2 Kişilik</span></a>
+    <a class="game" href="ates-su/"><span class="emoji">🔥</span><span class="name">Ateş &amp; Su</span>
+      <span class="desc">İki kahraman, tek ekran. Elmasları toplayıp kapılara ulaşın.</span><span class="tag iki">2 Kişilik</span></a>
+    <a class="game" href="kos-zipla/"><span class="emoji">🏃</span><span class="name">Koş Zıpla</span>
+      <span class="desc">Altın topla, sümüklülere zıpla, bayrağa ulaş.</span><span class="tag">Platform</span></a>
+    <a class="game" href="buz-kule/"><span class="emoji">🧊</span><span class="name">Buz Kule</span>
+      <span class="desc">Hız topla, kat atla, combo bas. Buz yükseliyor!</span><span class="tag">Arcade</span></a>
+    <a class="game" href="tugla-kiran/"><span class="emoji">🧱</span><span class="name">Tuğla Kıran</span>
+      <span class="desc">Top sektir, tuğla kır, düşen bonusları yakala.</span><span class="tag">Arcade</span></a>
+    <a class="game" href="blok-yagmuru/"><span class="emoji">🟦</span><span class="name">Blok Yağmuru</span>
+      <span class="desc">Düşen blokları döndür, satırları sil. Otomatik kayıt.</span><span class="tag">Bulmaca</span></a>
+    <a class="game" href="sudoku/"><span class="emoji">✏️</span><span class="name">Sudoku</span>
+      <span class="desc">Üç zorluk, not modu, ipucu. Her hamle kayıtlı.</span><span class="tag">Bulmaca</span></a>
+    <a class="game" href="yikim/"><span class="emoji">💥</span><span class="name">Yıkım!</span>
+      <span class="desc">Sapanı ger, kuleleri devir, combo yap.</span><span class="tag">Fizik</span></a>
+  </div>
+
+  <footer>
+    Hedef: 100 oyun 🚀 · Hepsi tek dosya, internetsiz de çalışır<br>
+    <a href="https://github.com/heroharun/oyunlar">github.com/heroharun/oyunlar</a>
+  </footer>
+</main>

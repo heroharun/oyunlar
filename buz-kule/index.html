@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>BUZ KULE — Zıpla, Yüksel, Combo Yap</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  /* ── Kutup gecesi: buz mavisi + aurora, tek temalı bilinçli tercih ── */
+  :root{
+    --night:#0b1226; --deep:#12203f; --ice:#a8e6ff; --frost:#e6f7ff;
+    --aurora:#7ef0c9; --accent:#ffd166; --danger:#ff6b8a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--night);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;
+    -webkit-tap-highlight-color:transparent}
+  canvas{display:block;width:100%;height:100%}
+
+  #hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;
+    padding:14px 18px;pointer-events:none;color:var(--frost)}
+  .hudbox{display:flex;flex-direction:column;gap:1px}
+  .hudbox.right{align-items:flex-end}
+  .label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#8fb8d4;font-weight:600}
+  .value{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;
+    text-shadow:0 2px 14px rgba(126,240,201,.4);line-height:1.1}
+  #comboTxt{position:fixed;top:18%;left:50%;transform:translateX(-50%) scale(1);
+    font-size:30px;font-weight:900;color:var(--accent);opacity:0;pointer-events:none;
+    text-shadow:0 0 20px rgba(255,209,102,.8);letter-spacing:.04em;white-space:nowrap}
+  #comboTxt.pop{animation:pop .8s ease-out}
+  @keyframes pop{
+    0%{opacity:0;transform:translateX(-50%) scale(.4)}
+    15%{opacity:1;transform:translateX(-50%) scale(1.15)}
+    30%{transform:translateX(-50%) scale(1)}
+    75%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1)}}
+
+  /* Dokunmatik kontroller: geniş bölgeler, başparmak ergonomisi */
+  #controls{position:fixed;left:0;right:0;bottom:0;height:190px;display:none;pointer-events:none}
+  body.touch.mode-buttons #controls{display:flex}
+  #modeBtn{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:5;display:none;
+    pointer-events:auto;font:inherit;font-size:11px;font-weight:700;letter-spacing:.12em;
+    color:#9fc4dd;background:rgba(168,230,255,.08);border:1.5px solid rgba(168,230,255,.25);
+    border-radius:999px;padding:7px 14px;cursor:pointer}
+  body.touch #modeBtn{display:block}
+  #modeBtn:active{background:rgba(126,240,201,.25)}
+  #dpad{pointer-events:auto;flex:1.2;display:flex;align-items:flex-end;gap:12px;
+    padding:0 0 calc(18px + env(safe-area-inset-bottom)) 16px}
+  #jumpZone{pointer-events:auto;flex:1;display:flex;align-items:flex-end;justify-content:flex-end;
+    padding:0 16px calc(18px + env(safe-area-inset-bottom)) 0}
+  .ctl{width:88px;height:88px;border-radius:26px;
+    background:rgba(168,230,255,.10);border:2px solid rgba(168,230,255,.3);
+    color:var(--frost);font-size:34px;display:flex;align-items:center;justify-content:center;
+    backdrop-filter:blur(4px);transition:background .08s,border-color .08s,transform .08s}
+  .ctl.on{background:rgba(126,240,201,.32);border-color:var(--aurora);transform:scale(1.06)}
+  #jumpBtn{width:110px;height:110px;border-radius:50%;font-size:16px;font-weight:800;
+    letter-spacing:.1em;background:rgba(255,209,102,.14);border-color:rgba(255,209,102,.45);color:var(--accent)}
+  #jumpBtn.on{background:rgba(255,209,102,.4);border-color:var(--accent);transform:scale(1.06)}
+
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;color:var(--frost);
+    background:radial-gradient(ellipse at 50% 45%,rgba(11,18,38,.55),rgba(11,18,38,.92));
+    transition:opacity .4s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .4s,visibility 0s .4s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(46px,13vw,100px);font-weight:900;line-height:.95;text-wrap:balance;
+    background:linear-gradient(180deg,var(--frost) 10%,var(--ice) 55%,var(--aurora) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 6px 24px rgba(126,240,201,.35));transform:rotate(-2deg)}
+  .card p{max-width:36ch;color:#9fc4dd;font-size:15px;line-height:1.55}
+  .card .big{font-size:38px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .card .sub{font-size:14px;color:#8fb8d4}
+  .btn{pointer-events:auto;font:inherit;font-weight:800;font-size:17px;letter-spacing:.08em;
+    text-transform:uppercase;color:#0b1a2e;background:linear-gradient(180deg,var(--frost),var(--ice));
+    border:none;border-radius:999px;padding:15px 40px;cursor:pointer;
+    box-shadow:0 6px 0 #4e8cb0,0 14px 30px rgba(126,200,255,.3);transition:transform .08s,box-shadow .08s}
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #4e8cb0,0 6px 14px rgba(126,200,255,.25)}
+  .btn:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+  .hint{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8fb8d4}
+  @media (prefers-reduced-motion:reduce){.card{transition:none}#comboTxt.pop{animation-duration:.01s}}
+</style>
+
+<canvas id="cv"></canvas>
+
+<div id="hud">
+  <div class="hudbox"><span class="label">Kat</span><span class="value" id="floorEl">0</span></div>
+  <div class="hudbox right"><span class="label">Skor</span><span class="value" id="scoreEl">0</span></div>
+</div>
+<div id="comboTxt"></div>
+<button id="modeBtn">👆 DOKUNARAK</button>
+
+<div id="controls">
+  <div id="dpad">
+    <div class="ctl" id="leftBtn">◀</div>
+    <div class="ctl" id="rightBtn">▶</div>
+  </div>
+  <div id="jumpZone">
+    <div class="ctl" id="jumpBtn">ZIPLA</div>
+  </div>
+</div>
+
+<div class="card" id="intro">
+  <h1>BUZ KULE</h1>
+  <p>Koşarak hız topla — ne kadar hızlıysan o kadar yükseğe zıplarsın. Kat atlayarak combo yap, duvardan sekmeyi öğren. Aşağıda kalma, buz yükseliyor!</p>
+  <p class="sub" id="ctlHint">◀ ▶ ile koş · ZIPLA ile zıpla</p>
+  <button class="btn" id="startBtn">Başla</button>
+  <span class="hint" id="bestIntro"></span>
+</div>
+
+<div class="card hidden" id="endcard">
+  <h1>Düştün!</h1>
+  <div class="big" id="endScore"></div>
+  <p class="sub" id="endStats"></p>
+  <p id="endMsg"></p>
+  <button class="btn" id="retryBtn">Tekrar</button>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+addEventListener('resize',resize); resize();
+
+const IS_TOUCH = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;
+if(IS_TOUCH) document.body.classList.add('touch');
+
+/* ── Ses ─────────────────────────────────────────────────────────── */
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function blip(f=300,dur=0.12,vol=0.25,type='square'){
+  try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+    o.type=type; o.frequency.setValueAtTime(f,t); o.frequency.exponentialRampToValueAtTime(f*1.6,t+dur);
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+0.02);
+  }catch(e){} }
+function ding(step){ blip(420*Math.pow(1.122,step),0.25,0.2,'triangle'); }
+function crash(){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+    o.type='sawtooth'; o.frequency.setValueAtTime(220,t); o.frequency.exponentialRampToValueAtTime(40,t+0.6);
+    g.gain.setValueAtTime(0.3,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.6);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t+0.65);}catch(e){} }
+
+/* ── Sabitler ────────────────────────────────────────────────────── */
+const GAP=92;                 // katlar arası mesafe (dünya birimi)
+const GRAV=0.5, ACC=0.32, MAXV=10, FRIC=0.88;
+let best=0; try{ best=+localStorage.getItem('buzkule_best')||0; }catch(e){}
+document.getElementById('bestIntro').textContent = best>0 ? 'REKORUN: '+best+'. KAT' : 'İLK TIRMANIŞIN 🧗';
+
+/* ── Durum ───────────────────────────────────────────────────────── */
+let P, plats, camY, scrollV, floor, score, combo, state='intro', tick=0, shake=0;
+let snow=[], sparks=[];
+function makeSnow(){ snow=[]; for(let i=0;i<50;i++) snow.push({x:Math.random(),y:Math.random(),s:Math.random()*1.8+0.6,d:Math.random()*6.28}); }
+makeSnow();
+
+function platW(n){ return Math.max(64, 150-n*0.45) * (n%50===0?3:1); }
+function makePlat(n){
+  const w = Math.min(platW(n), W*0.8);
+  return { n, y:n*GAP, w, x: n===0 ? W/2 : Math.random()*(W-w-24)+12+w/2 };
+}
+function reset(){
+  plats=[makePlat(0)]; plats[0].w=W; plats[0].x=W/2;
+  for(let n=1;n<20;n++) plats.push(makePlat(n));
+  P={x:W/2, y:14, vx:0, vy:0, ground:true, jumpFloor:0, spin:0, face:1};
+  camY=-(IS_TOUCH?Math.max(210,H*0.28):60); scrollV=0; floor=0; score=0; combo={floors:0,jumps:0};
+  document.getElementById('floorEl').textContent=0;
+  document.getElementById('scoreEl').textContent=0;
+  sparks=[]; tick=0;
+}
+
+/* ── Girdi ───────────────────────────────────────────────────────── */
+const keys={L:false,R:false,J:false};
+let jumpBuf=0;
+addEventListener('keydown',e=>{
+  if(e.repeat) return;
+  if(e.code==='ArrowLeft'||e.code==='KeyA') keys.L=true;
+  if(e.code==='ArrowRight'||e.code==='KeyD') keys.R=true;
+  if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW'){ keys.J=true; jumpBuf=8; e.preventDefault(); }
+});
+addEventListener('keyup',e=>{
+  if(e.code==='ArrowLeft'||e.code==='KeyA') keys.L=false;
+  if(e.code==='ArrowRight'||e.code==='KeyD') keys.R=false;
+  if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW') keys.J=false;
+});
+/* Bölge tabanlı dokunmatik: sol bölgede parmak nerdeyse yön orası —
+   kaydırınca ◀/▶ arasında parmak kaldırmadan geçilir. Sağ bölgenin
+   tamamı zıplama; butonlar görsel referans, asıl hedef koca bölge. */
+const dpad=document.getElementById('dpad'), jumpZone=document.getElementById('jumpZone');
+const lBtn=document.getElementById('leftBtn'), rBtn=document.getElementById('rightBtn'),
+      jBtn=document.getElementById('jumpBtn');
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
+let dirId=null, jumpId=null;
+
+function setDir(x){
+  const lr=lBtn.getBoundingClientRect(), rr=rBtn.getBoundingClientRect();
+  const mid=(lr.right+rr.left)/2;
+  keys.L = x<mid; keys.R = x>=mid;
+  lBtn.classList.toggle('on',keys.L); rBtn.classList.toggle('on',keys.R);
+}
+function clearDir(){ keys.L=keys.R=false; lBtn.classList.remove('on'); rBtn.classList.remove('on'); }
+
+dpad.addEventListener('touchstart',e=>{ e.preventDefault();
+  const t=e.changedTouches[0]; dirId=t.identifier; setDir(t.clientX); audio(); },{passive:false});
+dpad.addEventListener('touchmove',e=>{ e.preventDefault();
+  for(const t of e.changedTouches) if(t.identifier===dirId) setDir(t.clientX); },{passive:false});
+const dirEnd=e=>{ for(const t of e.changedTouches) if(t.identifier===dirId){ dirId=null; clearDir(); } };
+dpad.addEventListener('touchend',dirEnd); dpad.addEventListener('touchcancel',dirEnd);
+
+jumpZone.addEventListener('touchstart',e=>{ e.preventDefault();
+  const t=e.changedTouches[0]; jumpId=t.identifier;
+  keys.J=true; jumpBuf=8; jBtn.classList.add('on'); buzz(8); audio(); },{passive:false});
+const jumpEnd=e=>{ for(const t of e.changedTouches) if(t.identifier===jumpId){
+  jumpId=null; keys.J=false; jBtn.classList.remove('on'); } };
+jumpZone.addEventListener('touchend',jumpEnd); jumpZone.addEventListener('touchcancel',jumpEnd);
+
+/* masaüstünde fare ile de denenebilsin */
+dpad.addEventListener('mousedown',e=>{ setDir(e.clientX); });
+dpad.addEventListener('mouseup',clearDir); dpad.addEventListener('mouseleave',clearDir);
+jumpZone.addEventListener('mousedown',()=>{ keys.J=true; jumpBuf=8; jBtn.classList.add('on'); });
+jumpZone.addEventListener('mouseup',()=>{ keys.J=false; jBtn.classList.remove('on'); });
+
+/* ── Birincil kontrol: tek parmak ─────────────────────────────────
+   Parmağını bas: karakter parmağın x'ine koşar.
+   Yukarı kaydır: zıpla (parmağı indirip tekrar kaydırınca yine zıplar).
+   Kısa dokunuş: zıpla. Butonlar ikinci tercih (üstteki mod düğmesi). */
+let mode='touch'; try{ mode=localStorage.getItem('buzkule_ctl')||'touch'; }catch(e){}
+let steerX=null, steerId=null, tapT0=0, tapX0=0, tapY0=0, swipeBaseY=0, swiped=false;
+
+addEventListener('touchstart',e=>{
+  if(mode!=='touch'||state!=='play') return;
+  if(e.target.closest('.card,#modeBtn,#controls')) return;
+  const t=e.changedTouches[0];
+  steerId=t.identifier; steerX=t.clientX;
+  tapT0=performance.now(); tapX0=t.clientX; tapY0=t.clientY;
+  swipeBaseY=t.clientY; swiped=false; audio();
+},{passive:true});
+addEventListener('touchmove',e=>{
+  if(steerId===null) return;
+  for(const t of e.changedTouches) if(t.identifier===steerId){
+    steerX=t.clientX;
+    if(!swiped && swipeBaseY-t.clientY>44){ swiped=true; jumpBuf=8; buzz(8); }
+    if(t.clientY>swipeBaseY) swipeBaseY=t.clientY;      // aşağı indi → yeni swipe hakkı
+    if(swiped && swipeBaseY-t.clientY<20) swiped=false;
+  }
+});
+const steerEnd=e=>{
+  for(const t of e.changedTouches) if(t.identifier===steerId){
+    if(performance.now()-tapT0<200 &&
+       Math.abs(t.clientX-tapX0)<16 && Math.abs(t.clientY-tapY0)<16){ jumpBuf=8; buzz(8); }
+    steerId=null; steerX=null;
+  }
+};
+addEventListener('touchend',steerEnd); addEventListener('touchcancel',steerEnd);
+
+const modeBtn=document.getElementById('modeBtn');
+function applyMode(){
+  document.body.classList.toggle('mode-buttons',mode==='buttons');
+  modeBtn.textContent = mode==='touch' ? '👆 DOKUNARAK' : '🎮 BUTONLAR';
+  document.getElementById('ctlHint').textContent = !IS_TOUCH
+    ? '← → ile koş · Boşluk ile zıpla'
+    : mode==='touch'
+      ? 'Parmağını bas: karakter takip eder · yukarı kaydır ya da dokun: zıpla'
+      : '◀ ▶ ile koş · ZIPLA ile zıpla';
+}
+
+function tap(el,fn){
+  el._fn=fn;
+  const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn) el._fn(); };
+  el.addEventListener('click',fire); el.addEventListener('touchend',fire);
+}
+
+/* ── Combo & skor ────────────────────────────────────────────────── */
+function comboMsg(){
+  const c=document.getElementById('comboTxt');
+  const msgs=['GÜZEL!','SÜPER!','HARİKA!','MÜTHİŞ!','EFSANE!!','ALEV ALDIN!!'];
+  c.textContent=msgs[Math.min(combo.jumps-1,msgs.length-1)]+' +'+combo.floors+' kat';
+  c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+}
+function land(pn){
+  const skipped = pn - P.jumpFloor;
+  if(skipped>=2){
+    combo.floors+=skipped; combo.jumps++;
+    score += skipped*skipped*10;
+    comboMsg(); ding(Math.min(combo.jumps+2,12)); buzz(20);
+    P.spin = skipped>=3 ? 2 : 1;              // takla!
+  } else {
+    if(combo.jumps>=2){ score += combo.floors*combo.floors*5;  // combo bitiş bonusu
+      ding(12); }
+    combo={floors:0,jumps:0};
+  }
+  if(pn>floor){ score+=(pn-floor)*10; floor=pn;
+    document.getElementById('floorEl').textContent=floor; }
+  document.getElementById('scoreEl').textContent=score;
+  blip(160+Math.min(pn,60)*3,0.07,0.12,'sine');
+}
+
+/* ── Fizik ───────────────────────────────────────────────────────── */
+function physics(){
+  tick++;
+  if(jumpBuf>0) jumpBuf--;
+  // koşu (tuş, buton veya parmak takibi)
+  let runL=keys.L, runR=keys.R;
+  if(steerX!==null){ const d=steerX-P.x;
+    if(d<-14) runL=true; else if(d>14) runR=true;
+    else if(P.ground) P.vx*=0.8; }
+  if(runL){ P.vx-=ACC; P.face=-1; }
+  if(runR){ P.vx+=ACC; P.face=1; }
+  if(!runL&&!runR&&P.ground) P.vx*=FRIC;
+  P.vx=Math.max(-MAXV,Math.min(MAXV,P.vx));
+  // zıplama: hız = güç
+  if(jumpBuf>0&&P.ground){
+    P.vy = 9.8 + Math.abs(P.vx)*0.95;
+    P.ground=false; P.jumpFloor=Math.round(P.y/GAP); jumpBuf=0;
+    blip(240+Math.abs(P.vx)*18,0.15,0.2);
+    for(let i=0;i<6;i++) sparks.push({x:P.x,y:P.y,vx:(Math.random()-.5)*3,vy:-Math.random()*2,life:1,col:'#a8e6ff'});
+  }
+  P.vy-=GRAV; P.x+=P.vx;
+  const prevY=P.y; P.y+=P.vy;
+  if(P.spin>0) P.spin=Math.max(0,P.spin-0.06);
+  // duvardan sekme
+  const m=16;
+  if(P.x<m){ P.x=m; P.vx=Math.abs(P.vx)*0.92; if(Math.abs(P.vx)>3)blip(140,0.05,0.1,'sine'); }
+  if(P.x>W-m){ P.x=W-m; P.vx=-Math.abs(P.vx)*0.92; if(Math.abs(P.vx)>3)blip(140,0.05,0.1,'sine'); }
+  // platforma iniş (sadece düşerken)
+  if(P.vy<=0){
+    for(const p of plats){
+      if(Math.abs(P.x-p.x)<p.w/2+12 && prevY>=p.y-1 && P.y<=p.y+1){
+        P.y=p.y; P.vy=0;
+        if(!P.ground){ land(p.n);
+          for(let i=0;i<5;i++) sparks.push({x:P.x,y:p.y,vx:(Math.random()-.5)*4,vy:Math.random()*1.5,life:0.8,col:'#e6f7ff'}); }
+        P.ground=true; P.spin=0;
+        break;
+      }
+    }
+    if(P.vy<-1) P.ground=false;
+  } else P.ground=false;
+  // kamera
+  const target=P.y-H*0.42;
+  if(target>camY) camY+=(target-camY)*0.12;
+  // yükselen buz: kat 5'ten sonra başlar, gittikçe hızlanır
+  if(floor>=5){ scrollV=Math.min(2.6, 0.5+floor*0.018+tick*0.00003); camY+=scrollV; }
+  // düşüş = ölüm
+  if(P.y < camY-30) gameOver();
+  // platform üret/temizle
+  const topN=Math.ceil((camY+H*1.5)/GAP);
+  let maxN=plats[plats.length-1].n;
+  while(maxN<topN){ maxN++; plats.push(makePlat(maxN)); }
+  plats=plats.filter(p=>p.y>camY-120);
+  // parçacıklar
+  for(const s of sparks){ s.x+=s.vx; s.y+=s.vy; s.vy-=0.1; s.life-=0.03; }
+  sparks=sparks.filter(s=>s.life>0);
+  if(shake>0.3) shake*=0.85;
+}
+
+function gameOver(){
+  state='over'; crash(); shake=12; buzz(80);
+  const isBest = floor>best;
+  if(isBest){ best=floor; try{ localStorage.setItem('buzkule_best',best); }catch(e){} }
+  document.getElementById('endScore').textContent=score.toLocaleString('tr-TR')+' puan';
+  document.getElementById('endStats').textContent=floor+'. kata ulaştın · rekor: '+best;
+  document.getElementById('endMsg').textContent = isBest
+    ? 'YENİ REKOR! 🏆 Buz kule seni tanımaya başladı.'
+    : floor<15 ? 'Isınma turuydu. Hız topla — hız, zıplama gücüdür.'
+    : floor<40 ? 'Fena değil! Duvar sekmesiyle hız kaybetmeden dönebilirsin.'
+    : 'Ciddi bir tırmanıştı. Combo zincirini koparmamaya odaklan.';
+  document.getElementById('endcard').classList.remove('hidden');
+}
+
+/* ── Çizim ───────────────────────────────────────────────────────── */
+const sy=y=>H-(y-camY);   // dünya → ekran
+function rr(x,y,w,h,r){ ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // gökyüzü — yükseldikçe koyulaşır
+  const depth=Math.min(1,floor/120);
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,`rgb(${11-depth*6},${18-depth*10},${38+depth*10})`);
+  g.addColorStop(1,'#12203f');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // aurora
+  ctx.save(); ctx.globalAlpha=0.16+0.06*Math.sin(tick*0.01);
+  const a=ctx.createLinearGradient(0,H*0.05,W,H*0.3);
+  a.addColorStop(0,'transparent'); a.addColorStop(0.5,'#7ef0c9'); a.addColorStop(1,'transparent');
+  ctx.fillStyle=a;
+  ctx.beginPath(); ctx.moveTo(0,H*0.12);
+  for(let x=0;x<=W;x+=40) ctx.lineTo(x,H*0.12+Math.sin(x*0.01+tick*0.008)*30);
+  ctx.lineTo(W,H*0.4); ctx.lineTo(0,H*0.4); ctx.fill(); ctx.restore();
+  // kar
+  for(const s of snow){
+    const x=(s.x*W+Math.sin(tick*0.01+s.d)*30+W)%W;
+    const y=(s.y*H+tick*s.s*0.4+camY*0.1)%H;
+    ctx.globalAlpha=0.5; ctx.fillStyle='#e6f7ff';
+    ctx.beginPath(); ctx.arc(x,y,s.s,0,6.28); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  ctx.save();
+  if(shake>0.3) ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+
+  // platformlar
+  for(const p of plats){
+    const y=sy(p.y), x=p.x-p.w/2;
+    if(y<-20||y>H+20) continue;
+    ctx.fillStyle='rgba(20,40,70,.8)'; rr(x+2,y+3,p.w,14,7); ctx.fill();
+    const ig=ctx.createLinearGradient(0,y,0,y+14);
+    ig.addColorStop(0,'#cfeeff'); ig.addColorStop(0.5,'#8ecdf0'); ig.addColorStop(1,'#5da3cf');
+    ctx.fillStyle=ig; rr(x,y,p.w,14,7); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.55)'; rr(x+3,y+2,p.w-6,4,2); ctx.fill();
+    if(p.n%10===0&&p.n>0){
+      ctx.fillStyle='rgba(230,247,255,.5)';
+      ctx.font='700 11px "Avenir Next",system-ui,sans-serif'; ctx.textAlign='center';
+      ctx.fillText(p.n, p.x, y+27);
+    }
+  }
+  // yükselen buz çizgisi
+  if(floor>=5){
+    const iy=sy(camY-6);
+    const wg=ctx.createLinearGradient(0,H-8,0,H+40);
+    wg.addColorStop(0,'rgba(168,230,255,.0)'); wg.addColorStop(1,'rgba(168,230,255,.5)');
+    ctx.fillStyle=wg; ctx.fillRect(0,H-26,W,26);
+  }
+  // parçacıklar
+  for(const s of sparks){ ctx.globalAlpha=s.life; ctx.fillStyle=s.col;
+    ctx.beginPath(); ctx.arc(s.x,sy(s.y),2.5,0,6.28); ctx.fill(); }
+  ctx.globalAlpha=1;
+
+  // karakter — küçük kaşif 🧣
+  const px=P.x, py=sy(P.y);
+  ctx.save(); ctx.translate(px,py-15);
+  if(P.spin>0) ctx.rotate((2-P.spin)*6.28*P.face);
+  const lean=P.ground?Math.max(-0.25,Math.min(0.25,P.vx*0.03)):0;
+  ctx.rotate(lean);
+  ctx.fillStyle='rgba(10,20,40,.4)'; ctx.beginPath(); ctx.ellipse(0,17,10,3,0,0,6.28); ctx.fill();
+  const bg=ctx.createLinearGradient(0,-14,0,14);
+  bg.addColorStop(0,'#ffd166'); bg.addColorStop(1,'#f0932b');
+  ctx.fillStyle=bg; rr(-9,-13,18,28,8); ctx.fill();
+  ctx.fillStyle='#ff6b8a'; rr(-9,-4,18,5,2); ctx.fill();      // atkı
+  ctx.fillStyle='#fff'; // gözler
+  ctx.beginPath(); ctx.arc(P.face*3-2,-6,3,0,6.28); ctx.arc(P.face*3+3,-6,3,0,6.28); ctx.fill();
+  ctx.fillStyle='#1a2438';
+  ctx.beginPath(); ctx.arc(P.face*3-1.4,-6,1.5,0,6.28); ctx.arc(P.face*3+3.6,-6,1.5,0,6.28); ctx.fill();
+  // koşu bacakları
+  if(P.ground&&Math.abs(P.vx)>1){
+    ctx.strokeStyle='#c26b1d'; ctx.lineWidth=3.5; ctx.lineCap='round';
+    const ph=Math.sin(tick*0.4)*5;
+    ctx.beginPath(); ctx.moveTo(-4,14); ctx.lineTo(-4+ph,19);
+    ctx.moveTo(4,14); ctx.lineTo(4-ph,19); ctx.stroke();
+  }
+  ctx.restore();
+
+  // hız göstergesi (hız=güç sezgisi için)
+  const sp=Math.abs(P.vx)/MAXV;
+  if(sp>0.05&&state==='play'){
+    ctx.fillStyle='rgba(168,230,255,.25)'; rr(W/2-50,H*0.055,100,6,3); ctx.fill();
+    ctx.fillStyle=sp>0.75?'#ffd166':'#7ef0c9'; rr(W/2-50,H*0.055,100*sp,6,3); ctx.fill();
+  }
+  ctx.restore();
+}
+
+/* ── Döngü & akış ────────────────────────────────────────────────── */
+function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loop); }
+tap(document.getElementById('startBtn'),()=>{
+  try{audio();}catch(e){}
+  reset(); state='play';
+  document.getElementById('intro').classList.add('hidden');
+});
+tap(document.getElementById('retryBtn'),()=>{
+  reset(); state='play';
+  document.getElementById('endcard').classList.add('hidden');
+});
+tap(modeBtn,()=>{
+  mode = mode==='touch' ? 'buttons' : 'touch';
+  try{ localStorage.setItem('buzkule_ctl',mode); }catch(e){}
+  steerId=null; steerX=null; clearDir(); keys.J=false;
+  applyMode();
+});
+applyMode();
+reset(); loop();
+</script>

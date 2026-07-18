@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>HAVA HOKEYİ — İki Kişilik Düello</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#0e1a2b; --ice:#dceffc; --line:#8fc3e8; --p1:#ff5f6d; --p2:#3fa9f5; --ink:#0e1a2b; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  canvas{display:block;width:100%;height:100%}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;color:#dceffc;
+    background:rgba(14,26,43,.94);transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(36px,10vw,76px);font-weight:900;line-height:.98}
+  .card h1 .a{color:var(--p1)} .card h1 .b{color:var(--p2)}
+  .card p{max-width:36ch;color:#7fa8c9;font-size:14px;line-height:1.55}
+  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.08em;text-transform:uppercase;
+    color:#0e1a2b;background:linear-gradient(180deg,#dceffc,#a8d4f0);border:none;border-radius:999px;
+    padding:14px 36px;cursor:pointer;box-shadow:0 5px 0 #5c8cb0}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #5c8cb0}
+  .btn.red{background:linear-gradient(180deg,#ff8f99,#ff5f6d);box-shadow:0 5px 0 #b03844;color:#fff}
+  .btn.red:active{box-shadow:0 2px 0 #b03844}
+  .btn:focus-visible{outline:3px solid #dceffc;outline-offset:3px}
+</style>
+
+<canvas id="cv"></canvas>
+
+<div class="card" id="intro">
+  <h1><span class="a">HAVA</span> <span class="b">HOKEYİ</span></h1>
+  <p>Topu rakip kaleye sok, 7 sayıya ilk ulaşan kazanır. İki kişilik modda telefonu aranıza koyun — herkes kendi yarısından tokmağını sürükler!</p>
+  <button class="btn red" id="vsBtn">🤝 2 Kişilik</button>
+  <button class="btn" id="aiBtn">🤖 Bilgisayara Karşı</button>
+</div>
+
+<div class="card hidden" id="endcard">
+  <h1 id="endTitle"></h1>
+  <p id="endMsg"></p>
+  <button class="btn" id="againBtn">Tekrar</button>
+  <button class="btn red" id="menuBtn">Menü</button>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+addEventListener('resize',resize); resize();
+
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function clack(v=0.2,f=900){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type='triangle';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*0.5,t+0.06);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.08);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+0.1);}catch(e){} }
+function horn(){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type='sawtooth';o.frequency.value=220;
+  g.gain.setValueAtTime(0.22,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+0.5);}catch(e){} }
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
+
+const GOAL_W=()=>Math.min(W*0.42,220);
+let mode='vs', state='intro', tick=0;
+let puck, mal1, mal2, score1, score2, freeze=0;
+const R_M=()=>Math.min(44,W*0.11), R_P=()=>Math.min(20,W*0.05);
+
+function reset(server){
+  puck={x:W/2, y:H/2+(server===1?80:-80), vx:0, vy:0};
+  mal1={x:W/2, y:H-110, tx:W/2, ty:H-110};   // alt (kırmızı)
+  mal2={x:W/2, y:110, tx:W/2, ty:110};       // üst (mavi)
+  freeze=30;
+}
+function newMatch(){ score1=0; score2=0; reset(1); state='play'; }
+
+/* girdi: her yarı kendi parmağını takip eder */
+const touches={};
+addEventListener('touchstart',e=>{
+  if(state!=='play'||e.target.closest('.card')) return;
+  audio();
+  for(const t of e.changedTouches){
+    if(t.clientY>H/2) touches[t.identifier]='m1';
+    else if(mode==='vs') touches[t.identifier]='m2';
+    else touches[t.identifier]='m1';
+    moveTo(t);
+  }
+},{passive:true});
+addEventListener('touchmove',e=>{
+  for(const t of e.changedTouches) if(touches[t.identifier]) moveTo(t);
+},{passive:true});
+addEventListener('touchend',e=>{ for(const t of e.changedTouches) delete touches[t.identifier]; });
+function moveTo(t){
+  const who=touches[t.identifier];
+  if(who==='m1'){ mal1.tx=t.clientX; mal1.ty=Math.max(H/2+R_M(),t.clientY); }
+  else{ mal2.tx=t.clientX; mal2.ty=Math.min(H/2-R_M(),t.clientY); }
+}
+addEventListener('mousemove',e=>{
+  if(state!=='play') return;
+  mal1.tx=e.clientX; mal1.ty=Math.max(H/2+R_M(),e.clientY);
+});
+
+function stepMallet(m){
+  const ox=m.x, oy=m.y;
+  m.x+=(m.tx-m.x)*0.5; m.y+=(m.ty-m.y)*0.5;
+  m.x=Math.max(R_M(),Math.min(W-R_M(),m.x));
+  m.vx=m.x-ox; m.vy=m.y-oy;
+}
+function aiStep(){
+  const m=mal2, sp=0.075+Math.min(score1,5)*0.012;
+  // topa doğru; top kendi yarısındaysa saldır, değilse merkezde bekle
+  let gx, gy;
+  if(puck.y<H/2){ gx=puck.x; gy=puck.y-18; }
+  else { gx=W/2+(puck.x-W/2)*0.4; gy=140; }
+  m.tx=gx; m.ty=Math.min(H/2-R_M(),gy);
+  m.x+=(m.tx-m.x)*sp*2; m.y+=(m.ty-m.y)*sp*2;
+  m.x=Math.max(R_M(),Math.min(W-R_M(),m.x));
+}
+function collideMallet(m){
+  const dx=puck.x-m.x, dy=puck.y-m.y, d=Math.hypot(dx,dy), min=R_M()+R_P();
+  if(d<min&&d>0){
+    const nx=dx/d, ny=dy/d;
+    puck.x=m.x+nx*min; puck.y=m.y+ny*min;
+    const dot=puck.vx*nx+puck.vy*ny;
+    if(dot<0){ puck.vx-=2*dot*nx; puck.vy-=2*dot*ny; }
+    puck.vx+= (m.vx||0)*0.7; puck.vy+=(m.vy||0)*0.7;
+    const sp=Math.hypot(puck.vx,puck.vy);
+    if(sp>16){ puck.vx*=16/sp; puck.vy*=16/sp; }
+    clack(0.18,700+Math.random()*300); buzz(6);
+  }
+}
+function physics(){
+  tick++;
+  stepMallet(mal1);
+  if(mode==='vs') stepMallet(mal2); else aiStep();
+  if(freeze>0){ freeze--; return; }
+  puck.x+=puck.vx; puck.y+=puck.vy;
+  puck.vx*=0.995; puck.vy*=0.995;
+  const r=R_P(), gw=GOAL_W();
+  if(puck.x<r){ puck.x=r; puck.vx=Math.abs(puck.vx); clack(0.1,500); }
+  if(puck.x>W-r){ puck.x=W-r; puck.vx=-Math.abs(puck.vx); clack(0.1,500); }
+  const inGoalX=Math.abs(puck.x-W/2)<gw/2;
+  if(puck.y<r){ if(inGoalX){ goal(1); return; } puck.y=r; puck.vy=Math.abs(puck.vy); clack(0.1,500); }
+  if(puck.y>H-r){ if(inGoalX){ goal(2); return; } puck.y=H-r; puck.vy=-Math.abs(puck.vy); clack(0.1,500); }
+  collideMallet(mal1); collideMallet(mal2);
+}
+function goal(who){
+  horn(); buzz([40,60,40]);
+  if(who===1) score1++; else score2++;
+  if(score1>=7||score2>=7){ endMatch(); return; }
+  reset(who===1?2:1);
+}
+function endMatch(){
+  state='over';
+  const w1=score1>score2;
+  const t=document.getElementById('endTitle'), m=document.getElementById('endMsg');
+  if(mode==='ai'){
+    t.innerHTML=w1?'<span class="a">Kazandın!</span> 🏆':'<span class="b">Bilgisayar Kazandı</span> 🤖';
+    m.textContent=score1+' – '+score2+(w1?' · İyi bilekmiş!':' · Rövanş?');
+  } else {
+    t.innerHTML=w1?'<span class="a">Kırmızı Kazandı!</span>':'<span class="b">Mavi Kazandı!</span>';
+    m.textContent=score1+' – '+score2+' · Rövanş şart.';
+  }
+  document.getElementById('endcard').classList.remove('hidden');
+}
+
+function draw(){
+  // buz
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#cfe9fa'); g.addColorStop(0.5,'#eaf6fe'); g.addColorStop(1,'#cfe9fa');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // çizgiler
+  ctx.strokeStyle='#8fc3e8'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(W/2,H/2,70,0,6.28); ctx.stroke();
+  ctx.fillStyle='rgba(143,195,232,.25)';
+  ctx.beginPath(); ctx.arc(W/2,H/2,12,0,6.28); ctx.fill();
+  // kaleler
+  const gw=GOAL_W();
+  ctx.strokeStyle='#3fa9f5'; ctx.lineWidth=7; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(W/2-gw/2,4); ctx.lineTo(W/2+gw/2,4); ctx.stroke();
+  ctx.strokeStyle='#ff5f6d';
+  ctx.beginPath(); ctx.moveTo(W/2-gw/2,H-4); ctx.lineTo(W/2+gw/2,H-4); ctx.stroke();
+  // skor
+  ctx.font='900 46px "Avenir Next",system-ui,sans-serif'; ctx.textAlign='center';
+  ctx.fillStyle='rgba(63,169,245,.3)'; ctx.fillText(score2??0,W/2,H/2-40);
+  ctx.save(); ctx.translate(W/2,H/2+40); ctx.rotate(mode==='vs'?Math.PI:0);
+  ctx.fillStyle='rgba(255,95,109,.3)'; ctx.fillText(score1??0,0,mode==='vs'?-14:14);
+  ctx.restore();
+  if(state==='intro') return;
+  // tokmaklar
+  drawMallet(mal2,'#3fa9f5','#1e78b8');
+  drawMallet(mal1,'#ff5f6d','#c0392b');
+  // top
+  ctx.fillStyle='rgba(14,26,43,.25)';
+  ctx.beginPath(); ctx.arc(puck.x+2,puck.y+3,R_P(),0,6.28); ctx.fill();
+  const pg=ctx.createRadialGradient(puck.x-4,puck.y-4,2,puck.x,puck.y,R_P());
+  pg.addColorStop(0,'#4a5568'); pg.addColorStop(1,'#1a2332');
+  ctx.fillStyle=pg;
+  ctx.beginPath(); ctx.arc(puck.x,puck.y,R_P(),0,6.28); ctx.fill();
+  if(freeze>0&&Math.floor(tick/8)%2===0){
+    ctx.strokeStyle='rgba(14,26,43,.4)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(puck.x,puck.y,R_P()+8,0,6.28); ctx.stroke();
+  }
+}
+function drawMallet(m,col,dark){
+  ctx.fillStyle='rgba(14,26,43,.25)';
+  ctx.beginPath(); ctx.arc(m.x+2,m.y+4,R_M(),0,6.28); ctx.fill();
+  const g=ctx.createRadialGradient(m.x-8,m.y-8,4,m.x,m.y,R_M());
+  g.addColorStop(0,col); g.addColorStop(1,dark);
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.arc(m.x,m.y,R_M(),0,6.28); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.35)';
+  ctx.beginPath(); ctx.arc(m.x,m.y,R_M()*0.45,0,6.28); ctx.fill();
+  ctx.fillStyle=dark;
+  ctx.beginPath(); ctx.arc(m.x,m.y,R_M()*0.28,0,6.28); ctx.fill();
+}
+function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loop); }
+
+function tap(el,fn){ el._fn=fn;
+  const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
+  el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
+tap(document.getElementById('vsBtn'),()=>{ try{audio();}catch(e){} mode='vs'; newMatch();
+  document.getElementById('intro').classList.add('hidden'); });
+tap(document.getElementById('aiBtn'),()=>{ try{audio();}catch(e){} mode='ai'; newMatch();
+  document.getElementById('intro').classList.add('hidden'); });
+tap(document.getElementById('againBtn'),()=>{ newMatch();
+  document.getElementById('endcard').classList.add('hidden'); });
+tap(document.getElementById('menuBtn'),()=>{ state='intro';
+  document.getElementById('endcard').classList.add('hidden');
+  document.getElementById('intro').classList.remove('hidden'); });
+score1=0;score2=0;reset(1);
+loop();
+</script>

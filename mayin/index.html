@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>MAYIN TARLASI — Dikkatli Bas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#232b33; --cell:#3a4652; --cell2:#43505d; --open:#1b2229; --ink:#e8eef4; --dim:#8fa3b5; --flag:#ff6b6b; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
+    padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
+  #hud{width:min(94vw,460px);display:flex;justify-content:space-between;align-items:center}
+  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .value{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+  #modeBtn{font:inherit;font-size:14px;font-weight:800;letter-spacing:.05em;color:var(--ink);
+    background:var(--cell);border:2px solid rgba(232,238,244,.2);border-radius:12px;
+    padding:10px 16px;cursor:pointer}
+  #modeBtn.flag{background:#5c3038;border-color:var(--flag);color:#ffb3b3}
+  #board{display:grid;gap:3px;background:#1b2229;padding:6px;border-radius:12px;touch-action:manipulation}
+  .c{display:flex;align-items:center;justify-content:center;border-radius:5px;
+    background:linear-gradient(180deg,var(--cell2),var(--cell));font-weight:800;cursor:pointer}
+  .c.open{background:var(--open);box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+  .c.boom{background:#8f2f2f}
+  .n1{color:#6fb6ff}.n2{color:#7ee08a}.n3{color:#ff8f7a}.n4{color:#c9a2ff}
+  .n5{color:#ffc93c}.n6{color:#6fe0d4}.n7{color:#f5a3d0}.n8{color:#cfd8e0}
+  .hint{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:center}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(35,43,51,.95);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(34px,9vw,66px);font-weight:900;line-height:1;
+    background:linear-gradient(180deg,#e8eef4,#8fa3b5);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .card p{max-width:36ch;color:var(--dim);font-size:14px;line-height:1.55}
+  .btn{font:inherit;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;
+    color:#232b33;background:linear-gradient(180deg,#e8eef4,#b8c6d2);border:none;border-radius:999px;
+    padding:13px 32px;cursor:pointer;box-shadow:0 5px 0 #708294}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #708294}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  .diffrow{display:flex;gap:8px}
+</style>
+
+<div id="wrap">
+  <div id="hud">
+    <div><div class="label">Mayın</div><div class="value" id="mineEl">0</div></div>
+    <button id="modeBtn">⛏ Kaz</button>
+    <div style="text-align:right"><div class="label">Süre</div><div class="value" id="timeEl">0</div></div>
+  </div>
+  <div id="board"></div>
+  <div class="hint">moduna göre dokun: ⛏ kaz · 🚩 bayrak — basılı tutmak da bayrak koyar</div>
+</div>
+
+<div class="card" id="intro">
+  <h1>MAYIN TARLASI</h1>
+  <p>Sayılar komşu mayın adedini söyler. Mayınsız tüm kareleri aç. İlk dokunuş her zaman güvenli. Oyun kaydedilir — dilediğin an dön.</p>
+  <button class="btn" id="contBtn" style="display:none">Devam Et</button>
+  <div class="diffrow">
+    <button class="btn" data-d="0">Kolay</button>
+    <button class="btn" data-d="1">Orta</button>
+    <button class="btn" data-d="2">Zor</button>
+  </div>
+</div>
+
+<div class="card hidden" id="endcard">
+  <h1 id="endTitle"></h1>
+  <p id="endMsg"></p>
+  <div class="diffrow">
+    <button class="btn" data-d="0">Kolay</button>
+    <button class="btn" data-d="1">Orta</button>
+    <button class="btn" data-d="2">Zor</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const DIFFS=[{name:'Kolay',w:9,h:12,m:12},{name:'Orta',w:10,h:14,m:24},{name:'Zor',w:11,h:16,m:38}];
+let W2,H2,M,mines,openArr,flags,started,diff=0,timer=null,secs=0,state='intro',flagMode=false;
+const boardEl=document.getElementById('board');
+
+function idx(x,y){ return y*W2+x; }
+function neighbors(i){
+  const x=i%W2,y=Math.floor(i/W2),out=[];
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    if(!dx&&!dy)continue;
+    const nx=x+dx,ny=y+dy;
+    if(nx>=0&&nx<W2&&ny>=0&&ny<H2) out.push(idx(nx,ny));
+  }
+  return out;
+}
+function buildBoard(){
+  boardEl.innerHTML='';
+  const cellPx=Math.min( (Math.min(innerWidth*0.94,460)-6-3*(W2-1))/W2,
+                         (innerHeight-190-3*(H2-1))/H2 );
+  boardEl.style.gridTemplateColumns=`repeat(${W2},${cellPx}px)`;
+  boardEl.style.gridAutoRows=cellPx+'px';
+  for(let i=0;i<W2*H2;i++){
+    const d=document.createElement('div');
+    d.className='c'; d.dataset.i=i;
+    d.style.fontSize=cellPx*0.5+'px';
+    boardEl.appendChild(d);
+  }
+}
+function placeMines(safe){
+  mines=new Set();
+  const banned=new Set([safe,...neighbors(safe)]);
+  while(mines.size<M){
+    const i=Math.floor(Math.random()*W2*H2);
+    if(!banned.has(i)) mines.add(i);
+  }
+}
+function countAround(i){ return neighbors(i).filter(n=>mines.has(n)).length; }
+function updHud(){
+  document.getElementById('mineEl').textContent=M-flags.size;
+  document.getElementById('timeEl').textContent=secs;
+}
+function save(){
+  try{ localStorage.setItem('mayin_save',JSON.stringify({
+    diff, mines:[...mines], open:[...openArr], flags:[...flags], secs, started })); }catch(e){}
+}
+function clearSave(){ try{ localStorage.removeItem('mayin_save'); }catch(e){} }
+
+function render(){
+  for(const d of boardEl.children){
+    const i=+d.dataset.i;
+    d.classList.toggle('open',openArr.has(i));
+    if(openArr.has(i)){
+      const n=countAround(i);
+      d.textContent=n||''; d.className='c open'+(n?' n'+n:'');
+    } else d.textContent=flags.has(i)?'🚩':'';
+  }
+}
+function openCell(i){
+  if(openArr.has(i)||flags.has(i)) return;
+  if(!started){ placeMines(i); started=true;
+    clearInterval(timer); timer=setInterval(()=>{ if(state==='play'&&!document.hidden){ secs++; updHud();
+      if(secs%8===0)save(); } },1000); }
+  if(mines.has(i)){ boom(i); return; }
+  const stack=[i];
+  while(stack.length){
+    const c=stack.pop();
+    if(openArr.has(c)) continue;
+    openArr.add(c); flags.delete(c);
+    if(countAround(c)===0) for(const n of neighbors(c)) if(!openArr.has(n)) stack.push(n);
+  }
+  render(); updHud(); save();
+  if(openArr.size===W2*H2-M) winGame();
+}
+function toggleFlag(i){
+  if(openArr.has(i)) return;
+  if(flags.has(i)) flags.delete(i); else flags.add(i);
+  try{ navigator.vibrate&&navigator.vibrate(12); }catch(e){}
+  render(); updHud(); save();
+}
+function boom(i){
+  state='over'; clearInterval(timer); clearSave();
+  try{ navigator.vibrate&&navigator.vibrate([60,40,80]); }catch(e){}
+  for(const m of mines){ const d=boardEl.children[m];
+    d.classList.add('open'); d.textContent='💣'; }
+  boardEl.children[i].classList.add('boom');
+  setTimeout(()=>{
+    document.getElementById('endTitle').textContent='BOOM! 💥';
+    document.getElementById('endMsg').textContent=DIFFS[diff].name+' tarlada '+secs+' saniye dayandın. Bir daha?';
+    document.getElementById('endcard').classList.remove('hidden');
+  },900);
+}
+function winGame(){
+  state='over'; clearInterval(timer); clearSave();
+  document.getElementById('endTitle').textContent='Temizlendi! 🎖️';
+  document.getElementById('endMsg').textContent=DIFFS[diff].name+' tarlayı '+secs+" saniyede çözdün. Bir üst zorluk?";
+  document.getElementById('endcard').classList.remove('hidden');
+}
+function newGame(d){
+  diff=d; const D=DIFFS[d];
+  W2=D.w; H2=D.h; M=D.m;
+  mines=new Set(); openArr=new Set(); flags=new Set();
+  started=false; secs=0; state='play'; flagMode=false;
+  clearInterval(timer);
+  document.getElementById('modeBtn').textContent='⛏ Kaz';
+  document.getElementById('modeBtn').classList.remove('flag');
+  buildBoard(); render(); updHud();
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('endcard').classList.add('hidden');
+}
+
+/* girdi: dokun = moda göre, uzun bas = bayrak */
+let pressT=null, pressI=null, longFired=false;
+boardEl.addEventListener('touchstart',e=>{
+  const d=e.target.closest('.c'); if(!d||state!=='play')return;
+  pressI=+d.dataset.i; longFired=false;
+  pressT=setTimeout(()=>{ longFired=true; toggleFlag(pressI); },380);
+},{passive:true});
+boardEl.addEventListener('touchend',e=>{
+  clearTimeout(pressT);
+  const d=e.target.closest('.c'); if(!d||state!=='play')return;
+  e.preventDefault();
+  if(!longFired){ const i=+d.dataset.i;
+    if(flagMode) toggleFlag(i); else openCell(i); }
+});
+boardEl.addEventListener('touchmove',()=>clearTimeout(pressT),{passive:true});
+boardEl.addEventListener('click',e=>{
+  if(matchMedia('(pointer:coarse)').matches) return;
+  const d=e.target.closest('.c'); if(!d||state!=='play')return;
+  if(flagMode) toggleFlag(+d.dataset.i); else openCell(+d.dataset.i);
+});
+boardEl.addEventListener('contextmenu',e=>{
+  e.preventDefault();
+  const d=e.target.closest('.c'); if(!d||state!=='play')return;
+  toggleFlag(+d.dataset.i);
+});
+document.getElementById('modeBtn').addEventListener('click',()=>{
+  flagMode=!flagMode;
+  const b=document.getElementById('modeBtn');
+  b.textContent=flagMode?'🚩 Bayrak':'⛏ Kaz';
+  b.classList.toggle('flag',flagMode);
+});
+for(const b of document.querySelectorAll('[data-d]'))
+  b.addEventListener('click',()=>newGame(+b.dataset.d));
+document.getElementById('contBtn').addEventListener('click',()=>{
+  state='play';
+  document.getElementById('intro').classList.add('hidden');
+  clearInterval(timer); timer=setInterval(()=>{ if(state==='play'&&!document.hidden){ secs++; updHud();
+    if(secs%8===0)save(); } },1000);
+});
+
+/* kayıttan devam */
+try{ const s=JSON.parse(localStorage.getItem('mayin_save'));
+  if(s&&s.open&&s.started){
+    diff=s.diff; const D=DIFFS[diff]; W2=D.w; H2=D.h; M=D.m;
+    mines=new Set(s.mines); openArr=new Set(s.open); flags=new Set(s.flags);
+    secs=s.secs; started=true;
+    buildBoard(); render(); updHud();
+    document.getElementById('contBtn').style.display='';
+  }
+}catch(e){}
+addEventListener('resize',()=>{ if(W2){ buildBoard(); render(); } });
+</script>

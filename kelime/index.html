@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>KELİME AVI — 5 Harf, 6 Hak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#1c1b22; --ink:#f2eff7; --dim:#8d8a99; --tile:#2c2a35; --border:#44414f;
+    --green:#4fa85a; --yellow:#c9a237; --gray:#3a3843; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;
+    padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));gap:6px}
+  header{width:100%;text-align:center;padding:4px 0;border-bottom:1px solid var(--border)}
+  header h1{font-size:22px;font-weight:900;letter-spacing:.12em}
+  header h1 span{color:var(--green)}
+  #stats{font-size:11px;color:var(--dim);letter-spacing:.08em}
+  #grid{flex:1;display:flex;flex-direction:column;gap:5px;justify-content:center}
+  .row{display:flex;gap:5px}
+  .tile{width:min(15vw,58px);height:min(15vw,58px);border:2px solid var(--border);border-radius:6px;
+    display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;
+    text-transform:uppercase;background:var(--tile);transition:transform .1s}
+  .tile.fill{border-color:var(--dim);animation:pop .12s ease}
+  .tile.g{background:var(--green);border-color:var(--green)}
+  .tile.y{background:var(--yellow);border-color:var(--yellow)}
+  .tile.x{background:var(--gray);border-color:var(--gray);color:var(--dim)}
+  @keyframes pop{50%{transform:scale(1.08)}}
+  .row.shake{animation:shake .4s}
+  @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}
+    60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  #kb{display:flex;flex-direction:column;gap:5px;width:100%;max-width:520px;padding-bottom:4px}
+  .krow{display:flex;gap:4px;justify-content:center}
+  .key{flex:1;max-width:44px;height:52px;border-radius:6px;background:#4a4757;color:var(--ink);
+    font:inherit;font-size:15px;font-weight:800;text-transform:uppercase;border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center}
+  .key.wide{max-width:72px;flex:1.6;font-size:13px}
+  .key:active{background:#5d5a6d}
+  .key.g{background:var(--green)} .key.y{background:var(--yellow)} .key.x{background:#2a2833;color:var(--dim)}
+  #toast{position:fixed;top:14%;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+    font-weight:800;padding:10px 20px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+  #toast.show{opacity:1}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(28,27,34,.95);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h2{font-size:clamp(34px,9vw,60px);font-weight:900}
+  .card .word{font-size:30px;font-weight:900;letter-spacing:.2em;color:var(--green);text-transform:uppercase}
+  .card p{max-width:36ch;color:var(--dim);font-size:14px;line-height:1.5}
+  .btn{font:inherit;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;
+    color:#fff;background:var(--green);border:none;border-radius:999px;padding:13px 34px;cursor:pointer;
+    box-shadow:0 5px 0 #2e6b38}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #2e6b38}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+</style>
+
+<div id="wrap">
+  <header>
+    <h1>KELİME <span>AVI</span></h1>
+    <div id="stats"></div>
+  </header>
+  <div id="grid"></div>
+  <div id="kb"></div>
+</div>
+<div id="toast"></div>
+
+<div class="card hidden" id="endcard">
+  <h2 id="endTitle"></h2>
+  <div class="word" id="endWord"></div>
+  <p id="endMsg"></p>
+  <button class="btn" id="againBtn">Yeni Kelime</button>
+</div>
+
+<script>
+'use strict';
+const WORDS=('kalem kitap masal bahar deniz yürek şeker duvar bulut güneş araba bacak bahçe balık '+
+'bayat bebek beyaz bıçak biber bilet boğaz boyun bugün burun buzul cadde cevap ceket cümle çamur '+
+'çatal çekiç çelik çiçek çilek çoban çocuk çorap çorba dalga damar damla davul dergi derin deste '+
+'dilim dolap dünya düğme düğün ekmek elmas erken eşarp evrak fener fidan fırın gelin gölge görev '+
+'güzel hafta halka hamur hasta havlu hayat hayal hazır helva hesap horoz kabak kablo kahve kalça '+
+'kanat kapak karga kasap kaşık kavun kayak kayık kazak kemer kemik keten kilim kiraz konak koyun '+
+'köpek kumaş kural kurum kutup kuzey lamba limon maden makas manda masal maske melek metal meyve '+
+'misal motor mutlu müzik nabız nehir nokta orman örnek pamuk panda pasta pazar perde pilav radyo '+
+'resim roman sabah sabun salça sanat saray savaş sayfa sazan sebze sedir sehpa sepet serin sınav '+
+'sınıf silgi simit soğan sokak sonuç sütun şahin şapka şarkı şehir tabak tahta takım tarak tarih '+
+'tavan tavuk temel tepsi terzi tünel tütün uzman vagon vatan verim vişne yakıt yatak yazar yemek '+
+'yeşil yosun zaman zemin zurna ceviz cephe çınar çadır kürek turşu yarın yüzük sıcak soğuk temiz '+
+'yavaş büyük küçük hızlı fakir kavga kanun').split(' ').filter(w=>[...w].length===5);
+const ROWS=['ertyuıopğü','asdfghjklşi','zcvbnmöç'];
+const lower=s=>s.toLocaleLowerCase('tr');
+
+let target, guesses, cur, state, stats={played:0,won:0,streak:0,maxStreak:0};
+try{ const s=JSON.parse(localStorage.getItem('kelime_stats')); if(s) stats=s; }catch(e){}
+
+const gridEl=document.getElementById('grid'), kbEl=document.getElementById('kb');
+function buildDom(){
+  gridEl.innerHTML='';
+  for(let r=0;r<6;r++){ const row=document.createElement('div'); row.className='row';
+    for(let c=0;c<5;c++){ const t=document.createElement('div'); t.className='tile'; row.appendChild(t); }
+    gridEl.appendChild(row); }
+  kbEl.innerHTML='';
+  ROWS.forEach((r,ri)=>{
+    const row=document.createElement('div'); row.className='krow';
+    if(ri===2){ const e=mkKey('SİL','wide'); e.dataset.k='back'; row.appendChild(e); }
+    for(const ch of r){ const k=mkKey(ch); k.dataset.k=ch; row.appendChild(k); }
+    if(ri===2){ const e=mkKey('DENE','wide'); e.dataset.k='enter'; row.appendChild(e); }
+    kbEl.appendChild(row);
+  });
+}
+function mkKey(txt,cls){ const b=document.createElement('button');
+  b.className='key'+(cls?' '+cls:''); b.textContent=txt;
+  b.addEventListener('click',()=>press(b.dataset.k)); return b; }
+
+function updStats(){
+  document.getElementById('stats').textContent=
+    `oyun ${stats.played} · kazanma %${stats.played?Math.round(stats.won/stats.played*100):0} · seri ${stats.streak} (rekor ${stats.maxStreak})`;
+}
+function save(){
+  try{ localStorage.setItem('kelime_save',JSON.stringify({target,guesses,state})); }catch(e){}
+}
+function saveStats(){ try{ localStorage.setItem('kelime_stats',JSON.stringify(stats)); }catch(e){} }
+
+function newGame(){
+  target=WORDS[Math.floor(Math.random()*WORDS.length)];
+  guesses=[]; cur=''; state='play';
+  buildDom(); render(); save(); updStats();
+  document.getElementById('endcard').classList.add('hidden');
+}
+function evalGuess(g){
+  const res=Array(5).fill('x'), t=[...target], used=Array(5).fill(false);
+  for(let i=0;i<5;i++) if(g[i]===t[i]){ res[i]='g'; used[i]=true; }
+  for(let i=0;i<5;i++){ if(res[i]==='g')continue;
+    const j=t.findIndex((ch,k)=>!used[k]&&ch===g[i]);
+    if(j>=0){ res[i]='y'; used[j]=true; } }
+  return res;
+}
+function render(){
+  const rows=gridEl.children;
+  guesses.forEach((g,r)=>{
+    const res=evalGuess(g.w);
+    [...g.w].forEach((ch,c)=>{ const t=rows[r].children[c];
+      t.textContent=ch; t.className='tile '+res[c]; });
+  });
+  if(state==='play'&&guesses.length<6){
+    const row=rows[guesses.length];
+    for(let c=0;c<5;c++){ const t=row.children[c];
+      t.textContent=[...cur][c]||''; t.className='tile'+([...cur][c]?' fill':''); }
+  }
+  // klavye renkleri
+  const best={};
+  for(const g of guesses){ const res=evalGuess(g.w);
+    [...g.w].forEach((ch,i)=>{ const rank={x:1,y:2,g:3};
+      if(!best[ch]||rank[res[i]]>rank[best[ch]]) best[ch]=res[i]; }); }
+  for(const k of kbEl.querySelectorAll('.key')){
+    const ch=k.dataset.k;
+    if(ch&&ch.length===1){ k.className='key'+(best[ch]?' '+best[ch]:''); }
+  }
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1400);
+}
+function press(k){
+  if(state!=='play') return;
+  if(k==='back'){ cur=cur.slice(0,-1); render(); return; }
+  if(k==='enter'){
+    if([...cur].length<5){ toast('5 harf gerekli');
+      gridEl.children[guesses.length].classList.add('shake');
+      setTimeout(()=>gridEl.children[guesses.length].classList.remove('shake'),450);
+      return; }
+    guesses.push({w:cur});
+    const win=cur===target;
+    cur='';
+    try{ navigator.vibrate&&navigator.vibrate(win?[30,50,30]:15); }catch(e){}
+    render(); save();
+    if(win){ finish(true); }
+    else if(guesses.length>=6){ finish(false); }
+    return;
+  }
+  if([...cur].length<5){ cur+=k; render(); }
+}
+function finish(won){
+  state='over';
+  stats.played++;
+  if(won){ stats.won++; stats.streak++; stats.maxStreak=Math.max(stats.maxStreak,stats.streak); }
+  else stats.streak=0;
+  saveStats(); updStats();
+  try{ localStorage.removeItem('kelime_save'); }catch(e){}
+  const praise=['DAHİCE!','MÜTHİŞ!','HARİKA!','GÜZEL!','İYİ İŞ!','UCUZ KURTARDIN!'];
+  document.getElementById('endTitle').textContent= won?praise[guesses.length-1]:'Olmadı 😅';
+  document.getElementById('endWord').textContent=target;
+  document.getElementById('endMsg').textContent= won
+    ? guesses.length+'. denemede buldun. Seri: '+stats.streak+' 🔥'
+    : 'Doğru kelime buydu. Seri sıfırlandı — yenisiyle telafi et!';
+  setTimeout(()=>document.getElementById('endcard').classList.remove('hidden'),600);
+}
+addEventListener('keydown',e=>{
+  if(e.key==='Enter'){ press('enter'); return; }
+  if(e.key==='Backspace'){ press('back'); return; }
+  const ch=lower(e.key);
+  if(ch.length===1&&'abcçdefgğhıijklmnoöprsştuüvyz'.includes(ch)) press(ch);
+});
+document.getElementById('againBtn').addEventListener('click',newGame);
+
+/* kayıttan devam */
+let resumed=false;
+try{ const s=JSON.parse(localStorage.getItem('kelime_save'));
+  if(s&&s.state==='play'&&s.target){ target=s.target; guesses=s.guesses||[]; cur=''; state='play';
+    resumed=true; } }catch(e){}
+buildDom();
+if(resumed){ render(); updStats(); } else newGame();
+</script>

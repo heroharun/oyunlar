@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>SUDOKU — Günlük Zihin Jimnastiği</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --paper:#faf6ef; --line:#2c2620; --soft:#d8cfc0; --ink:#2c2620; --dim:#9a8f7d;
+    --accent:#3a6ea5; --sel:#dce9f7; --same:#eef3e6; --err:#c0392b; --note:#8a94a6; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--paper);color:var(--ink);
+    font-family:"Avenir Next","Georgia",system-ui,serif;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
+    padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
+  #hud{width:min(94vw,440px);display:flex;justify-content:space-between;align-items:baseline}
+  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:600}
+  .value{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+  #grid{display:grid;grid-template-columns:repeat(9,1fr);
+    width:min(94vw,440px);aspect-ratio:1;border:2.5px solid var(--line);background:var(--paper)}
+  .cell{display:flex;align-items:center;justify-content:center;position:relative;
+    border-right:1px solid var(--soft);border-bottom:1px solid var(--soft);
+    font-size:clamp(16px,5vw,26px);font-weight:600;cursor:pointer}
+  .cell:nth-child(3n){border-right:1.8px solid var(--line)}
+  .cell:nth-child(9n){border-right:none}
+  .cell.hr{border-bottom:1.8px solid var(--line)}
+  .cell.given{font-weight:800}
+  .cell.user{color:var(--accent)}
+  .cell.sel{background:var(--sel)}
+  .cell.same{background:var(--same)}
+  .cell.err{color:var(--err)}
+  .notes{position:absolute;inset:1px;display:grid;grid-template-columns:repeat(3,1fr);
+    font-size:clamp(7px,1.9vw,10px);color:var(--note);font-weight:600;line-height:1;pointer-events:none}
+  .notes span{display:flex;align-items:center;justify-content:center}
+  #pad{width:min(94vw,440px);display:grid;grid-template-columns:repeat(9,1fr);gap:5px}
+  .num{aspect-ratio:.8;border-radius:10px;border:1.5px solid var(--soft);background:#fff;
+    font:inherit;font-size:clamp(16px,5vw,24px);font-weight:700;color:var(--ink);cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+  .num small{font-size:9px;color:var(--dim);font-weight:600}
+  .num:active{background:var(--sel)}
+  .num.done{opacity:.25;pointer-events:none}
+  #tools{width:min(94vw,440px);display:flex;gap:6px}
+  .tool{flex:1;padding:11px 4px;border-radius:10px;border:1.5px solid var(--soft);background:#fff;
+    font:inherit;font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--ink);cursor:pointer}
+  .tool:active{background:var(--sel)}
+  .tool.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(250,246,239,.96);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(38px,10vw,72px);font-weight:900;color:var(--ink);letter-spacing:.02em}
+  .card h1 em{font-style:normal;color:var(--accent)}
+  .card p{max-width:36ch;color:var(--dim);font-size:14px;line-height:1.5}
+  .btn{pointer-events:auto;font:inherit;font-weight:700;font-size:15px;letter-spacing:.06em;
+    color:#fff;background:var(--accent);border:none;border-radius:999px;padding:13px 34px;cursor:pointer;
+    box-shadow:0 4px 0 #274b70}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #274b70}
+  .btn.soft{background:#fff;color:var(--ink);border:1.5px solid var(--soft);box-shadow:0 4px 0 var(--soft)}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  .diffrow{display:flex;gap:8px}
+</style>
+
+<div id="wrap">
+  <div id="hud">
+    <div><span class="label">Zorluk </span><span class="value" id="diffEl">—</span></div>
+    <div><span class="label">Hata </span><span class="value" id="errEl">0/3</span></div>
+    <div><span class="label">Süre </span><span class="value" id="timeEl">0:00</span></div>
+  </div>
+  <div id="grid"></div>
+  <div id="pad"></div>
+  <div id="tools">
+    <button class="tool" id="noteBtn">✏️ Not</button>
+    <button class="tool" id="eraseBtn">⌫ Sil</button>
+    <button class="tool" id="hintBtn">💡 İpucu (3)</button>
+    <button class="tool" id="newBtn">✚ Yeni</button>
+  </div>
+</div>
+
+<div class="card" id="intro">
+  <h1>SUDO<em>KU</em></h1>
+  <p>Her satır, sütun ve 3×3 kutuda 1–9 birer kez. Oyun her hamlede kaydedilir — kaldığın yerden devam edersin.</p>
+  <button class="btn" id="contBtn" style="display:none">Devam Et</button>
+  <div class="diffrow">
+    <button class="btn soft" data-d="0">Kolay</button>
+    <button class="btn soft" data-d="1">Orta</button>
+    <button class="btn soft" data-d="2">Zor</button>
+  </div>
+</div>
+
+<div class="card hidden" id="endcard">
+  <h1 id="endTitle">Bravo! 🎉</h1>
+  <p id="endMsg"></p>
+  <div class="diffrow">
+    <button class="btn soft" data-d="0">Kolay</button>
+    <button class="btn soft" data-d="1">Orta</button>
+    <button class="btn soft" data-d="2">Zor</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const DIFFS=[{name:'Kolay',holes:38},{name:'Orta',holes:46},{name:'Zor',holes:52}];
+let sol, board, given, notes, sel=-1, diff=0, errs=0, hints=3, noteMode=false, secs=0, timer=null, state='intro';
+
+/* ── üretici ── */
+function shuffled(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function genFull(){
+  const g=Array(81).fill(0);
+  function ok(i,v){ const r=Math.floor(i/9),c=i%9;
+    for(let k=0;k<9;k++){ if(g[r*9+k]===v||g[k*9+c]===v) return false; }
+    const br=r-r%3, bc=c-c%3;
+    for(let dr=0;dr<3;dr++)for(let dc=0;dc<3;dc++) if(g[(br+dr)*9+bc+dc]===v) return false;
+    return true; }
+  function fill(i){ if(i===81) return true;
+    for(const v of shuffled([1,2,3,4,5,6,7,8,9])){
+      if(ok(i,v)){ g[i]=v; if(fill(i+1)) return true; g[i]=0; } }
+    return false; }
+  fill(0); return g;
+}
+function countSol(g,limit=2){
+  let n=0;
+  function ok(i,v){ const r=Math.floor(i/9),c=i%9;
+    for(let k=0;k<9;k++){ if(g[r*9+k]===v||g[k*9+c]===v) return false; }
+    const br=r-r%3,bc=c-c%3;
+    for(let dr=0;dr<3;dr++)for(let dc=0;dc<3;dc++) if(g[(br+dr)*9+bc+dc]===v) return false;
+    return true; }
+  function go(){ const i=g.indexOf(0);
+    if(i<0){ n++; return; }
+    for(let v=1;v<=9&&n<limit;v++) if(ok(i,v)){ g[i]=v; go(); g[i]=0; } }
+  go(); return n;
+}
+function genPuzzle(holes){
+  sol=genFull();
+  const p=[...sol];
+  for(const i of shuffled([...Array(81).keys()])){
+    if(81-p.filter(Boolean).length>=holes) break;
+    const bak=p[i]; p[i]=0;
+    const t=[...p];
+    if(countSol(t)>1) p[i]=bak;
+  }
+  return p;
+}
+
+/* ── kayıt ── */
+function save(){
+  try{ localStorage.setItem('sudoku_save',JSON.stringify({sol,board,given,notes,diff,errs,hints,secs})); }catch(e){}
+}
+function clearSave(){ try{ localStorage.removeItem('sudoku_save'); }catch(e){} }
+function loadSave(){
+  try{ const s=JSON.parse(localStorage.getItem('sudoku_save'));
+    if(!s||!s.board) return false;
+    ({sol,board,given,notes,diff,errs,hints,secs}=s); return true;
+  }catch(e){ return false; }
+}
+
+/* ── arayüz ── */
+const gridEl=document.getElementById('grid'), padEl=document.getElementById('pad');
+function buildDom(){
+  gridEl.innerHTML='';
+  for(let i=0;i<81;i++){
+    const d=document.createElement('div'); d.className='cell'; d.dataset.i=i;
+    if(Math.floor(i/9)%3===2&&Math.floor(i/9)!==8) d.classList.add('hr');
+    d.addEventListener('click',()=>{ sel=i; render(); });
+    gridEl.appendChild(d);
+  }
+  padEl.innerHTML='';
+  for(let v=1;v<=9;v++){
+    const b=document.createElement('button'); b.className='num'; b.dataset.v=v;
+    b.innerHTML=v+'<small></small>';
+    b.addEventListener('click',()=>place(v));
+    padEl.appendChild(b);
+  }
+}
+function render(){
+  const cells=gridEl.children;
+  const selVal= sel>=0?board[sel]:0;
+  const counts=Array(10).fill(0); board.forEach(v=>counts[v]++);
+  for(let i=0;i<81;i++){
+    const d=cells[i], v=board[i];
+    d.classList.toggle('sel',i===sel);
+    d.classList.toggle('given',given[i]);
+    d.classList.toggle('user',!given[i]&&v>0);
+    d.classList.toggle('err',v>0&&v!==sol[i]);
+    d.classList.toggle('same',v>0&&v===selVal&&i!==sel);
+    if(v>0){ d.textContent=v; }
+    else if(notes[i]&&notes[i].length){
+      d.textContent='';
+      const n=document.createElement('div'); n.className='notes';
+      for(let k=1;k<=9;k++){ const s=document.createElement('span');
+        s.textContent=notes[i].includes(k)?k:''; n.appendChild(s); }
+      d.appendChild(n);
+    } else d.textContent='';
+  }
+  for(const b of padEl.children) b.classList.toggle('done',counts[+b.dataset.v]>=9);
+  document.getElementById('diffEl').textContent=DIFFS[diff].name;
+  document.getElementById('errEl').textContent=errs+'/3';
+  document.getElementById('hintBtn').textContent='💡 İpucu ('+hints+')';
+  document.getElementById('noteBtn').classList.toggle('on',noteMode);
+}
+function fmtTime(s){ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function startTimer(){ clearInterval(timer);
+  timer=setInterval(()=>{ if(state==='play'&&!document.hidden){ secs++;
+    document.getElementById('timeEl').textContent=fmtTime(secs);
+    if(secs%10===0) save(); } },1000); }
+
+function place(v){
+  if(state!=='play'||sel<0||given[sel]) return;
+  if(noteMode){
+    notes[sel]=notes[sel]||[];
+    const ix=notes[sel].indexOf(v);
+    if(ix>=0) notes[sel].splice(ix,1); else notes[sel].push(v);
+    board[sel]=0;
+  } else {
+    if(board[sel]===v){ board[sel]=0; }
+    else{
+      board[sel]=v; notes[sel]=[];
+      if(v!==sol[sel]){
+        errs++;
+        try{ navigator.vibrate&&navigator.vibrate(60); }catch(e){}
+        if(errs>=3){ save(); render(); lose(); return; }
+      } else {
+        // aynı satır/sütun/kutu notlarından düşür
+        const r=Math.floor(sel/9),c=sel%9;
+        for(let i=0;i<81;i++){
+          if(notes[i]&&(Math.floor(i/9)===r||i%9===c||
+            (Math.floor(i/27)===Math.floor(sel/27)&&Math.floor((i%9)/3)===Math.floor(c/3)))){
+            const ix=notes[i].indexOf(v); if(ix>=0) notes[i].splice(ix,1);
+          }
+        }
+      }
+    }
+  }
+  save(); render();
+  if(board.every((x,i)=>x===sol[i])) win();
+}
+document.getElementById('noteBtn').addEventListener('click',()=>{ noteMode=!noteMode; render(); });
+document.getElementById('eraseBtn').addEventListener('click',()=>{
+  if(sel>=0&&!given[sel]){ board[sel]=0; notes[sel]=[]; save(); render(); } });
+document.getElementById('hintBtn').addEventListener('click',()=>{
+  if(state!=='play'||hints<=0) return;
+  let empt=[...Array(81).keys()].filter(i=>board[i]!==sol[i]);
+  if(!empt.length) return;
+  const i=empt[Math.floor(Math.random()*empt.length)];
+  board[i]=sol[i]; notes[i]=[]; hints--; sel=i;
+  save(); render();
+  if(board.every((x,j)=>x===sol[j])) win();
+});
+document.getElementById('newBtn').addEventListener('click',()=>{
+  document.getElementById('intro').classList.remove('hidden');
+  document.getElementById('contBtn').style.display= state==='play'?'':'none';
+  state='intro';
+});
+addEventListener('keydown',e=>{
+  if(state!=='play') return;
+  if(e.key>='1'&&e.key<='9') place(+e.key);
+  if(e.key==='Backspace'||e.key==='Delete'){ if(sel>=0&&!given[sel]){ board[sel]=0; notes[sel]=[]; save(); render(); } }
+  if(sel>=0){
+    if(e.key==='ArrowLeft'&&sel%9>0) sel--;
+    if(e.key==='ArrowRight'&&sel%9<8) sel++;
+    if(e.key==='ArrowUp'&&sel>8) sel-=9;
+    if(e.key==='ArrowDown'&&sel<72) sel+=9;
+    render();
+  }
+});
+
+function newGame(d){
+  diff=d; errs=0; hints=3; secs=0; sel=-1; noteMode=false;
+  board=genPuzzle(DIFFS[d].holes);
+  given=board.map(v=>v>0);
+  notes=Array(81).fill(null);
+  state='play';
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('endcard').classList.add('hidden');
+  document.getElementById('timeEl').textContent='0:00';
+  save(); render(); startTimer();
+}
+function win(){
+  state='over'; clearSave(); clearInterval(timer);
+  document.getElementById('endTitle').textContent='Bravo! 🎉';
+  document.getElementById('endMsg').textContent=DIFFS[diff].name+' bulmacayı '+fmtTime(secs)+
+    "'de çözdün"+(errs===0?' — hem de hatasız! 🏆':' ('+errs+' hata).')+' Bir tane daha?';
+  document.getElementById('endcard').classList.remove('hidden');
+}
+function lose(){
+  state='over'; clearInterval(timer);
+  document.getElementById('endTitle').textContent='3 Hata 😅';
+  document.getElementById('endMsg').textContent='Bu bulmaca bu kadarmış. Yenisinde görüşürüz — istersen bir kolay seviye ile ısın.';
+  document.getElementById('endcard').classList.remove('hidden');
+  clearSave();
+}
+for(const b of document.querySelectorAll('[data-d]'))
+  b.addEventListener('click',()=>newGame(+b.dataset.d));
+document.getElementById('contBtn').addEventListener('click',()=>{
+  state='play';
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('timeEl').textContent=fmtTime(secs);
+  render(); startTimer();
+});
+
+buildDom();
+if(loadSave()){ document.getElementById('contBtn').style.display=''; render(); }
+</script>

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>2048 — Birleştir, Büyüt</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#faf3e8; --board:#b5a48f; --empty:#c9bba6; --ink:#6b5d4f; --lite:#f9f4ec; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#faf3e8;color:#6b5d4f;
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
+  #hud{width:min(92vw,440px);display:flex;justify-content:space-between;align-items:center}
+  h1{font-size:34px;font-weight:900;color:#8a6d4e}
+  .scores{display:flex;gap:8px}
+  .sbox{background:#b5a48f;color:#fff;border-radius:10px;padding:6px 14px;text-align:center;min-width:70px}
+  .sbox .label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;opacity:.8;font-weight:700}
+  .sbox .value{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+  #grid{width:min(92vw,440px);aspect-ratio:1;background:#b5a48f;border-radius:14px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px;position:relative}
+  .slot{background:#c9bba6;border-radius:8px}
+  .tile{position:absolute;display:flex;align-items:center;justify-content:center;
+    border-radius:8px;font-weight:900;transition:left .12s ease,top .12s ease;will-change:left,top}
+  .tile.new{animation:popin .18s ease}
+  .tile.merged{animation:pulse .2s ease}
+  @keyframes popin{0%{transform:scale(.4)}100%{transform:scale(1)}}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .hint{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a8977f}
+  #newBtn{font:inherit;font-weight:800;font-size:13px;letter-spacing:.06em;color:#fff;
+    background:#8a6d4e;border:none;border-radius:999px;padding:10px 20px;cursor:pointer}
+  #newBtn:active{transform:translateY(2px)}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(250,243,232,.94);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h2{font-size:clamp(38px,10vw,72px);font-weight:900;color:#8a6d4e}
+  .card p{max-width:34ch;color:#a8977f;font-size:15px;line-height:1.5}
+  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
+    color:#fff;background:#e8963e;border:none;border-radius:999px;padding:14px 36px;cursor:pointer;
+    box-shadow:0 5px 0 #a8641e}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a8641e}
+  .btn:focus-visible{outline:3px solid #6b5d4f;outline-offset:3px}
+</style>
+
+<div id="wrap">
+  <div id="hud">
+    <h1>2048</h1>
+    <div class="scores">
+      <div class="sbox"><div class="label">Skor</div><div class="value" id="scoreEl">0</div></div>
+      <div class="sbox"><div class="label">Rekor</div><div class="value" id="bestEl">0</div></div>
+    </div>
+  </div>
+  <div id="grid"></div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <span class="hint" id="ctlHint"></span>
+    <button id="newBtn">✚ Yeni Oyun</button>
+  </div>
+</div>
+
+<div class="card hidden" id="endcard">
+  <h2 id="endTitle"></h2>
+  <p id="endMsg"></p>
+  <button class="btn" id="retryBtn">Yeni Oyun</button>
+  <button class="btn" id="goOnBtn" style="background:#8a6d4e;box-shadow:0 5px 0 #5f4a33;display:none">Devam Et</button>
+</div>
+
+<script>
+'use strict';
+const gridEl=document.getElementById('grid');
+let cells=[], score=0, best=0, over=false, won=false, keptGoing=false, tileId=0, tiles={};
+try{ best=+localStorage.getItem('g2048_best')||0; }catch(e){}
+const IS_TOUCH=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
+document.getElementById('ctlHint').textContent=IS_TOUCH?'kaydırarak oyna':'ok tuşlarıyla oyna';
+
+const COLS_BG={2:'#efe6d9',4:'#ece0c8',8:'#f2b179',16:'#f59563',32:'#f67c5f',64:'#f65e3b',
+  128:'#edcf72',256:'#edcc61',512:'#edc850',1024:'#edc53f',2048:'#edc22e'};
+const COLS_FG={2:'#6b5d4f',4:'#6b5d4f'};
+
+for(let i=0;i<16;i++){ const s=document.createElement('div'); s.className='slot'; gridEl.appendChild(s); }
+
+function slotPos(i){
+  const g=gridEl.getBoundingClientRect();
+  const size=(g.width-10*2-10*3)/4;
+  const x=10+(i%4)*(size+10), y=10+Math.floor(i/4)*(size+10);
+  return {x,y,size};
+}
+function makeTileEl(v,i,anim){
+  const {x,y,size}=slotPos(i);
+  const el=document.createElement('div');
+  el.className='tile'+(anim?' '+anim:'');
+  el.style.cssText=`left:${x}px;top:${y}px;width:${size}px;height:${size}px;
+    background:${COLS_BG[v]||'#3c3a32'};color:${COLS_FG[v]||'#f9f4ec'};
+    font-size:${v<128?size*0.42:v<1024?size*0.34:size*0.27}px`;
+  el.textContent=v;
+  gridEl.appendChild(el);
+  return el;
+}
+function redrawAll(){
+  for(const k in tiles) tiles[k].el.remove();
+  tiles={};
+  cells.forEach((v,i)=>{ if(v){ const id=++tileId;
+    tiles[id]={v,i,el:makeTileEl(v,i)}; } });
+}
+addEventListener('resize',redrawAll);
+
+function updHud(){
+  document.getElementById('scoreEl').textContent=score;
+  document.getElementById('bestEl').textContent=best;
+}
+function save(){
+  try{ localStorage.setItem('g2048_save',JSON.stringify({cells,score,won,keptGoing})); }catch(e){}
+}
+function addRandom(){
+  const empty=cells.map((v,i)=>v?null:i).filter(i=>i!==null);
+  if(!empty.length) return;
+  const i=empty[Math.floor(Math.random()*empty.length)];
+  cells[i]=Math.random()<0.9?2:4;
+  const id=++tileId; tiles[id]={v:cells[i],i,el:makeTileEl(cells[i],i,'new')};
+}
+function reset(){
+  cells=Array(16).fill(0); score=0; over=false; won=false; keptGoing=false;
+  for(const k in tiles) tiles[k].el.remove(); tiles={};
+  addRandom(); addRandom(); updHud(); save();
+  document.getElementById('endcard').classList.add('hidden');
+}
+function lineIdx(dir,line,k){
+  // dir: 0 sol,1 sağ,2 yukarı,3 aşağı → satır/sütun taraması
+  if(dir===0) return line*4+k;
+  if(dir===1) return line*4+(3-k);
+  if(dir===2) return k*4+line;
+  return (3-k)*4+line;
+}
+function move(dir){
+  if(over) return;
+  let moved=false, gained=0;
+  const mergedAt=new Set();
+  for(let line=0;line<4;line++){
+    const vals=[];
+    for(let k=0;k<4;k++){ const v=cells[lineIdx(dir,line,k)]; if(v) vals.push(v); }
+    const out=[];
+    for(let k=0;k<vals.length;k++){
+      if(k<vals.length-1&&vals[k]===vals[k+1]){
+        out.push(vals[k]*2); gained+=vals[k]*2;
+        if(vals[k]*2===2048) won=true;
+        mergedAt.add(lineIdx(dir,line,out.length-1)); k++;
+      } else out.push(vals[k]);
+    }
+    for(let k=0;k<4;k++){
+      const idx=lineIdx(dir,line,k), nv=out[k]||0;
+      if(cells[idx]!==nv) moved=true;
+      cells[idx]=nv;
+    }
+  }
+  if(!moved) return;
+  score+=gained;
+  if(score>best){ best=score; try{localStorage.setItem('g2048_best',best);}catch(e){} }
+  redrawAll();
+  for(const i of mergedAt){
+    for(const k in tiles) if(tiles[k].i===i){ tiles[k].el.classList.add('merged'); }
+  }
+  addRandom(); updHud(); save();
+  try{ if(gained>0&&navigator.vibrate)navigator.vibrate(8); }catch(e){}
+  if(won&&!keptGoing){ showEnd(true); return; }
+  // hamle kaldı mı
+  if(cells.every(v=>v)){
+    let can=false;
+    for(let i=0;i<16;i++){
+      if(i%4<3&&cells[i]===cells[i+1]) can=true;
+      if(i<12&&cells[i]===cells[i+4]) can=true;
+    }
+    if(!can){ over=true; showEnd(false); }
+  }
+}
+function showEnd(win){
+  const t=document.getElementById('endTitle'), m=document.getElementById('endMsg'),
+        go=document.getElementById('goOnBtn');
+  if(win){ t.textContent='2048! 🎉'; m.textContent='Efsane kareye ulaştın. Devam edip 4096 dener misin?';
+    go.style.display=''; }
+  else{ t.textContent='Hamle Kalmadı'; m.textContent='Skor: '+score+' · Rekor: '+best+'. Köşe stratejisini dene: en büyük taşı bir köşede tut.';
+    go.style.display='none'; try{localStorage.removeItem('g2048_save');}catch(e){} }
+  document.getElementById('endcard').classList.remove('hidden');
+}
+addEventListener('keydown',e=>{
+  const map={ArrowLeft:0,ArrowRight:1,ArrowUp:2,ArrowDown:3};
+  if(e.code in map){ move(map[e.code]); e.preventDefault(); }
+});
+let tX=null,tY=null;
+addEventListener('touchstart',e=>{ if(e.target.closest('.card,button'))return;
+  const t=e.changedTouches[0]; tX=t.clientX; tY=t.clientY; },{passive:true});
+addEventListener('touchend',e=>{
+  if(tX===null) return;
+  const t=e.changedTouches[0], dx=t.clientX-tX, dy=t.clientY-tY;
+  tX=tY=null;
+  if(Math.abs(dx)<28&&Math.abs(dy)<28) return;
+  if(Math.abs(dx)>Math.abs(dy)) move(dx>0?1:0); else move(dy>0?3:2);
+});
+function tap(el,fn){ el._fn=fn;
+  const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
+  el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
+tap(document.getElementById('newBtn'),reset);
+tap(document.getElementById('retryBtn'),reset);
+tap(document.getElementById('goOnBtn'),()=>{ keptGoing=true; save();
+  document.getElementById('endcard').classList.add('hidden'); });
+
+/* kayıttan devam */
+let loaded=false;
+try{ const s=JSON.parse(localStorage.getItem('g2048_save'));
+  if(s&&s.cells&&s.cells.some(v=>v)){ ({cells,score,won,keptGoing}=s); loaded=true; } }catch(e){}
+if(loaded){ redrawAll(); updHud(); } else reset();
+updHud();
+</script>
