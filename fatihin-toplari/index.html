@@ -274,6 +274,8 @@ function physics(){
   particles=particles.filter(p=>p.life>0);
   for(const f of floaters){ f.y-=1.1; f.life-=0.02; }
   floaters=floaters.filter(f=>f.life>0);
+  /* sur, sen nişan alırken de yıkılmış olabilir (devrilme/serpinti) — takılma olmasın */
+  if(state==='aim'&&blocks.length&&blocks.every(b=>b.dead)){ state='settle'; settleT=5; }
   if(state==='settle'){
     settleT--;
     const moving=blocks.some(b=>!b.dead&&!b.asleep&&(Math.abs(b.vx)>0.4||Math.abs(b.vy)>0.6));

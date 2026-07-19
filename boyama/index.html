@@ -40,8 +40,9 @@
   <div id="svgbox"></div>
   <div id="palette"></div>
   <div id="tools">
+    <button class="tool" id="newPicBtn" style="background:#ffe8c8;border-color:#e8b45f">🎲 Yeni Resim</button>
     <button class="tool" id="eraseBtn">🧽 Sil</button>
-    <button class="tool" id="clearBtn">🗑️ Hepsini Temizle</button>
+    <button class="tool" id="clearBtn">🗑️ Temizle</button>
   </div>
 </div>
 
@@ -103,6 +104,83 @@ const PICS={
 const PALETTE=['#ff5f5f','#ff9f43','#ffd93d','#7bc47f','#4ab8ff','#8c5fff','#ff8fc0',
   '#8a5a3a','#4a4a5a','#ffffff','#63e6be','#f78fb3'];
 
+/* ── SONSUZ RESİM ÜRETİCİ: 4 şablon × binlerce tohum ── */
+function RNG(s){ return ()=>{ s=(s*9301+49297)%233280; return s/233280; }; }
+const GEN={
+  mandala(r){
+    let p=''; const segs=6+Math.floor(r()*6);
+    const rings=[26,56,88,120];
+    for(let ring=0;ring<3;ring++){
+      const r0=rings[ring]+4, r1=rings[ring+1]-2;
+      for(let k=0;k<segs;k++){
+        const a0=(k/segs)*6.2832-1.5708, a1=((k+0.9)/segs)*6.2832-1.5708;
+        const pts=[[a0,r0],[a0,r1],[a1,r1],[a1,r0]]
+          .map(([a,rr])=>(150+Math.cos(a)*rr).toFixed(1)+','+(150+Math.sin(a)*rr).toFixed(1));
+        p+=`<polygon class="r" id="m${ring}_${k}" points="${pts.join(' ')}"/>`;
+      }
+    }
+    p+=`<circle class="r" id="mc" cx="150" cy="150" r="20"/>`;
+    return p;
+  },
+  roket(r){
+    const fins=r()<0.5, win=2+Math.floor(r()*3);
+    let p=`<path class="r" id="rgov" d="M150,30 Q190,90 185,190 L115,190 Q110,90 150,30Z"/>
+      <path class="r" id="rburun" d="M150,30 Q170,55 175,80 L125,80 Q130,55 150,30Z"/>
+      <polygon class="r" id="rk1" points="115,140 78,${200+r()*20|0} 115,190"/>
+      <polygon class="r" id="rk2" points="185,140 222,${200+r()*20|0} 185,190"/>
+      <path class="r" id="ralev" d="M132,190 Q150,${240+r()*30|0} 168,190 Q158,205 150,208 Q142,205 132,190Z"/>`;
+    for(let i=0;i<win;i++) p+=`<circle class="r" id="rw${i}" cx="150" cy="${105+i*32}" r="13"/>`;
+    if(fins) p+=`<rect class="r" id="rbant" x="115" y="178" width="70" height="12" rx="4"/>`;
+    for(let i=0;i<3;i++) p+=`<circle class="r" id="ryild${i}" cx="${40+r()*60|0}" cy="${40+r()*80|0}" r="${6+r()*5|0}"/>
+      <circle class="r" id="ryild${i+3}" cx="${220+r()*50|0}" cy="${50+r()*120|0}" r="${5+r()*6|0}"/>`;
+    return p;
+  },
+  akvaryum(r){
+    let p='';
+    const n=3+Math.floor(r()*3);
+    for(let i=0;i<n;i++){
+      const fx=60+r()*170, fy=55+r()*160, fs=0.55+r()*0.7, dir=r()<0.5?1:-1;
+      p+=`<g transform="translate(${fx.toFixed(0)},${fy.toFixed(0)}) scale(${(fs*dir).toFixed(2)},${fs.toFixed(2)})">
+        <ellipse class="r" id="fb${i}" cx="0" cy="0" rx="30" ry="18"/>
+        <polygon class="r" id="ft${i}" points="26,0 48,-15 48,15"/>
+        <polygon class="r" id="fy${i}" points="-4,-14 6,-30 12,-14"/>
+        <circle class="r" id="fg${i}" cx="-16" cy="-4" r="4.5"/></g>`;
+    }
+    for(let i=0;i<4;i++) p+=`<circle class="r" id="bk${i}" cx="${30+r()*240|0}" cy="${25+r()*60|0}" r="${4+r()*6|0}"/>`;
+    for(let i=0;i<3;i++){ const sx=30+r()*240;
+      p+=`<path class="r" id="sw${i}" d="M${sx},280 Q${sx-14},240 ${sx},205 Q${sx+14},240 ${sx},280Z"/>`; }
+    p+=`<path class="r" id="kum" d="M10,268 Q80,${250+r()*14|0} 150,265 Q220,${252+r()*14|0} 290,268 L290,295 L10,295Z"/>`;
+    return p;
+  },
+  bahce(r){
+    let p=`<circle class="r" id="gun" cx="${40+r()*40|0}" cy="45" r="24"/>
+      <ellipse class="r" id="bulut" cx="${190+r()*60|0}" cy="50" rx="36" ry="15"/>
+      <path class="r" id="cimen" d="M0,255 Q75,${238+r()*12|0} 150,250 Q225,${240+r()*12|0} 300,252 L300,300 L0,300Z"/>`;
+    const n=3+Math.floor(r()*3);
+    for(let i=0;i<n;i++){
+      const fx=45+i*(210/(n-1))+(r()*20-10), fy=170+r()*40, pet=4+Math.floor(r()*3), pr=13+r()*6;
+      p+=`<rect class="r" id="csap${i}" x="${(fx-3).toFixed(0)}" y="${fy.toFixed(0)}" width="6" height="${255-fy|0}" rx="3"/>`;
+      for(let k=0;k<pet;k++){ const a=(k/pet)*6.2832;
+        p+=`<circle class="r" id="cp${i}_${k}" cx="${(fx+Math.cos(a)*pr*1.35).toFixed(0)}" cy="${(fy-8+Math.sin(a)*pr*1.35).toFixed(0)}" r="${pr.toFixed(0)}"/>`; }
+      p+=`<circle class="r" id="co${i}" cx="${fx.toFixed(0)}" cy="${(fy-8).toFixed(0)}" r="${(pr*0.85).toFixed(0)}"/>`;
+    }
+    return p;
+  },
+};
+const GEN_ICON={mandala:'🌀',roket:'🚀',akvaryum:'🐟',bahce:'🌼'};
+function makeGen(tpl,seed){
+  const id='gen_'+tpl+'_'+seed;
+  PICS[id]={icon:GEN_ICON[tpl],vb:'0 0 300 300',parts:GEN[tpl](RNG(seed))};
+  return id;
+}
+function newRandomPic(){
+  const keys=Object.keys(GEN);
+  const tpl=keys[Math.floor(Math.random()*keys.length)];
+  const seed=1+Math.floor(Math.random()*99999);
+  try{ localStorage.setItem('boyama_lastgen',JSON.stringify({tpl,seed})); }catch(e){}
+  loadPic(makeGen(tpl,seed));
+  pop();
+}
 let curPic='kedi', curColor=PALETTE[0], erase=false;
 let saved={};
 try{ saved=JSON.parse(localStorage.getItem('boyama_save'))||{}; }catch(e){}
@@ -126,6 +204,9 @@ function loadPic(name){
   }
   for(const b of document.querySelectorAll('.pickbtn'))
     b.classList.toggle('on',b.dataset.p===name);
+  /* kayıt şişmesin: en fazla 40 resmin boyası saklansın */
+  const keys=Object.keys(saved);
+  if(keys.length>40){ for(const k of keys.slice(0,keys.length-40)) delete saved[k]; save(); }
 }
 let AC=null;
 function pop(){ try{
@@ -166,5 +247,10 @@ document.getElementById('eraseBtn').addEventListener('click',()=>{
 document.getElementById('clearBtn').addEventListener('click',()=>{
   delete saved[curPic]; save(); loadPic(curPic);
 });
-loadPic('kedi');
+document.getElementById('newPicBtn').addEventListener('click',newRandomPic);
+/* son rastgele resmi hatırla */
+let opened=false;
+try{ const lg=JSON.parse(localStorage.getItem('boyama_lastgen'));
+  if(lg&&GEN[lg.tpl]){ loadPic(makeGen(lg.tpl,lg.seed)); opened=true; } }catch(e){}
+if(!opened) loadPic('kedi');
 </script>

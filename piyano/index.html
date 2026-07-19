@@ -119,15 +119,17 @@ function gameOver(t,msg){
 function tapAt(x,y){
   if(state!=='play') return;
   const lane=Math.floor(x/(W/COLS));
-  // bu şeritte dokunulabilir karo var mı (ekranda)
+  // dokunulan şeridin en alttaki vurulmamış karosu
   let target=null;
-  for(const t of tiles){ if(!t.hit&&t.lane===lane&&t.y+ROW()>0&&t.y<H){
+  for(const t of tiles){ if(!t.hit&&t.lane===lane&&t.y+ROW()>-ROW()*0.5){
     if(!target||t.y>target.y) target=t; } }
-  // sırayla: en alttaki vurulmamış karo hangi şeritteyse ona bak
+  // genel en alttaki vurulmamış karo
   let lowest=null;
   for(const t of tiles){ if(!t.hit&&t.y+ROW()>0){ if(!lowest||t.y>lowest.y) lowest=t; } }
-  if(lowest&&lowest.lane===lane&&(!target||target===lowest)){
-    lowest.hit=true; score++; updHud(); note(); buzz(5);
+  /* tolerans: dokunduğun şeridin karosu, genel en alttakiyle aynı ya da
+     bir sonraki sıradaysa (1.15 sıra payı) kabul — hızlı ardışık dokunuşlar haksız yanmasın */
+  if(target && lowest && target.y > lowest.y - ROW()*1.15){
+    target.hit=true; score++; updHud(); note(); buzz(5);
   } else {
     gameOver({lane,y:y-ROW()/2},'Beyaza bastın!');
   }

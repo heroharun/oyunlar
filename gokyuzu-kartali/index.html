@@ -97,13 +97,15 @@ function ding(s=0){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),
 const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
 
 /* İHA filosu — Türk göklerinin gururu */
+/* cd: İHA'ya özel yeniden doldurma (ms) — füzenin düşmesi beklenmez! */
 const DRONES=[
-  {name:'TB2',       desc:'efsanenin kendisi', speed:5.5, blast:60, multi:1, unlock:0},
-  {name:'ANKA',      desc:'yüksek irtifa',     speed:7,   blast:70, multi:2, unlock:3},
-  {name:'AKSUNGUR',  desc:'ağır yük ustası',   speed:6,   blast:110,multi:2, unlock:7},
-  {name:'AKINCI',    desc:'taarruzun kalbi',   speed:8.5, blast:95, multi:3, unlock:12},
-  {name:'KIZILELMA', desc:'jet hızında',       speed:11,  blast:85, multi:4, unlock:18},
+  {name:'TB2',       desc:'efsanenin kendisi', speed:5.5, blast:60, multi:2, cd:900, unlock:0},
+  {name:'ANKA',      desc:'yüksek irtifa',     speed:7,   blast:70, multi:3, cd:650, unlock:3},
+  {name:'AKSUNGUR',  desc:'ağır yük ustası',   speed:6,   blast:110,multi:3, cd:800, unlock:7},
+  {name:'AKINCI',    desc:'taarruzun kalbi',   speed:8.5, blast:95, multi:4, cd:420, unlock:12},
+  {name:'KIZILELMA', desc:'jet hızında',       speed:11,  blast:85, multi:6, cd:220, unlock:18},
 ];
+let lastFire=0;
 let score=0, missions=0, drone=0;
 try{ const s=JSON.parse(localStorage.getItem('iha_save'));
   if(s){ score=s.score||0; missions=s.missions||0; drone=s.drone||0; } }catch(e){}
@@ -219,8 +221,9 @@ function missionDone(){
 /* dokun = füze bırak */
 function fire(x,y){
   if(state!=='play') return;
-  const d=DRONES[drone];
-  if(missiles.length>=d.multi) return;
+  const d=DRONES[drone], now=performance.now();
+  if(now-lastFire<d.cd || missiles.length>=d.multi) return;   // İHA'ya özel reload
+  lastFire=now;
   missiles.push({x:W/2,y:H+20,tx:x,ty:y,speed:d.speed,blast:d.blast,trail:[]});
   whistle(); buzz(8);
 }
@@ -237,7 +240,8 @@ function renderHangar(){
     b.innerHTML=locked
       ? '🔒 '+d.name+'<small>'+d.unlock+' görev gerekli</small>'
       : '🦅 '+d.name+'<small>'+d.desc+' · füze ×'+d.multi+'</small>';
-    b.addEventListener('click',()=>{ if(!locked){ drone=i; save(); renderHangar(); updHud(); } });
+    b.addEventListener('click',()=>{ if(!locked&&drone!==i){ drone=i; save(); renderHangar(); updHud();
+      toast('🦅 '+d.name+' GÖREVDE!'); ding(4); buzz(15); } });
     h.appendChild(b);
   });
 }
