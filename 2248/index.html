@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>2248 — Zinciri Kur, Sayıyı Büyüt</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#171a2b; --cell:#232842; --ink:#f0f2ff; --dim:#8b93bd; --gold:#ffd166; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
+    padding:max(10px,env(safe-area-inset-top)) 10px max(14px,env(safe-area-inset-bottom))}
+  #hud{width:min(94vw,430px);display:flex;justify-content:space-between;align-items:center}
+  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .value{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+  #sumBadge{min-width:90px;text-align:center;font-size:20px;font-weight:900;border-radius:12px;
+    padding:8px 14px;background:var(--cell);transition:background .15s;color:var(--ink)}
+  #board{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%}
+  canvas{display:block;border-radius:16px}
+  .hint{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(23,26,43,.95);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(40px,11vw,80px);font-weight:900;
+    background:linear-gradient(180deg,#6fb6ff,#c44dff);
+    -webkit-background-clip:text;background-clip:text;color:transparent;transform:rotate(-2deg)}
+  .card p{max-width:34ch;color:var(--dim);font-size:14px;line-height:1.55}
+  .card .big{font-size:34px;font-weight:800;color:var(--gold)}
+  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
+    color:#171a2b;background:linear-gradient(180deg,#6fb6ff,#4a8fe8);border:none;border-radius:999px;
+    padding:14px 36px;cursor:pointer;box-shadow:0 5px 0 #2a5fa8}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #2a5fa8}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+</style>
+
+<div id="wrap">
+  <div id="hud">
+    <div><div class="label">Skor</div><div class="value" id="scoreEl">0</div></div>
+    <div id="sumBadge">2248</div>
+    <div style="text-align:right"><div class="label">Rekor</div><div class="value" id="bestEl">0</div></div>
+  </div>
+  <div id="board"><canvas id="cv"></canvas></div>
+  <div class="hint">aynı sayıdan başla · eşit ya da iki katıyla zinciri sürdür</div>
+</div>
+
+<div class="card" id="intro">
+  <h1>2248</h1>
+  <p>Parmağınla komşu taşları birleştir: zincir eşit sayıyla başlar, eşit veya İKİ KATI sayıyla devam eder. Zincir ne kadar uzun, sayı o kadar büyük! Oyun kendini kaydeder.</p>
+  <button class="btn" id="startBtn">Başla</button>
+  <span class="hint" id="bestIntro"></span>
+</div>
+
+<script>
+'use strict';
+const COLS=5, ROWS=7;
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let CELL=64, PAD=8, DPR=1;
+function resize(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  const b=document.getElementById('board');
+  CELL=Math.floor(Math.min((Math.min(b.clientWidth,430)-PAD*2)/COLS,(b.clientHeight-PAD*2)/ROWS));
+  cv.style.width=CELL*COLS+PAD*2+'px'; cv.style.height=CELL*ROWS+PAD*2+'px';
+  cv.width=(CELL*COLS+PAD*2)*DPR; cv.height=(CELL*ROWS+PAD*2)*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+addEventListener('resize',resize);
+
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function blip(f,d=0.07,v=0.15,t='triangle'){ try{ const a=audio(),n=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(0.001,n+d);
+  o.connect(g).connect(a.destination);o.start(n);o.stop(n+d+0.02);}catch(e){} }
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
+
+const PAL=['#6fb6ff','#5fd48f','#ffd166','#ff9f5f','#ff6b8a','#c46bff','#5fe0d4',
+  '#8f9fff','#f0d05f','#ff8fb0','#9fe06f','#6f8fff'];
+const colOf=v=>PAL[(Math.log2(v)-1|0)%PAL.length];
+
+let grid, score, state='intro', chain=[], anim=[], falling=false, tick=0;
+let best=0; try{ best=+localStorage.getItem('g2248_best')||0; }catch(e){}
+document.getElementById('bestEl').textContent=best.toLocaleString('tr-TR');
+document.getElementById('bestIntro').textContent=best>0?'REKORUN: '+best.toLocaleString('tr-TR'):'';
+
+function maxVal(){ let m=4; for(const r of grid) for(const v of r) if(v>m)m=v; return m; }
+function spawnVal(){
+  const top=Math.max(3,Math.log2(maxVal())-2);       // büyüdükçe küçükler elenir
+  const lo=Math.max(1,top-4);
+  const e=lo+Math.floor(Math.random()*(top-lo+1));
+  return 2**e;
+}
+function reset(){
+  grid=Array.from({length:ROWS},()=>Array(COLS).fill(0));
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++) grid[y][x]=2**(1+Math.floor(Math.random()*4));
+  score=0; chain=[]; updHud(); save();
+}
+function updHud(){
+  document.getElementById('scoreEl').textContent=score.toLocaleString('tr-TR');
+  document.getElementById('bestEl').textContent=best.toLocaleString('tr-TR');
+}
+function save(){ try{ localStorage.setItem('g2248_save',JSON.stringify({grid,score})); }catch(e){} }
+
+function cellAt(px,py){
+  const r=cv.getBoundingClientRect();
+  const x=Math.floor((px-r.left-PAD)/CELL), y=Math.floor((py-r.top-PAD)/CELL);
+  if(x<0||x>=COLS||y<0||y>=ROWS) return null;
+  // merkeze yakınlık şartı (çapraz geçişlerde yanlışlıkla değmesin)
+  const cx=r.left+PAD+(x+.5)*CELL, cy=r.top+PAD+(y+.5)*CELL;
+  if(Math.hypot(px-cx,py-cy)>CELL*0.44) return null;
+  return {x,y};
+}
+function chainSum(){ return chain.reduce((s,c)=>s+grid[c.y][c.x],0); }
+function chainResult(){ const s=chainSum(); return 2**Math.floor(Math.log2(s)); }
+function updBadge(){
+  const b=document.getElementById('sumBadge');
+  if(chain.length>=2){ const r=chainResult();
+    b.textContent=r; b.style.background=colOf(r); b.style.color='#171a2b'; }
+  else { b.textContent='2248'; b.style.background='#232842'; b.style.color='#f0f2ff'; }
+}
+function tryAdd(c){
+  if(falling||!c) return;
+  const v=grid[c.y][c.x]; if(!v) return;
+  if(chain.length===0){ chain.push(c); blip(300); updBadge(); return; }
+  const last=chain[chain.length-1];
+  if(last.x===c.x&&last.y===c.y) return;
+  // geri alma
+  if(chain.length>=2){ const prev=chain[chain.length-2];
+    if(prev.x===c.x&&prev.y===c.y){ chain.pop(); blip(240,0.05,0.1); updBadge(); return; } }
+  if(chain.some(k=>k.x===c.x&&k.y===c.y)) return;
+  if(Math.abs(c.x-last.x)>1||Math.abs(c.y-last.y)>1) return;
+  const lv=grid[last.y][last.x];
+  const ok = chain.length===1 ? v===lv : (v===lv||v===lv*2);
+  if(!ok) return;
+  chain.push(c);
+  blip(300+chain.length*45,0.07,0.15); buzz(5);
+  updBadge();
+}
+async function release(){
+  if(chain.length<2){ chain=[]; updBadge(); return; }
+  const res=chainResult(), endC=chain[chain.length-1];
+  score+=res;
+  if(score>best){ best=score; try{localStorage.setItem('g2248_best',best);}catch(e){} }
+  for(const c of chain.slice(0,-1)){
+    anim.push({x:c.x,y:c.y,v:grid[c.y][c.x],life:1,tx:endC.x,ty:endC.y});
+    grid[c.y][c.x]=0;
+  }
+  grid[endC.y][endC.x]=res;
+  chain=[]; updBadge(); updHud();
+  blip(500+Math.log2(res)*40,0.15,0.2); buzz(15);
+  falling=true;
+  await new Promise(r=>setTimeout(r,160));
+  // yerçekimi + doldurma
+  for(let x=0;x<COLS;x++){
+    const col=[];
+    for(let y=ROWS-1;y>=0;y--) if(grid[y][x]) col.push(grid[y][x]);
+    for(let y=ROWS-1;y>=0;y--) grid[y][x]=col[ROWS-1-y]||0;
+    for(let y=0;y<ROWS;y++) if(!grid[y][x]) grid[y][x]=spawnVal();
+  }
+  falling=false;
+  updHud(); save();
+}
+
+/* girdi */
+let down=false;
+function pt(e){ const t=e.touches?e.touches[0]:e; return {x:t.clientX,y:t.clientY}; }
+addEventListener('touchstart',e=>{ if(state!=='play'||e.target.closest('.card'))return;
+  down=true; audio(); tryAdd(cellAt(pt(e).x,pt(e).y)); },{passive:true});
+addEventListener('touchmove',e=>{ if(down) tryAdd(cellAt(pt(e).x,pt(e).y)); },{passive:true});
+addEventListener('touchend',()=>{ if(down){ down=false; release(); } });
+addEventListener('mousedown',e=>{ if(state!=='play'||e.target.closest('.card'))return;
+  down=true; audio(); tryAdd(cellAt(e.clientX,e.clientY)); });
+addEventListener('mousemove',e=>{ if(down) tryAdd(cellAt(e.clientX,e.clientY)); });
+addEventListener('mouseup',()=>{ if(down){ down=false; release(); } });
+
+/* çizim */
+function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function center(c){ return {x:PAD+(c.x+.5)*CELL, y:PAD+(c.y+.5)*CELL}; }
+function fmt(v){ return v>=1024? (v/1024)+'K' : v; }
+function draw(){
+  tick++;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#101323'; rr(0,0,CELL*COLS+PAD*2,CELL*ROWS+PAD*2,16); ctx.fill();
+  // zincir çizgisi
+  if(chain.length>1){
+    ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=CELL*0.16; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath();
+    chain.forEach((c,i)=>{ const p=center(c); i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y); });
+    ctx.stroke();
+  }
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+    const v=grid[y][x]; if(!v) continue;
+    const inCh=chain.some(k=>k.x===x&&k.y===y);
+    const px=PAD+x*CELL, py=PAD+y*CELL, m=CELL*0.06;
+    const s=inCh?1.08:1;
+    const off=(CELL-CELL*s)/2+m*s;
+    ctx.fillStyle='rgba(0,0,0,.35)'; rr(px+off+2,py+off+3,(CELL-m*2)*s,(CELL-m*2)*s,CELL*0.2); ctx.fill();
+    ctx.fillStyle=colOf(v); rr(px+off,py+off,(CELL-m*2)*s,(CELL-m*2)*s,CELL*0.2); ctx.fill();
+    if(inCh){ ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+      rr(px+off,py+off,(CELL-m*2)*s,(CELL-m*2)*s,CELL*0.2); ctx.stroke(); }
+    ctx.fillStyle='rgba(255,255,255,.28)';
+    rr(px+off+3,py+off+3,(CELL-m*2)*s-6,(CELL-m*2)*s*0.3,CELL*0.12); ctx.fill();
+    ctx.fillStyle='#171a2b'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='900 '+(v>=1024?CELL*0.3:v>=128?CELL*0.32:CELL*0.38)+'px "Avenir Next",system-ui,sans-serif';
+    ctx.fillText(fmt(v),px+CELL/2,py+CELL/2+1);
+  }
+  // birleşme animasyonları
+  for(const a of anim){
+    a.life-=0.09;
+    const p0=center(a), p1=center({x:a.tx,y:a.ty});
+    const t=1-a.life, x=p0.x+(p1.x-p0.x)*t, y=p0.y+(p1.y-p0.y)*t;
+    ctx.globalAlpha=Math.max(0,a.life);
+    ctx.fillStyle=colOf(a.v);
+    rr(x-CELL*0.35,y-CELL*0.35,CELL*0.7,CELL*0.7,CELL*0.16); ctx.fill();
+    ctx.globalAlpha=1;
+  }
+  anim=anim.filter(a=>a.life>0);
+  requestAnimationFrame(draw);
+}
+function tap(el,fn){ el._fn=fn;
+  const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
+  el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
+tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
+  state='play';
+  document.getElementById('intro').classList.add('hidden'); });
+
+resize();
+let loaded=false;
+try{ const s=JSON.parse(localStorage.getItem('g2248_save'));
+  if(s&&s.grid){ grid=s.grid; score=s.score; loaded=true;
+    document.getElementById('startBtn').textContent='Devam Et'; } }catch(e){}
+if(!loaded) reset(); else updHud();
+draw();
+</script>

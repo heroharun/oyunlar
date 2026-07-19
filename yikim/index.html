@@ -85,6 +85,7 @@
   <div class="big" id="endScore"></div>
   <p id="endMsg"></p>
   <button class="btn" id="nextBtn">Devam</button>
+  <button class="btn" id="giveUpBtn" style="display:none;background:linear-gradient(180deg,#c9a2ff,#8f5fd8);box-shadow:0 6px 0 #5a3494,0 14px 30px rgba(143,95,216,.3)">Baştan Başla</button>
 </div>
 
 <script>
@@ -382,14 +383,24 @@ function endLevel(won){
     b._fn=()=>{ level++; document.getElementById('level').textContent=level;
       document.getElementById('endcard').classList.add('hidden'); buildLevel(level); };
   } else {
+    /* ek top mekaniği: pes etmek yok, ceza puan! */
+    const cost=150;
     t.textContent='Toplar Bitti!';
-    m.textContent='Kuleler ayakta kaldı bu sefer. Bir daha dene — açıyı biraz daha dik tut. 💪';
-    b.textContent='Baştan';
-    b._fn=()=>{ score=0; level=1;
+    const kalan=blocks.filter(x=>!x.dead).length;
+    m.textContent=kalan+' blok kaldı. Ek top al, devam et — cezası sadece '+cost+' puan.';
+    b.textContent='🟡 Ek Top (−'+cost+' puan)';
+    b._fn=()=>{ score=Math.max(0,score-cost);
+      document.getElementById('score').textContent=score;
+      ballsLeft=1; renderPips(); loadBall();
+      document.getElementById('endcard').classList.add('hidden'); };
+    const g=document.getElementById('giveUpBtn');
+    g.style.display='';
+    g._fn=()=>{ score=0; level=1; g.style.display='none';
       document.getElementById('score').textContent=0;
       document.getElementById('level').textContent=1;
       document.getElementById('endcard').classList.add('hidden'); buildLevel(1); };
   }
+  if(won) document.getElementById('giveUpBtn').style.display='none';
   document.getElementById('score').textContent=score;
   document.getElementById('endcard').classList.remove('hidden');
 }
@@ -523,6 +534,7 @@ tap(document.getElementById('startBtn'),()=>{
   buildLevel(1);
 });
 tap(document.getElementById('nextBtn'),null); // _fn'i endLevel atar
+tap(document.getElementById('giveUpBtn'),null);
 buildLevel(1); state='intro';
 loop();
 </script>
