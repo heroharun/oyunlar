@@ -43,11 +43,11 @@
 
 <script>
 'use strict';
-const HAIRS=['Düz','Örgülü','Topuz','Kıvırcık'];
-const TOPS=['Elbise','Tişört','Kazak','Balo Elbisesi'];
+const HAIRS=['Düz','Örgülü','Topuz','Kıvırcık','Başörtüsü'];
+const TOPS=['Elbise','Tişört','Kazak','Balo Elbisesi','Ferace'];
 const SHOES=['Babet','Bot','Spor'];
-const EXTRA=['Yok','Taç','Fiyonk','Gözlük','Çanta'];
-const HAIR_C=['#4a2c1a','#e8b45f','#1a1a22','#b8543a','#c9a2ff'];
+const EXTRA=['Yok','Taç','Fiyonk','Gözlük','Çanta','Tesbih'];
+const HAIR_C=['#4a2c1a','#e8b45f','#1a1a22','#b8543a','#c9a2ff','#ffffff','#2e8f8a','#3a5a8f'];
 const TOP_C=['#ff8fc0','#4ab8ff','#7cb356','#ffd93d','#c46bff','#ff6b6b'];
 const SHOE_C=['#7a4a66','#ff6b6b','#4ab8ff','#1a1a22'];
 const SKIN='#ffd9bd';
@@ -84,6 +84,11 @@ function render(){
     hair=`<circle cx="90" cy="70" r="18" fill="${hc}"/><circle cx="120" cy="55" r="20" fill="${hc}"/>
     <circle cx="150" cy="70" r="18" fill="${hc}"/><circle cx="105" cy="58" r="16" fill="${hc}"/>
     <circle cx="135" cy="58" r="16" fill="${hc}"/>`; }
+  if(st.hair===4){ /* başörtüsü: yüz açık, saç örtülü, omuzlara drape */
+    hair=`<path fill-rule="evenodd" d="M120,32 Q72,40 72,104 Q72,148 90,170 L150,170 Q168,148 168,104 Q168,40 120,32
+      M120,63 a37,38 0 1,0 0.1,0 Z" fill="${hc}" stroke="rgba(0,0,0,.08)" stroke-width="2"/>
+    <path d="M90,158 Q120,196 150,158 L150,182 Q120,212 90,182 Z" fill="${hc}"/>
+    <path d="M112,138 Q120,146 128,138" stroke="rgba(0,0,0,.1)" stroke-width="2" fill="none"/>`; }
   // üstler
   if(st.top===0) top=`<path d="M95,160 L145,160 L162,265 L78,265 Z" fill="${tc}"/>
     <rect x="95" y="155" width="50" height="30" rx="8" fill="${tc}"/>`;
@@ -97,6 +102,14 @@ function render(){
     <circle cx="120" cy="185" r="5" fill="#fff" opacity=".7"/>
     <circle cx="112" cy="205" r="4" fill="#fff" opacity=".6"/>
     <circle cx="130" cy="210" r="4" fill="#fff" opacity=".6"/>`;
+  if(st.top===4) top=`<path d="M96,152 L144,152 L172,348 L68,348 Z" fill="${tc}"/>
+    <path d="M96,158 Q68,205 62,248 L80,252 Q90,210 104,175 Z" fill="${tc}"/>
+    <path d="M144,158 Q172,205 178,248 L160,252 Q150,210 136,175 Z" fill="${tc}"/>
+    <path d="M96,152 L144,152 L148,175 L92,175 Z" fill="rgba(255,255,255,.18)"/>
+    <path d="M120,175 L120,340" stroke="rgba(0,0,0,.12)" stroke-width="3"/>
+    <circle cx="120" cy="195" r="3.5" fill="rgba(0,0,0,.2)"/>
+    <circle cx="120" cy="220" r="3.5" fill="rgba(0,0,0,.2)"/>
+    <circle cx="120" cy="245" r="3.5" fill="rgba(0,0,0,.2)"/>`;
   // ayakkabılar
   if(st.shoe===0) shoe=`<ellipse cx="105" cy="352" rx="15" ry="9" fill="${sc}"/>
     <ellipse cx="135" cy="352" rx="15" ry="9" fill="${sc}"/>`;
@@ -113,6 +126,10 @@ function render(){
     <path d="M118,105 L122,105" stroke="#7a4a66" stroke-width="3.5"/>`;
   if(st.extra===4) extra=`<path d="M168,220 Q185,220 185,238 L185,258 Q185,262 181,262 L157,262 Q153,262 153,258 L153,238 Q153,220 168,220" fill="${TOP_C[(st.topC+2)%TOP_C.length]}"/>
     <path d="M158,225 Q168,208 178,225" fill="none" stroke="#7a4a66" stroke-width="3"/>`;
+  if(st.extra===5){ let beads='';
+    for(let i=0;i<11;i++){ const a=Math.PI*0.25+i*Math.PI*0.05;
+      beads+=`<circle cx="${72-Math.cos(a)*26}" cy="${238+Math.sin(a)*30}" r="4" fill="#2e8f8a"/>`; }
+    extra=beads+`<circle cx="72" cy="272" r="5.5" fill="#c9862e"/>`; }
 
   document.getElementById('doll').innerHTML=`
     ${backHair}
@@ -121,8 +138,7 @@ function render(){
     <path d="M145,165 Q162,200 166,240" stroke="${SKIN}" stroke-width="13" fill="none" stroke-linecap="round"/>
     <rect x="97" y="255" width="15" height="95" rx="7" fill="${SKIN}"/>
     <rect x="128" y="255" width="15" height="95" rx="7" fill="${SKIN}"/>
-    ${top}
-    ${shoe}
+    ${st.top===4 ? shoe+top : top+shoe}
     <circle cx="120" cy="100" r="43" fill="${SKIN}"/>
     ${hair}
     <circle cx="106" cy="103" r="4.5" fill="#5a3a4a"/>

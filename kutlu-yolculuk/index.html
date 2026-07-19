@@ -47,6 +47,7 @@
 
 <div class="card" id="intro">
   <h1>KUTLU YOLCULUK</h1>
+  <div style="letter-spacing:.32em;font-weight:800;font-size:13px;color:var(--gold)">— ROAD TO MEDINA —</div>
   <p>Küçük Zehra, Hicaz demiryolu boyunca kutlu şehre doğru koşuyor! Kayalardan ve kaktüslerden kaç, dinlenen develeri rahatsız etme, su damlalarını topla. Şam'dan yola çık — bakalım Mekke'ye varabilecek misin? 🕌</p>
   <button class="btn" id="startBtn">Yola Çık</button>
   <span class="hint" id="bestIntro"></span>
@@ -150,11 +151,28 @@ function draw(){
   // güneş
   ctx.fillStyle='rgba(255,240,200,.9)';
   ctx.beginPath(); ctx.arc(W*0.8,H*0.1,32,0,6.28); ctx.fill();
-  // uzak tepeler
-  ctx.fillStyle='rgba(201,134,46,.25)';
-  ctx.beginPath(); ctx.moveTo(0,H*0.22);
-  for(let x=0;x<=W;x+=60) ctx.lineTo(x,H*0.22-Math.sin(x*0.01)*26);
-  ctx.lineTo(W,H*0.3); ctx.lineTo(0,H*0.3); ctx.fill();
+  // katmanlı kum tepeleri (paralaks)
+  const dOff1=(tick*0.15)%(W*2), dOff2=(tick*0.35)%(W*2);
+  ctx.fillStyle='rgba(201,134,46,.18)';
+  ctx.beginPath(); ctx.moveTo(0,H*0.2);
+  for(let x=0;x<=W;x+=40) ctx.lineTo(x,H*0.2-Math.sin((x+dOff1)*0.008)*30);
+  ctx.lineTo(W,H*0.32); ctx.lineTo(0,H*0.32); ctx.fill();
+  ctx.fillStyle='rgba(201,134,46,.3)';
+  ctx.beginPath(); ctx.moveTo(0,H*0.26);
+  for(let x=0;x<=W;x+=40) ctx.lineTo(x,H*0.26-Math.sin((x+dOff2)*0.012+2)*20);
+  ctx.lineTo(W,H*0.36); ctx.lineTo(0,H*0.36); ctx.fill();
+  // ufukta deve kervanı
+  ctx.font='17px system-ui'; ctx.textAlign='center'; ctx.globalAlpha=0.55;
+  const kx=W+80-((tick*0.4)%(W+260));
+  for(let i=0;i<3;i++) ctx.fillText('🐫', kx+i*34, H*0.245);
+  ctx.globalAlpha=1;
+  // hurma ağaçları (yol kenarı, kayan)
+  ctx.font='30px system-ui';
+  for(const side of [-1,1]){
+    const px2=W/2+side*(laneW()*2.6);
+    const py2=(tick*speed*0.5+(side>0?200:0))%(H+120)-60;
+    ctx.fillText('🌴', px2, py2);
+  }
   // demiryolu (3 şerit = 3 hat)
   const topW=laneW()*1.1, botW=laneW()*3.4;
   ctx.fillStyle='#c9a86a';
@@ -166,6 +184,19 @@ function draw(){
   for(let y=-off;y<H+64;y+=64){
     const t=y/H, w=topW+(botW-topW)*t;
     ctx.beginPath(); ctx.moveTo(W/2-w*0.92,y); ctx.lineTo(W/2+w*0.92,y); ctx.stroke();
+  }
+  // telgraf direkleri (Hicaz hattının simgesi)
+  const pOff=(tick*speed)%220;
+  for(let y=-pOff;y<H+220;y+=220){
+    const t=Math.max(0,Math.min(1,y/H)), s=0.35+0.65*t;
+    for(const side of [-1,1]){
+      const px2=W/2+side*(topW+(botW-topW)*t)*1.28;
+      ctx.strokeStyle='rgba(90,58,26,.6)'; ctx.lineWidth=4*s; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(px2,y); ctx.lineTo(px2,y-52*s); ctx.stroke();
+      ctx.lineWidth=3*s;
+      ctx.beginPath(); ctx.moveTo(px2-13*s,y-46*s); ctx.lineTo(px2+13*s,y-46*s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px2-10*s,y-36*s); ctx.lineTo(px2+10*s,y-36*s); ctx.stroke();
+    }
   }
   // raylar
   ctx.strokeStyle='#8f7550'; ctx.lineWidth=5;
@@ -197,15 +228,20 @@ function draw(){
   ctx.beginPath(); ctx.moveTo(0,-34);
   ctx.bezierCurveTo(22,-20,20,14,0,18);
   ctx.bezierCurveTo(-20,14,-22,-20,0,-34); ctx.fill();
-  // baş + örgüler
+  // başörtüsü (rüzgârda uçuşan uçlarıyla) + yüz
+  ctx.fillStyle='#4aa8a0';
+  ctx.beginPath(); ctx.arc(0,-41,16,0,6.28); ctx.fill();
+  const sw=Math.sin(tick*0.3)*5;
+  ctx.beginPath(); ctx.moveTo(-13,-34);
+  ctx.quadraticCurveTo(-20,-24+sw,-15,-14);
+  ctx.quadraticCurveTo(-6,-18,-8,-30); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(13,-34);
+  ctx.quadraticCurveTo(20,-24-sw,15,-14);
+  ctx.quadraticCurveTo(6,-18,8,-30); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#3d8f88';
+  ctx.beginPath(); ctx.arc(0,-48,10,Math.PI*1.1,Math.PI*1.9); ctx.fill();
   ctx.fillStyle='#ffd9bd';
-  ctx.beginPath(); ctx.arc(0,-40,13,0,6.28); ctx.fill();
-  ctx.fillStyle='#4a2c1a';
-  ctx.beginPath(); ctx.arc(0,-46,12,Math.PI,0); ctx.fill();
-  ctx.strokeStyle='#4a2c1a'; ctx.lineWidth=4; ctx.lineCap='round';
-  const sw=Math.sin(tick*0.3)*4;
-  ctx.beginPath(); ctx.moveTo(-11,-42); ctx.quadraticCurveTo(-16,-30+sw,-13,-20);
-  ctx.moveTo(11,-42); ctx.quadraticCurveTo(16,-30-sw,13,-20); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,-39,10.5,0,6.28); ctx.fill();
   ctx.fillStyle='#4a3520';
   ctx.beginPath(); ctx.arc(-4,-41,2,0,6.28); ctx.arc(4,-41,2,0,6.28); ctx.fill();
   ctx.strokeStyle='#c96a5a'; ctx.lineWidth=2;
@@ -217,12 +253,17 @@ function draw(){
     ctx.moveTo(6,16); ctx.lineTo(6-ph,27); ctx.stroke();
   }
   ctx.restore();
-  // sonraki durak göstergesi
-  if(state==='play'&&stopI<STOPS.length){
-    const remain=(STOPS[stopI].km-dist/10).toFixed(1);
-    ctx.fillStyle='rgba(74,53,32,.55)'; ctx.font='700 12px "Avenir Next",system-ui,sans-serif';
+  // sonraki durak göstergesi + Road to Medina
+  if(state==='play'){
     ctx.textAlign='center';
-    ctx.fillText(STOPS[stopI].name.replace(' — VARDIN!','')+' → '+remain+' km', W/2, H*0.06);
+    ctx.fillStyle='rgba(201,134,46,.75)';
+    ctx.font='800 11px "Avenir Next",system-ui,sans-serif';
+    ctx.fillText('—  R O A D   T O   M E D I N A  —', W/2, H*0.045);
+    if(stopI<STOPS.length){
+      const remain=(STOPS[stopI].km-dist/10).toFixed(1);
+      ctx.fillStyle='rgba(74,53,32,.6)'; ctx.font='700 13px "Avenir Next",system-ui,sans-serif';
+      ctx.fillText('📍 '+STOPS[stopI].name.replace(' — VARDIN!','')+' → '+remain+' km', W/2, H*0.075);
+    }
   }
 }
 function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loop); }
