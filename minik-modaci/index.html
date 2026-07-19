@@ -44,7 +44,7 @@
 
 <script>
 'use strict';
-const HAIRS=['Düz','Örgülü','Topuz','Kıvırcık','Başörtüsü'];
+const HAIRS=['Düz','Örgülü','Topuz','Kıvırcık','Başörtüsü','Sunroof'];
 const TOPS=['Elbise','Tişört','Kazak','Balo Elbisesi','Ferace'];
 const MOTIFS=['Yok','Puantiye','Çiçek','Çizgi','Kalp','Yıldız','Zikzak'];
 const SHOES=['Babet','Bot','Spor'];
@@ -129,6 +129,13 @@ function render(){
     hair=`<path fill-rule="evenodd" d="M120,32 Q72,40 72,104 Q72,148 90,170 L150,170 Q168,148 168,104 Q168,40 120,32
       M120,63 a37,38 0 1,0 0.1,0 Z" fill="${hc}" stroke="rgba(0,0,0,.08)" stroke-width="2"/>
     <path d="M90,158 Q120,196 150,158 L150,182 Q120,212 90,182 Z" fill="${hc}"/>
+    <path d="M112,138 Q120,146 128,138" stroke="rgba(0,0,0,.1)" stroke-width="2" fill="none"/>`; }
+  if(st.hair===5){ /* sunroof: önden hafif kâkül görünen başörtüsü */
+    hair=`<path fill-rule="evenodd" d="M120,32 Q72,40 72,104 Q72,148 90,170 L150,170 Q168,148 168,104 Q168,40 120,32
+      M120,60 a38,40 0 1,0 0.1,0 Z" fill="${hc}" stroke="rgba(0,0,0,.08)" stroke-width="2"/>
+    <path d="M90,158 Q120,196 150,158 L150,182 Q120,212 90,182 Z" fill="${hc}"/>
+    <path d="M94,74 Q100,58 122,58 Q142,58 147,72 Q134,64 122,68 Q108,72 104,80 Q98,78 94,74Z" fill="#4a2c1a"/>
+    <path d="M122,58 Q136,60 146,71 Q138,74 130,70" fill="#3a2214"/>
     <path d="M112,138 Q120,146 128,138" stroke="rgba(0,0,0,.1)" stroke-width="2" fill="none"/>`; }
   // üstler
   if(st.top===0) top=`<path d="M95,160 L145,160 L162,265 L78,265 Z" fill="${tc}"/>
