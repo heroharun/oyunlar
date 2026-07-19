@@ -24,8 +24,8 @@
     font-size:16px;font-weight:900;color:var(--ink);cursor:pointer}
   .arrow:active{background:#ffe4f0}
   .opts{flex:1;text-align:center;font-size:13px;font-weight:800}
-  .colors{display:flex;gap:5px}
-  .cdot{width:26px;height:26px;border-radius:50%;border:2.5px solid #fff;cursor:pointer;
+  .colors{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:176px}
+  .cdot{width:22px;height:22px;border-radius:50%;border:2.5px solid #fff;cursor:pointer;
     box-shadow:0 1px 4px rgba(122,74,102,.3)}
   .cdot.on{border-color:var(--ink)}
   #shuffle{position:absolute;top:10px;right:10px;font-size:22px;background:#fff;
@@ -45,16 +45,56 @@
 <script>
 'use strict';
 const HAIRS=['Düz','Örgülü','Topuz','Kıvırcık','Başörtüsü'];
-const TOPS=['Elbise','Tişört','Kazak','Balo Elbisesi','Ferace','Puantiyeli','Çiçekli','Çizgili'];
+const TOPS=['Elbise','Tişört','Kazak','Balo Elbisesi','Ferace'];
+const MOTIFS=['Yok','Puantiye','Çiçek','Çizgi','Kalp','Yıldız','Zikzak'];
 const SHOES=['Babet','Bot','Spor'];
 const EXTRA=['Yok','Taç','Fiyonk','Gözlük','Çanta','Tesbih','Kolye','Şapka','Peri Kanadı','Balon','Kedicik'];
 const HAIR_C=['#4a2c1a','#e8b45f','#1a1a22','#b8543a','#c9a2ff','#ffffff','#2e8f8a','#3a5a8f'];
-const TOP_C=['#ff8fc0','#4ab8ff','#7cb356','#ffd93d','#c46bff','#ff6b6b'];
+const MOTIF_C=['#ffffff','#ffd93d','#ff5f6d','#2e4a8f','#2b2b30'];
+const TOP_C=['#ff8fc0','#ff5f6d','#ff9f43','#ffd93d','#a8e05f','#4caf6e','#40c4b0',
+  '#4ab8ff','#3a6ea5','#8c5fff','#c46bff','#f7a8d8','#8a5a3a','#3a3a44'];
 const SHOE_C=['#7a4a66','#ff6b6b','#4ab8ff','#1a1a22'];
 const SKIN='#ffd9bd';
 
-let st={hair:0,hairC:0,top:0,topC:0,shoe:0,shoeC:0,extra:0};
+let st={hair:0,hairC:0,top:0,topC:0,shoe:0,shoeC:0,extra:0,motif:0,motifC:0};
 try{ const s=JSON.parse(localStorage.getItem('modaci_save')); if(s) st={...st,...s}; }catch(e){}
+/* eski kayıt uyumu: motifli elbise tipleri artık ayrı menü */
+if(st.top>4){ st.motif=Math.min(st.top-4,MOTIFS.length-1); st.top=0; }
+st.motif=st.motif||0; st.motifC=st.motifC||0;
+
+/* kıyafet gövde kalıpları (motif bu alana işlenir) */
+const TOP_CLIP=[
+  'M95,155 L145,155 L166,270 L74,270Z',
+  'M92,155 h56 v60 h-56Z',
+  'M90,152 h60 v68 h-60Z',
+  'M97,158 L143,158 L175,290 L65,290Z',
+  'M96,152 L144,152 L172,348 L68,348Z',
+];
+function motifSVG(kind,col){
+  let s='';
+  if(kind===1){ for(let y=160;y<350;y+=26) for(let x=64;x<184;x+=24)
+    s+=`<circle cx="${x+(y%52?12:0)}" cy="${y}" r="5.5" fill="${col}" opacity=".8"/>`; }
+  if(kind===2){ for(let y=168;y<345;y+=40) for(let x=76;x<176;x+=40){
+    s+=`<g transform="translate(${x+(y%80?18:0)},${y})" opacity=".85">
+      <circle r="4.5" cx="-5.5" fill="${col}"/><circle r="4.5" cx="5.5" fill="${col}"/>
+      <circle r="4.5" cy="-5.5" fill="${col}"/><circle r="4.5" cy="5.5" fill="${col}"/>
+      <circle r="3.6" fill="#ffd93d"/></g>`; } }
+  if(kind===3){ for(let y=162;y<350;y+=22)
+    s+=`<rect x="55" y="${y}" width="130" height="8" fill="${col}" opacity=".6"/>`; }
+  if(kind===4){ for(let y=168;y<345;y+=34) for(let x=76;x<176;x+=34)
+    s+=`<path transform="translate(${x+(y%68?16:0)},${y}) scale(0.9)" opacity=".85" fill="${col}"
+      d="M0,4 C0,-3 -9,-3 -9,3 C-9,9 0,13 0,15 C0,13 9,9 9,3 C9,-3 0,-3 0,4Z"/>`; }
+  if(kind===5){ const star=(cx,cy)=>{ let p='';
+      for(let k=0;k<10;k++){ const a=k*0.628-1.5708, r2=k%2?3.4:8;
+        p+=(k?'L':'M')+(cx+Math.cos(a)*r2).toFixed(1)+','+(cy+Math.sin(a)*r2).toFixed(1); }
+      return p+'Z'; };
+    for(let y=168;y<345;y+=36) for(let x=76;x<176;x+=36)
+      s+=`<path d="${star(x+(y%72?17:0),y)}" fill="${col}" opacity=".85"/>`; }
+  if(kind===6){ for(let y=166;y<350;y+=28){ let d='M50,'+y;
+      for(let x=58;x<=190;x+=16) d+=' L'+x+','+(y+((x/16)%2?10:0));
+      s+=`<path d="${d}" fill="none" stroke="${col}" stroke-width="4.5" opacity=".7"/>`; } }
+  return s;
+}
 function save(){ try{ localStorage.setItem('modaci_save',JSON.stringify(st)); }catch(e){} }
 
 let AC=null;
@@ -103,29 +143,6 @@ function render(){
     <circle cx="120" cy="185" r="5" fill="#fff" opacity=".7"/>
     <circle cx="112" cy="205" r="4" fill="#fff" opacity=".6"/>
     <circle cx="130" cy="210" r="4" fill="#fff" opacity=".6"/>`;
-  if(st.top===5){ let dots='';
-    for(let i=0;i<12;i++){ const dx=88+(i%4)*22, dy=180+Math.floor(i/4)*32;
-      dots+=`<circle cx="${dx}" cy="${dy}" r="5" fill="#fff" opacity=".75"/>`; }
-    top=`<path d="M95,160 L145,160 L166,270 L74,270 Z" fill="${tc}"/>
-    <rect x="95" y="155" width="50" height="30" rx="8" fill="${tc}"/>
-    <clipPath id="dresscp"><path d="M95,155 L145,155 L166,270 L74,270 Z"/></clipPath>
-    <g clip-path="url(#dresscp)">${dots}</g>`; }
-  if(st.top===6){ let fl='';
-    for(let i=0;i<7;i++){ const fx=92+(i%3)*26+((i*13)%9), fy=185+Math.floor(i/3)*34;
-      fl+=`<g transform="translate(${fx},${fy})">
-        <circle r="4" cx="-5" cy="0" fill="#fff" opacity=".85"/><circle r="4" cx="5" cy="0" fill="#fff" opacity=".85"/>
-        <circle r="4" cx="0" cy="-5" fill="#fff" opacity=".85"/><circle r="4" cx="0" cy="5" fill="#fff" opacity=".85"/>
-        <circle r="3.2" fill="#ffd93d"/></g>`; }
-    top=`<path d="M95,160 L145,160 L166,270 L74,270 Z" fill="${tc}"/>
-    <rect x="95" y="155" width="50" height="30" rx="8" fill="${tc}"/>
-    <clipPath id="dresscf"><path d="M95,155 L145,155 L166,270 L74,270 Z"/></clipPath>
-    <g clip-path="url(#dresscf)">${fl}</g>`; }
-  if(st.top===7){ let str='';
-    for(let i=0;i<6;i++) str+=`<rect x="60" y="${168+i*20}" width="120" height="9" fill="#fff" opacity=".55"/>`;
-    top=`<path d="M95,160 L145,160 L166,270 L74,270 Z" fill="${tc}"/>
-    <rect x="95" y="155" width="50" height="30" rx="8" fill="${tc}"/>
-    <clipPath id="dresscs"><path d="M95,155 L145,155 L166,270 L74,270 Z"/></clipPath>
-    <g clip-path="url(#dresscs)">${str}</g>`; }
   if(st.top===4) top=`<path d="M96,152 L144,152 L172,348 L68,348 Z" fill="${tc}"/>
     <path d="M96,158 Q68,205 62,248 L80,252 Q90,210 104,175 Z" fill="${tc}"/>
     <path d="M144,158 Q172,205 178,248 L160,252 Q150,210 136,175 Z" fill="${tc}"/>
@@ -185,6 +202,8 @@ function render(){
     <rect x="97" y="255" width="15" height="95" rx="7" fill="${SKIN}"/>
     <rect x="128" y="255" width="15" height="95" rx="7" fill="${SKIN}"/>
     ${st.top===4 ? shoe+top : top+shoe}
+    ${st.motif>0?`<clipPath id="mclip"><path d="${TOP_CLIP[st.top]}"/></clipPath>
+      <g clip-path="url(#mclip)">${motifSVG(st.motif,MOTIF_C[st.motifC])}</g>`:''}
     <circle cx="120" cy="100" r="43" fill="${SKIN}"/>
     ${hair}
     <circle cx="106" cy="103" r="4.5" fill="#5a3a4a"/>
@@ -199,10 +218,11 @@ function render(){
 }
 
 const CATS=[
-  {key:'hair', label:'Saç',      list:HAIRS, colors:HAIR_C, ckey:'hairC'},
-  {key:'top',  label:'Kıyafet',  list:TOPS,  colors:TOP_C,  ckey:'topC'},
-  {key:'shoe', label:'Ayakkabı', list:SHOES, colors:SHOE_C, ckey:'shoeC'},
-  {key:'extra',label:'Aksesuar', list:EXTRA, colors:null,   ckey:null},
+  {key:'hair', label:'Saç',      list:HAIRS,  colors:HAIR_C,  ckey:'hairC'},
+  {key:'top',  label:'Kıyafet',  list:TOPS,   colors:TOP_C,   ckey:'topC'},
+  {key:'motif',label:'Motif',    list:MOTIFS, colors:MOTIF_C, ckey:'motifC'},
+  {key:'shoe', label:'Ayakkabı', list:SHOES,  colors:SHOE_C,  ckey:'shoeC'},
+  {key:'extra',label:'Aksesuar', list:EXTRA,  colors:null,    ckey:null},
 ];
 const rows=document.getElementById('rows');
 function buildRows(){
@@ -236,6 +256,7 @@ function buildRows(){
 document.getElementById('shuffle').addEventListener('click',()=>{
   st={ hair:Math.floor(Math.random()*HAIRS.length), hairC:Math.floor(Math.random()*HAIR_C.length),
     top:Math.floor(Math.random()*TOPS.length), topC:Math.floor(Math.random()*TOP_C.length),
+    motif:Math.floor(Math.random()*MOTIFS.length), motifC:Math.floor(Math.random()*MOTIF_C.length),
     shoe:Math.floor(Math.random()*SHOES.length), shoeC:Math.floor(Math.random()*SHOE_C.length),
     extra:Math.floor(Math.random()*EXTRA.length) };
   buildRows(); render(); popS();
