@@ -109,14 +109,15 @@ const STONES=['#7a7f8c','#8a8f9a','#6b7080','#9a9fa8'];
 function buildWall(n){
   blocks=[]; particles=[]; floaters=[];
   const bw=Math.max(30,Math.min(44,W*0.036)), bh=bw*0.66;
-  const cols=Math.min(2+Math.ceil(n/2),5);
-  const baseX=W*0.55, gap=bw*1.15;
+  /* zorluk eğrisi: ilk surlar ince ve yumuşak, sonra kalınlaşıp sertleşir */
+  const cols=Math.min(2+Math.ceil(n/3),6);
+  const baseX=W*0.52, gap=bw*1.15;
   for(let c=0;c<cols;c++){
-    const rows=5+Math.min(n,7)+(c%2===0?2:0);
+    const rows=4+Math.min(3+n,11)+(c%2===0?1:0);
     for(let r=0;r<rows;r++){
       blocks.push({ x:baseX+c*gap, y:GROUND-bh/2-r*bh, w:bw, h:bh,
         vx:0,vy:0,ang:0,va:0,
-        hp:1+Math.floor(n/3)+(r<2?1:0),
+        hp:Math.min(5, 1+Math.floor(n/4)+(r<2?1:0)),
         col:STONES[(r+c)%STONES.length], asleep:true, dead:false, crenel:r===rows-1 });
     }
   }
@@ -267,7 +268,11 @@ function physics(){
       if(px>0&&py>0){ if(py<px){ const s=b.y<o.y?-1:1; b.y+=s*py*0.5;
           if(s<0&&b.vy>0){ o.asleep=false; o.vy+=b.vy*0.3; b.vy*=0.3; } }
         else { const s=b.x<o.x?-1:1; b.x+=s*px*0.5; o.asleep=false; o.vx+=b.vx*0.4; b.vx*=-0.2; } } }
-    if(b.x>W+120) b.dead=true;
+    /* topun gerisine (sola) savrulan taş vurulamaz — enkaz sayılır, otomatik temizlenir */
+    if(b.x<slingX+30&&!b.dead){ b.dead=true; addScore(20,Math.max(40,b.x),b.y);
+      for(let i=0;i<6;i++) particles.push({x:b.x,y:b.y,vx:Math.random()*4,vy:-Math.random()*4,
+        life:0.8,col:b.col,size:4,rot:0,vr:0.2}); }
+    if(b.x>W+140||b.y>H+200) b.dead=true;              // ekran dışı taş 'görünmez hayatta' kalmasın
   }
   for(const p of particles){ p.vy+=0.25; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.life-=0.025;
     if(p.y>GROUND){p.y=GROUND;p.vy*=-0.4;} }
@@ -311,25 +316,63 @@ function draw(){
   const gg=ctx.createLinearGradient(0,GROUND,0,H);
   gg.addColorStop(0,'#3d2b28'); gg.addColorStop(1,'#241713');
   ctx.fillStyle=gg; ctx.fillRect(-20,GROUND,W+40,H-GROUND+20);
-  // top arabası + namlu
+  // ŞAHİ: dev bronz namlu (halkalı), ahşap kızak, parmaklıklı tekerler
   const c=CANNONS[cannon];
+  // kızak kirişleri
   ctx.fillStyle='#5a3a22';
-  ctx.beginPath(); ctx.arc(slingX-8,GROUND-14,15,0,6.28); ctx.fill();
-  ctx.beginPath(); ctx.arc(slingX+22,GROUND-14,15,0,6.28); ctx.fill();
-  ctx.fillStyle='#3d2716';
-  ctx.beginPath(); ctx.arc(slingX-8,GROUND-14,7,0,6.28); ctx.fill();
-  ctx.beginPath(); ctx.arc(slingX+22,GROUND-14,7,0,6.28); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(slingX-34,GROUND); ctx.lineTo(slingX-20,slingY+2);
+  ctx.lineTo(slingX-6,slingY+6); ctx.lineTo(slingX-6,GROUND); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#4a2f1a';
+  ctx.fillRect(slingX-40,GROUND-12,78,10);
+  // tekerlekler (parmaklıklı)
+  for(const wx of [slingX-16,slingX+24]){
+    ctx.fillStyle='#6b4426';
+    ctx.beginPath(); ctx.arc(wx,GROUND-16,17,0,6.28); ctx.fill();
+    ctx.strokeStyle='#3d2716'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(wx,GROUND-16,17,0,6.28); ctx.stroke();
+    ctx.lineWidth=2.5;
+    for(let k=0;k<4;k++){ const a=k*0.785+tick*0.001;
+      ctx.beginPath(); ctx.moveTo(wx-Math.cos(a)*14,GROUND-16-Math.sin(a)*14);
+      ctx.lineTo(wx+Math.cos(a)*14,GROUND-16+Math.sin(a)*14); ctx.stroke(); }
+    ctx.fillStyle='#2b1c10';
+    ctx.beginPath(); ctx.arc(wx,GROUND-16,4.5,0,6.28); ctx.fill();
+  }
+  // namlu
   ctx.save();
   ctx.translate(slingX,slingY);
   let ang=-0.5;
   if(ball&&!ball.flying&&dragging){ ang=Math.atan2((slingY-26)-ball.y,(slingX+34)-ball.x); }
   ctx.rotate(ang*0.35-0.35);
-  const bl=ctx.createLinearGradient(0,-16,0,16);
-  bl.addColorStop(0,c.col); bl.addColorStop(1,'#3d4048');
-  ctx.fillStyle=bl;
-  ctx.beginPath(); ctx.moveTo(-14,-15); ctx.lineTo(66,-10); ctx.lineTo(66,10); ctx.lineTo(-14,15);
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle='#2b2e35'; ctx.fillRect(60,-11,8,22);
+  const bronz=ctx.createLinearGradient(0,-22,0,22);
+  bronz.addColorStop(0,'#c9a45a'); bronz.addColorStop(0.45,'#a8823c');
+  bronz.addColorStop(1,'#6b5424');
+  ctx.fillStyle=bronz;
+  /* geriye kalın, ağıza doğru hafif daralan gövde */
+  ctx.beginPath();
+  ctx.moveTo(-26,-21); ctx.quadraticCurveTo(20,-19,74,-14);
+  ctx.lineTo(74,14); ctx.quadraticCurveTo(20,19,-26,21);
+  ctx.quadraticCurveTo(-36,0,-26,-21); ctx.closePath(); ctx.fill();
+  /* kuyruk topuzu */
+  ctx.fillStyle='#8a6b30';
+  ctx.beginPath(); ctx.arc(-32,0,8,0,6.28); ctx.fill();
+  /* döküm halkaları — Şahi'nin imzası */
+  ctx.fillStyle='rgba(60,44,16,.55)';
+  for(const hx of [-14,6,26,48]){
+    const hh=21-Math.abs(hx)*0.075;
+    ctx.fillRect(hx,-hh-1.5,7,hh*2+3);
+  }
+  /* ağız halkası + kara delik */
+  ctx.fillStyle='#7a5f2a'; ctx.fillRect(68,-16,10,32);
+  ctx.fillStyle='#1a140a';
+  ctx.beginPath(); ctx.ellipse(76,0,4,12,0,0,6.28); ctx.fill();
+  /* üst parlama */
+  ctx.fillStyle='rgba(255,240,200,.22)';
+  ctx.beginPath(); ctx.moveTo(-22,-16); ctx.quadraticCurveTo(20,-14,70,-10);
+  ctx.lineTo(70,-6); ctx.quadraticCurveTo(20,-10,-22,-11); ctx.closePath(); ctx.fill();
+  /* seçili topun rengi: namluda ince şerit */
+  ctx.fillStyle=c.col;
+  ctx.fillRect(36,-18,5,36);
   ctx.restore();
   // nişan
   if(dragging&&ball){

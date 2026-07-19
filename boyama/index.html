@@ -418,6 +418,164 @@ const GEN_NAME={mandala:'Mandala',roket:'Roket',akvaryum:'Akvaryum',bahce:'Çiç
   semsiye:'Şemsiye',otobus:'Otobüs',buzdolabi:'Buzdolabı',camasir:'Çamaşır Makinesi',seker:'Şekerler',
   nalbur:'Nalbur Tezgâhı',yazarkasa:'Yazar Kasa',kopek:'Köpek',zurafa:'Zürafa',fil:'Fil',aslan:'Aslan',ayi:'Ayı',at:'At'};
 const CUR_NAME={kedi:'Kedi',kelebek:'Kelebek',araba:'Araba',cicek:'Çiçek',balik:'Balık'};
+
+/* ── HAYVANLAR v2: gerçek boyama kitabı çizgisi ── */
+Object.assign(GEN,{
+  aslan(r){
+    /* tırtıklı yele */
+    const n=12; let d='';
+    for(let k=0;k<=n;k++){
+      const a=(k/n)*6.2832-1.5708;
+      const px=(150+Math.cos(a)*70).toFixed(1), py=(112+Math.sin(a)*70).toFixed(1);
+      if(k===0) d='M'+px+','+py;
+      else{ const am=((k-0.5)/n)*6.2832-1.5708;
+        d+=' Q'+(150+Math.cos(am)*96).toFixed(1)+','+(112+Math.sin(am)*96).toFixed(1)+' '+px+','+py; }
+    }
+    const yavru=r()<0.55;
+    let p=`<path class="r" id="LZ" d="M15,272 Q150,262 285,272 L285,300 L15,300Z"/>
+    <path class="r" id="Lyele" d="${d}Z"/>
+    <circle class="r" id="Lyuz" cx="150" cy="112" r="45"/>
+    <path class="r" id="Lgov" d="M118,152 Q98,214 108,258 L192,258 Q202,214 182,152 Q150,166 118,152Z"/>
+    <path class="r" id="Lb1" d="M122,206 L118,258 L142,258 L142,210 Q130,212 122,206Z"/>
+    <path class="r" id="Lb2" d="M178,206 L182,258 L158,258 L158,210 Q170,212 178,206Z"/>
+    <path class="r" id="Lp1" d="M118,246 Q130,240 142,246 L142,258 L118,258Z"/>
+    <path class="r" id="Lp2" d="M158,246 Q170,240 182,246 L182,258 L158,258Z"/>
+    <circle class="r" id="Lg1" cx="133" cy="102" r="8"/>
+    <circle class="r" id="Lg2" cx="167" cy="102" r="8"/>
+    <circle class="r" id="Lgb1" cx="134" cy="104" r="3.2"/>
+    <circle class="r" id="Lgb2" cx="166" cy="104" r="3.2"/>
+    <path class="r" id="Lburun" d="M142,120 L158,120 Q154,132 150,132 Q146,132 142,120Z"/>
+    <path class="r" id="Lagiz" d="M150,132 Q150,142 138,144 M150,132 Q150,142 162,144" fill="none"/>
+    <path class="r" id="Lbiy" d="M116,122 L94,118 M117,129 L96,132 M184,122 L206,118 M183,129 L204,132" fill="none" stroke-width="2"/>
+    <path class="r" id="Lkuy" d="M192,238 Q234,232 242,198" fill="none" stroke-width="7"/>
+    <path class="r" id="Lkuyp" d="M236,202 Q254,184 244,170 Q228,178 232,198Z"/>`;
+    if(yavru) p+=`<circle class="r" id="Lyv" cx="60" cy="232" r="26"/>
+    <ellipse class="r" id="Lyvg" cx="60" cy="258" rx="30" ry="14"/>
+    <circle class="r" id="Lyvk1" cx="44" cy="212" r="8"/><circle class="r" id="Lyvk2" cx="76" cy="212" r="8"/>
+    <circle class="r" id="Lyvg1" cx="52" cy="228" r="3.4"/><circle class="r" id="Lyvg2" cx="68" cy="228" r="3.4"/>
+    <path class="r" id="Lyvb" d="M56,238 L64,238 L60,244Z"/>`;
+    return p;
+  },
+  kopek(r){
+    return `<path class="r" id="KZ" d="M15,272 Q150,262 285,272 L285,300 L15,300Z"/>
+    <path class="r" id="Kgov" d="M114,168 Q94,222 104,260 L196,260 Q206,222 186,168 Q150,182 114,168Z"/>
+    <circle class="r" id="Kbas" cx="150" cy="116" r="50"/>
+    <path class="r" id="Kkul1" d="M106,84 Q78,94 80,138 Q82,164 102,160 Q94,118 114,94Z"/>
+    <path class="r" id="Kkul2" d="M194,84 Q222,94 220,138 Q218,164 198,160 Q206,118 186,94Z"/>
+    <path class="r" id="Kben" d="M158,86 Q184,84 188,106 Q186,122 168,120 Q158,102 158,86Z"/>
+    <ellipse class="r" id="Kbur" cx="150" cy="138" rx="25" ry="17"/>
+    <ellipse class="r" id="Kbnk" cx="150" cy="128" rx="9" ry="6.5"/>
+    <path class="r" id="Kagz" d="M150,134 Q150,146 140,148 M150,134 Q150,146 160,148" fill="none"/>
+    <path class="r" id="Kdil" d="M143,150 Q146,162 153,160 Q156,152 150,149Z"/>
+    <circle class="r" id="Kg1" cx="133" cy="106" r="7.5"/><circle class="r" id="Kg2" cx="167" cy="106" r="7.5"/>
+    <circle class="r" id="Kgb1" cx="134" cy="108" r="3"/><circle class="r" id="Kgb2" cx="166" cy="108" r="3"/>
+    <path class="r" id="Ktas" d="M118,164 Q150,180 182,164 L182,176 Q150,192 118,176Z"/>
+    <circle class="r" id="Kmad" cx="150" cy="188" r="7"/>
+    <path class="r" id="Kb1" d="M124,212 L120,260 L144,260 L144,216Z"/>
+    <path class="r" id="Kb2" d="M176,212 L180,260 L156,260 L156,216Z"/>
+    <path class="r" id="Kkuy" d="M196,234 Q230,226 236,196" fill="none" stroke-width="8"/>`;
+  },
+  inek(r){
+    let sp='';
+    const px2=[126,178,212,148], py2=[138,128,168,182];
+    for(let i=0;i<3+Math.floor(r()*2);i++)
+      sp+=`<path class="r" id="Isp${i}" d="M${px2[i]},${py2[i]} q16,-10 28,1 q9,11 -2,20 q-16,10 -28,-1 q-9,-11 2,-20Z"/>`;
+    return `<path class="r" id="IZ" d="M15,270 Q150,260 285,270 L285,300 L15,300Z"/>
+    <rect class="r" id="Igov" x="86" y="110" width="156" height="106" rx="44"/>${sp}
+    <path class="r" id="Ibas" d="M62,104 Q36,108 32,134 Q30,160 52,168 Q74,174 88,158 L88,114 Q78,102 62,104Z"/>
+    <path class="r" id="Ibur" d="M34,138 Q32,162 54,168 Q72,172 84,160 L84,142 Q58,152 34,138Z"/>
+    <circle class="r" id="Idel1" cx="48" cy="154" r="3.4"/><circle class="r" id="Idel2" cx="64" cy="158" r="3.4"/>
+    <path class="r" id="Ibo1" d="M54,102 Q46,84 58,76 Q64,92 68,100Z"/>
+    <path class="r" id="Ibo2" d="M80,100 Q82,82 96,78 Q88,94 90,102Z"/>
+    <ellipse class="r" id="Ikul" cx="94" cy="104" rx="15" ry="9" transform="rotate(-24 94 104)"/>
+    <circle class="r" id="Ig" cx="62" cy="124" r="6"/><circle class="r" id="Igb" cx="63" cy="125" r="2.5"/>
+    <rect class="r" id="Ib1" x="100" y="210" width="18" height="40" rx="6"/><rect class="r" id="It1" x="100" y="248" width="18" height="14" rx="4"/>
+    <rect class="r" id="Ib2" x="134" y="212" width="18" height="38" rx="6"/><rect class="r" id="It2" x="134" y="248" width="18" height="14" rx="4"/>
+    <rect class="r" id="Ib3" x="180" y="212" width="18" height="38" rx="6"/><rect class="r" id="It3" x="180" y="248" width="18" height="14" rx="4"/>
+    <rect class="r" id="Ib4" x="212" y="210" width="18" height="40" rx="6"/><rect class="r" id="It4" x="212" y="248" width="18" height="14" rx="4"/>
+    <path class="r" id="Imem" d="M152,216 Q152,240 170,240 Q188,240 188,216Z"/>
+    <path class="r" id="Ikuy" d="M242,128 Q264,148 260,196" fill="none" stroke-width="6"/>
+    <path class="r" id="Ipus" d="M256,190 Q270,204 260,216 Q248,206 252,192Z"/>`;
+  },
+  zurafa(r){
+    let sp='';
+    const zx=[150,190,222,168,132,116],zy=[178,168,196,212,200,90];
+    for(let i=0;i<5+Math.floor(r()*2);i++)
+      sp+=`<path class="r" id="Zsp${i}" d="M${zx[i%6]},${zy[i%6]} q12,-8 22,1 q7,9 -2,16 q-12,8 -22,-1 q-7,-9 2,-16Z"/>`;
+    return `<path class="r" id="ZZ" d="M15,272 Q150,262 285,272 L285,300 L15,300Z"/>
+    <rect class="r" id="Zgov" x="118" y="152" width="132" height="80" rx="36"/>${sp}
+    <path class="r" id="Zboy" d="M132,170 Q110,118 98,62 L128,52 Q142,114 160,158 Q146,168 132,170Z"/>
+    <path class="r" id="Zbas" d="M100,58 Q78,52 66,64 Q56,78 68,88 Q84,98 102,90 Q112,80 110,66Z"/>
+    <ellipse class="r" id="Zbur" cx="72" cy="78" rx="13" ry="10"/>
+    <circle class="r" id="Zdel" cx="68" cy="76" r="2.6"/>
+    <circle class="r" id="Zg" cx="94" cy="70" r="5.5"/><circle class="r" id="Zgb" cx="95" cy="71" r="2.2"/>
+    <ellipse class="r" id="Zkul" cx="118" cy="54" rx="12" ry="7" transform="rotate(-24 118 54)"/>
+    <rect class="r" id="Zos1" x="94" y="28" width="6" height="18" rx="3"/><circle class="r" id="Zob1" cx="97" cy="24" r="6"/>
+    <rect class="r" id="Zos2" x="112" y="26" width="6" height="18" rx="3"/><circle class="r" id="Zob2" cx="115" cy="22" r="6"/>
+    <path class="r" id="Zyel" d="M130,56 Q152,110 162,156" fill="none" stroke-width="7"/>
+    <rect class="r" id="Zb1" x="130" y="226" width="15" height="40" rx="6"/><rect class="r" id="Zt1" x="130" y="262" width="15" height="12" rx="4"/>
+    <rect class="r" id="Zb2" x="160" y="228" width="15" height="38" rx="6"/><rect class="r" id="Zt2" x="160" y="262" width="15" height="12" rx="4"/>
+    <rect class="r" id="Zb3" x="196" y="228" width="15" height="38" rx="6"/><rect class="r" id="Zt3" x="196" y="262" width="15" height="12" rx="4"/>
+    <rect class="r" id="Zb4" x="226" y="226" width="15" height="40" rx="6"/><rect class="r" id="Zt4" x="226" y="262" width="15" height="12" rx="4"/>
+    <path class="r" id="Zkuy" d="M250,178 Q272,198 268,232" fill="none" stroke-width="6"/>
+    <path class="r" id="Zpus" d="M264,226 Q276,240 266,250 Q256,240 262,228Z"/>`;
+  },
+  fil(r){
+    return `<path class="r" id="FZ" d="M15,272 Q150,262 285,272 L285,300 L15,300Z"/>
+    <path class="r" id="Fgov" d="M98,130 Q94,96 132,92 L214,96 Q252,100 250,142 L248,196 Q246,230 210,230 L122,228 Q96,226 96,192Z"/>
+    <circle class="r" id="Fbas" cx="84" cy="138" r="46"/>
+    <path class="r" id="Fkul" d="M110,100 Q156,90 154,140 Q152,182 112,174 Q126,138 110,100Z"/>
+    <path class="r" id="Fhrt" d="M56,158 Q32,196 44,234 Q50,252 70,246 Q58,238 60,224 Q54,198 74,172 Q66,160 56,158Z"/>
+    <path class="r" id="Fdis" d="M72,182 Q86,198 102,198 Q92,182 80,174Z"/>
+    <circle class="r" id="Fg" cx="76" cy="122" r="6.5"/><circle class="r" id="Fgb" cx="77" cy="123" r="2.6"/>
+    <rect class="r" id="Fb1" x="118" y="222" width="26" height="44" rx="11"/>
+    <circle class="r" id="Ftn1" cx="126" cy="262" r="4.5"/><circle class="r" id="Ftn2" cx="138" cy="262" r="4.5"/>
+    <rect class="r" id="Fb2" x="164" y="228" width="26" height="38" rx="11"/>
+    <rect class="r" id="Fb3" x="208" y="222" width="26" height="44" rx="11"/>
+    <circle class="r" id="Ftn3" cx="216" cy="262" r="4.5"/><circle class="r" id="Ftn4" cx="228" cy="262" r="4.5"/>
+    <path class="r" id="Fkuy" d="M250,166 Q272,186 266,214" fill="none" stroke-width="6"/>
+    <path class="r" id="Fpus" d="M262,208 Q274,220 266,230 Q256,220 260,210Z"/>`;
+  },
+  ayi(r){
+    const bal=r()<0.6;
+    let p=`<path class="r" id="AZ" d="M15,274 Q150,264 285,274 L285,300 L15,300Z"/>
+    <circle class="r" id="Abas" cx="150" cy="92" r="44"/>
+    <circle class="r" id="Akl1" cx="114" cy="58" r="15"/><circle class="r" id="Aki1" cx="114" cy="58" r="7"/>
+    <circle class="r" id="Akl2" cx="186" cy="58" r="15"/><circle class="r" id="Aki2" cx="186" cy="58" r="7"/>
+    <ellipse class="r" id="Abur" cx="150" cy="106" rx="20" ry="14"/>
+    <path class="r" id="Abnk" d="M143,100 L157,100 Q154,110 150,110 Q146,110 143,100Z"/>
+    <path class="r" id="Aagz" d="M150,110 Q150,118 142,120 M150,110 Q150,118 158,120" fill="none"/>
+    <circle class="r" id="Ag1" cx="134" cy="84" r="7"/><circle class="r" id="Ag2" cx="166" cy="84" r="7"/>
+    <circle class="r" id="Agb1" cx="135" cy="86" r="2.8"/><circle class="r" id="Agb2" cx="165" cy="86" r="2.8"/>
+    <path class="r" id="Agov" d="M112,132 Q90,204 106,252 L194,252 Q210,204 188,132 Q150,148 112,132Z"/>
+    <ellipse class="r" id="Akar" cx="150" cy="196" rx="30" ry="38"/>
+    <path class="r" id="Akol1" d="M114,140 Q86,158 90,186 Q102,192 112,184 Q108,160 122,146Z"/>
+    <path class="r" id="Akol2" d="M186,140 Q214,158 210,186 Q198,192 188,184 Q192,160 178,146Z"/>
+    <ellipse class="r" id="Aay1" cx="122" cy="248" rx="20" ry="13"/>
+    <ellipse class="r" id="Aay2" cx="178" cy="248" rx="20" ry="13"/>`;
+    if(bal) p+=`<path class="r" id="Apot" d="M232,214 Q226,258 244,262 L268,262 Q286,258 280,214 Q256,222 232,214Z"/>
+    <ellipse class="r" id="Apk" cx="256" cy="212" rx="26" ry="9"/>
+    <path class="r" id="Adamla" d="M244,222 q0,12 7,12 q7,0 7,-12 q-7,4 -14,0Z"/>`;
+    return p;
+  },
+  at(r){
+    return `<path class="r" id="HZ" d="M15,272 Q150,262 285,272 L285,300 L15,300Z"/>
+    <rect class="r" id="Hgov" x="100" y="142" width="138" height="76" rx="34"/>
+    <path class="r" id="Hboy" d="M122,160 Q104,118 116,78 Q122,64 138,68 L150,84 Q158,142 152,160 Q136,166 122,160Z"/>
+    <path class="r" id="Hbas" d="M118,76 Q98,72 82,82 Q68,92 74,104 Q82,114 98,110 Q114,106 122,96Z"/>
+    <ellipse class="r" id="Hbur" cx="82" cy="96" rx="13" ry="9"/>
+    <circle class="r" id="Hdel" cx="78" cy="96" r="2.6"/>
+    <circle class="r" id="Hg" cx="106" cy="88" r="5.5"/><circle class="r" id="Hgb" cx="107" cy="89" r="2.2"/>
+    <path class="r" id="Hkl1" d="M124,66 L130,48 L140,64Z"/>
+    <path class="r" id="Hkl2" d="M140,68 L150,52 L154,70Z"/>
+    <path class="r" id="Hyel" d="M142,64 Q158,86 150,110 Q162,122 154,144 Q160,152 154,160 L146,158 Q154,116 136,76Z"/>
+    <rect class="r" id="Hb1" x="112" y="212" width="14" height="42" rx="5"/><rect class="r" id="Ht1" x="112" y="250" width="14" height="12" rx="4"/>
+    <rect class="r" id="Hb2" x="142" y="214" width="14" height="40" rx="5"/><rect class="r" id="Ht2" x="142" y="250" width="14" height="12" rx="4"/>
+    <rect class="r" id="Hb3" x="186" y="214" width="14" height="40" rx="5"/><rect class="r" id="Ht3" x="186" y="250" width="14" height="12" rx="4"/>
+    <rect class="r" id="Hb4" x="216" y="212" width="14" height="42" rx="5"/><rect class="r" id="Ht4" x="216" y="250" width="14" height="12" rx="4"/>
+    <path class="r" id="Hkuy" d="M238,160 Q266,168 268,206 Q258,232 248,236 Q258,208 250,190 Q244,172 232,168Z"/>`;
+  },
+});
 function makeGen(tpl,seed){
   const id='gen_'+tpl+'_'+seed;
   PICS[id]={icon:GEN_ICON[tpl],vb:'0 0 300 300',parts:GEN[tpl](RNG(seed))};
