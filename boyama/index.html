@@ -412,11 +412,16 @@ const GEN={
 };
 const GEN_ICON={mandala:'🌀',roket:'🚀',akvaryum:'🐟',bahce:'🌼',cami:'🕌',ev:'🏠',apartman:'🏢',okul:'🏫',
   gozluk:'👓',inek:'🐄',kalem:'✏️',defter:'📒',semsiye:'☂️',otobus:'🚌',buzdolabi:'🧊',camasir:'🌀',
-  seker:'🍬',nalbur:'🔨',yazarkasa:'🧾',kopek:'🐕',zurafa:'🦒',fil:'🐘',aslan:'🦁',ayi:'🐻',at:'🐎'};
+  seker:'🍬',nalbur:'🔨',yazarkasa:'🧾',kopek:'🐕',zurafa:'🦒',fil:'🐘',aslan:'🦁',ayi:'🐻',at:'🐎',
+  tavsan:'🐰',kaplumbaga:'🐢',penguen:'🐧',baykus:'🦉',ari:'🐝',ugurbocegi:'🐞',salyangoz:'🐌',
+  dondurma:'🍦',pasta:'🎂',tren:'🚂',yelkenli:'⛵',kardanadam:'⛄',ucurtma:'🪁'};
 const GEN_NAME={mandala:'Mandala',roket:'Roket',akvaryum:'Akvaryum',bahce:'Çiçek Bahçesi',cami:'Cami',
   ev:'Ev',apartman:'Apartman',okul:'Okul',gozluk:'Gözlük',inek:'İnek',kalem:'Kalem',defter:'Defter',
   semsiye:'Şemsiye',otobus:'Otobüs',buzdolabi:'Buzdolabı',camasir:'Çamaşır Makinesi',seker:'Şekerler',
-  nalbur:'Nalbur Tezgâhı',yazarkasa:'Yazar Kasa',kopek:'Köpek',zurafa:'Zürafa',fil:'Fil',aslan:'Aslan',ayi:'Ayı',at:'At'};
+  nalbur:'Nalbur Tezgâhı',yazarkasa:'Yazar Kasa',kopek:'Köpek',zurafa:'Zürafa',fil:'Fil',aslan:'Aslan',ayi:'Ayı',at:'At',
+  tavsan:'Tavşan',kaplumbaga:'Kaplumbağa',penguen:'Penguen',baykus:'Baykuş',ari:'Arı',ugurbocegi:'Uğur Böceği',
+  salyangoz:'Salyangoz',dondurma:'Dondurma',pasta:'Doğum Günü Pastası',tren:'Tren',yelkenli:'Yelkenli',
+  kardanadam:'Kardan Adam',ucurtma:'Uçurtma'};
 const CUR_NAME={kedi:'Kedi',kelebek:'Kelebek',araba:'Araba',cicek:'Çiçek',balik:'Balık'};
 
 /* ── HAYVANLAR v2: gerçek boyama kitabı çizgisi ── */
@@ -557,6 +562,208 @@ Object.assign(GEN,{
     <ellipse class="r" id="Apk" cx="256" cy="212" rx="26" ry="9"/>
     <path class="r" id="Adamla" d="M244,222 q0,12 7,12 q7,0 7,-12 q-7,4 -14,0Z"/>`;
     return p;
+  },
+  tavsan(r){
+    const havuc=r()<0.7;
+    let p=`<path class="r" id="TZ" d="M15,274 Q150,264 285,274 L285,300 L15,300Z"/>
+    <ellipse class="r" id="Tkl1" cx="126" cy="52" rx="15" ry="42" transform="rotate(-8 126 52)"/>
+    <ellipse class="r" id="Tki1" cx="126" cy="56" rx="7" ry="30" transform="rotate(-8 126 56)"/>
+    <ellipse class="r" id="Tkl2" cx="174" cy="52" rx="15" ry="42" transform="rotate(8 174 52)"/>
+    <ellipse class="r" id="Tki2" cx="174" cy="56" rx="7" ry="30" transform="rotate(8 174 56)"/>
+    <circle class="r" id="Tbas" cx="150" cy="122" r="44"/>
+    <circle class="r" id="Tg1" cx="134" cy="112" r="7"/><circle class="r" id="Tg2" cx="166" cy="112" r="7"/>
+    <circle class="r" id="Tgb1" cx="135" cy="114" r="2.8"/><circle class="r" id="Tgb2" cx="165" cy="114" r="2.8"/>
+    <path class="r" id="Tbur" d="M144,128 L156,128 L150,136Z"/>
+    <path class="r" id="Tagz" d="M150,136 Q150,144 142,146 M150,136 Q150,144 158,146" fill="none"/>
+    <circle class="r" id="Tya1" cx="122" cy="132" r="7"/>
+    <circle class="r" id="Tya2" cx="178" cy="132" r="7"/>
+    <path class="r" id="Tbiy" d="M126,124 L106,120 M126,130 L108,134 M174,124 L194,120 M174,130 L192,134" fill="none" stroke-width="2"/>
+    <path class="r" id="Tgov" d="M116,162 Q98,214 110,254 L190,254 Q202,214 184,162 Q150,176 116,162Z"/>
+    <ellipse class="r" id="Tkar" cx="150" cy="212" rx="26" ry="32"/>
+    <ellipse class="r" id="Tay1" cx="118" cy="250" rx="18" ry="11"/>
+    <ellipse class="r" id="Tay2" cx="182" cy="250" rx="18" ry="11"/>`;
+    if(havuc) p+=`<path class="r" id="Thav" d="M232,208 L262,252 L244,258 L222,216Z"/>
+    <path class="r" id="Thy1" d="M232,208 Q224,192 232,184 Q238,196 238,206Z"/>
+    <path class="r" id="Thy2" d="M238,204 Q242,188 254,186 Q248,198 244,208Z"/>`;
+    return p;
+  },
+  kaplumbaga(r){
+    let dil='';
+    for(let i=0;i<3;i++) dil+=`<path class="r" id="KBd${i}" d="M${112+i*38},176 L${130+i*38},148 L${148+i*38},176Z"/>`;
+    return `<path class="r" id="KBZ" d="M15,272 Q150,262 285,272 L285,300 L15,300Z"/>
+    <path class="r" id="KBkab" d="M88,220 Q88,140 150,138 Q212,140 212,220Z"/>${dil}
+    <path class="r" id="KBet" d="M80,220 L220,220 L212,240 L88,240Z"/>
+    <circle class="r" id="KBbas" cx="242" cy="196" r="26"/>
+    <circle class="r" id="KBg" cx="250" cy="188" r="5.5"/><circle class="r" id="KBgb" cx="251" cy="189" r="2.2"/>
+    <path class="r" id="KBagz" d="M252,202 Q260,206 264,200" fill="none"/>
+    <ellipse class="r" id="KBb1" cx="108" cy="248" rx="14" ry="10"/>
+    <ellipse class="r" id="KBb2" cx="190" cy="248" rx="14" ry="10"/>
+    <path class="r" id="KBkuy" d="M84,226 Q66,230 62,244 Q76,246 86,238Z"/>`;
+  },
+  penguen(r){
+    const bere=r()<0.5;
+    let p=`<path class="r" id="PZ" d="M15,274 Q150,262 285,274 L285,300 L15,300Z"/>
+    <path class="r" id="Pgov" d="M150,42 Q92,50 88,150 Q86,236 150,242 Q214,236 212,150 Q208,50 150,42Z"/>
+    <path class="r" id="Pkar" d="M150,84 Q114,92 112,160 Q112,222 150,228 Q188,222 188,160 Q186,92 150,84Z"/>
+    <path class="r" id="Pkn1" d="M92,110 Q66,140 76,182 Q92,178 98,150Z"/>
+    <path class="r" id="Pkn2" d="M208,110 Q234,140 224,182 Q208,178 202,150Z"/>
+    <circle class="r" id="Pg1" cx="132" cy="92" r="9"/><circle class="r" id="Pg2" cx="168" cy="92" r="9"/>
+    <circle class="r" id="Pgb1" cx="134" cy="94" r="3.4"/><circle class="r" id="Pgb2" cx="166" cy="94" r="3.4"/>
+    <path class="r" id="Pgaga" d="M138,108 L162,108 L150,124Z"/>
+    <path class="r" id="Pay1" d="M118,240 L104,258 L142,258 L138,242Z"/>
+    <path class="r" id="Pay2" d="M182,240 L196,258 L158,258 L162,242Z"/>`;
+    if(bere) p+=`<path class="r" id="Pber" d="M112,58 Q118,26 150,24 Q182,26 188,58 Q150,44 112,58Z"/>
+    <circle class="r" id="Ppom" cx="150" cy="20" r="9"/>`;
+    return p;
+  },
+  baykus(r){
+    return `<rect class="r" id="Bdal" x="40" y="242" width="220" height="12" rx="6"/>
+    <path class="r" id="Byap1" d="M70,242 Q60,222 74,212 Q84,226 82,242Z"/>
+    <path class="r" id="Bgov" d="M150,52 Q94,58 92,150 Q90,226 150,232 Q210,226 208,150 Q206,58 150,52Z"/>
+    <path class="r" id="Bkas" d="M108,64 L128,44 L140,66 M192,64 L172,44 L160,66" fill="none" stroke-width="5"/>
+    <circle class="r" id="Bgoz1" cx="126" cy="106" r="26"/>
+    <circle class="r" id="Bgoz2" cx="174" cy="106" r="26"/>
+    <circle class="r" id="Big1" cx="126" cy="106" r="13"/>
+    <circle class="r" id="Big2" cx="174" cy="106" r="13"/>
+    <circle class="r" id="Bp1" cx="129" cy="103" r="4"/><circle class="r" id="Bp2" cx="171" cy="103" r="4"/>
+    <path class="r" id="Bgaga" d="M142,124 L158,124 L150,142Z"/>
+    <path class="r" id="Bkar" d="M150,150 Q118,156 116,196 Q118,226 150,230 Q182,226 184,196 Q182,156 150,150Z"/>
+    <path class="r" id="Btuy" d="M126,164 Q150,178 174,164 M120,186 Q150,200 180,186 M124,208 Q150,220 176,208" fill="none"/>
+    <path class="r" id="Bkn1" d="M96,120 Q76,150 84,190 Q98,184 102,152Z"/>
+    <path class="r" id="Bkn2" d="M204,120 Q224,150 216,190 Q202,184 198,152Z"/>
+    <path class="r" id="Bay1" d="M132,232 L126,246 L142,246 L140,233Z"/>
+    <path class="r" id="Bay2" d="M168,232 L174,246 L158,246 L160,233Z"/>`;
+  },
+  ari(r){
+    let cizgi='';
+    for(let i=0;i<3;i++) cizgi+=`<path class="r" id="Ac${i}" d="M${118+i*26},128 Q${124+i*26},176 ${118+i*26},208 L${132+i*26},208 Q${138+i*26},176 ${132+i*26},128Z"/>`;
+    return `<path class="r" id="ArZ" d="M15,276 Q150,266 285,276 L285,300 L15,300Z"/>
+    <ellipse class="r" id="Akan1" cx="118" cy="84" rx="34" ry="22" transform="rotate(-24 118 84)"/>
+    <ellipse class="r" id="Akan2" cx="182" cy="84" rx="34" ry="22" transform="rotate(24 182 84)"/>
+    <ellipse class="r" id="Agov" cx="150" cy="168" rx="58" ry="48"/>${cizgi}
+    <circle class="r" id="Abas" cx="150" cy="102" r="30"/>
+    <circle class="r" id="Ag1" cx="140" cy="96" r="6"/><circle class="r" id="Ag2" cx="160" cy="96" r="6"/>
+    <circle class="r" id="Agb1" cx="141" cy="97" r="2.4"/><circle class="r" id="Agb2" cx="159" cy="97" r="2.4"/>
+    <path class="r" id="Aagz" d="M142,112 Q150,118 158,112" fill="none"/>
+    <path class="r" id="Aant" d="M140,76 Q134,62 124,58 M160,76 Q166,62 176,58" fill="none" stroke-width="3"/>
+    <circle class="r" id="Aab1" cx="123" cy="56" r="5"/><circle class="r" id="Aab2" cx="177" cy="56" r="5"/>
+    <path class="r" id="Aigne" d="M150,216 L144,232 L156,232Z"/>`;
+  },
+  ugurbocegi(r){
+    let ben='';
+    const bx=[122,178,136,164,150],by=[130,130,176,176,150];
+    for(let i=0;i<5;i++) ben+=`<circle class="r" id="Ub${i}" cx="${bx[i]}" cy="${by[i]}" r="${9+(i%2)*3}"/>`;
+    return `<path class="r" id="UZ2" d="M15,272 Q150,260 285,272 L285,300 L15,300Z"/>
+    <path class="r" id="Uyap" d="M40,268 Q30,236 56,224 Q74,240 66,268Z"/>
+    <circle class="r" id="Ugov" cx="150" cy="158" r="72"/>${ben}
+    <path class="r" id="Uciz" d="M150,86 L150,230" fill="none" stroke-width="3"/>
+    <circle class="r" id="Ubas2" cx="150" cy="76" r="26"/>
+    <circle class="r" id="Ug1" cx="141" cy="70" r="5.5"/><circle class="r" id="Ug2" cx="159" cy="70" r="5.5"/>
+    <circle class="r" id="Ugb1" cx="142" cy="71" r="2.2"/><circle class="r" id="Ugb2" cx="158" cy="71" r="2.2"/>
+    <path class="r" id="Uagz2" d="M143,84 Q150,89 157,84" fill="none"/>
+    <path class="r" id="Uant" d="M140,54 Q134,42 124,38 M160,54 Q166,42 176,38" fill="none" stroke-width="3"/>
+    <circle class="r" id="Uab1" cx="123" cy="36" r="4.5"/><circle class="r" id="Uab2" cx="177" cy="36" r="4.5"/>`;
+  },
+  salyangoz(r){
+    return `<path class="r" id="SZ2" d="M15,270 Q150,260 285,270 L285,300 L15,300Z"/>
+    <path class="r" id="Sgov2" d="M60,258 Q56,222 84,216 L216,216 Q248,220 252,244 Q254,258 240,258Z"/>
+    <path class="r" id="Sbas2" d="M226,222 Q248,214 254,190 Q256,174 244,168 Q230,164 224,180 Q220,200 218,216Z"/>
+    <path class="r" id="Sant" d="M238,168 Q236,150 228,142 M250,172 Q254,152 262,146" fill="none" stroke-width="3"/>
+    <circle class="r" id="Sab1" cx="227" cy="140" r="5.5"/><circle class="r" id="Sab2" cx="263" cy="144" r="5.5"/>
+    <circle class="r" id="Sg2" cx="240" cy="182" r="4.5"/>
+    <circle class="r" id="Skab2" cx="148" cy="176" r="62"/>
+    <circle class="r" id="Skab3" cx="148" cy="182" r="40"/>
+    <circle class="r" id="Skab4" cx="150" cy="188" r="20"/>`;
+  },
+  dondurma(r){
+    const top=2+Math.floor(r()*2);
+    let p=`<path class="r" id="Dkul" d="M118,160 L182,160 L150,268Z"/>
+    <path class="r" id="Dkul2" d="M126,186 L174,186 M136,214 L164,214 M132,160 L146,240 M168,160 L152,240" fill="none" stroke-width="2.5"/>`;
+    for(let i=0;i<top;i++) p+=`<circle class="r" id="Dtop${i}" cx="150" cy="${138-i*44}" r="34"/>`;
+    p+=`<path class="r" id="Ddamla" d="M128,152 q0,14 8,14 q8,0 8,-14Z"/>
+    <circle class="r" id="Dvis" cx="150" cy="${138-top*44-24}" r="10"/>
+    <path class="r" id="Dsap" d="M150,${138-top*44-32} q6,-14 16,-18" fill="none" stroke-width="3"/>`;
+    return p;
+  },
+  pasta(r){
+    const mum=3+Math.floor(r()*3);
+    let p=`<rect class="r" id="Ptab2" x="40" y="252" width="220" height="14" rx="7"/>
+    <rect class="r" id="Pkat1" x="66" y="196" width="168" height="58" rx="10"/>
+    <rect class="r" id="Pkat2" x="82" y="148" width="136" height="50" rx="10"/>
+    <path class="r" id="Pkre1" d="M66,196 q10,18 21,0 q10,18 21,0 q10,18 21,0 q10,18 21,0 q10,18 21,0 q10,18 21,0 q10,18 21,0 L234,196Z"/>
+    <path class="r" id="Pkre2" d="M82,148 q9,16 18,0 q9,16 18,0 q9,16 18,0 q9,16 18,0 q9,16 18,0 q9,16 18,0 L218,148Z"/>`;
+    for(let i=0;i<mum;i++){
+      const mx=150+(i-(mum-1)/2)*30;
+      p+=`<rect class="r" id="Pm${i}" x="${(mx-4).toFixed(0)}" y="112" width="8" height="36" rx="3"/>
+      <path class="r" id="Pal${i}" d="M${mx.toFixed(0)},96 q-7,10 0,16 q7,-6 0,-16Z"/>`;
+    }
+    for(let i=0;i<6;i++) p+=`<circle class="r" id="Psus${i}" cx="${86+i*26}" cy="${218+(i%2)*14}" r="5"/>`;
+    return p;
+  },
+  tren(r){
+    return `<rect class="r" id="TRray" x="10" y="262" width="280" height="8"/>
+    <path class="r" id="TRtrv" d="M20,270 L30,282 M60,270 L70,282 M100,270 L110,282 M140,270 L150,282 M180,270 L190,282 M220,270 L230,282 M260,270 L270,282" fill="none" stroke-width="5"/>
+    <rect class="r" id="TRkab" x="52" y="122" width="70" height="98" rx="10"/>
+    <rect class="r" id="TRpen" x="64" y="136" width="46" height="36" rx="6"/>
+    <rect class="r" id="TRgov" x="118" y="164" width="130" height="56" rx="12"/>
+    <rect class="r" id="TRbaca" x="196" y="118" width="22" height="48" rx="6"/>
+    <circle class="r" id="TRdu1" cx="210" cy="100" r="13"/>
+    <circle class="r" id="TRdu2" cx="230" cy="80" r="10"/>
+    <circle class="r" id="TRdu3" cx="248" cy="63" r="7"/>
+    <path class="r" id="TRon" d="M248,220 L282,220 L262,190 L248,196Z"/>
+    <circle class="r" id="TRt1" cx="86" cy="240" r="20"/><circle class="r" id="TRj1" cx="86" cy="240" r="8"/>
+    <circle class="r" id="TRt2" cx="152" cy="240" r="20"/><circle class="r" id="TRj2" cx="152" cy="240" r="8"/>
+    <circle class="r" id="TRt3" cx="212" cy="240" r="20"/><circle class="r" id="TRj3" cx="212" cy="240" r="8"/>
+    <circle class="r" id="TRfar" cx="252" cy="180" r="8"/>
+    <rect class="r" id="TRserit" x="118" y="176" width="130" height="10" rx="4"/>`;
+  },
+  yelkenli(r){
+    return `<path class="r" id="Ydeniz" d="M0,238 Q40,228 75,238 Q110,248 150,238 Q190,228 225,238 Q260,248 300,238 L300,300 L0,300Z"/>
+    <path class="r" id="Ygov2" d="M62,238 L238,238 L210,272 L92,272Z"/>
+    <rect class="r" id="Ydirek" x="146" y="60" width="8" height="178"/>
+    <path class="r" id="Yyel1" d="M140,70 Q80,160 136,226 L140,226Z"/>
+    <path class="r" id="Yyel2" d="M160,64 Q232,150 164,228 L160,228Z"/>
+    <polygon class="r" id="Ybay" points="154,60 190,70 154,82"/>
+    <circle class="r" id="Ygun2" cx="48" cy="52" r="20"/>
+    <path class="r" id="Ymar1" d="M228,60 q8,-12 16,0 q8,-12 16,0" fill="none" stroke-width="3.5"/>
+    <path class="r" id="Ymar2" d="M210,92 q8,-12 16,0 q8,-12 16,0" fill="none" stroke-width="3.5"/>
+    <circle class="r" id="Ylom1" cx="118" cy="252" r="7"/>
+    <circle class="r" id="Ylom2" cx="150" cy="254" r="7"/>
+    <circle class="r" id="Ylom3" cx="182" cy="252" r="7"/>`;
+  },
+  kardanadam(r){
+    const dugme=2+Math.floor(r()*2);
+    let p=`<path class="r" id="KAZ" d="M10,270 Q150,258 290,270 L290,300 L10,300Z"/>
+    <circle class="r" id="KAgov" cx="150" cy="212" r="58"/>
+    <circle class="r" id="KAort" cx="150" cy="128" r="42"/>
+    <circle class="r" id="KAbas" cx="150" cy="62" r="30"/>
+    <rect class="r" id="KAsap1" x="118" y="24" width="64" height="10" rx="4"/>
+    <rect class="r" id="KAsap2" x="130" y="2" width="40" height="24" rx="5"/>
+    <circle class="r" id="KAg1" cx="140" cy="54" r="4.5"/><circle class="r" id="KAg2" cx="160" cy="54" r="4.5"/>
+    <path class="r" id="KAbur" d="M150,60 L172,66 L150,70Z"/>
+    <path class="r" id="KAagz" d="M138,76 Q150,84 162,76" fill="none"/>
+    <path class="r" id="KAatk1" d="M122,88 Q150,102 178,88 L178,100 Q150,114 122,100Z"/>
+    <rect class="r" id="KAatk2" x="164" y="96" width="14" height="34" rx="5"/>
+    <path class="r" id="KAkol1" d="M96,120 L54,96 M70,105 L58,112 M66,100 L52,92" fill="none" stroke-width="4"/>
+    <path class="r" id="KAkol2" d="M204,120 L246,96 M230,105 L242,112 M234,100 L248,92" fill="none" stroke-width="4"/>`;
+    for(let i=0;i<dugme;i++) p+=`<circle class="r" id="KAd${i}" cx="150" cy="${190+i*26}" r="6.5"/>`;
+    p+=`<circle class="r" id="KAk1" cx="46" cy="160" r="5"/><circle class="r" id="KAk2" cx="252" cy="140" r="5"/>
+    <circle class="r" id="KAk3" cx="70" cy="60" r="4"/><circle class="r" id="KAk4" cx="240" cy="200" r="4"/>`;
+    return p;
+  },
+  ucurtma(r){
+    return `<path class="r" id="UcZ" d="M0,272 Q150,262 300,272 L300,300 L0,300Z"/>
+    <polygon class="r" id="Uc1" points="150,30 208,110 150,110"/>
+    <polygon class="r" id="Uc2" points="150,30 92,110 150,110"/>
+    <polygon class="r" id="Uc3" points="150,190 208,110 150,110"/>
+    <polygon class="r" id="Uc4" points="150,190 92,110 150,110"/>
+    <path class="r" id="Ucip" d="M150,190 Q130,232 96,262" fill="none" stroke-width="3"/>
+    <path class="r" id="Ucf1" d="M138,214 q-12,-8 -10,6 q10,6 10,-6Z"/>
+    <path class="r" id="Ucf2" d="M120,240 q-12,-8 -10,6 q10,6 10,-6Z"/>
+    <ellipse class="r" id="Ucb1" cx="58" cy="60" rx="30" ry="13"/>
+    <ellipse class="r" id="Ucb2" cx="248" cy="90" rx="26" ry="11"/>
+    <circle class="r" id="Ucgun" cx="262" cy="36" r="16"/>
+    <path class="r" id="Uckus" d="M30,120 q8,-10 16,0 M52,128 q8,-10 16,0" fill="none" stroke-width="3"/>`;
   },
   at(r){
     return `<path class="r" id="HZ" d="M15,272 Q150,262 285,272 L285,300 L15,300Z"/>
