@@ -166,8 +166,89 @@ const GEN={
     }
     return p;
   },
+  cami(r){
+    const minare=r()<0.5?2:1, pen=3+Math.floor(r()*3);
+    let p=`<rect class="r" id="czemin" x="10" y="255" width="280" height="40"/>
+      <rect class="r" id="cgovde" x="70" y="160" width="160" height="100" rx="6"/>
+      <path class="r" id="ckubbe" d="M92,160 a58,58 0 0 1 116,0 Z"/>
+      <path class="r" id="ckubbe2" d="M110,160 a40,40 0 0 1 24,-36 a58,58 0 0 0 -24,36" />
+      <rect class="r" id="calemsap" x="147" y="86" width="6" height="18"/>
+      <path class="r" id="chilal" d="M150,66 a13,13 0 1 0 10,21 a10,10 0 1 1 -10,-21"/>
+      <path class="r" id="ckapi" d="M134,260 L134,215 a16,16 0 0 1 32,0 L166,260 Z"/>`;
+    for(let i=0;i<pen;i++){ const px=88+i*(124/(pen-1||1));
+      p+=`<path class="r" id="cpen${i}" d="M${px},250 L${px},225 a9,9 0 0 1 18,0 L${px+18},250 Z"/>`; }
+    const mx=[46,254];
+    for(let m=0;m<minare;m++){
+      p+=`<rect class="r" id="cmin${m}" x="${mx[m]-8}" y="110" width="16" height="150"/>
+        <rect class="r" id="cser${m}" x="${mx[m]-13}" y="150" width="26" height="12" rx="4"/>
+        <path class="r" id="ckul${m}" d="M${mx[m]-10},110 L${mx[m]},78 L${mx[m]+10},110 Z"/>`;
+    }
+    if(r()<0.6) p+=`<circle class="r" id="cgunes" cx="${40+r()*30|0}" cy="45" r="18"/>`;
+    return p;
+  },
+  ev(r){
+    const pen=1+Math.floor(r()*2), baca=r()<0.7;
+    let p=`<path class="r" id="ecimen" d="M0,255 Q150,${242+r()*10|0} 300,255 L300,300 L0,300Z"/>
+      <rect class="r" id="egovde" x="80" y="150" width="140" height="105"/>
+      <polygon class="r" id="ecati" points="65,150 150,85 235,150"/>
+      <path class="r" id="ekapi" d="M130,255 L130,205 a20,20 0 0 1 40,0 L170,255 Z"/>
+      <circle class="r" id="etok" cx="162" cy="228" r="4"/>`;
+    for(let i=0;i<pen;i++) p+=`<rect class="r" id="epen${i}" x="${94+i*74}" y="168" width="34" height="30" rx="4"/>`;
+    if(baca) p+=`<rect class="r" id="ebaca" x="192" y="98" width="20" height="40"/>
+      <ellipse class="r" id="eduman" cx="205" cy="80" rx="16" ry="10"/>`;
+    p+=`<circle class="r" id="eagac" cx="45" cy="185" r="32"/>
+      <rect class="r" id="egovde2" x="39" y="210" width="12" height="45" rx="5"/>
+      <circle class="r" id="egun" cx="255" cy="50" r="20"/>`;
+    return p;
+  },
+  apartman(r){
+    const kat=3+Math.floor(r()*3), kol=2+Math.floor(r()*2);
+    const kh=Math.min(46,190/kat);
+    let p=`<rect class="r" id="azemin" x="10" y="262" width="280" height="34"/>
+      <rect class="r" id="agovde" x="90" y="${(258-kat*kh).toFixed(0)}" width="120" height="${(kat*kh).toFixed(0)}"/>
+      <rect class="r" id="acati" x="82" y="${(258-kat*kh-16).toFixed(0)}" width="136" height="16" rx="5"/>
+      <path class="r" id="akapi" d="M134,258 L134,${258-kh*0.75|0} a16,14 0 0 1 32,0 L166,258 Z"/>`;
+    for(let k2=0;k2<kat;k2++) for(let c=0;c<kol;c++){
+      if(k2===0&&c===Math.floor(kol/2)) continue;
+      const wx=104+c*(92/(kol-1||1)), wy=258-(k2+1)*kh+10;
+      p+=`<rect class="r" id="apen${k2}_${c}" x="${wx.toFixed(0)}" y="${wy.toFixed(0)}" width="26" height="${(kh*0.55).toFixed(0)}" rx="3"/>`;
+    }
+    p+=`<ellipse class="r" id="abulut" cx="${45+r()*30|0}" cy="52" rx="30" ry="13"/>
+      <circle class="r" id="agun" cx="255" cy="48" r="18"/>
+      <circle class="r" id="aagac" cx="52" cy="225" r="26"/>
+      <rect class="r" id="aagacg" x="47" y="244" width="10" height="20"/>`;
+    return p;
+  },
+  okul(r){
+    const cocuk=2+Math.floor(r()*3);
+    let p=`<path class="r" id="obahce" d="M0,240 L300,240 L300,300 L0,300Z"/>
+      <rect class="r" id="ogovde" x="60" y="130" width="180" height="112"/>
+      <rect class="r" id="ocati" x="52" y="114" width="196" height="16" rx="5"/>
+      <rect class="r" id="odirek" x="262" y="150" width="5" height="92"/>
+      <polygon class="r" id="obayrak" points="267,150 296,158 267,168"/>
+      <path class="r" id="okapi" d="M136,242 L136,205 a14,14 0 0 1 28,0 L164,242 Z"/>
+      <rect class="r" id="otabela" x="118" y="138" width="64" height="16" rx="4"/>`;
+    for(let i=0;i<3;i++){
+      p+=`<rect class="r" id="open${i}" x="${74+i*36}" y="168" width="24" height="22" rx="3"/>
+        <rect class="r" id="open2${i}" x="${186+(i%2)*36}" y="168" width="24" height="22" rx="3"/>`;
+    }
+    for(let i=0;i<cocuk;i++){
+      const cx2=50+i*(200/(cocuk-1||1))+(r()*16-8), cy2=272, s=0.9+r()*0.25;
+      const tip=Math.floor(r()*3); // 0 kız-örgülü 1 oğlan 2 başörtülü kız
+      p+=`<g transform="translate(${cx2.toFixed(0)},${cy2}) scale(${s.toFixed(2)})">`;
+      if(tip===2) p+=`<circle class="r" id="cbas${i}" cx="0" cy="-24" r="11"/>
+        <circle class="r" id="cyuz${i}" cx="0" cy="-22" r="7.5"/>`;
+      else p+=`<circle class="r" id="csac${i}" cx="0" cy="-26" r="9.5"/>
+        <circle class="r" id="cyuz${i}" cx="0" cy="-22" r="8"/>`;
+      p+=`<path class="r" id="cgov${i}" d="M0,-14 Q12,-6 9,12 L-9,12 Q-12,-6 0,-14Z"/></g>`;
+    }
+    p+=`<circle class="r" id="otop" cx="${150+r()*60-30|0}" cy="284" r="10"/>
+      <circle class="r" id="oagac" cx="24" cy="212" r="22"/>
+      <circle class="r" id="ogun" cx="30" cy="45" r="17"/>`;
+    return p;
+  },
 };
-const GEN_ICON={mandala:'🌀',roket:'🚀',akvaryum:'🐟',bahce:'🌼'};
+const GEN_ICON={mandala:'🌀',roket:'🚀',akvaryum:'🐟',bahce:'🌼',cami:'🕌',ev:'🏠',apartman:'🏢',okul:'🏫'};
 function makeGen(tpl,seed){
   const id='gen_'+tpl+'_'+seed;
   PICS[id]={icon:GEN_ICON[tpl],vb:'0 0 300 300',parts:GEN[tpl](RNG(seed))};
