@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>BOYAMA KİTABI — Rengarenk Dünya</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#fff8f0; --ink:#5a4a3a; --dim:#b8a590; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
+  header{display:flex;align-items:center;gap:10px;width:min(94vw,480px);justify-content:space-between}
+  h1{font-size:20px;font-weight:900}
+  .pick{display:flex;gap:6px}
+  .pickbtn{font:inherit;font-size:22px;background:#fff;border:2px solid #eaddcd;border-radius:12px;
+    width:44px;height:44px;cursor:pointer}
+  .pickbtn.on{border-color:#ff9f5f;background:#fff2e8}
+  #svgbox{flex:1;min-height:0;width:min(94vw,480px);background:#fff;border-radius:20px;
+    box-shadow:0 8px 26px rgba(90,74,58,.12);display:flex;align-items:center;justify-content:center;
+    padding:10px}
+  svg{width:100%;height:100%}
+  svg .r{cursor:pointer;stroke:#5a4a3a;stroke-width:3;stroke-linejoin:round;transition:fill .15s}
+  #palette{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;width:min(94vw,480px);padding:4px 0}
+  .swatch{width:40px;height:40px;border-radius:50%;border:3px solid #fff;cursor:pointer;
+    box-shadow:0 2px 6px rgba(90,74,58,.25);transition:transform .1s}
+  .swatch.on{transform:scale(1.22);border-color:#5a4a3a}
+  #tools{display:flex;gap:8px}
+  .tool{font:inherit;font-size:13px;font-weight:800;letter-spacing:.04em;color:var(--ink);
+    background:#fff;border:2px solid #eaddcd;border-radius:999px;padding:9px 16px;cursor:pointer}
+  .tool:active{background:#fff2e8}
+</style>
+
+<div id="wrap">
+  <header>
+    <h1>🎨 Boyama Kitabı</h1>
+    <div class="pick" id="pick"></div>
+  </header>
+  <div id="svgbox"></div>
+  <div id="palette"></div>
+  <div id="tools">
+    <button class="tool" id="eraseBtn">🧽 Sil</button>
+    <button class="tool" id="clearBtn">🗑️ Hepsini Temizle</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* Her resim: isim + svg parçaları (id'li bölgeler .r sınıfıyla) */
+const PICS={
+  kedi:{ icon:'🐱', vb:'0 0 300 300', parts:`
+    <ellipse class="r" id="k_govde" cx="150" cy="200" rx="75" ry="60"/>
+    <circle class="r" id="k_kafa" cx="150" cy="110" r="55"/>
+    <polygon class="r" id="k_kulak1" points="103,75 95,25 135,60"/>
+    <polygon class="r" id="k_kulak2" points="197,75 205,25 165,60"/>
+    <ellipse class="r" id="k_kuyruk" cx="235" cy="180" rx="14" ry="55" transform="rotate(30 235 180)"/>
+    <circle class="r" id="k_goz1" cx="130" cy="102" r="9"/>
+    <circle class="r" id="k_goz2" cx="170" cy="102" r="9"/>
+    <ellipse class="r" id="k_burun" cx="150" cy="122" rx="8" ry="6"/>
+    <ellipse class="r" id="k_pati1" cx="115" cy="252" rx="18" ry="12"/>
+    <ellipse class="r" id="k_pati2" cx="185" cy="252" rx="18" ry="12"/>`},
+  kelebek:{ icon:'🦋', vb:'0 0 300 300', parts:`
+    <ellipse class="r" id="b_govde" cx="150" cy="160" rx="13" ry="60"/>
+    <circle class="r" id="b_kafa" cx="150" cy="85" r="16"/>
+    <ellipse class="r" id="b_kanat1" cx="95" cy="125" rx="48" ry="38" transform="rotate(-20 95 125)"/>
+    <ellipse class="r" id="b_kanat2" cx="205" cy="125" rx="48" ry="38" transform="rotate(20 205 125)"/>
+    <ellipse class="r" id="b_kanat3" cx="103" cy="195" rx="38" ry="32" transform="rotate(15 103 195)"/>
+    <ellipse class="r" id="b_kanat4" cx="197" cy="195" rx="38" ry="32" transform="rotate(-15 197 195)"/>
+    <circle class="r" id="b_ben1" cx="95" cy="120" r="12"/>
+    <circle class="r" id="b_ben2" cx="205" cy="120" r="12"/>
+    <path class="r" id="b_anten" d="M143,72 Q130,45 118,42 M157,72 Q170,45 182,42" fill="none"/>`},
+  araba:{ icon:'🚗', vb:'0 0 300 300', parts:`
+    <rect class="r" id="a_govde" x="35" y="160" width="230" height="55" rx="16"/>
+    <path class="r" id="a_tavan" d="M85,160 L110,110 L200,110 L225,160 Z"/>
+    <rect class="r" id="a_cam" x="120" y="120" width="70" height="40" rx="6"/>
+    <circle class="r" id="a_teker1" cx="90" cy="222" r="26"/>
+    <circle class="r" id="a_teker2" cx="210" cy="222" r="26"/>
+    <circle class="r" id="a_jant1" cx="90" cy="222" r="11"/>
+    <circle class="r" id="a_jant2" cx="210" cy="222" r="11"/>
+    <rect class="r" id="a_far" x="252" y="172" width="14" height="14" rx="4"/>`},
+  cicek:{ icon:'🌸', vb:'0 0 300 300', parts:`
+    <rect class="r" id="c_sap" x="143" y="150" width="14" height="110" rx="6"/>
+    <ellipse class="r" id="c_yaprak1" cx="115" cy="215" rx="30" ry="14" transform="rotate(-30 115 215)"/>
+    <ellipse class="r" id="c_yaprak2" cx="185" cy="235" rx="30" ry="14" transform="rotate(30 185 235)"/>
+    <circle class="r" id="c_tac1" cx="150" cy="70" r="26"/>
+    <circle class="r" id="c_tac2" cx="112" cy="98" r="26"/>
+    <circle class="r" id="c_tac3" cx="188" cy="98" r="26"/>
+    <circle class="r" id="c_tac4" cx="126" cy="140" r="26"/>
+    <circle class="r" id="c_tac5" cx="174" cy="140" r="26"/>
+    <circle class="r" id="c_orta" cx="150" cy="108" r="22"/>`},
+  balik:{ icon:'🐠', vb:'0 0 300 300', parts:`
+    <ellipse class="r" id="f_govde" cx="140" cy="150" rx="85" ry="55"/>
+    <polygon class="r" id="f_kuyruk" points="215,150 275,105 275,195"/>
+    <polygon class="r" id="f_yuzgec1" points="120,98 150,60 165,100"/>
+    <polygon class="r" id="f_yuzgec2" points="120,202 150,240 165,200"/>
+    <circle class="r" id="f_goz" cx="90" cy="135" r="12"/>
+    <path class="r" id="f_cizgi1" d="M130,100 Q120,150 130,200" fill="none"/>
+    <path class="r" id="f_cizgi2" d="M165,100 Q155,150 165,200" fill="none"/>
+    <circle class="r" id="f_kabar1" cx="45" cy="90" r="8"/>
+    <circle class="r" id="f_kabar2" cx="30" cy="60" r="6"/>`},
+};
+const PALETTE=['#ff5f5f','#ff9f43','#ffd93d','#7bc47f','#4ab8ff','#8c5fff','#ff8fc0',
+  '#8a5a3a','#4a4a5a','#ffffff','#63e6be','#f78fb3'];
+
+let curPic='kedi', curColor=PALETTE[0], erase=false;
+let saved={};
+try{ saved=JSON.parse(localStorage.getItem('boyama_save'))||{}; }catch(e){}
+function save(){ try{ localStorage.setItem('boyama_save',JSON.stringify(saved)); }catch(e){} }
+
+const box=document.getElementById('svgbox');
+function loadPic(name){
+  curPic=name;
+  const p=PICS[name];
+  box.innerHTML=`<svg viewBox="${p.vb}" xmlns="http://www.w3.org/2000/svg">${p.parts}</svg>`;
+  const colors=saved[name]||{};
+  for(const el of box.querySelectorAll('.r')){
+    const isLine=el.getAttribute('fill')==='none';
+    if(!isLine) el.setAttribute('fill',colors[el.id]||'#ffffff');
+    el.addEventListener('click',()=>{
+      if(el.getAttribute('fill')==='none'&&!erase) return;
+      if(erase){ el.setAttribute('fill','#ffffff'); delete (saved[name]=saved[name]||{})[el.id]; }
+      else{ el.setAttribute('fill',curColor); (saved[name]=saved[name]||{})[el.id]=curColor; }
+      save(); pop();
+    });
+  }
+  for(const b of document.querySelectorAll('.pickbtn'))
+    b.classList.toggle('on',b.dataset.p===name);
+}
+let AC=null;
+function pop(){ try{
+  if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended')AC.resume();
+  const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine'; o.frequency.value=400+Math.random()*400;
+  g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.15);
+  o.connect(g).connect(AC.destination); o.start(t); o.stop(t+0.16);
+  navigator.vibrate&&navigator.vibrate(8);
+}catch(e){} }
+
+/* resim seçici */
+const pick=document.getElementById('pick');
+for(const [name,p] of Object.entries(PICS)){
+  const b=document.createElement('button');
+  b.className='pickbtn'; b.dataset.p=name; b.textContent=p.icon;
+  b.addEventListener('click',()=>loadPic(name));
+  pick.appendChild(b);
+}
+/* palet */
+const pal=document.getElementById('palette');
+PALETTE.forEach((c,i)=>{
+  const s=document.createElement('button');
+  s.className='swatch'+(i===0?' on':''); s.style.background=c;
+  s.addEventListener('click',()=>{
+    curColor=c; erase=false;
+    document.getElementById('eraseBtn').style.background='';
+    for(const x of pal.children) x.classList.remove('on');
+    s.classList.add('on');
+  });
+  pal.appendChild(s);
+});
+document.getElementById('eraseBtn').addEventListener('click',()=>{
+  erase=!erase;
+  document.getElementById('eraseBtn').style.background=erase?'#ffe0d0':'';
+});
+document.getElementById('clearBtn').addEventListener('click',()=>{
+  delete saved[curPic]; save(); loadPic(curPic);
+});
+loadPic('kedi');
+</script>

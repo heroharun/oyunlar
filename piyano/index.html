@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>PİYANO KAROLARI — Melodiyi Yakala</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#f7f4ef; --ink:#26222e; --dim:#8f8a9c; --tile:#26222e; --gold:#e8963e; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  canvas{display:block;width:100%;height:100%}
+  #hud{position:fixed;top:0;left:0;right:0;text-align:center;padding:14px;pointer-events:none}
+  .value{font-size:38px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--ink);
+    text-shadow:0 2px 0 rgba(232,150,62,.3)}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(247,244,239,.96);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(36px,10vw,74px);font-weight:900;line-height:.97;color:var(--ink)}
+  .card h1 span{color:var(--gold)}
+  .card p{max-width:34ch;color:var(--dim);font-size:15px;line-height:1.5}
+  .card .big{font-size:34px;font-weight:800;color:var(--gold)}
+  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.08em;text-transform:uppercase;
+    color:#fff;background:linear-gradient(180deg,#3a3546,#26222e);border:none;border-radius:999px;
+    padding:14px 40px;cursor:pointer;box-shadow:0 5px 0 #0f0d14}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #0f0d14}
+  .btn:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  .hint{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+</style>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div class="value" id="scoreEl">0</div></div>
+
+<div class="card" id="intro">
+  <h1>PİYANO <span>KAROLARI</span></h1>
+  <p>Siyah karolara dokun, beyazlara dokunma! Karolar gittikçe hızlanır — melodi senin parmaklarında. 🎵</p>
+  <button class="btn" id="startBtn">Çal!</button>
+  <span class="hint" id="bestIntro"></span>
+</div>
+
+<div class="card hidden" id="endcard">
+  <h1 id="endTitle">Ters Nota! 🎹</h1>
+  <div class="big" id="endScore"></div>
+  <p id="endMsg"></p>
+  <button class="btn" id="retryBtn">Tekrar Çal</button>
+</div>
+
+<script>
+'use strict';
+const COLS=4;
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+addEventListener('resize',resize); resize();
+
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+/* pentatonik melodi — çocuk şarkısı hissi */
+const SCALE=[262,294,330,392,440,523,587,659];
+let noteI=0, noteDir=1;
+function note(){
+  try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+    const f=SCALE[noteI];
+    noteI+=noteDir; if(noteI>=SCALE.length-1||noteI<=0) noteDir*=-1;
+    if(Math.random()<0.25) noteI=Math.max(0,Math.min(SCALE.length-1,noteI+(Math.random()<0.5?-2:2)));
+    o.type='triangle'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.22,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t+0.42);
+  }catch(e){}
+}
+function thud(){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(40,t+0.4);
+  g.gain.setValueAtTime(0.28,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.45);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+0.5);}catch(e){} }
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
+
+let tiles=[], score=0, speed=0, state='intro', lastLane=-1, flashRed=null;
+let best=0; try{ best=+localStorage.getItem('piyano_best')||0; }catch(e){}
+document.getElementById('bestIntro').textContent=best>0?'REKORUN: '+best:'';
+
+const ROW=()=>H/4;
+function reset(){
+  tiles=[]; score=0; speed=H*0.006;
+  for(let i=0;i<5;i++) pushTile(-i*ROW()-ROW());
+  updHud();
+}
+function pushTile(y){
+  let lane;
+  do{ lane=Math.floor(Math.random()*COLS); }while(lane===lastLane&&Math.random()<0.5);
+  lastLane=lane;
+  tiles.push({lane,y,hit:false});
+}
+function updHud(){ document.getElementById('scoreEl').textContent=score; }
+function physics(){
+  speed=H*0.006+score*H*0.00006;
+  for(const t of tiles) t.y+=speed;
+  // kaçırılan karo
+  for(const t of tiles){
+    if(!t.hit&&t.y>H){ gameOver(t,'Karo kaçtı! Daha hızlı olmalısın.'); return; }
+  }
+  tiles=tiles.filter(t=>t.y<H+ROW());
+  while(tiles.length<6){
+    const top=Math.min(...tiles.map(t=>t.y));
+    pushTile(top-ROW());
+  }
+}
+function gameOver(t,msg){
+  state='over'; thud(); buzz(80);
+  flashRed=t;
+  const nb=score>best; if(nb){ best=score; try{localStorage.setItem('piyano_best',best);}catch(e){} }
+  document.getElementById('endScore').textContent=score+' nota';
+  document.getElementById('endMsg').textContent=(nb?'YENİ REKOR! 🏆 ':'Rekor: '+best+' · ')+msg;
+  document.getElementById('endTitle').textContent='Ters Nota! 🎹';
+  setTimeout(()=>document.getElementById('endcard').classList.remove('hidden'),400);
+}
+function tapAt(x,y){
+  if(state!=='play') return;
+  const lane=Math.floor(x/(W/COLS));
+  // bu şeritte dokunulabilir karo var mı (ekranda)
+  let target=null;
+  for(const t of tiles){ if(!t.hit&&t.lane===lane&&t.y+ROW()>0&&t.y<H){
+    if(!target||t.y>target.y) target=t; } }
+  // sırayla: en alttaki vurulmamış karo hangi şeritteyse ona bak
+  let lowest=null;
+  for(const t of tiles){ if(!t.hit&&t.y+ROW()>0){ if(!lowest||t.y>lowest.y) lowest=t; } }
+  if(lowest&&lowest.lane===lane&&(!target||target===lowest)){
+    lowest.hit=true; score++; updHud(); note(); buzz(5);
+  } else {
+    gameOver({lane,y:y-ROW()/2},'Beyaza bastın!');
+  }
+}
+addEventListener('touchstart',e=>{
+  if(e.target.closest('.card'))return;
+  audio();
+  for(const t of e.changedTouches) tapAt(t.clientX,t.clientY);
+},{passive:true});
+addEventListener('mousedown',e=>{ if(!e.target.closest('.card')){ audio(); tapAt(e.clientX,e.clientY); } });
+
+function draw(){
+  ctx.fillStyle='#f7f4ef'; ctx.fillRect(0,0,W,H);
+  // şerit çizgileri
+  ctx.strokeStyle='rgba(38,34,46,.15)'; ctx.lineWidth=2;
+  for(let i=1;i<COLS;i++){ ctx.beginPath(); ctx.moveTo(W/COLS*i,0); ctx.lineTo(W/COLS*i,H); ctx.stroke(); }
+  const rw=W/COLS, rh=ROW();
+  for(const t of tiles){
+    const x=t.lane*rw;
+    if(t.hit){
+      ctx.fillStyle='rgba(232,150,62,.25)';
+      ctx.fillRect(x+3,t.y+3,rw-6,rh-6);
+      continue;
+    }
+    ctx.fillStyle='#26222e';
+    ctx.fillRect(x+3,t.y+3,rw-6,rh-6);
+    ctx.fillStyle='rgba(255,255,255,.08)';
+    ctx.fillRect(x+3,t.y+3,rw-6,rh*0.25);
+  }
+  if(flashRed&&state==='over'){
+    ctx.fillStyle='rgba(232,74,95,.55)';
+    ctx.fillRect(flashRed.lane*rw+3,flashRed.y+3,rw-6,rh-6);
+  }
+}
+function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loop); }
+function tap(el,fn){ el._fn=fn;
+  const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
+  el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
+tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
+  flashRed=null; reset(); state='play';
+  document.getElementById('intro').classList.add('hidden'); });
+tap(document.getElementById('retryBtn'),()=>{ flashRed=null; reset(); state='play';
+  document.getElementById('endcard').classList.add('hidden'); });
+reset(); loop();
+</script>

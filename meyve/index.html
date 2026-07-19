@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>MEYVE DİLİMLE — Kes, Kes, Kes!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#243b1e; --ink:#f2f7ea; --dim:#9ab88a; --gold:#ffd166; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  canvas{display:block;width:100%;height:100%}
+  #hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;
+    padding:12px 16px;pointer-events:none}
+  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .value{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+  #combo{position:fixed;top:16%;left:50%;transform:translateX(-50%);font-size:28px;font-weight:900;
+    color:var(--gold);opacity:0;pointer-events:none;text-shadow:0 0 16px rgba(255,209,102,.7)}
+  #combo.pop{animation:cpop .7s ease-out}
+  @keyframes cpop{0%{opacity:0;transform:translateX(-50%) scale(.5)}
+    20%{opacity:1;transform:translateX(-50%) scale(1.1)}80%{opacity:1}100%{opacity:0}}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(36,59,30,.94);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(36px,10vw,76px);font-weight:900;line-height:.96;
+    background:linear-gradient(180deg,#a8e05f,#ffd166);
+    -webkit-background-clip:text;background-clip:text;color:transparent;transform:rotate(-2deg)}
+  .card p{max-width:34ch;color:var(--dim);font-size:15px;line-height:1.5}
+  .card .big{font-size:34px;font-weight:800;color:var(--gold)}
+  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.08em;text-transform:uppercase;
+    color:#243b1e;background:linear-gradient(180deg,#a8e05f,#7cc84a);border:none;border-radius:999px;
+    padding:14px 38px;cursor:pointer;box-shadow:0 5px 0 #4a8228}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #4a8228}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  .hint{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+</style>
+
+<canvas id="cv"></canvas>
+<div id="hud">
+  <div><div class="label">Skor</div><div class="value" id="scoreEl">0</div></div>
+  <div style="text-align:right"><div class="label">Can</div><div class="value" id="lifeEl">❤️❤️❤️</div></div>
+</div>
+<div id="combo"></div>
+
+<div class="card" id="intro">
+  <h1>MEYVE DİLİMLE</h1>
+  <p>Parmağını hızla sürükleyerek havadaki meyveleri dilimle! Bombalara sakın dokunma 💣. Meyve düşürürsen can gider.</p>
+  <button class="btn" id="startBtn">Kes Biçim!</button>
+  <span class="hint" id="bestIntro"></span>
+</div>
+
+<div class="card hidden" id="endcard">
+  <h1 style="background:linear-gradient(180deg,#ff8f7a,#e84a5f);-webkit-background-clip:text;background-clip:text" id="endTitle">Oyun Bitti</h1>
+  <div class="big" id="endScore"></div>
+  <p id="endMsg"></p>
+  <button class="btn" id="retryBtn">Tekrar</button>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+addEventListener('resize',resize); resize();
+
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function slice_(f=600){ try{ const a=audio(),t=a.currentTime;
+  const buf=a.createBuffer(1,a.sampleRate*0.1,a.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+  const n=a.createBufferSource(); n.buffer=buf;
+  const flt=a.createBiquadFilter(); flt.type='bandpass'; flt.frequency.value=f;
+  const g=a.createGain(); g.gain.value=0.25;
+  n.connect(flt).connect(g).connect(a.destination); n.start(t); }catch(e){} }
+function boom(){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(30,t+0.5);
+  g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+0.55);}catch(e){} }
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
+
+const FRUITS=[
+  {e:'🍉',c:'#ff5f7a'},{e:'🍊',c:'#ff9f1c'},{e:'🍎',c:'#e84a5f'},
+  {e:'🍋',c:'#ffd166'},{e:'🥝',c:'#8bc34a'},{e:'🍓',c:'#ff6b8a'},{e:'🍑',c:'#ffb08a'}];
+let fruits=[], halves=[], juices=[], trail=[], score=0, lives=3, state='intro', tick=0, spawnT=60, comboArr=[];
+let best=0; try{ best=+localStorage.getItem('meyve_best')||0; }catch(e){}
+document.getElementById('bestIntro').textContent=best>0?'REKORUN: '+best:'';
+
+function reset(){ fruits=[]; halves=[]; juices=[]; trail=[]; score=0; lives=3; spawnT=40; comboArr=[]; updHud(); }
+function updHud(){
+  document.getElementById('scoreEl').textContent=score;
+  document.getElementById('lifeEl').textContent='❤️'.repeat(Math.max(0,lives));
+}
+function spawn(){
+  const n=1+Math.floor(Math.random()*Math.min(3,1+score/150));
+  for(let i=0;i<n;i++){
+    const isBomb=Math.random()<0.12&&score>30;
+    const x=W*0.15+Math.random()*W*0.7;
+    fruits.push({
+      x, y:H+40,
+      vx:(W/2-x)*0.004+(Math.random()-.5)*2.5,
+      vy:-(H*0.021+Math.random()*H*0.004),
+      r:Math.min(34,W*0.06), rot:Math.random()*6.28, vr:(Math.random()-.5)*0.1,
+      f: isBomb?null:FRUITS[Math.floor(Math.random()*FRUITS.length)],
+      bomb:isBomb
+    });
+  }
+}
+function physics(){
+  tick++;
+  spawnT--;
+  if(spawnT<=0){ spawn(); spawnT=70+Math.random()*60-Math.min(30,score/20); }
+  const G=H*0.00037;
+  for(const f of fruits){ f.vy+=G; f.x+=f.vx; f.y+=f.vy; f.rot+=f.vr; }
+  // düşen meyveler
+  for(const f of fruits){
+    if(f.y>H+60&&f.vy>0&&!f.dead){
+      f.dead=true;
+      if(!f.bomb){ lives--; updHud(); buzz(50);
+        if(lives<=0){ gameOver('Meyveler yere düştü!'); return; } }
+    }
+  }
+  fruits=fruits.filter(f=>!f.dead);
+  for(const h of halves){ h.vy+=G*1.4; h.x+=h.vx; h.y+=h.vy; h.rot+=h.vr; }
+  halves=halves.filter(h=>h.y<H+80);
+  for(const j of juices){ j.x+=j.vx; j.y+=j.vy; j.vy+=0.25; j.life-=0.03; }
+  juices=juices.filter(j=>j.life>0);
+  trail=trail.filter(t=>tick-t.t<8);
+  if(comboArr.length&&tick-comboArr[0]>18){
+    if(comboArr.length>=3){
+      const bonus=comboArr.length*10; score+=bonus; updHud();
+      const c=document.getElementById('combo');
+      c.textContent=comboArr.length+' KOMBO! +'+bonus;
+      c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+    }
+    comboArr=[];
+  }
+}
+function cut(f){
+  if(f.bomb){
+    boom(); buzz([80,50,120]);
+    for(let i=0;i<24;i++) juices.push({x:f.x,y:f.y,vx:(Math.random()-.5)*10,
+      vy:(Math.random()-.5)*10,life:1,col:i%2?'#ffd166':'#e84a5f',size:Math.random()*6+3});
+    gameOver('Bombaya dokundun! 💣'); return;
+  }
+  f.dead=true; score+=10; comboArr.push(tick); updHud();
+  slice_(400+Math.random()*400); buzz(8);
+  for(const s of [-1,1]) halves.push({x:f.x,y:f.y,vx:f.vx+s*2.5,vy:f.vy-1,
+    rot:f.rot,vr:s*0.15,f:f.f,side:s,r:f.r});
+  for(let i=0;i<10;i++) juices.push({x:f.x,y:f.y,vx:(Math.random()-.5)*7,
+    vy:(Math.random()-.5)*7-1,life:1,col:f.f.c,size:Math.random()*5+2});
+}
+function gameOver(msg){
+  state='over';
+  const nb=score>best; if(nb){ best=score; try{localStorage.setItem('meyve_best',best);}catch(e){} }
+  document.getElementById('endScore').textContent=score+' puan';
+  document.getElementById('endMsg').textContent=(nb?'YENİ REKOR! 🏆 ':'Rekor: '+best+' · ')+msg;
+  document.getElementById('endcard').classList.remove('hidden');
+}
+
+/* kesme girdisi */
+let cutting=false, lastP=null;
+function pt(e){ const t=e.touches?e.touches[0]:e; return {x:t.clientX,y:t.clientY}; }
+function down(e){ if(e.target.closest('.card'))return; cutting=true; lastP=pt(e); audio(); }
+function moveH(e){
+  if(!cutting||state!=='play') return;
+  const p=pt(e);
+  trail.push({x:p.x,y:p.y,t:tick});
+  if(lastP){
+    const steps=Math.ceil(Math.hypot(p.x-lastP.x,p.y-lastP.y)/8);
+    for(let i=0;i<=steps;i++){
+      const ix=lastP.x+(p.x-lastP.x)*i/steps, iy=lastP.y+(p.y-lastP.y)*i/steps;
+      for(const f of fruits){ if(!f.dead&&Math.hypot(ix-f.x,iy-f.y)<f.r+8){ cut(f); if(state!=='play')return; } }
+    }
+  }
+  lastP=p;
+  fruits=fruits.filter(f=>!f.dead);
+}
+addEventListener('touchstart',down,{passive:true});
+addEventListener('touchmove',moveH,{passive:true});
+addEventListener('touchend',()=>{ cutting=false; lastP=null; });
+addEventListener('mousedown',down);
+addEventListener('mousemove',moveH);
+addEventListener('mouseup',()=>{ cutting=false; lastP=null; });
+
+function draw(){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#2e4a26'); g.addColorStop(1,'#1a2c15');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // ahşap doku çizgileri
+  ctx.strokeStyle='rgba(0,0,0,.12)'; ctx.lineWidth=2;
+  for(let i=0;i<6;i++){ ctx.beginPath(); ctx.moveTo(0,H*i/6+20); ctx.lineTo(W,H*i/6); ctx.stroke(); }
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  // yarımlar
+  for(const h of halves){
+    ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(h.rot);
+    ctx.beginPath();
+    ctx.arc(0,0,h.r,h.side>0?-1.57:1.57,h.side>0?1.57:4.71);
+    ctx.closePath(); ctx.clip();
+    ctx.font=(h.r*2)+'px system-ui'; ctx.fillText(h.f.e,0,0);
+    ctx.restore();
+  }
+  // meyveler
+  for(const f of fruits){
+    ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.rot);
+    ctx.font=(f.r*2)+'px system-ui';
+    ctx.fillText(f.bomb?'💣':f.f.e,0,0);
+    if(f.bomb){ ctx.fillStyle='#ff5f5f';
+      ctx.beginPath(); ctx.arc(f.r*0.6,-f.r*0.8,4+Math.sin(tick*0.4)*2,0,6.28); ctx.fill(); }
+    ctx.restore();
+  }
+  // meyve suyu
+  for(const j of juices){ ctx.globalAlpha=Math.max(0,j.life); ctx.fillStyle=j.col;
+    ctx.beginPath(); ctx.arc(j.x,j.y,j.size*j.life,0,6.28); ctx.fill(); }
+  ctx.globalAlpha=1;
+  // bıçak izi
+  if(trail.length>1){
+    ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineCap='round'; ctx.lineJoin='round';
+    for(let i=1;i<trail.length;i++){
+      ctx.lineWidth=(i/trail.length)*7;
+      ctx.beginPath(); ctx.moveTo(trail[i-1].x,trail[i-1].y);
+      ctx.lineTo(trail[i].x,trail[i].y); ctx.stroke();
+    }
+  }
+}
+function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loop); }
+function tap(el,fn){ el._fn=fn;
+  const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
+  el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
+tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
+  reset(); state='play';
+  document.getElementById('intro').classList.add('hidden'); });
+tap(document.getElementById('retryBtn'),()=>{ reset(); state='play';
+  document.getElementById('endcard').classList.add('hidden'); });
+reset(); loop();
+</script>
