@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>GÖKYÜZÜ KARTALI — İHA Görevi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#1a2416; --ink:#e8f0dd; --dim:#93a884; --gold:#ffd166; --red:#ff6b5f; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  canvas{display:block;width:100%;height:100%;cursor:crosshair}
+  #hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;
+    padding:12px 16px;pointer-events:none;z-index:2}
+  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .value{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+  #missionBar{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:2;
+    background:rgba(26,36,22,.85);border:1.5px solid rgba(232,240,221,.2);border-radius:12px;
+    padding:8px 16px;font-size:13px;font-weight:700;pointer-events:none;white-space:nowrap}
+  #missionBar b{color:var(--gold)}
+  #toast{position:fixed;top:22%;left:50%;transform:translateX(-50%);font-size:24px;font-weight:900;
+    color:var(--gold);opacity:0;pointer-events:none;text-shadow:0 0 14px rgba(255,209,102,.7);
+    white-space:nowrap;z-index:3}
+  #toast.pop{animation:tp 1.1s ease-out}
+  @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.5)}
+    15%{opacity:1;transform:translateX(-50%) scale(1.08)}82%{opacity:1}100%{opacity:0}}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:13px;text-align:center;background:rgba(26,36,22,.95);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(32px,8.5vw,64px);font-weight:900;line-height:1;text-wrap:balance;
+    background:linear-gradient(180deg,#e8f0dd,#93c47d);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .card p{max-width:37ch;color:var(--dim);font-size:14px;line-height:1.55}
+  .hangar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:400px}
+  .drone{background:rgba(232,240,221,.06);border:2px solid rgba(232,240,221,.2);border-radius:14px;
+    padding:10px 12px;min-width:100px;font-size:12px;font-weight:800;line-height:1.4;cursor:pointer;color:var(--ink)}
+  .drone small{display:block;font-size:9.5px;color:var(--dim);font-weight:700}
+  .drone.on{border-color:var(--gold);background:rgba(255,209,102,.14)}
+  .drone.lock{opacity:.4;pointer-events:none}
+  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.08em;text-transform:uppercase;
+    color:#1a2416;background:linear-gradient(180deg,#93c47d,#6b9e4f);border:none;border-radius:999px;
+    padding:14px 38px;cursor:pointer;box-shadow:0 5px 0 #3d5e2a}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #3d5e2a}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+</style>
+
+<canvas id="cv"></canvas>
+<div id="hud">
+  <div><div class="label">Puan</div><div class="value" id="scoreEl">0</div></div>
+  <div style="text-align:right"><div class="label">Füze</div><div class="value" id="ammoEl">∞</div></div>
+</div>
+<div id="missionBar"></div>
+<div id="toast"></div>
+
+<div class="card" id="intro">
+  <h1>🦅 GÖKYÜZÜ KARTALI</h1>
+  <p>Yerli ve milli İHA filon göreve hazır! Kameradan hedefleri izle, dokunarak füzeyi bırak. Hedefler kaçar, saklanır, hızlanır. Görevleri tamamla, yeni İHA'lar hangara katılsın. Sonu yok — gökyüzü senin! 🇹🇷</p>
+  <div class="hangar" id="hangar"></div>
+  <button class="btn" id="startBtn">Göreve Başla</button>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+addEventListener('resize',resize); resize();
+
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function boom(v=0.4){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type='sine';o.frequency.setValueAtTime(90,t);o.frequency.exponentialRampToValueAtTime(30,t+0.3);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+0.4);
+  const b=a.createBuffer(1,a.sampleRate*0.18,a.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);
+  const n=a.createBufferSource();n.buffer=b;
+  const ng=a.createGain();ng.gain.setValueAtTime(v*0.7,t);ng.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+  n.connect(ng).connect(a.destination);n.start(t);}catch(e){} }
+function whistle(){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type='sine';o.frequency.setValueAtTime(1400,t);o.frequency.exponentialRampToValueAtTime(300,t+0.55);
+  g.gain.setValueAtTime(0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.55);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+0.6);}catch(e){} }
+function ding(s=0){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type='triangle';o.frequency.value=440*Math.pow(1.12,s+2);
+  g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+0.32);}catch(e){} }
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
+
+/* İHA filosu: isim, füze hızı, patlama yarıçapı, aynı anda füze, açılma (görev sayısı) */
+const DRONES=[
+  {name:'Karagöz',  desc:'ilk göz ağrısı',  speed:5.5, blast:60, multi:1, unlock:0},
+  {name:'Şahin',    desc:'çevik keşifçi',   speed:7,   blast:70, multi:2, unlock:3},
+  {name:'Akın',     desc:'ağır yükün ustası',speed:6,  blast:105,multi:2, unlock:7},
+  {name:'Kızıl',    desc:'jet takipçi',     speed:10,  blast:80, multi:3, unlock:12},
+];
+let score=0, missions=0, drone=0;
+try{ const s=JSON.parse(localStorage.getItem('iha_save'));
+  if(s){ score=s.score||0; missions=s.missions||0; drone=s.drone||0; } }catch(e){}
+function save(){ try{ localStorage.setItem('iha_save',JSON.stringify({score,missions,drone})); }catch(e){} }
+
+let targets=[], missiles=[], booms=[], trees=[], state='intro', tick=0, scroll=0;
+let mission=null, missionN=0;
+
+/* görevler: her görev bir hedef türü + adet */
+const MISSION_TYPES=[
+  {k:'jip',   n:5,  txt:'5 hızlı jip durdur',        pts:30},
+  {k:'kamp',  n:3,  txt:'3 sığınağı imha et',        pts:60},
+  {k:'jip',   n:8,  txt:'8 jip durdur',              pts:30},
+  {k:'tank',  n:2,  txt:'2 zırhlıyı durdur',         pts:100},
+  {k:'kamp',  n:5,  txt:'5 sığınağı imha et',        pts:60},
+  {k:'tank',  n:4,  txt:'4 zırhlıyı durdur',         pts:100},
+];
+function newMission(){
+  const m=MISSION_TYPES[missionN%MISSION_TYPES.length];
+  mission={...m, done:0, hard:1+Math.floor(missionN/MISSION_TYPES.length)*0.3};
+  updMission();
+}
+function updMission(){
+  document.getElementById('missionBar').innerHTML=
+    'GÖREV '+(missions+1)+': '+mission.txt+' — <b>'+mission.done+' / '+mission.n+'</b>';
+}
+function updHud(){ document.getElementById('scoreEl').textContent=score.toLocaleString('tr-TR');
+  document.getElementById('ammoEl').textContent='×'+DRONES[drone].multi; }
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+function makeTrees(){ trees=[];
+  for(let i=0;i<26;i++) trees.push({x:Math.random()*W,y:Math.random()*H,r:8+Math.random()*14}); }
+makeTrees();
+
+function spawnTarget(){
+  const kinds=['jip','jip','kamp','tank'];
+  const want=mission?mission.k:'jip';
+  const k=Math.random()<0.5?want:kinds[Math.floor(Math.random()*kinds.length)];
+  const fromLeft=Math.random()<0.5;
+  const speedMul=(mission?mission.hard:1);
+  const t={ k,
+    x: fromLeft?-40:W+40,
+    y: H*0.2+Math.random()*H*0.65,
+    vx: (fromLeft?1:-1)*(k==='jip'?1.8:k==='tank'?0.7:0)*speedMul,
+    vy: 0, hp: k==='tank'?2:1, wob:Math.random()*6.28,
+    dodge: k==='jip'&&Math.random()<0.5,
+  };
+  if(k==='kamp'){ t.x=W*0.15+Math.random()*W*0.7; t.vx=0; }
+  targets.push(t);
+}
+function physics(){
+  tick++;
+  scroll+=0.3;
+  if(tick%Math.max(40,90-missions*3)===0 && targets.length<7) spawnTarget();
+  for(const t of targets){
+    t.wob+=0.05;
+    if(t.k==='jip'){ t.vy=Math.sin(t.wob*2)*1.2*(t.dodge?1.8:0.6); }
+    t.x+=t.vx; t.y+=t.vy;
+    // füzeden kaçınma (zigzag)
+    if(t.dodge){ for(const m of missiles){
+      if(Math.hypot(m.x-t.x,m.y-t.y)<130){ t.vy+=(t.y>m.y?1:-1)*0.5; } } }
+    t.y=Math.max(H*0.15,Math.min(H*0.92,t.y));
+  }
+  targets=targets.filter(t=>t.x>-80&&t.x<W+80);
+  for(const m of missiles){
+    m.y-=0; // hedefe kilitli
+    const dx=m.tx-m.x, dy=m.ty-m.y, d=Math.hypot(dx,dy);
+    if(d<m.speed){ explode(m.tx,m.ty,m.blast); m.dead=true; }
+    else { m.x+=dx/d*m.speed; m.y+=dy/d*m.speed; m.trail.push({x:m.x,y:m.y});
+      if(m.trail.length>10)m.trail.shift(); }
+  }
+  missiles=missiles.filter(m=>!m.dead);
+  for(const b of booms){ b.r+=b.vr; b.life-=0.04; }
+  booms=booms.filter(b=>b.life>0);
+}
+function explode(x,y,r){
+  boom(0.45); buzz(30);
+  booms.push({x,y,r:10,vr:r/9,life:1,max:r});
+  let hit=false;
+  for(const t of targets){
+    if(Math.hypot(t.x-x,t.y-y)<r+18){
+      t.hp--;
+      if(t.hp<=0){ t.dead=true; hit=true;
+        const pts=t.k==='tank'?100:t.k==='kamp'?60:30;
+        score+=pts; updHud();
+        if(mission&&t.k===mission.k){ mission.done++;
+          updMission();
+          if(mission.done>=mission.n){ missionDone(); } }
+      }
+    }
+  }
+  targets=targets.filter(t=>!t.dead);
+  if(hit) ding(2);
+  save();
+}
+function missionDone(){
+  missions++; score+=mission.pts*mission.n; updHud();
+  const before=DRONES.filter(d=>missions>=d.unlock).length;
+  toast('GÖREV TAMAM! +'+(mission.pts*mission.n)+' 🎖️');
+  ding(5); ding(8); buzz([40,60,40]);
+  // yeni İHA açıldı mı
+  DRONES.forEach((d,i)=>{ if(d.unlock===missions){
+    setTimeout(()=>{ toast('🦅 '+d.name+' HANGARA KATILDI!'); ding(10); },1300);
+  } });
+  missionN++; newMission(); save(); renderHangar();
+}
+
+/* dokun = füze bırak */
+function fire(x,y){
+  if(state!=='play') return;
+  const d=DRONES[drone];
+  if(missiles.length>=d.multi) return;
+  missiles.push({x:W/2,y:H+20,tx:x,ty:y,speed:d.speed,blast:d.blast,trail:[]});
+  whistle(); buzz(8);
+}
+addEventListener('touchstart',e=>{ if(e.target.closest('.card'))return;
+  audio(); for(const t of e.changedTouches) fire(t.clientX,t.clientY); },{passive:true});
+addEventListener('mousedown',e=>{ if(!e.target.closest('.card')){ audio(); fire(e.clientX,e.clientY); } });
+
+function renderHangar(){
+  const h=document.getElementById('hangar'); h.innerHTML='';
+  DRONES.forEach((d,i)=>{
+    const locked=missions<d.unlock;
+    const b=document.createElement('button');
+    b.className='drone'+(i===drone?' on':'')+(locked?' lock':'');
+    b.innerHTML=locked
+      ? '🔒 '+d.name+'<small>'+d.unlock+' görev gerekli</small>'
+      : '🦅 '+d.name+'<small>'+d.desc+' · füze ×'+d.multi+'</small>';
+    b.addEventListener('click',()=>{ if(!locked){ drone=i; save(); renderHangar(); updHud(); } });
+    h.appendChild(b);
+  });
+}
+
+function draw(){
+  // arazi
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#26361f'); g.addColorStop(1,'#1a2416');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // tarla desenleri
+  ctx.strokeStyle='rgba(232,240,221,.05)'; ctx.lineWidth=26;
+  for(let i=0;i<5;i++){ ctx.beginPath();
+    ctx.moveTo(0,(i*H/4+scroll)%(H+100)-50);
+    ctx.lineTo(W,(i*H/4+scroll)%(H+100)-90); ctx.stroke(); }
+  // ağaçlar
+  for(const t of trees){
+    const ty=(t.y+scroll*0.5)%(H+40)-20;
+    ctx.fillStyle='#2e4a24';
+    ctx.beginPath(); ctx.arc(t.x,ty,t.r,0,6.28); ctx.fill();
+    ctx.fillStyle='#38572b';
+    ctx.beginPath(); ctx.arc(t.x-t.r*0.3,ty-t.r*0.3,t.r*0.6,0,6.28); ctx.fill();
+  }
+  // hedefler
+  for(const t of targets){
+    ctx.save(); ctx.translate(t.x,t.y);
+    if(t.k==='jip'){
+      ctx.rotate(t.vx>0?0:Math.PI);
+      ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillRect(-20,10,40,6);
+      ctx.fillStyle='#4a4a42'; ctx.fillRect(-20,-9,40,18);
+      ctx.fillStyle='#5c5c52'; ctx.fillRect(-8,-15,20,8);
+      ctx.fillStyle='#22221e';
+      ctx.beginPath(); ctx.arc(-11,11,6,0,6.28); ctx.arc(11,11,6,0,6.28); ctx.fill();
+    } else if(t.k==='tank'){
+      ctx.rotate(t.vx>0?0:Math.PI);
+      ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillRect(-26,12,52,7);
+      ctx.fillStyle='#3d4536'; ctx.fillRect(-26,-4,52,18);
+      ctx.fillStyle='#4a5442'; ctx.beginPath(); ctx.arc(0,-6,13,0,6.28); ctx.fill();
+      ctx.fillStyle='#333b2c'; ctx.fillRect(8,-10,30,6);
+      if(t.hp>1){ ctx.fillStyle='#ffd166'; ctx.font='bold 12px system-ui';
+        ctx.textAlign='center'; ctx.fillText('×2',0,-22); }
+    } else {
+      ctx.fillStyle='rgba(0,0,0,.3)';
+      ctx.beginPath(); ctx.ellipse(0,16,26,7,0,0,6.28); ctx.fill();
+      ctx.fillStyle='#6b6152';
+      ctx.beginPath(); ctx.moveTo(-24,14); ctx.lineTo(0,-18); ctx.lineTo(24,14); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#57503f';
+      ctx.beginPath(); ctx.moveTo(-8,14); ctx.lineTo(0,2); ctx.lineTo(8,14); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+  // füzeler
+  for(const m of missiles){
+    for(let i=1;i<m.trail.length;i++){ ctx.globalAlpha=i/m.trail.length*0.5;
+      ctx.strokeStyle='#ffd166'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(m.trail[i-1].x,m.trail[i-1].y);
+      ctx.lineTo(m.trail[i].x,m.trail[i].y); ctx.stroke(); }
+    ctx.globalAlpha=1;
+    const a=Math.atan2(m.ty-m.y,m.tx-m.x);
+    ctx.save(); ctx.translate(m.x,m.y); ctx.rotate(a);
+    ctx.fillStyle='#d9dde3'; ctx.fillRect(-10,-3,20,6);
+    ctx.fillStyle='#ff6b5f'; ctx.beginPath();
+    ctx.moveTo(10,-3); ctx.lineTo(16,0); ctx.lineTo(10,3); ctx.fill();
+    ctx.restore();
+    // hedef işareti
+    ctx.strokeStyle='rgba(255,107,95,.8)'; ctx.lineWidth=2;
+    const s=8+Math.sin(tick*0.3)*2;
+    ctx.strokeRect(m.tx-s,m.ty-s,s*2,s*2);
+  }
+  // patlamalar
+  for(const b of booms){
+    ctx.globalAlpha=b.life;
+    const bg2=ctx.createRadialGradient(b.x,b.y,2,b.x,b.y,b.r);
+    bg2.addColorStop(0,'#fff3d1'); bg2.addColorStop(0.5,'#ffd166'); bg2.addColorStop(1,'rgba(255,107,95,0)');
+    ctx.fillStyle=bg2;
+    ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.28); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  // kamera çerçevesi
+  ctx.strokeStyle='rgba(232,240,221,.25)'; ctx.lineWidth=1.5;
+  const cs=26;
+  for(const [cx,cy,sx,sy] of [[14,14,1,1],[W-14,14,-1,1],[14,H-14,1,-1],[W-14,H-14,-1,-1]]){
+    ctx.beginPath(); ctx.moveTo(cx+sx*cs,cy); ctx.lineTo(cx,cy); ctx.lineTo(cx,cy+sy*cs); ctx.stroke();
+  }
+  if(state==='play'&&tick%90<45){ ctx.fillStyle='#ff6b5f';
+    ctx.beginPath(); ctx.arc(W-30,32,5,0,6.28); ctx.fill();
+    ctx.fillStyle='rgba(232,240,221,.6)'; ctx.font='700 10px system-ui'; ctx.textAlign='right';
+    ctx.fillText('● CANLI — '+DRONES[drone].name.toUpperCase(),W-42,36); }
+}
+function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loop); }
+function tap(el,fn){ el._fn=fn;
+  const fire2=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
+  el.addEventListener('click',fire2); el.addEventListener('touchend',fire2); }
+tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
+  if(!mission) newMission();
+  state='play'; updHud();
+  document.getElementById('intro').classList.add('hidden'); });
+newMission(); renderHangar(); updHud(); loop();
+</script>

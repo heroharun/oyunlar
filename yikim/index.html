@@ -363,11 +363,21 @@ function checkFlow(){
   if(state!=='settle') return;
   settleTimer--;
   const moving = blocks.some(b=>!b.dead&&!b.asleep&&(Math.abs(b.vx)>0.4||Math.abs(b.vy)>0.6));
-  if(settleTimer>0||moving) return;
+  /* titreşen bloklar yeni topu sonsuza dek bekletmesin: 5 sn sonra zorla devam */
+  if((settleTimer>0||moving) && settleTimer>-300) return;
   const alive = blocks.filter(b=>!b.dead).length;
   if(alive===0) endLevel(true);
   else if(ballsLeft>0) loadBall();
-  else endLevel(false);
+  else {
+    /* otomatik ek top: sormadan ver, cezayı ekranda göster */
+    score=Math.max(0,score-150);
+    document.getElementById('score').textContent=score;
+    floatText(W/2, H*0.3, 'EK TOP  −150', '#ff8fab');
+    const c=document.getElementById('combo');
+    c.textContent='🟡 EK TOP −150 PUAN'; c.style.opacity=1;
+    setTimeout(()=>{ c.style.opacity=0; },1600);
+    ballsLeft=1; renderPips(); loadBall();
+  }
 }
 function endLevel(won){
   state='end';

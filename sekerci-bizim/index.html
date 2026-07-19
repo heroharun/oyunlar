@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>ŞEKERCİ BİZİM — Çınar Kuruyemiş</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#fdf6ec; --ink:#5a4028; --dim:#b89b78; --gold:#e8963e; --green:#7cb356; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;
+    background-image:radial-gradient(circle at 15% 8%,rgba(232,150,62,.1),transparent 40%),
+      radial-gradient(circle at 85% 92%,rgba(124,179,86,.1),transparent 40%)}
+  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
+  #hud{width:min(94vw,440px);display:flex;justify-content:space-between;align-items:center}
+  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .value{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums}
+  #lvlbar{width:min(94vw,440px);height:12px;background:#f0e2cc;border-radius:99px;overflow:hidden}
+  #lvlfill{height:100%;width:0%;border-radius:99px;transition:width .3s;
+    background:linear-gradient(90deg,#7cb356,#e8963e)}
+  #board{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%}
+  canvas{display:block;border-radius:18px;background:#fffdf8;box-shadow:0 8px 30px rgba(90,64,40,.15)}
+  #comboTxt{position:fixed;top:16%;left:50%;transform:translateX(-50%);font-size:26px;font-weight:900;
+    color:var(--gold);opacity:0;pointer-events:none;text-shadow:0 0 14px rgba(232,150,62,.6);white-space:nowrap}
+  #comboTxt.pop{animation:cp .8s ease-out}
+  @keyframes cp{0%{opacity:0;transform:translateX(-50%) scale(.5)}
+    18%{opacity:1;transform:translateX(-50%) scale(1.1)}80%{opacity:1}100%{opacity:0}}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(253,246,236,.96);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(34px,9vw,66px);font-weight:900;line-height:1;
+    background:linear-gradient(180deg,#e8963e,#7cb356);
+    -webkit-background-clip:text;background-clip:text;color:transparent;transform:rotate(-2deg)}
+  .card .marka{font-size:14px;font-weight:800;letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
+  .card p{max-width:34ch;color:var(--dim);font-size:15px;line-height:1.5}
+  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
+    color:#fff;background:linear-gradient(180deg,#e8963e,#c9762a);border:none;border-radius:999px;
+    padding:14px 38px;cursor:pointer;box-shadow:0 5px 0 #8f5218}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #8f5218}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+</style>
+
+<div id="wrap">
+  <div id="hud">
+    <div><div class="label">Seviye</div><div class="value" id="lvlEl">1</div></div>
+    <div style="text-align:center"><div class="label">Skor</div><div class="value" id="scoreEl">0</div></div>
+    <div style="text-align:right"><div class="label">Rekor</div><div class="value" id="bestEl">0</div></div>
+  </div>
+  <div id="lvlbar"><div id="lvlfill"></div></div>
+  <div id="board"><canvas id="cv"></canvas></div>
+</div>
+<div id="comboTxt"></div>
+
+<div class="card" id="intro">
+  <h1>ŞEKERCİ BİZİM</h1>
+  <div class="marka">— Çınar Kuruyemiş —</div>
+  <p>Yan yana iki kuruyemişi kaydırıp yer değiştir, 3'lü sıra yap, tezgâhı boşalt! Hamle limiti yok, oyun hiç bitmiyor — sadece sen ve rekorun. 🥜</p>
+  <button class="btn" id="startBtn">Tezgâhı Aç</button>
+</div>
+
+<script>
+'use strict';
+const N=8, TYPES=5;
+const EMO=['🥜','🌰','🍇','🍑','🌻','🍯'];
+const COLS=['#c9925a','#8a5a3a','#8c5fb8','#ff9f5f','#e8c93e','#e8b45f'];
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let CELL=44, DPR=1;
+function resize(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  const b=document.getElementById('board');
+  CELL=Math.floor(Math.min(b.clientWidth*0.94,b.clientHeight*0.98,460)/N);
+  cv.style.width=cv.style.height=CELL*N+'px';
+  cv.width=cv.height=CELL*N*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+addEventListener('resize',resize);
+
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function blip(f,d=0.08,v=0.15,t='triangle'){ try{ const a=audio(),n=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(0.001,n+d);
+  o.connect(g).connect(a.destination);o.start(n);o.stop(n+d+0.02);}catch(e){} }
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
+
+let grid, score=0, level=1, state='intro', busy=false, particles=[], offsetY, tick=0;
+let best=0; try{ best=+localStorage.getItem('sekerci_best')||0; }catch(e){}
+const LVL=l=>l*1500;                 // seviye eşiği (kümülatif)
+
+function randT(){ return Math.floor(Math.random()*TYPES); }
+function findMatches(){
+  const out=new Set();
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const v=grid[y][x]; if(v<0)continue;
+    if(x<N-2&&grid[y][x+1]===v&&grid[y][x+2]===v){ out.add(y*N+x); out.add(y*N+x+1); out.add(y*N+x+2); }
+    if(y<N-2&&grid[y+1][x]===v&&grid[y+2][x]===v){ out.add(y*N+x); out.add((y+1)*N+x); out.add((y+2)*N+x); }
+  }
+  return [...out].map(i=>({x:i%N,y:Math.floor(i/N)}));
+}
+function hasMove(){
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++)
+    for(const [dx,dy] of [[1,0],[0,1]]){
+      const nx=x+dx,ny=y+dy; if(nx>=N||ny>=N)continue;
+      [grid[y][x],grid[ny][nx]]=[grid[ny][nx],grid[y][x]];
+      const ok=findMatches().length>0;
+      [grid[y][x],grid[ny][nx]]=[grid[ny][nx],grid[y][x]];
+      if(ok) return true;
+    }
+  return false;
+}
+function makeGrid(){
+  grid=Array.from({length:N},()=>Array(N).fill(0).map(randT));
+  let guard=0;
+  while(findMatches().length&&guard++<300)
+    for(const m of findMatches()) grid[m.y][m.x]=randT();
+  if(!hasMove()) makeGrid();
+}
+function updHud(){
+  document.getElementById('lvlEl').textContent=level;
+  document.getElementById('scoreEl').textContent=score.toLocaleString('tr-TR');
+  document.getElementById('bestEl').textContent=best.toLocaleString('tr-TR');
+  const prev=LVL(level-1), next=LVL(level);
+  document.getElementById('lvlfill').style.width=
+    Math.min(100,Math.max(0,(score-prev)/(next-prev)*100))+'%';
+}
+function save(){ try{ localStorage.setItem('sekerci_save',JSON.stringify({grid,score,level})); }catch(e){} }
+function comboMsg(t){ const c=document.getElementById('comboTxt'); c.textContent=t;
+  c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }
+
+async function clearAndFall(){
+  let chain=0;
+  while(true){
+    const m=findMatches();
+    if(!m.length) break;
+    chain++;
+    score+=m.length*10*chain;
+    if(score>best){ best=score; try{localStorage.setItem('sekerci_best',best);}catch(e){} }
+    for(const c of m){
+      for(let i=0;i<6;i++) particles.push({x:(c.x+.5)*CELL,y:(c.y+.5)*CELL,
+        vx:(Math.random()-.5)*5,vy:-Math.random()*4,life:1,
+        col:COLS[grid[c.y][c.x]]||'#e8963e',size:Math.random()*5+3});
+      grid[c.y][c.x]=-1;
+    }
+    blip(400+chain*90,0.12,0.18); buzz(10);
+    if(chain>=2) comboMsg(chain+'× ZİNCİR!');
+    updHud();
+    await new Promise(r=>setTimeout(r,170));
+    for(let x=0;x<N;x++){
+      const col=[];
+      for(let y=N-1;y>=0;y--) if(grid[y][x]>=0) col.push(grid[y][x]);
+      for(let y=N-1;y>=0;y--){
+        const nv=col[N-1-y];
+        if(nv===undefined){ grid[y][x]=randT(); offsetY[y][x]=-(y+1)*CELL*0.55; }
+        else{ if(grid[y][x]!==nv&&offsetY[y][x]===0) offsetY[y][x]=-CELL*0.35; grid[y][x]=nv; }
+      }
+    }
+    await new Promise(r=>setTimeout(r,150));
+  }
+  // seviye atlama
+  while(score>=LVL(level)){
+    level++; comboMsg('SEVİYE '+level+'! 🎉');
+    blip(523,0.2,0.2); blip(659,0.25,0.15); buzz([30,50,30]);
+  }
+  // hamle kalmadıysa tahta tazelenir (oyun bitmez!)
+  if(!hasMove()){ comboMsg('TEZGÂH TAZELENDİ 🥜'); makeGrid();
+    offsetY=Array.from({length:N},()=>Array(N).fill(-CELL*2)); }
+  updHud(); save();
+}
+
+/* girdi: sürükleyerek takas — tek seferlik, tahta üzerinde */
+let selC=null, startP=null;
+function cellAt(px,py){
+  const r=cv.getBoundingClientRect();
+  const x=Math.floor((px-r.left)/CELL), y=Math.floor((py-r.top)/CELL);
+  if(x<0||x>=N||y<0||y>=N) return null; return {x,y};
+}
+function pt(e){ const t=e.touches?e.touches[0]:e; return {x:t.clientX,y:t.clientY}; }
+function down(e){
+  if(state!=='play'||busy||e.target.closest('.card'))return;
+  const p=pt(e), c=cellAt(p.x,p.y);
+  if(!c) return;
+  selC=c; startP=p; audio();
+}
+async function moveH(e){
+  if(!selC||busy||!startP) return;
+  const p=pt(e), dx=p.x-startP.x, dy=p.y-startP.y;
+  if(Math.abs(dx)<CELL*0.35&&Math.abs(dy)<CELL*0.35) return;
+  const dir=Math.abs(dx)>Math.abs(dy)?{x:Math.sign(dx),y:0}:{x:0,y:Math.sign(dy)};
+  const a=selC, t={x:a.x+dir.x,y:a.y+dir.y};
+  selC=null; startP=null;
+  if(t.x<0||t.x>=N||t.y<0||t.y>=N) return;
+  busy=true;
+  [grid[a.y][a.x],grid[t.y][t.x]]=[grid[t.y][t.x],grid[a.y][a.x]];
+  if(findMatches().length){
+    blip(350,0.06,0.12);
+    await clearAndFall();
+  } else {
+    blip(180,0.1,0.1,'sawtooth');
+    await new Promise(r=>setTimeout(r,140));
+    [grid[a.y][a.x],grid[t.y][t.x]]=[grid[t.y][t.x],grid[a.y][a.x]];
+  }
+  busy=false;
+}
+addEventListener('touchstart',down,{passive:true});
+addEventListener('touchmove',moveH,{passive:true});
+addEventListener('touchend',()=>{ selC=null; startP=null; });
+addEventListener('mousedown',down);
+addEventListener('mousemove',moveH);
+addEventListener('mouseup',()=>{ selC=null; startP=null; });
+
+function draw(){
+  tick++;
+  ctx.clearRect(0,0,N*CELL,N*CELL);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++)
+    if((x+y)%2===0){ ctx.fillStyle='#fbf3e4'; ctx.fillRect(x*CELL,y*CELL,CELL,CELL); }
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const v=grid?.[y]?.[x]; if(v===undefined||v<0) continue;
+    if(offsetY[y][x]<0) offsetY[y][x]=Math.min(0,offsetY[y][x]+CELL*0.16);
+    const sel=selC&&selC.x===x&&selC.y===y;
+    ctx.font=(CELL*0.66)+'px system-ui';
+    ctx.fillText(EMO[v],(x+.5)*CELL,(y+.5)*CELL+offsetY[y][x]+(sel?Math.sin(tick*0.3)*2:0));
+  }
+  for(const p of particles){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.2; p.life-=0.04;
+    ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.col;
+    ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(0.01,p.size*p.life),0,6.28); ctx.fill(); }
+  ctx.globalAlpha=1;
+  particles=particles.filter(p=>p.life>0);
+  requestAnimationFrame(draw);
+}
+function tap(el,fn){ el._fn=fn;
+  const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
+  el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
+tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
+  state='play';
+  document.getElementById('intro').classList.add('hidden'); });
+
+resize();
+let loaded=false;
+try{ const s=JSON.parse(localStorage.getItem('sekerci_save'));
+  if(s&&s.grid){ grid=s.grid; score=s.score||0; level=s.level||1; loaded=true;
+    document.getElementById('startBtn').textContent='Devam Et'; } }catch(e){}
+if(!loaded){ score=0; level=1; makeGrid(); }
+offsetY=Array.from({length:N},()=>Array(N).fill(0));
+if(loaded&&!hasMove()) makeGrid();
+updHud();
+draw();
+</script>

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>MİNİK MODACI — Bebek Giydirme</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#fff0f6; --ink:#7a4a66; --dim:#c99ab5; --pink:#ff8fc0; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
+  h1{font-size:20px;font-weight:900}
+  h1 span{color:var(--pink)}
+  #stage{flex:1;min-height:0;width:min(94vw,420px);background:linear-gradient(180deg,#ffe4f0,#fff8fb);
+    border-radius:22px;box-shadow:0 8px 26px rgba(122,74,102,.14);
+    display:flex;align-items:center;justify-content:center;padding:8px;position:relative}
+  svg{height:100%;max-width:100%}
+  #rows{display:flex;flex-direction:column;gap:6px;width:min(94vw,420px)}
+  .row{display:flex;align-items:center;gap:8px}
+  .cat{width:74px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+  .arrow{width:38px;height:38px;border-radius:12px;border:2px solid #f5cade;background:#fff;
+    font-size:16px;font-weight:900;color:var(--ink);cursor:pointer}
+  .arrow:active{background:#ffe4f0}
+  .opts{flex:1;text-align:center;font-size:13px;font-weight:800}
+  .colors{display:flex;gap:5px}
+  .cdot{width:26px;height:26px;border-radius:50%;border:2.5px solid #fff;cursor:pointer;
+    box-shadow:0 1px 4px rgba(122,74,102,.3)}
+  .cdot.on{border-color:var(--ink)}
+  #shuffle{position:absolute;top:10px;right:10px;font-size:22px;background:#fff;
+    border:2px solid #f5cade;border-radius:12px;width:44px;height:44px;cursor:pointer}
+</style>
+
+<div id="wrap">
+  <h1>👗 MİNİK <span>MODACI</span></h1>
+  <div id="stage">
+    <button id="shuffle" title="rastgele">🎲</button>
+    <svg viewBox="0 0 240 400" id="doll"></svg>
+  </div>
+  <div id="rows"></div>
+</div>
+
+<script>
+'use strict';
+const HAIRS=['Düz','Örgülü','Topuz','Kıvırcık'];
+const TOPS=['Elbise','Tişört','Kazak','Balo Elbisesi'];
+const SHOES=['Babet','Bot','Spor'];
+const EXTRA=['Yok','Taç','Fiyonk','Gözlük','Çanta'];
+const HAIR_C=['#4a2c1a','#e8b45f','#1a1a22','#b8543a','#c9a2ff'];
+const TOP_C=['#ff8fc0','#4ab8ff','#7cb356','#ffd93d','#c46bff','#ff6b6b'];
+const SHOE_C=['#7a4a66','#ff6b6b','#4ab8ff','#1a1a22'];
+const SKIN='#ffd9bd';
+
+let st={hair:0,hairC:0,top:0,topC:0,shoe:0,shoeC:0,extra:0};
+try{ const s=JSON.parse(localStorage.getItem('modaci_save')); if(s) st={...st,...s}; }catch(e){}
+function save(){ try{ localStorage.setItem('modaci_save',JSON.stringify(st)); }catch(e){} }
+
+let AC=null;
+function popS(){ try{
+  if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended')AC.resume();
+  const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine'; o.frequency.value=500+Math.random()*300;
+  g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+  o.connect(g).connect(AC.destination); o.start(t); o.stop(t+0.13);
+  navigator.vibrate&&navigator.vibrate(6);
+}catch(e){} }
+
+function render(){
+  const hc=HAIR_C[st.hairC], tc=TOP_C[st.topC], sc=SHOE_C[st.shoeC];
+  let hair='', top='', shoe='', extra='', backHair='';
+  // saçlar
+  if(st.hair===0){ backHair=`<path d="M78,90 Q75,180 88,210 L152,210 Q165,180 162,90 Z" fill="${hc}"/>`;
+    hair=`<path d="M78,95 Q78,40 120,38 Q162,40 162,95 Q150,60 120,58 Q90,60 78,95Z" fill="${hc}"/>`; }
+  if(st.hair===1){ backHair=`<rect x="98" y="150" width="12" height="70" rx="6" fill="${hc}"/>
+    <rect x="130" y="150" width="12" height="70" rx="6" fill="${hc}"/>
+    <circle cx="104" cy="225" r="8" fill="${tc}"/><circle cx="136" cy="225" r="8" fill="${tc}"/>`;
+    hair=`<path d="M78,95 Q78,40 120,38 Q162,40 162,95 Q150,60 120,58 Q90,60 78,95Z" fill="${hc}"/>`; }
+  if(st.hair===2){ hair=`<circle cx="120" cy="42" r="20" fill="${hc}"/>
+    <path d="M80,95 Q80,45 120,42 Q160,45 160,95 Q148,62 120,60 Q92,62 80,95Z" fill="${hc}"/>`; }
+  if(st.hair===3){ backHair=`<circle cx="85" cy="120" r="16" fill="${hc}"/><circle cx="155" cy="120" r="16" fill="${hc}"/>
+    <circle cx="82" cy="150" r="13" fill="${hc}"/><circle cx="158" cy="150" r="13" fill="${hc}"/>`;
+    hair=`<circle cx="90" cy="70" r="18" fill="${hc}"/><circle cx="120" cy="55" r="20" fill="${hc}"/>
+    <circle cx="150" cy="70" r="18" fill="${hc}"/><circle cx="105" cy="58" r="16" fill="${hc}"/>
+    <circle cx="135" cy="58" r="16" fill="${hc}"/>`; }
+  // üstler
+  if(st.top===0) top=`<path d="M95,160 L145,160 L162,265 L78,265 Z" fill="${tc}"/>
+    <rect x="95" y="155" width="50" height="30" rx="8" fill="${tc}"/>`;
+  if(st.top===1) top=`<rect x="92" y="155" width="56" height="60" rx="10" fill="${tc}"/>
+    <rect x="85" y="215" width="70" height="55" rx="8" fill="#5a7ab8"/>`;
+  if(st.top===2) top=`<rect x="90" y="152" width="60" height="68" rx="12" fill="${tc}"/>
+    <path d="M90,165 Q120,178 150,165" stroke="#fff" stroke-width="4" fill="none" opacity=".5"/>
+    <rect x="88" y="218" width="64" height="52" rx="8" fill="#8a5a8f"/>`;
+  if(st.top===3) top=`<path d="M97,158 L143,158 L175,290 L65,290 Z" fill="${tc}"/>
+    <path d="M75,268 Q120,255 165,268 L175,290 L65,290Z" fill="#fff" opacity=".3"/>
+    <circle cx="120" cy="185" r="5" fill="#fff" opacity=".7"/>
+    <circle cx="112" cy="205" r="4" fill="#fff" opacity=".6"/>
+    <circle cx="130" cy="210" r="4" fill="#fff" opacity=".6"/>`;
+  // ayakkabılar
+  if(st.shoe===0) shoe=`<ellipse cx="105" cy="352" rx="15" ry="9" fill="${sc}"/>
+    <ellipse cx="135" cy="352" rx="15" ry="9" fill="${sc}"/>`;
+  if(st.shoe===1) shoe=`<rect x="92" y="322" width="24" height="34" rx="8" fill="${sc}"/>
+    <rect x="124" y="322" width="24" height="34" rx="8" fill="${sc}"/>`;
+  if(st.shoe===2) shoe=`<ellipse cx="105" cy="350" rx="17" ry="11" fill="${sc}"/>
+    <ellipse cx="135" cy="350" rx="17" ry="11" fill="${sc}"/>
+    <path d="M92,348 L118,348 M122,348 L148,348" stroke="#fff" stroke-width="3"/>`;
+  // aksesuar
+  if(st.extra===1) extra=`<path d="M100,40 L106,24 L113,38 L120,20 L127,38 L134,24 L140,40Z" fill="#ffd93d" stroke="#e8b45f" stroke-width="2"/>`;
+  if(st.extra===2) extra=`<path d="M95,50 Q85,38 96,34 Q104,32 103,44 Q104,32 112,36 Q120,42 105,52Z" fill="${TOP_C[(st.topC+1)%TOP_C.length]}"/>`;
+  if(st.extra===3) extra=`<circle cx="106" cy="105" r="12" fill="none" stroke="#7a4a66" stroke-width="3.5"/>
+    <circle cx="134" cy="105" r="12" fill="none" stroke="#7a4a66" stroke-width="3.5"/>
+    <path d="M118,105 L122,105" stroke="#7a4a66" stroke-width="3.5"/>`;
+  if(st.extra===4) extra=`<path d="M168,220 Q185,220 185,238 L185,258 Q185,262 181,262 L157,262 Q153,262 153,258 L153,238 Q153,220 168,220" fill="${TOP_C[(st.topC+2)%TOP_C.length]}"/>
+    <path d="M158,225 Q168,208 178,225" fill="none" stroke="#7a4a66" stroke-width="3"/>`;
+
+  document.getElementById('doll').innerHTML=`
+    ${backHair}
+    <rect x="112" y="128" width="16" height="35" fill="${SKIN}"/>
+    <path d="M95,165 Q78,200 74,240" stroke="${SKIN}" stroke-width="13" fill="none" stroke-linecap="round"/>
+    <path d="M145,165 Q162,200 166,240" stroke="${SKIN}" stroke-width="13" fill="none" stroke-linecap="round"/>
+    <rect x="97" y="255" width="15" height="95" rx="7" fill="${SKIN}"/>
+    <rect x="128" y="255" width="15" height="95" rx="7" fill="${SKIN}"/>
+    ${top}
+    ${shoe}
+    <circle cx="120" cy="100" r="43" fill="${SKIN}"/>
+    ${hair}
+    <circle cx="106" cy="103" r="4.5" fill="#5a3a4a"/>
+    <circle cx="134" cy="103" r="4.5" fill="#5a3a4a"/>
+    <circle cx="107.5" cy="101.5" r="1.5" fill="#fff"/>
+    <circle cx="135.5" cy="101.5" r="1.5" fill="#fff"/>
+    <path d="M112,122 Q120,130 128,122" stroke="#c96a8a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <circle cx="97" cy="112" r="6" fill="#ffb3c8" opacity=".55"/>
+    <circle cx="143" cy="112" r="6" fill="#ffb3c8" opacity=".55"/>
+    ${extra}`;
+  save();
+}
+
+const CATS=[
+  {key:'hair', label:'Saç',      list:HAIRS, colors:HAIR_C, ckey:'hairC'},
+  {key:'top',  label:'Kıyafet',  list:TOPS,  colors:TOP_C,  ckey:'topC'},
+  {key:'shoe', label:'Ayakkabı', list:SHOES, colors:SHOE_C, ckey:'shoeC'},
+  {key:'extra',label:'Aksesuar', list:EXTRA, colors:null,   ckey:null},
+];
+const rows=document.getElementById('rows');
+function buildRows(){
+  rows.innerHTML='';
+  for(const c of CATS){
+    const r=document.createElement('div'); r.className='row';
+    const lb=document.createElement('div'); lb.className='cat'; lb.textContent=c.label;
+    const l=document.createElement('button'); l.className='arrow'; l.textContent='◀';
+    const o=document.createElement('div'); o.className='opts';
+    const rt=document.createElement('button'); rt.className='arrow'; rt.textContent='▶';
+    const upd=()=>{ o.textContent=c.list[st[c.key]]; };
+    l.addEventListener('click',()=>{ st[c.key]=(st[c.key]+c.list.length-1)%c.list.length; upd(); render(); popS(); });
+    rt.addEventListener('click',()=>{ st[c.key]=(st[c.key]+1)%c.list.length; upd(); render(); popS(); });
+    r.append(lb,l,o,rt);
+    if(c.colors){
+      const cd=document.createElement('div'); cd.className='colors';
+      c.colors.forEach((col,i)=>{
+        const d=document.createElement('button'); d.className='cdot'+(st[c.ckey]===i?' on':'');
+        d.style.background=col;
+        d.addEventListener('click',()=>{ st[c.ckey]=i;
+          for(const x of cd.children) x.classList.remove('on');
+          d.classList.add('on'); render(); popS(); });
+        cd.appendChild(d);
+      });
+      r.appendChild(cd);
+    }
+    upd();
+    rows.appendChild(r);
+  }
+}
+document.getElementById('shuffle').addEventListener('click',()=>{
+  st={ hair:Math.floor(Math.random()*HAIRS.length), hairC:Math.floor(Math.random()*HAIR_C.length),
+    top:Math.floor(Math.random()*TOPS.length), topC:Math.floor(Math.random()*TOP_C.length),
+    shoe:Math.floor(Math.random()*SHOES.length), shoeC:Math.floor(Math.random()*SHOE_C.length),
+    extra:Math.floor(Math.random()*EXTRA.length) };
+  buildRows(); render(); popS();
+});
+buildRows(); render();
+</script>
