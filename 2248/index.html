@@ -112,7 +112,8 @@ function cellAt(px,py){
   return {x,y};
 }
 function chainSum(){ return chain.reduce((s,c)=>s+grid[c.y][c.x],0); }
-function chainResult(){ const s=chainSum(); return 2**Math.floor(Math.log2(s)); }
+/* toplam 2'nin kuvveti değilse BİR ÜSTÜNE yuvarlanır: 2+2+2=6 → 8 */
+function chainResult(){ const s=chainSum(); return 2**Math.ceil(Math.log2(s)); }
 function updBadge(){
   const b=document.getElementById('sumBadge');
   if(chain.length>=2){ const r=chainResult();
