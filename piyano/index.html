@@ -95,11 +95,11 @@ function pushTile(y){
 }
 function updHud(){ document.getElementById('scoreEl').textContent=score; }
 function physics(){
-  speed=H*0.006+score*H*0.00006;
+  speed=H*0.005+score*H*0.000045;   // daha yumuşak başlangıç ve rampa
   for(const t of tiles) t.y+=speed;
-  // kaçırılan karo
+  // kaçırılan karo — yarım karo tolerans: parmak inerken haksız ölüm olmasın
   for(const t of tiles){
-    if(!t.hit&&t.y>H){ gameOver(t,'Karo kaçtı! Daha hızlı olmalısın.'); return; }
+    if(!t.hit&&t.y>H+ROW()*0.45){ gameOver(t,'Karo kaçtı! Daha hızlı olmalısın.'); return; }
   }
   tiles=tiles.filter(t=>t.y<H+ROW());
   while(tiles.length<6){
@@ -129,8 +129,14 @@ function tapAt(x,y){
   /* tolerans: dokunduğun şeridin karosu, genel en alttakiyle aynı ya da
      bir sonraki sıradaysa (1.15 sıra payı) kabul — hızlı ardışık dokunuşlar haksız yanmasın */
   if(target && lowest && target.y > lowest.y - ROW()*1.15){
-    target.hit=true; score++; updHud(); note(); buzz(5);
+    target.hit=true; target.hitAt=performance.now(); score++; updHud(); note(); buzz(5);
   } else {
+    /* çift dokunuş affı: aynı şeritte az önce (300ms) vurulmuş karo varsa
+       bu, parmağın sekmesidir — sessizce yok say */
+    const now=performance.now();
+    for(const t of tiles){
+      if(t.hit&&t.lane===lane&&t.hitAt&&now-t.hitAt<300) return;
+    }
     gameOver({lane,y:y-ROW()/2},'Beyaza bastın!');
   }
 }
