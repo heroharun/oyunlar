@@ -48,7 +48,7 @@
 <div class="card" id="intro">
   <h1>KUTLU YOLCULUK</h1>
   <div style="letter-spacing:.32em;font-weight:800;font-size:13px;color:var(--gold)">— ROAD TO MEDINA —</div>
-  <p>Küçük Zehra, Hicaz demiryolu boyunca kutlu şehre doğru koşuyor! Kayalardan ve kaktüslerden kaç, dinlenen develeri rahatsız etme, su damlalarını topla. Şam'dan yola çık — bakalım Mekke'ye varabilecek misin? 🕌</p>
+  <p>Küçük Zehra, İstanbul'dan kutlu şehre doğru koşuyor! Marmara'nın yeşilinden Anadolu bozkırına, oradan Hicaz çölüne... Kayalardan kaç, su damlalarını topla, durakları geç. Bakalım Mekke'ye varabilecek misin? 🕌</p>
   <button class="btn" id="startBtn">Yola Çık</button>
   <span class="hint" id="bestIntro"></span>
 </div>
@@ -76,12 +76,32 @@ function blip(f,d=0.08,v=0.14,t='triangle'){ try{ const a=audio(),n=a.currentTim
   o.connect(g).connect(a.destination);o.start(n);o.stop(n+d+0.02);}catch(e){} }
 const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
 
-/* kilometre taşları */
+/* kilometre taşları: İstanbul'dan Mekke'ye */
 const STOPS=[
-  {km:5,name:'Dera'},{km:12,name:'Amman'},{km:22,name:'Maan'},
-  {km:34,name:'Tebük'},{km:48,name:'Medayin-i Salih'},{km:64,name:'MEDİNE 🕌'},
-  {km:85,name:'MEKKE 🕋 — VARDIN!'},
+  {km:6,name:'İzmit'},{km:14,name:'Eskişehir'},{km:26,name:'Konya'},
+  {km:40,name:'Adana'},{km:52,name:'Halep'},{km:66,name:'Şam'},
+  {km:82,name:'Amman'},{km:100,name:'Tebük'},{km:120,name:'Medayin-i Salih'},
+  {km:142,name:'MEDİNE 🕌'},{km:170,name:'MEKKE 🕋 — VARDIN!'},
 ];
+/* bitki örtüsü fazları: Marmara yeşili → bozkır → çöl */
+const PHASES=[
+  {km:0,  sky:'#b8dfc0', mid:'#9fcf8a', bot:'#7ab365', deco:['🌳','🌲'], hill:'76,140,60'},
+  {km:26, sky:'#d8e0a8', mid:'#cfc490', bot:'#b0a06f', deco:['🌾','🌿'], hill:'150,140,70'},
+  {km:60, sky:'#f5dfae', mid:'#e8c98f', bot:'#d4a86a', deco:['🌴','🌵'], hill:'201,134,46'},
+];
+function lerpC(a,b,t){
+  const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16));
+  const pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
+  return '#'+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t).toString(16).padStart(2,'0')).join('');
+}
+function phaseNow(){
+  const km=dist/10;
+  let i=0; while(i<PHASES.length-1&&km>=PHASES[i+1].km) i++;
+  const a=PHASES[i], b=PHASES[Math.min(i+1,PHASES.length-1)];
+  const t=(b===a)?1:Math.max(0,Math.min(1,(km-a.km)/(b.km-a.km)));
+  return { sky:lerpC(a.sky,b.sky,t), mid:lerpC(a.mid,b.mid,t), bot:lerpC(a.bot,b.bot,t),
+    deco:(t<0.5?a.deco:b.deco), hill:(t<0.5?a.hill:b.hill), desert:km>=55 };
+}
 let lane=1, laneX=1, jumpT=0, dist=0, water=0, speed=6, objs=[], state='intro', tick=0, spawnT=0, stopI=0;
 let best=0; try{ best=+localStorage.getItem('hicaz_best')||0; }catch(e){}
 document.getElementById('bestIntro').textContent=best>0?'EN UZUN YOLUN: '+best+' km':'';
@@ -136,7 +156,7 @@ function fall(){
   state='over'; blip(140,0.4,0.18,'sawtooth'); buzz(80);
   const km=+(dist/10).toFixed(1);
   const nb=km>best; if(nb){ best=km; try{localStorage.setItem('hicaz_best',best);}catch(e){} }
-  const reached=stopI>0?STOPS[stopI-1].name.replace(' — VARDIN!',''):'Şam çıkışı';
+  const reached=stopI>0?STOPS[stopI-1].name.replace(' — VARDIN!',''):'İstanbul çıkışı';
   document.getElementById('endScore').textContent=km+' km · 💧 '+water;
   document.getElementById('endTitle').textContent= stopI>=STOPS.length?'MEKKE! 🕋':'Mola Zamanı';
   document.getElementById('endMsg').textContent=(nb?'YENİ REKOR! 🏆 ':'Rekorun: '+best+' km · ')
@@ -144,34 +164,36 @@ function fall(){
   document.getElementById('endcard').classList.remove('hidden');
 }
 function draw(){
-  // çöl
+  const ph=phaseNow();
   const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#f5dfae'); g.addColorStop(0.35,'#e8c98f'); g.addColorStop(1,'#d4a86a');
+  g.addColorStop(0,ph.sky); g.addColorStop(0.35,ph.mid); g.addColorStop(1,ph.bot);
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
   // güneş
   ctx.fillStyle='rgba(255,240,200,.9)';
   ctx.beginPath(); ctx.arc(W*0.8,H*0.1,32,0,6.28); ctx.fill();
-  // katmanlı kum tepeleri (paralaks)
+  // katmanlı tepeler (paralaks — faza göre renk)
   const dOff1=(tick*0.15)%(W*2), dOff2=(tick*0.35)%(W*2);
-  ctx.fillStyle='rgba(201,134,46,.18)';
+  ctx.fillStyle='rgba('+ph.hill+',.18)';
   ctx.beginPath(); ctx.moveTo(0,H*0.2);
   for(let x=0;x<=W;x+=40) ctx.lineTo(x,H*0.2-Math.sin((x+dOff1)*0.008)*30);
   ctx.lineTo(W,H*0.32); ctx.lineTo(0,H*0.32); ctx.fill();
-  ctx.fillStyle='rgba(201,134,46,.3)';
+  ctx.fillStyle='rgba('+ph.hill+',.3)';
   ctx.beginPath(); ctx.moveTo(0,H*0.26);
   for(let x=0;x<=W;x+=40) ctx.lineTo(x,H*0.26-Math.sin((x+dOff2)*0.012+2)*20);
   ctx.lineTo(W,H*0.36); ctx.lineTo(0,H*0.36); ctx.fill();
-  // ufukta deve kervanı
-  ctx.font='17px system-ui'; ctx.textAlign='center'; ctx.globalAlpha=0.55;
-  const kx=W+80-((tick*0.4)%(W+260));
-  for(let i=0;i<3;i++) ctx.fillText('🐫', kx+i*34, H*0.245);
-  ctx.globalAlpha=1;
-  // hurma ağaçları (yol kenarı, kayan)
-  ctx.font='30px system-ui';
+  // ufukta kervan (sadece çölde)
+  if(ph.desert){
+    ctx.font='17px system-ui'; ctx.textAlign='center'; ctx.globalAlpha=0.55;
+    const kx=W+80-((tick*0.4)%(W+260));
+    for(let i=0;i<3;i++) ctx.fillText('🐫', kx+i*34, H*0.245);
+    ctx.globalAlpha=1;
+  }
+  // yol kenarı bitki örtüsü (faza göre)
+  ctx.font='30px system-ui'; ctx.textAlign='center';
   for(const side of [-1,1]){
     const px2=W/2+side*(laneW()*2.6);
     const py2=(tick*speed*0.5+(side>0?200:0))%(H+120)-60;
-    ctx.fillText('🌴', px2, py2);
+    ctx.fillText(ph.deco[side>0?0:1], px2, py2);
   }
   // demiryolu (3 şerit = 3 hat)
   const topW=laneW()*1.1, botW=laneW()*3.4;

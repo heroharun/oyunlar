@@ -15,9 +15,12 @@
   .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
   .value{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
   #missionBar{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:2;
-    background:rgba(26,36,22,.85);border:1.5px solid rgba(232,240,221,.2);border-radius:12px;
-    padding:8px 16px;font-size:13px;font-weight:700;pointer-events:none;white-space:nowrap}
+    background:linear-gradient(180deg,rgba(26,36,22,.95),rgba(20,28,17,.9));
+    border:1.5px solid rgba(255,209,102,.4);border-radius:12px;
+    padding:9px 18px;font-size:13px;font-weight:700;pointer-events:none;white-space:nowrap;
+    box-shadow:0 4px 18px rgba(0,0,0,.35)}
   #missionBar b{color:var(--gold)}
+  #missionBar::before{content:'🎖️ ';font-size:12px}
   #toast{position:fixed;top:22%;left:50%;transform:translateX(-50%);font-size:24px;font-weight:900;
     color:var(--gold);opacity:0;pointer-events:none;text-shadow:0 0 14px rgba(255,209,102,.7);
     white-space:nowrap;z-index:3}
@@ -34,10 +37,13 @@
     -webkit-background-clip:text;background-clip:text;color:transparent}
   .card p{max-width:37ch;color:var(--dim);font-size:14px;line-height:1.55}
   .hangar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:400px}
-  .drone{background:rgba(232,240,221,.06);border:2px solid rgba(232,240,221,.2);border-radius:14px;
-    padding:10px 12px;min-width:100px;font-size:12px;font-weight:800;line-height:1.4;cursor:pointer;color:var(--ink)}
-  .drone small{display:block;font-size:9.5px;color:var(--dim);font-weight:700}
-  .drone.on{border-color:var(--gold);background:rgba(255,209,102,.14)}
+  .drone{background:linear-gradient(180deg,rgba(232,240,221,.1),rgba(232,240,221,.03));
+    border:2px solid rgba(232,240,221,.2);border-radius:14px;
+    padding:10px 12px;min-width:104px;font-size:12.5px;font-weight:800;line-height:1.45;cursor:pointer;
+    color:var(--ink);letter-spacing:.04em;transition:transform .1s,border-color .1s}
+  .drone small{display:block;font-size:9.5px;color:var(--dim);font-weight:700;letter-spacing:0}
+  .drone.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(255,209,102,.22),rgba(255,209,102,.08));
+    transform:translateY(-2px);box-shadow:0 4px 14px rgba(255,209,102,.2)}
   .drone.lock{opacity:.4;pointer-events:none}
   .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.08em;text-transform:uppercase;
     color:#1a2416;background:linear-gradient(180deg,#93c47d,#6b9e4f);border:none;border-radius:999px;
@@ -90,19 +96,20 @@ function ding(s=0){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),
   o.connect(g).connect(a.destination);o.start(t);o.stop(t+0.32);}catch(e){} }
 const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
 
-/* İHA filosu: isim, füze hızı, patlama yarıçapı, aynı anda füze, açılma (görev sayısı) */
+/* İHA filosu — Türk göklerinin gururu */
 const DRONES=[
-  {name:'Karagöz',  desc:'ilk göz ağrısı',  speed:5.5, blast:60, multi:1, unlock:0},
-  {name:'Şahin',    desc:'çevik keşifçi',   speed:7,   blast:70, multi:2, unlock:3},
-  {name:'Akın',     desc:'ağır yükün ustası',speed:6,  blast:105,multi:2, unlock:7},
-  {name:'Kızıl',    desc:'jet takipçi',     speed:10,  blast:80, multi:3, unlock:12},
+  {name:'TB2',       desc:'efsanenin kendisi', speed:5.5, blast:60, multi:1, unlock:0},
+  {name:'ANKA',      desc:'yüksek irtifa',     speed:7,   blast:70, multi:2, unlock:3},
+  {name:'AKSUNGUR',  desc:'ağır yük ustası',   speed:6,   blast:110,multi:2, unlock:7},
+  {name:'AKINCI',    desc:'taarruzun kalbi',   speed:8.5, blast:95, multi:3, unlock:12},
+  {name:'KIZILELMA', desc:'jet hızında',       speed:11,  blast:85, multi:4, unlock:18},
 ];
 let score=0, missions=0, drone=0;
 try{ const s=JSON.parse(localStorage.getItem('iha_save'));
   if(s){ score=s.score||0; missions=s.missions||0; drone=s.drone||0; } }catch(e){}
 function save(){ try{ localStorage.setItem('iha_save',JSON.stringify({score,missions,drone})); }catch(e){} }
 
-let targets=[], missiles=[], booms=[], trees=[], state='intro', tick=0, scroll=0;
+let targets=[], missiles=[], booms=[], smoke=[], trees=[], state='intro', tick=0, scroll=0;
 let mission=null, missionN=0;
 
 /* görevler: her görev bir hedef türü + adet */
@@ -163,13 +170,17 @@ function physics(){
   }
   targets=targets.filter(t=>t.x>-80&&t.x<W+80);
   for(const m of missiles){
-    m.y-=0; // hedefe kilitli
     const dx=m.tx-m.x, dy=m.ty-m.y, d=Math.hypot(dx,dy);
     if(d<m.speed){ explode(m.tx,m.ty,m.blast); m.dead=true; }
     else { m.x+=dx/d*m.speed; m.y+=dy/d*m.speed; m.trail.push({x:m.x,y:m.y});
-      if(m.trail.length>10)m.trail.shift(); }
+      if(m.trail.length>12)m.trail.shift();
+      /* egzoz dumanı */
+      if(tick%2===0) smoke.push({x:m.x-dx/d*10,y:m.y-dy/d*10,
+        vx:(Math.random()-.5)*0.6,vy:(Math.random()-.5)*0.6,life:0.7,r:3+Math.random()*3}); }
   }
   missiles=missiles.filter(m=>!m.dead);
+  for(const s of smoke){ s.x+=s.vx; s.y+=s.vy; s.r+=0.25; s.life-=0.03; }
+  smoke=smoke.filter(s=>s.life>0);
   for(const b of booms){ b.r+=b.vr; b.life-=0.04; }
   booms=booms.filter(b=>b.life>0);
 }
@@ -295,13 +306,24 @@ function draw(){
     const s=8+Math.sin(tick*0.3)*2;
     ctx.strokeRect(m.tx-s,m.ty-s,s*2,s*2);
   }
-  // patlamalar
+  // egzoz dumanı
+  for(const s of smoke){ ctx.globalAlpha=s.life*0.4; ctx.fillStyle='#d9dde3';
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.28); ctx.fill(); }
+  ctx.globalAlpha=1;
+  // patlamalar: çekirdek + şok dalgası halkası
   for(const b of booms){
     ctx.globalAlpha=b.life;
     const bg2=ctx.createRadialGradient(b.x,b.y,2,b.x,b.y,b.r);
-    bg2.addColorStop(0,'#fff3d1'); bg2.addColorStop(0.5,'#ffd166'); bg2.addColorStop(1,'rgba(255,107,95,0)');
+    bg2.addColorStop(0,'#ffffff'); bg2.addColorStop(0.25,'#fff3d1');
+    bg2.addColorStop(0.55,'#ffd166'); bg2.addColorStop(1,'rgba(255,107,95,0)');
     ctx.fillStyle=bg2;
     ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.28); ctx.fill();
+    ctx.globalAlpha=b.life*0.7;
+    ctx.strokeStyle='#fff3d1'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(b.x,b.y,b.r*1.35,0,6.28); ctx.stroke();
+    ctx.globalAlpha=b.life*0.35;
+    ctx.strokeStyle='#ffd166'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(b.x,b.y,b.r*1.7,0,6.28); ctx.stroke();
   }
   ctx.globalAlpha=1;
   // kamera çerçevesi

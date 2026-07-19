@@ -46,7 +46,13 @@
 
 <div class="card" id="intro">
   <h1>MEYVE DİLİMLE</h1>
-  <p>Parmağını hızla sürükleyerek havadaki meyveleri dilimle! Bombalara sakın dokunma 💣. Meyve düşürürsen can gider.</p>
+  <p>Parmağını hızla sürükleyerek havadaki meyveleri dilimle! Bombalara sakın dokunma 💣. Aynı çizgide 2-3 meyve kesersen kombo puanı!</p>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="hint">Tahta:</span>
+    <button class="pick" id="bgBtn" style="font:inherit;font-size:13px;font-weight:800;color:var(--ink);background:rgba(242,247,234,.08);border:2px solid rgba(242,247,234,.3);border-radius:10px;padding:8px 14px;cursor:pointer">🪵 Ahşap</button>
+    <span class="hint">Bıçak:</span>
+    <button class="pick" id="knifeBtn" style="font:inherit;font-size:13px;font-weight:800;color:var(--ink);background:rgba(242,247,234,.08);border:2px solid rgba(242,247,234,.3);border-radius:10px;padding:8px 14px;cursor:pointer">🔪 Klasik</button>
+  </div>
   <button class="btn" id="startBtn">Kes Biçim!</button>
   <span class="hint" id="bestIntro"></span>
 </div>
@@ -102,7 +108,7 @@ function spawn(){
       x, y:H+40,
       vx:(W/2-x)*0.004+(Math.random()-.5)*2.5,
       vy:-(H*0.021+Math.random()*H*0.004),
-      r:Math.min(34,W*0.06), rot:Math.random()*6.28, vr:(Math.random()-.5)*0.1,
+      r:Math.min(42,W*0.078), rot:Math.random()*6.28, vr:(Math.random()-.5)*0.1,
       f: isBomb?null:FRUITS[Math.floor(Math.random()*FRUITS.length)],
       bomb:isBomb
     });
@@ -129,11 +135,13 @@ function physics(){
   juices=juices.filter(j=>j.life>0);
   trail=trail.filter(t=>tick-t.t<8);
   if(comboArr.length&&tick-comboArr[0]>18){
-    if(comboArr.length>=3){
-      const bonus=comboArr.length*10; score+=bonus; updHud();
+    if(comboArr.length>=2){
+      const bonus=comboArr.length*comboArr.length*5;   // 2'li +20, 3'lü +45, 4'lü +80
+      score+=bonus; updHud();
       const c=document.getElementById('combo');
-      c.textContent=comboArr.length+' KOMBO! +'+bonus;
+      c.textContent=comboArr.length+"'Lİ KESİM! +"+bonus;
       c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+      buzz(20);
     }
     comboArr=[];
   }
@@ -185,13 +193,48 @@ addEventListener('mousedown',down);
 addEventListener('mousemove',moveH);
 addEventListener('mouseup',()=>{ cutting=false; lastP=null; });
 
+/* arka planlar */
+const BGS=[
+  {name:'🪵 Ahşap', draw(){ const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#8a5a32'); g.addColorStop(1,'#6b421f');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(0,0,0,.18)'; ctx.lineWidth=3;
+    for(let i=0;i<7;i++){ ctx.beginPath(); ctx.moveTo(0,H*i/7+24); ctx.lineTo(W,H*i/7); ctx.stroke(); }
+    ctx.strokeStyle='rgba(255,220,170,.08)'; ctx.lineWidth=1.5;
+    for(let i=0;i<7;i++){ ctx.beginPath(); ctx.moveTo(0,H*i/7+30); ctx.lineTo(W,H*i/7+7); ctx.stroke(); } }},
+  {name:'🥩 Kasap', draw(){ ctx.fillStyle='#a86b3a'; ctx.fillRect(0,0,W,H);
+    const s=Math.max(56,W/6);
+    for(let y=0;y<H;y+=s)for(let x=0;x<W;x+=s){
+      ctx.fillStyle=((x/s+y/s)%2<1)?'#9a5f30':'#b0723e'; ctx.fillRect(x,y,s,s);
+      ctx.strokeStyle='rgba(0,0,0,.15)'; ctx.strokeRect(x,y,s,s);
+      ctx.strokeStyle='rgba(255,255,255,.05)';
+      ctx.beginPath(); ctx.arc(x+s/2,y+s/2,s*0.32,0,6.28); ctx.stroke(); } }},
+  {name:'⬜ Mermer', draw(){ const g=ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,'#e8e8ec'); g.addColorStop(0.5,'#d4d4dc'); g.addColorStop(1,'#e0e0e8');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(140,140,160,.3)'; ctx.lineWidth=2;
+    for(let i=0;i<5;i++){ ctx.beginPath(); ctx.moveTo(W*i/5,0);
+      ctx.bezierCurveTo(W*i/5+80,H*0.3,W*i/5-60,H*0.7,W*i/5+40,H); ctx.stroke(); } }},
+  {name:'🌙 Gece', draw(){ const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#1a1a2e'); g.addColorStop(1,'#0f0f1c');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(255,255,255,.5)';
+    for(let i=0;i<30;i++) ctx.fillRect((i*137)%W,(i*89)%H,2,2); }},
+];
+/* bıçaklar: iz rengi + parıltı */
+const KNIVES=[
+  {name:'🔪 Klasik', col:'rgba(255,255,255,.85)', glow:null},
+  {name:'✨ Altın',  col:'rgba(255,209,102,.9)',  glow:'rgba(255,209,102,.35)'},
+  {name:'⚡ Neon',   col:'rgba(95,240,220,.9)',   glow:'rgba(95,240,220,.4)'},
+  {name:'🔥 Alev',   col:'rgba(255,120,70,.9)',   glow:'rgba(255,80,40,.4)'},
+];
+let bgI=0, knifeI=0;
+try{ const s=JSON.parse(localStorage.getItem('meyve_style'));
+  if(s){ bgI=s.bg||0; knifeI=s.knife||0; } }catch(e){}
+function saveStyle(){ try{ localStorage.setItem('meyve_style',JSON.stringify({bg:bgI,knife:knifeI})); }catch(e){} }
+
 function draw(){
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#2e4a26'); g.addColorStop(1,'#1a2c15');
-  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  // ahşap doku çizgileri
-  ctx.strokeStyle='rgba(0,0,0,.12)'; ctx.lineWidth=2;
-  for(let i=0;i<6;i++){ ctx.beginPath(); ctx.moveTo(0,H*i/6+20); ctx.lineTo(W,H*i/6); ctx.stroke(); }
+  BGS[bgI].draw();
   ctx.textAlign='center'; ctx.textBaseline='middle';
   // yarımlar
   for(const h of halves){
@@ -215,9 +258,16 @@ function draw(){
   for(const j of juices){ ctx.globalAlpha=Math.max(0,j.life); ctx.fillStyle=j.col;
     ctx.beginPath(); ctx.arc(j.x,j.y,j.size*j.life,0,6.28); ctx.fill(); }
   ctx.globalAlpha=1;
-  // bıçak izi
+  // bıçak izi (seçili stile göre)
   if(trail.length>1){
-    ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineCap='round'; ctx.lineJoin='round';
+    const kn=KNIVES[knifeI];
+    ctx.lineCap='round'; ctx.lineJoin='round';
+    if(kn.glow){ ctx.strokeStyle=kn.glow;
+      for(let i=1;i<trail.length;i++){
+        ctx.lineWidth=(i/trail.length)*16;
+        ctx.beginPath(); ctx.moveTo(trail[i-1].x,trail[i-1].y);
+        ctx.lineTo(trail[i].x,trail[i].y); ctx.stroke(); } }
+    ctx.strokeStyle=kn.col;
     for(let i=1;i<trail.length;i++){
       ctx.lineWidth=(i/trail.length)*7;
       ctx.beginPath(); ctx.moveTo(trail[i-1].x,trail[i-1].y);
@@ -225,6 +275,17 @@ function draw(){
     }
   }
 }
+function bindPick(id,fn){
+  const el=document.getElementById(id);
+  const h=e=>{ e.preventDefault(); e.stopPropagation(); fn(); };
+  el.addEventListener('click',h); el.addEventListener('touchend',h);
+}
+bindPick('bgBtn',()=>{ bgI=(bgI+1)%BGS.length;
+  document.getElementById('bgBtn').textContent=BGS[bgI].name; saveStyle(); });
+bindPick('knifeBtn',()=>{ knifeI=(knifeI+1)%KNIVES.length;
+  document.getElementById('knifeBtn').textContent=KNIVES[knifeI].name; saveStyle(); });
+document.getElementById('bgBtn').textContent=BGS[bgI].name;
+document.getElementById('knifeBtn').textContent=KNIVES[knifeI].name;
 function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loop); }
 function tap(el,fn){ el._fn=fn;
   const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };

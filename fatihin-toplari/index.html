@@ -88,11 +88,12 @@ function ding(s=0){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),
 const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
 
 /* toplar: hasar, atış maliyeti, gülle boyu, açılma eşiği (toplam kazanç) */
+/* pierce: gülle kaç bloğu delip geçer · splash: patlama yarıçapı (çevre hasarı) */
 const CANNONS=[
-  {name:'Şahi',       dmg:1, cost:10,  r:13, unlock:0,     col:'#8a8f9a'},
-  {name:'Büyük Şahi', dmg:2, cost:25,  r:16, unlock:1000,  col:'#b8935a'},
-  {name:'Ejder Topu', dmg:3, cost:60,  r:19, unlock:4000,  col:'#3fa06a'},
-  {name:'Yıldırım',   dmg:5, cost:120, r:22, unlock:10000, col:'#ffc93c'},
+  {name:'Şahi',       dmg:1, cost:10,  r:13, unlock:0,     col:'#8a8f9a', pierce:1, splash:0},
+  {name:'Büyük Şahi', dmg:2, cost:25,  r:16, unlock:1000,  col:'#b8935a', pierce:2, splash:0},
+  {name:'Ejder Topu', dmg:3, cost:60,  r:19, unlock:4000,  col:'#3fa06a', pierce:3, splash:70},
+  {name:'Yıldırım',   dmg:5, cost:120, r:22, unlock:10000, col:'#ffc93c', pierce:6, splash:100},
 ];
 let score=0, earned=0, level=1, cannon=0;
 try{ const s=JSON.parse(localStorage.getItem('fatih_save'));
@@ -171,7 +172,12 @@ function up(){
   score=Math.max(0,score-c.cost); updHud();
   floatText(slingX+40,slingY-60,'−'+c.cost,'#ff8f7a');
   const p=Math.min(d,Math.max(110,H*0.16))*0.16;
-  ball.vx=dx/d*p; ball.vy=dy/d*p; ball.flying=true; state='fly';
+  ball.vx=dx/d*p; ball.vy=dy/d*p;
+  /* dik atış boşa gitmesin: en az %35 ileri itki garanti */
+  const minVx=p*0.35;
+  if(ball.vx<minVx){ ball.vx=minVx; if(ball.vy>0) ball.vy=Math.min(ball.vy,p*0.3); }
+  ball.pierced=0;
+  ball.flying=true; state='fly';
   boom(0.5,60); buzz(15); shake=6; save();
 }
 addEventListener('mousedown',down); addEventListener('mousemove',move); addEventListener('mouseup',up);
@@ -193,8 +199,23 @@ function hitBlock(b,imp,hx,hy){
     rot:Math.random()*6.28,vr:(Math.random()-.5)*0.3});
   boom(Math.min(0.6,0.2+imp*0.04),60+Math.random()*40);
   shake=Math.min(14,shake+imp*0.8);
-  if(b.hp<=0){ b.dead=true; addScore(40,b.x,b.y); }
+  const died=b.hp<=0;
+  if(died){ b.dead=true; addScore(40,b.x,b.y); }
   else addScore(8,hx,hy);
+  /* geniş hasar: patlama yarıçapındaki komşu taşlar da hasar alır */
+  if(died&&c.splash>0){
+    for(const o of blocks){
+      if(o===b||o.dead) continue;
+      if(Math.hypot(o.x-hx,o.y-hy)<c.splash){
+        o.asleep=false; o.hp--;
+        o.vx+=(o.x-hx)*0.06; o.vy-=1.5;
+        for(let i=0;i<4;i++) particles.push({x:o.x,y:o.y,vx:(Math.random()-.5)*5,
+          vy:-Math.random()*4,life:0.8,col:o.col,size:3,rot:0,vr:0.2});
+        if(o.hp<=0){ o.dead=true; addScore(40,o.x,o.y); }
+      }
+    }
+  }
+  return died;
 }
 function physics(){
   tick++;
@@ -212,13 +233,20 @@ function physics(){
       const dx=ball.x-cx, dy=ball.y-cy;
       if(dx*dx+dy*dy<ball.r*ball.r){
         const sp=Math.hypot(ball.vx,ball.vy);
-        hitBlock(b,sp,cx,cy);
+        const died=hitBlock(b,sp,cx,cy);
         b.vx+=ball.vx*0.5; b.vy+=ball.vy*0.3; b.va+=(Math.random()-.5)*0.25;
-        const d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
-        ball.x=cx+nx*ball.r; ball.y=cy+ny*ball.r;
-        const dot=ball.vx*nx+ball.vy*ny;
-        ball.vx-=1.5*dot*nx; ball.vy-=1.5*dot*ny;
-        ball.vx*=0.7; ball.vy*=0.7;
+        const c2=CANNONS[cannon];
+        if(died&&ball.pierced<c2.pierce-1){
+          /* delip geç: sekmeden yoluna devam, hafif yavaşla */
+          ball.pierced++;
+          ball.vx*=0.88; ball.vy*=0.92;
+        } else {
+          const d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
+          ball.x=cx+nx*ball.r; ball.y=cy+ny*ball.r;
+          const dot=ball.vx*nx+ball.vy*ny;
+          ball.vx-=1.5*dot*nx; ball.vy-=1.5*dot*ny;
+          ball.vx*=0.7; ball.vy*=0.7;
+        }
       }
     }
   }
