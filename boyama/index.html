@@ -39,8 +39,10 @@
   </header>
   <div id="svgbox"></div>
   <div id="palette"></div>
+  <div id="picName" style="font-size:15px;font-weight:900;letter-spacing:.08em;color:#8a6d4e;text-transform:uppercase"></div>
   <div id="tools">
     <button class="tool" id="newPicBtn" style="background:#ffe8c8;border-color:#e8b45f">🎲 Yeni Resim</button>
+    <button class="tool" id="dlBtn" style="background:#e0f0e8;border-color:#7cb356">📥 İndir</button>
     <button class="tool" id="eraseBtn">🧽 Sil</button>
     <button class="tool" id="clearBtn">🗑️ Temizle</button>
   </div>
@@ -247,8 +249,175 @@ const GEN={
       <circle class="r" id="ogun" cx="30" cy="45" r="17"/>`;
     return p;
   },
+  gozluk(r){ const g=r()<0.5;
+    return `<circle class="r" id="g1" cx="92" cy="150" r="55"/><circle class="r" id="g1i" cx="92" cy="150" r="42"/>
+    <circle class="r" id="g2" cx="208" cy="150" r="55"/><circle class="r" id="g2i" cx="208" cy="150" r="42"/>
+    <rect class="r" id="gk" x="138" y="140" width="24" height="12" rx="6"/>
+    <rect class="r" id="gs1" x="10" y="138" width="30" height="10" rx="5"/>
+    <rect class="r" id="gs2" x="260" y="138" width="30" height="10" rx="5"/>`+
+    (g?`<circle class="r" id="ggun" cx="255" cy="55" r="18"/>`:``); },
+  inek(r){ let sp='';
+    for(let i=0;i<3+Math.floor(r()*3);i++) sp+=`<ellipse class="r" id="isp${i}" cx="${105+r()*95|0}" cy="${150+r()*45|0}" rx="${12+r()*10|0}" ry="${9+r()*7|0}"/>`;
+    return `<path class="r" id="icim" d="M0,258 L300,258 L300,300 L0,300Z"/>
+    <ellipse class="r" id="igov" cx="160" cy="170" rx="85" ry="55"/>${sp}
+    <circle class="r" id="ibas" cx="62" cy="120" r="34"/>
+    <ellipse class="r" id="ibur" cx="55" cy="138" rx="20" ry="13"/>
+    <polygon class="r" id="ibo1" points="42,92 34,68 54,84"/><polygon class="r" id="ibo2" points="82,92 90,68 70,84"/>
+    <ellipse class="r" id="ikul1" cx="30" cy="102" rx="12" ry="8"/><ellipse class="r" id="ikul2" cx="94" cy="102" rx="12" ry="8"/>
+    <rect class="r" id="ib1" x="105" y="210" width="16" height="48" rx="7"/><rect class="r" id="ib2" x="140" y="215" width="16" height="45" rx="7"/>
+    <rect class="r" id="ib3" x="180" y="215" width="16" height="45" rx="7"/><rect class="r" id="ib4" x="215" y="210" width="16" height="48" rx="7"/>
+    <path class="r" id="ikuy" d="M243,150 Q268,175 260,205" fill="none" stroke-width="7"/>
+    <ellipse class="r" id="imem" cx="185" cy="212" rx="20" ry="12"/>`; },
+  kalem(r){ return `<polygon class="r" id="kuc" points="150,255 132,215 168,215"/>
+    <polygon class="r" id="kah" points="150,255 141,235 159,235"/>
+    <rect class="r" id="kgov" x="132" y="80" width="36" height="135"/>
+    <rect class="r" id="kser" x="132" y="62" width="36" height="18" rx="4"/>
+    <rect class="r" id="ksil" x="135" y="42" width="30" height="20" rx="8"/>
+    <path class="r" id="kciz" d="M40,${170+r()*60|0} Q90,${150+r()*40|0} 118,190" fill="none" stroke-width="6"/>
+    <path class="r" id="kciz2" d="M182,190 Q225,${150+r()*50|0} 265,${165+r()*50|0}" fill="none" stroke-width="6"/>`; },
+  defter(r){ let sp='',ln='';
+    for(let i=0;i<6;i++) sp+=`<circle class="r" id="dsp${i}" cx="78" cy="${80+i*30}" r="8"/>`;
+    for(let i=0;i<4;i++) ln+=`<rect class="r" id="dln${i}" x="105" y="${115+i*32}" width="${90+r()*50|0}" height="7" rx="3"/>`;
+    return `<rect class="r" id="dkap" x="85" y="55" width="150" height="200" rx="10"/>${sp}${ln}
+    <rect class="r" id="det" x="105" y="72" width="110" height="28" rx="6"/>
+    <circle class="r" id="dyild" cx="200" cy="230" r="14"/>`; },
+  semsiye(r){ const n=4; let pan='';
+    for(let i=0;i<n;i++){ const x0=40+i*55, x1=40+(i+1)*55;
+      pan+=`<path class="r" id="spn${i}" d="M${x0},140 Q${(x0+x1)/2},${118+((i%2)*8)} ${x1},140 L${x1},140 Q${(x0+x1)/2},${28} ${x0},140Z"/>`; }
+    let dm=''; for(let i=0;i<5;i++) dm+=`<path class="r" id="sdm${i}" d="M${35+r()*230|0},${190+r()*60|0} q-5,12 0,16 q5,-4 0,-16"/>`;
+    return `<path class="r" id="stepe" d="M40,140 Q150,20 260,140 Z" opacity="0"/>${pan}
+    <rect class="r" id="ssap" x="146" y="140" width="9" height="100"/>
+    <path class="r" id="skanca" d="M146,240 q0,22 22,20" fill="none" stroke-width="9"/>
+    <rect class="r" id="suc" x="146" y="24" width="9" height="18" rx="4"/>${dm}`; },
+  otobus(r){ const wn=3+Math.floor(r()*2); let w='';
+    for(let i=0;i<wn;i++) w+=`<rect class="r" id="ow${i}" x="${52+i*(150/wn)}" y="112" width="${120/wn}" height="34" rx="5"/>`;
+    return `<rect class="r" id="oyol" x="0" y="235" width="300" height="60"/>
+    <rect class="r" id="ogv" x="35" y="90" width="230" height="115" rx="16"/>${w}
+    <rect class="r" id="okp" x="222" y="118" width="32" height="85" rx="5"/>
+    <circle class="r" id="ot1" cx="85" cy="212" r="24"/><circle class="r" id="oj1" cx="85" cy="212" r="10"/>
+    <circle class="r" id="ot2" cx="215" cy="212" r="24"/><circle class="r" id="oj2" cx="215" cy="212" r="10"/>
+    <rect class="r" id="ofar" x="36" y="170" width="14" height="12" rx="4"/>
+    <rect class="r" id="otab" x="90" y="95" width="120" height="14" rx="5"/>`; },
+  buzdolabi(r){ return `<rect class="r" id="bgov" x="90" y="35" width="120" height="230" rx="12"/>
+    <rect class="r" id="bust" x="98" y="43" width="104" height="70" rx="8"/>
+    <rect class="r" id="balt" x="98" y="122" width="104" height="135" rx="8"/>
+    <rect class="r" id="bk1" x="185" y="60" width="8" height="34" rx="4"/>
+    <rect class="r" id="bk2" x="185" y="140" width="8" height="52" rx="4"/>
+    <rect class="r" id="bmig" x="108" y="135" width="34" height="42" rx="6"/>
+    <circle class="r" id="belma" cx="125" cy="60" r="9"/>`; },
+  camasir(r){ return `<rect class="r" id="cmg" x="75" y="55" width="150" height="200" rx="14"/>
+    <rect class="r" id="cmp" x="75" y="55" width="150" height="38" rx="14"/>
+    <circle class="r" id="cmk1" cx="98" cy="74" r="8"/><circle class="r" id="cmk2" cx="122" cy="74" r="8"/>
+    <rect class="r" id="cmc" x="168" y="66" width="44" height="16" rx="5"/>
+    <circle class="r" id="cmd1" cx="150" cy="175" r="58"/>
+    <circle class="r" id="cmd2" cx="150" cy="175" r="44"/>
+    <circle class="r" id="cmd3" cx="150" cy="175" r="30"/>
+    <path class="r" id="cmsu" d="M120,175 Q135,160 150,175 Q165,190 180,175" fill="none" stroke-width="6"/>`; },
+  seker(r){ let p=''; const n=3+Math.floor(r()*2);
+    for(let i=0;i<n;i++){ const sx=60+i*(180/(n-1||1)), sy=100+((i%2)*90)+r()*20;
+      p+=`<circle class="r" id="sk${i}" cx="${sx|0}" cy="${sy|0}" r="26"/>
+      <polygon class="r" id="skk1${i}" points="${sx-24|0},${sy-10|0} ${sx-48|0},${sy-22|0} ${sx-44|0},${sy+14|0}"/>
+      <polygon class="r" id="skk2${i}" points="${sx+24|0},${sy-10|0} ${sx+48|0},${sy-22|0} ${sx+44|0},${sy+14|0}"/>`; }
+    return p+`<circle class="r" id="slp" cx="150" cy="150" r="34"/>
+    <path class="r" id="slps" d="M150,184 L150,255" stroke-width="8" fill="none"/>
+    <path class="r" id="slpg" d="M150,150 m-22,0 a22,22 0 0 1 44,0 a14,14 0 0 1 -28,0 a7,7 0 0 1 14,0" fill="none" stroke-width="6"/>`; },
+  nalbur(r){ return `<rect class="r" id="npano" x="20" y="30" width="260" height="240" rx="14"/>
+    <rect class="r" id="ncsap" x="60" y="120" width="18" height="110" rx="8"/>
+    <rect class="r" id="ncbas" x="38" y="80" width="62" height="38" rx="8"/>
+    <rect class="r" id="ntsap" x="140" y="60" width="20" height="60" rx="9"/>
+    <rect class="r" id="ntgov" x="146" y="120" width="8" height="100"/>
+    <polygon class="r" id="ntuc" points="146,220 154,220 150,240"/>
+    <path class="r" id="ning" d="M225,70 a26,26 0 1 0 18,44 l-12,-12 a10,10 0 1 1 6,-16 l12,-12 a26,26 0 0 0 -24,-4Z"/>
+    <rect class="r" id="ningsap" x="238" y="118" width="16" height="95" rx="7" transform="rotate(18 246 165)"/>
+    <circle class="r" id="nvida1" cx="70" cy="255" r="9"/><circle class="r" id="nvida2" cx="150" cy="255" r="9"/>
+    <circle class="r" id="nvida3" cx="230" cy="255" r="9"/>`; },
+  yazarkasa(r){ let ks='';
+    for(let k2=0;k2<3;k2++)for(let c=0;c<4;c++)
+      ks+=`<rect class="r" id="yk${k2}${c}" x="${88+c*34}" y="${168+k2*30}" width="26" height="22" rx="5"/>`;
+    return `<rect class="r" id="ygov" x="70" y="150" width="160" height="110" rx="10"/>${ks}
+    <rect class="r" id="yekran" x="88" y="108" width="124" height="34" rx="7"/>
+    <rect class="r" id="yfis" x="120" y="58" width="60" height="52" rx="4"/>
+    <path class="r" id="yfy1" d="M130,72 L170,72" stroke-width="5" fill="none"/>
+    <path class="r" id="yfy2" d="M130,86 L162,86" stroke-width="5" fill="none"/>
+    <rect class="r" id="ycek" x="62" y="258" width="176" height="24" rx="7"/>`; },
+  kopek(r){ return `<path class="r" id="kpcim" d="M0,262 L300,262 L300,300 L0,300Z"/>
+    <ellipse class="r" id="kpgov" cx="170" cy="190" rx="75" ry="48"/>
+    <circle class="r" id="kpbas" cx="75" cy="135" r="38"/>
+    <path class="r" id="kpkul1" d="M48,110 Q30,150 52,162 Q60,135 62,112Z"/>
+    <path class="r" id="kpkul2" d="M102,110 Q120,150 98,162 Q90,135 88,112Z"/>
+    <ellipse class="r" id="kpbur" cx="68" cy="152" rx="17" ry="12"/>
+    <circle class="r" id="kpburn" cx="62" cy="148" r="6"/>
+    <path class="r" id="kpdil" d="M72,163 q4,14 12,12 q6,-8 -2,-14Z"/>
+    <rect class="r" id="kpb1" x="122" y="222" width="15" height="42" rx="7"/><rect class="r" id="kpb2" x="152" y="228" width="15" height="38" rx="7"/>
+    <rect class="r" id="kpb3" x="192" y="228" width="15" height="38" rx="7"/><rect class="r" id="kpb4" x="222" y="222" width="15" height="42" rx="7"/>
+    <path class="r" id="kpkuy" d="M243,168 Q272,140 262,112" fill="none" stroke-width="9"/>
+    <ellipse class="r" id="kpben" cx="195" cy="175" rx="20" ry="14"/>`; },
+  zurafa(r){ let sp='';
+    for(let i=0;i<5;i++) sp+=`<circle class="r" id="zsp${i}" cx="${150+r()*90|0}" cy="${185+r()*55|0}" r="${8+r()*6|0}"/>`;
+    return `<path class="r" id="zcim" d="M0,268 L300,268 L300,300 L0,300Z"/>
+    <ellipse class="r" id="zgov" cx="190" cy="210" rx="70" ry="45"/>${sp}
+    <path class="r" id="zboy" d="M138,185 L96,70 L128,62 L158,178Z"/>
+    <circle class="r" id="zbas" cx="103" cy="55" r="26"/>
+    <ellipse class="r" id="zbur" cx="87" cy="66" rx="14" ry="10"/>
+    <rect class="r" id="zb1" x="150" y="238" width="13" height="42" rx="6"/><rect class="r" id="zb2" x="180" y="242" width="13" height="38" rx="6"/>
+    <rect class="r" id="zb3" x="210" y="242" width="13" height="38" rx="6"/><rect class="r" id="zb4" x="235" y="238" width="13" height="42" rx="6"/>
+    <rect class="r" id="zboy1" x="92" y="22" width="6" height="14" rx="3"/><rect class="r" id="zboy2" x="112" y="20" width="6" height="14" rx="3"/>
+    <circle class="r" id="zb0" cx="95" cy="18" r="6"/><circle class="r" id="zb02" cx="115" cy="16" r="6"/>
+    <path class="r" id="zkuy" d="M258,195 Q280,215 274,240" fill="none" stroke-width="7"/>`; },
+  fil(r){ return `<path class="r" id="fcim" d="M0,265 L300,265 L300,300 L0,300Z"/>
+    <ellipse class="r" id="fgov" cx="175" cy="180" rx="88" ry="62"/>
+    <circle class="r" id="fbas" cx="78" cy="140" r="45"/>
+    <path class="r" id="fkul" d="M100,105 Q150,85 145,145 Q140,185 105,175Z"/>
+    <path class="r" id="fhort" d="M48,165 Q28,205 42,240 Q50,252 60,244 Q50,215 66,180Z"/>
+    <path class="r" id="fdis" d="M62,178 Q75,196 90,198 Q80,182 74,172Z"/>
+    <rect class="r" id="fb1" x="120" y="222" width="24" height="45" rx="10"/>
+    <rect class="r" id="fb2" x="165" y="228" width="24" height="40" rx="10"/>
+    <rect class="r" id="fb3" x="212" y="222" width="24" height="45" rx="10"/>
+    <path class="r" id="fkuy" d="M261,170 Q283,190 276,215" fill="none" stroke-width="7"/>`; },
+  aslan(r){ const yavru=r()<0.6;
+    let p=`<path class="r" id="acim2" d="M0,262 L300,262 L300,300 L0,300Z"/>
+    <circle class="r" id="ayele" cx="95" cy="120" r="62"/>
+    <circle class="r" id="ayuz" cx="95" cy="120" r="40"/>
+    <ellipse class="r" id="abur2" cx="95" cy="138" rx="18" ry="12"/>
+    <ellipse class="r" id="akul1" cx="60" cy="82" rx="11" ry="10"/><ellipse class="r" id="akul2" cx="130" cy="82" rx="11" ry="10"/>
+    <ellipse class="r" id="agov2" cx="185" cy="195" rx="72" ry="46"/>
+    <rect class="r" id="ab1" x="140" y="225" width="15" height="38" rx="7"/><rect class="r" id="ab2" x="170" y="230" width="15" height="33" rx="7"/>
+    <rect class="r" id="ab3" x="205" y="230" width="15" height="33" rx="7"/><rect class="r" id="ab4" x="232" y="225" width="15" height="38" rx="7"/>
+    <path class="r" id="akuy2" d="M255,175 Q283,150 276,122" fill="none" stroke-width="8"/>
+    <circle class="r" id="akuyp" cx="276" cy="115" r="9"/>`;
+    if(yavru) p+=`<circle class="r" id="ayav" cx="240" cy="248" r="20"/>
+    <circle class="r" id="ayavb" cx="222" cy="232" r="13"/>
+    <ellipse class="r" id="ayavk1" cx="214" cy="222" rx="5" ry="4"/><ellipse class="r" id="ayavk2" cx="230" cy="222" rx="5" ry="4"/>`;
+    return p; },
+  ayi(r){ const yavru=r()<0.5;
+    let p=`<path class="r" id="aycim" d="M0,265 L300,265 L300,300 L0,300Z"/>
+    <ellipse class="r" id="aygov" cx="150" cy="185" rx="80" ry="62"/>
+    <ellipse class="r" id="aykar" cx="150" cy="200" rx="44" ry="36"/>
+    <circle class="r" id="aybas" cx="150" cy="95" r="42"/>
+    <ellipse class="r" id="ayburr" cx="150" cy="110" rx="20" ry="14"/>
+    <circle class="r" id="aykul1" cx="118" cy="62" r="14"/><circle class="r" id="aykul2" cx="182" cy="62" r="14"/>
+    <ellipse class="r" id="ayb1" cx="95" cy="245" rx="20" ry="14"/><ellipse class="r" id="ayb2" cx="205" cy="245" rx="20" ry="14"/>`;
+    if(yavru) p+=`<circle class="r" id="ayyav" cx="255" cy="238" r="24"/>
+    <circle class="r" id="ayyavb" cx="243" cy="215" r="15"/>
+    <circle class="r" id="ayyk1" cx="234" cy="204" r="5"/><circle class="r" id="ayyk2" cx="252" cy="204" r="5"/>`;
+    return p; },
+  at(r){ return `<path class="r" id="atcim" d="M0,262 L300,262 L300,300 L0,300Z"/>
+    <ellipse class="r" id="atgov" cx="175" cy="185" rx="80" ry="48"/>
+    <path class="r" id="atboy" d="M120,165 L85,85 L125,72 L150,158Z"/>
+    <path class="r" id="atbas" d="M85,85 Q55,88 45,108 Q60,122 88,118 Q100,105 95,88Z"/>
+    <path class="r" id="atyele" d="M122,72 Q145,95 142,150 L128,150 Q118,100 108,78Z"/>
+    <rect class="r" id="atb1" x="120" y="220" width="14" height="44" rx="6"/><rect class="r" id="atb2" x="150" y="226" width="14" height="38" rx="6"/>
+    <rect class="r" id="atb3" x="192" y="226" width="14" height="38" rx="6"/><rect class="r" id="atb4" x="222" y="220" width="14" height="44" rx="6"/>
+    <path class="r" id="atkuy" d="M252,168 Q285,185 282,235 L270,232 Q268,196 246,180Z"/>`; },
 };
-const GEN_ICON={mandala:'🌀',roket:'🚀',akvaryum:'🐟',bahce:'🌼',cami:'🕌',ev:'🏠',apartman:'🏢',okul:'🏫'};
+const GEN_ICON={mandala:'🌀',roket:'🚀',akvaryum:'🐟',bahce:'🌼',cami:'🕌',ev:'🏠',apartman:'🏢',okul:'🏫',
+  gozluk:'👓',inek:'🐄',kalem:'✏️',defter:'📒',semsiye:'☂️',otobus:'🚌',buzdolabi:'🧊',camasir:'🌀',
+  seker:'🍬',nalbur:'🔨',yazarkasa:'🧾',kopek:'🐕',zurafa:'🦒',fil:'🐘',aslan:'🦁',ayi:'🐻',at:'🐎'};
+const GEN_NAME={mandala:'Mandala',roket:'Roket',akvaryum:'Akvaryum',bahce:'Çiçek Bahçesi',cami:'Cami',
+  ev:'Ev',apartman:'Apartman',okul:'Okul',gozluk:'Gözlük',inek:'İnek',kalem:'Kalem',defter:'Defter',
+  semsiye:'Şemsiye',otobus:'Otobüs',buzdolabi:'Buzdolabı',camasir:'Çamaşır Makinesi',seker:'Şekerler',
+  nalbur:'Nalbur Tezgâhı',yazarkasa:'Yazar Kasa',kopek:'Köpek',zurafa:'Zürafa',fil:'Fil',aslan:'Aslan',ayi:'Ayı',at:'At'};
+const CUR_NAME={kedi:'Kedi',kelebek:'Kelebek',araba:'Araba',cicek:'Çiçek',balik:'Balık'};
 function makeGen(tpl,seed){
   const id='gen_'+tpl+'_'+seed;
   PICS[id]={icon:GEN_ICON[tpl],vb:'0 0 300 300',parts:GEN[tpl](RNG(seed))};
@@ -285,6 +454,10 @@ function loadPic(name){
   }
   for(const b of document.querySelectorAll('.pickbtn'))
     b.classList.toggle('on',b.dataset.p===name);
+  /* öğretici isim etiketi */
+  const tpl=name.startsWith('gen_')?name.split('_')[1]:null;
+  document.getElementById('picName').textContent =
+    tpl ? (GEN_NAME[tpl]||'') : (CUR_NAME[name]||'');
   /* kayıt şişmesin: en fazla 40 resmin boyası saklansın */
   const keys=Object.keys(saved);
   if(keys.length>40){ for(const k of keys.slice(0,keys.length-40)) delete saved[k]; save(); }
@@ -329,6 +502,29 @@ document.getElementById('clearBtn').addEventListener('click',()=>{
   delete saved[curPic]; save(); loadPic(curPic);
 });
 document.getElementById('newPicBtn').addEventListener('click',newRandomPic);
+/* 📥 boyanmış resmi PNG indir */
+document.getElementById('dlBtn').addEventListener('click',()=>{
+  pop();
+  const svgEl=box.querySelector('svg');
+  if(!svgEl) return;
+  const name=document.getElementById('picName').textContent||'boyama';
+  const data='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="700" height="700">'
+    +svgEl.innerHTML+'</svg>';
+  const img=new Image();
+  img.onload=()=>{
+    const c=document.createElement('canvas'); c.width=700; c.height=760;
+    const x=c.getContext('2d');
+    x.fillStyle='#ffffff'; x.fillRect(0,0,700,760);
+    x.drawImage(img,0,0);
+    x.fillStyle='#8a6d4e'; x.font='700 30px Avenir Next, sans-serif'; x.textAlign='center';
+    x.fillText(name+' 🎨',350,738);
+    const a=document.createElement('a');
+    a.download='boyama-'+name.toLocaleLowerCase('tr').replace(/\s+/g,'-')+'.png';
+    a.href=c.toDataURL('image/png');
+    a.click();
+  };
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(data);
+});
 /* son rastgele resmi hatırla */
 let opened=false;
 try{ const lg=JSON.parse(localStorage.getItem('boyama_lastgen'));

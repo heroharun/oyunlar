@@ -486,9 +486,19 @@ function draw(){
       ctx.font=(26*s)+'px system-ui';
       ctx.fillText(o.e, lx2, o.y+1);
     } else {
-      /* engeller: kırmızı uyarı tabanı — azıkla zıt kod */
-      ctx.fillStyle='rgba(180,50,40,.4)';
-      ctx.beginPath(); ctx.ellipse(lx2,o.y+16*s,26*s,8*s,0,0,6.28); ctx.fill();
+      /* ENGEL: parlak kırmızı uyarı plakası + beyaz çerçeve + nabız — kaçırılmaz */
+      const pulse=1+Math.sin(tick*0.25+o.y*0.05)*0.06;
+      const pw=34*s*pulse;
+      ctx.fillStyle='#e8402e';
+      ctx.beginPath();
+      const rx=lx2-pw, ry=o.y-pw*0.9, rw=pw*2, rh=pw*1.8, rr2=10*s;
+      ctx.moveTo(rx+rr2,ry); ctx.arcTo(rx+rw,ry,rx+rw,ry+rh,rr2); ctx.arcTo(rx+rw,ry+rh,rx,ry+rh,rr2);
+      ctx.arcTo(rx,ry+rh,rx,ry,rr2); ctx.arcTo(rx,ry,rx+rw,ry,rr2); ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=3.5*s; ctx.stroke();
+      ctx.strokeStyle='#ffd93d'; ctx.lineWidth=1.5*s;
+      ctx.beginPath();
+      ctx.moveTo(rx+rr2,ry+3*s); ctx.arcTo(rx+rw-3*s,ry+3*s,rx+rw-3*s,ry+rh-3*s,rr2);
+      ctx.stroke();
       if(o.barikat){
         /* bedevi barikatı: çapraz ahşap bariyer + kum torbaları */
         ctx.save(); ctx.translate(lx2,o.y);
