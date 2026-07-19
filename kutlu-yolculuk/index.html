@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="tr">
 <meta charset="utf-8">
-<title>KUTLU YOLCULUK — Hicaz Yolunda</title>
+<title>KUTLU YOLCULUK — Road to Medina</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
   :root{ --bg:#e8c98f; --ink:#4a3520; --dim:#8f7550; --gold:#c9862e; --teal:#2e8f8a; }
@@ -17,47 +17,78 @@
   #mtoast{position:fixed;top:20%;left:50%;transform:translateX(-50%);font-size:24px;font-weight:900;
     color:var(--teal);opacity:0;pointer-events:none;text-shadow:0 2px 8px rgba(46,143,138,.4);
     white-space:nowrap;z-index:3}
-  #mtoast.pop{animation:mp 1.6s ease-out}
+  #mtoast.pop{animation:mp 1.8s ease-out}
   @keyframes mp{0%{opacity:0;transform:translateX(-50%) scale(.6)}
-    12%{opacity:1;transform:translateX(-50%) scale(1.06)}85%{opacity:1}100%{opacity:0}}
+    10%{opacity:1;transform:translateX(-50%) scale(1.06)}88%{opacity:1}100%{opacity:0}}
   .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:14px;text-align:center;background:rgba(232,201,143,.96);
-    transition:opacity .3s;padding:24px;z-index:10}
+    justify-content:center;gap:12px;text-align:center;background:rgba(232,201,143,.97);
+    transition:opacity .3s;padding:22px;z-index:10;overflow:auto}
   .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .card.hidden .btn{pointer-events:none}
-  .card h1{font-size:clamp(34px,9vw,70px);font-weight:900;line-height:.98;text-wrap:balance;
+  .card h1{font-size:clamp(32px,8.5vw,64px);font-weight:900;line-height:.98;text-wrap:balance;
     background:linear-gradient(180deg,#2e8f8a,#c9862e);
     -webkit-background-clip:text;background-clip:text;color:transparent;transform:rotate(-1.5deg)}
-  .card p{max-width:36ch;color:var(--dim);font-size:15px;line-height:1.55}
-  .card .big{font-size:32px;font-weight:800;color:var(--gold)}
-  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.08em;text-transform:uppercase;
+  .card p{max-width:37ch;color:var(--dim);font-size:14px;line-height:1.55}
+  .card .big{font-size:30px;font-weight:800;color:var(--gold)}
+  .btn{font:inherit;font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;
     color:#fff;background:linear-gradient(180deg,#2e8f8a,#1e6f6a);border:none;border-radius:999px;
-    padding:14px 38px;cursor:pointer;box-shadow:0 5px 0 #124a46}
+    padding:13px 34px;cursor:pointer;box-shadow:0 5px 0 #124a46}
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #124a46}
+  .btn.alt{background:linear-gradient(180deg,#e8b45f,#c9862e);box-shadow:0 5px 0 #8f5a18}
   .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-  .hint{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .hint{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .chars{display:flex;gap:10px}
+  .chbtn{display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:rgba(255,255,255,.4);border:2.5px solid rgba(74,53,32,.25);border-radius:16px;
+    padding:10px 14px;font:inherit;font-size:12px;font-weight:800;color:var(--ink);cursor:pointer}
+  .chbtn canvas{width:44px;height:60px}
+  .chbtn.on{border-color:var(--teal);background:rgba(46,143,138,.15)}
+  #nameRow{display:flex;gap:8px;align-items:center}
+  #nameIn{font:inherit;font-size:15px;font-weight:700;color:var(--ink);text-align:center;
+    background:rgba(255,255,255,.6);border:2px solid rgba(74,53,32,.3);border-radius:12px;
+    padding:10px 14px;width:170px;-webkit-user-select:text;user-select:text}
+  #lbList{max-height:46vh;overflow-y:auto;width:min(88vw,340px);background:rgba(255,255,255,.45);
+    border-radius:14px;padding:10px 14px;text-align:left;font-size:13.5px;line-height:2;
+    font-variant-numeric:tabular-nums}
+  #lbList b{color:var(--gold)}
+  #lbList .me{background:rgba(46,143,138,.18);border-radius:6px;padding:0 6px}
 </style>
 
 <canvas id="cv"></canvas>
 <div id="hud">
   <div><div class="label">Yol</div><div class="value" id="distEl">0 km</div></div>
-  <div style="text-align:right"><div class="label">Su</div><div class="value" id="coinEl">💧 0</div></div>
+  <div style="text-align:right"><div class="label">Azık</div><div class="value" id="coinEl">🥨 0</div></div>
 </div>
 <div id="mtoast"></div>
 
 <div class="card" id="intro">
   <h1>KUTLU YOLCULUK</h1>
   <div style="letter-spacing:.32em;font-weight:800;font-size:13px;color:var(--gold)">— ROAD TO MEDINA —</div>
-  <p>Küçük Zehra, İstanbul'dan kutlu şehre doğru koşuyor! Marmara'nın yeşilinden Anadolu bozkırına, oradan Hicaz çölüne... Kayalardan kaç, su damlalarını topla, durakları geç. Bakalım Mekke'ye varabilecek misin? 🕌</p>
-  <button class="btn" id="startBtn">Yola Çık</button>
+  <p>Haydarpaşa Garı'ndan yola çık! Marmara'nın yeşilinden bozkıra, bozkırdan Hicaz çölüne... Engellerden kaç, her memleketin azığını topla, durakları geçerek kutlu şehre ulaş. 🕌</p>
+  <div class="hint">Yolcunu seç:</div>
+  <div class="chars" id="chars"></div>
+  <button class="btn" id="startBtn">🚉 Haydarpaşa'dan Yola Çık</button>
+  <button class="btn alt" id="lbBtn">🏆 İlk 100</button>
   <span class="hint" id="bestIntro"></span>
 </div>
 
 <div class="card hidden" id="endcard">
-  <h1 id="endTitle">Mola Zamanı</h1>
+  <h1 id="endTitle"></h1>
   <div class="big" id="endScore"></div>
   <p id="endMsg"></p>
+  <div id="nameRow">
+    <input id="nameIn" maxlength="14" placeholder="adını yaz">
+    <button class="btn" id="saveBtn" style="padding:11px 18px">Yaz</button>
+  </div>
+  <span class="hint" id="rankEl"></span>
   <button class="btn" id="retryBtn">Tekrar Yola Çık</button>
+  <button class="btn alt" id="lbBtn2">🏆 İlk 100</button>
+</div>
+
+<div class="card hidden" id="lbcard">
+  <h1 style="font-size:clamp(26px,7vw,44px)">🏆 İlk 100</h1>
+  <div id="lbList"></div>
+  <button class="btn" id="lbClose">Kapat</button>
 </div>
 
 <script>
@@ -76,18 +107,45 @@ function blip(f,d=0.08,v=0.14,t='triangle'){ try{ const a=audio(),n=a.currentTim
   o.connect(g).connect(a.destination);o.start(n);o.stop(n+d+0.02);}catch(e){} }
 const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
 
-/* kilometre taşları: İstanbul'dan Mekke'ye */
-const STOPS=[
-  {km:6,name:'İzmit'},{km:14,name:'Eskişehir'},{km:26,name:'Konya'},
-  {km:40,name:'Adana'},{km:52,name:'Halep'},{km:66,name:'Şam'},
-  {km:82,name:'Amman'},{km:100,name:'Tebük'},{km:120,name:'Medayin-i Salih'},
-  {km:142,name:'MEDİNE 🕌'},{km:170,name:'MEKKE 🕋 — VARDIN!'},
+/* ── karakterler ── */
+const CHARS=[
+  {name:'Zehra', scarf:'#4aa8a0', scarfD:'#3d8f88', d1:'#2e8f8a', d2:'#1e6f6a', cap:false},
+  {name:'Yusuf', scarf:null, d1:'#5a7ab8', d2:'#3d5a94', cap:true, hair:'#4a2c1a'},
+  {name:'Emine', scarf:'#e88faa', scarfD:'#d4708f', d1:'#b85a8f', d2:'#94406f', cap:false},
 ];
-/* bitki örtüsü fazları: Marmara yeşili → bozkır → çöl */
+let charI=0; try{ charI=+localStorage.getItem('hicaz_char')||0; }catch(e){}
+
+/* ── duraklar ve silüetler ──
+   lm türleri: gar(istasyon), kule(saat kulesi), kubbe(yeşil kubbe+minare),
+   cami(çok minareli), kale, tepe(evler), kaya(oyma evler), kabe */
+const STOPS=[
+  {km:8,  name:'İzmit',            lm:{t:'kule', c:'#8f7550'}},
+  {km:18, name:'Eskişehir',        lm:{t:'gar',  c:'#a8764a'}},
+  {km:30, name:'Konya',            lm:{t:'kubbe',c:'#2e8f6a'}},
+  {km:44, name:'Adana',            lm:{t:'cami', c:'#b8a888'}},
+  {km:56, name:'Halep',            lm:{t:'kale', c:'#b09a6a'}},
+  {km:68, name:'Şam',              lm:{t:'cami', c:'#cfc4a8'}},
+  {km:84, name:'Amman',            lm:{t:'tepe', c:'#c9a86a'}},
+  {km:102,name:'Tebük',            lm:{t:'kale', c:'#c9986a'}},
+  {km:122,name:'Medayin-i Salih',  lm:{t:'kaya', c:'#b8845a'}},
+  {km:146,name:'MEDİNE 🕌',        lm:{t:'kubbe',c:'#3fa06a'}},
+  {km:175,name:'MEKKE 🕋 — VARDIN!',lm:{t:'kabe', c:'#1a1a1a'}},
+];
+const MEDINE_I=9;
+/* bölge azıkları: her memleketin nimeti */
+const REGIONS=[
+  {km:0,  item:'🥨', ad:'simit'},
+  {km:18, item:'🍎', ad:'elma'},
+  {km:44, item:'🍇', ad:'üzüm'},
+  {km:68, item:'🫒', ad:'zeytin'},
+  {km:102,item:'💧', ad:'su'},
+  {km:122,item:'🌴', ad:'hurma'},
+];
+/* bitki örtüsü fazları */
 const PHASES=[
   {km:0,  sky:'#b8dfc0', mid:'#9fcf8a', bot:'#7ab365', deco:['🌳','🌲'], hill:'76,140,60'},
   {km:26, sky:'#d8e0a8', mid:'#cfc490', bot:'#b0a06f', deco:['🌾','🌿'], hill:'150,140,70'},
-  {km:60, sky:'#f5dfae', mid:'#e8c98f', bot:'#d4a86a', deco:['🌴','🌵'], hill:'201,134,46'},
+  {km:62, sky:'#f5dfae', mid:'#e8c98f', bot:'#d4a86a', deco:['🌴','🌵'], hill:'201,134,46'},
 ];
 function lerpC(a,b,t){
   const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16));
@@ -100,78 +158,204 @@ function phaseNow(){
   const a=PHASES[i], b=PHASES[Math.min(i+1,PHASES.length-1)];
   const t=(b===a)?1:Math.max(0,Math.min(1,(km-a.km)/(b.km-a.km)));
   return { sky:lerpC(a.sky,b.sky,t), mid:lerpC(a.mid,b.mid,t), bot:lerpC(a.bot,b.bot,t),
-    deco:(t<0.5?a.deco:b.deco), hill:(t<0.5?a.hill:b.hill), desert:km>=55 };
+    deco:(t<0.5?a.deco:b.deco), hill:(t<0.5?a.hill:b.hill), desert:km>=58 };
 }
-let lane=1, laneX=1, jumpT=0, dist=0, water=0, speed=6, objs=[], state='intro', tick=0, spawnT=0, stopI=0;
+function regionNow(){
+  const km=dist/10;
+  let r=REGIONS[0];
+  for(const x of REGIONS) if(km>=x.km) r=x;
+  return r;
+}
+
+let lane=1, laneX=1, jumpT=0, dist=0, azik=0, speed=6, objs=[], state='intro', tick=0, spawnT=0, stopI=0;
 let best=0; try{ best=+localStorage.getItem('hicaz_best')||0; }catch(e){}
-document.getElementById('bestIntro').textContent=best>0?'EN UZUN YOLUN: '+best+' km':'';
+document.getElementById('bestIntro').textContent=best>0?'EN İYİ PUANIN: '+best.toLocaleString('tr-TR'):'';
 const laneW=()=>Math.min(W*0.26,150);
 const PLAYER_Y=()=>H*0.78;
 
-function reset(){ lane=1; laneX=1; jumpT=0; dist=0; water=0; speed=6; objs=[]; spawnT=40; stopI=0; updHud(); }
+function reset(){ lane=1; laneX=1; jumpT=0; dist=0; azik=0; speed=6; objs=[]; spawnT=40; stopI=0; updHud(); }
 function updHud(){
   document.getElementById('distEl').textContent=(dist/10).toFixed(1)+' km';
-  document.getElementById('coinEl').textContent='💧 '+water;
+  document.getElementById('coinEl').textContent=regionNow().item+' '+azik;
 }
 function mtoast(t){ const el=document.getElementById('mtoast'); el.textContent=t;
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
 function spawn(){
-  const roll=Math.random(), l=Math.floor(Math.random()*3);
-  if(roll<0.38) objs.push({type:'kaya',lane:l,y:-80});
-  else if(roll<0.58) objs.push({type:'kaktus',lane:l,y:-80});
-  else if(roll<0.72) objs.push({type:'deve',lane:l,y:-80});
-  else for(let i=0;i<4;i++) objs.push({type:'su',lane:l,y:-80-i*70});
-  const rowBlocks=objs.filter(o=>o.type!=='su'&&o.y<-40);
+  const ph=phaseNow(), roll=Math.random(), l=Math.floor(Math.random()*3);
+  /* bölgeye göre engeller: yeşilde kütük/kaya, bozkırda kaktüs, çölde deve */
+  if(roll<0.36) objs.push({type:'blok',e:'🪨',lane:l,y:-80});
+  else if(roll<0.56){
+    const low = ph.desert?'🌵':(dist/10<26?'🪵':'🌵');
+    objs.push({type:'low',e:low,lane:l,y:-80});
+  }
+  else if(roll<0.70&&ph.desert) objs.push({type:'blok',e:'🐪',lane:l,y:-80});
+  else if(roll<0.70) objs.push({type:'blok',e:dist/10<26?'🐄':'🪨',lane:l,y:-80});
+  else { const it=regionNow().item;
+    for(let i=0;i<4;i++) objs.push({type:'azik',e:it,lane:l,y:-80-i*70}); }
+  const rowBlocks=objs.filter(o=>o.type!=='azik'&&o.y<-40);
   if(rowBlocks.length>=2){ const used=new Set(rowBlocks.map(o=>o.lane));
-    if(used.size>=3) objs=objs.filter(o=>!(o.type!=='su'&&o.y<-40&&o.lane===l)); }
+    if(used.size>=3) objs=objs.filter(o=>!(o.type!=='azik'&&o.y<-40&&o.lane===l)); }
 }
 function physics(){
   tick++;
-  speed=Math.min(14,6+dist/300);
-  dist+=speed*0.04;
+  speed=Math.min(12.5, 6+dist/420);          // daha yumuşak hızlanma → daha uzun oyun
+  dist+=speed*0.03;
   laneX+=(lane-laneX)*0.25;
   if(jumpT>0)jumpT--;
   spawnT-=speed;
-  if(spawnT<=0){ spawn(); spawnT=150+Math.random()*130; }
+  if(spawnT<=0){ spawn(); spawnT=155+Math.random()*130; }
   for(const o of objs) o.y+=speed;
   const py=PLAYER_Y();
   for(const o of objs){
     if(o.hit)continue;
     if(Math.abs(o.y-py)<34&&Math.abs(o.lane-laneX)<0.45){
-      if(o.type==='su'){ o.hit=true; water++; updHud(); blip(880,0.07,0.11); buzz(6); }
-      else if(o.type==='kaktus'&&jumpT>0){ /* atladı */ }
+      if(o.type==='azik'){ o.hit=true; azik++; updHud(); blip(880,0.07,0.11); buzz(6); }
+      else if(o.type==='low'&&jumpT>0){ }
       else { fall(); return; }
     }
   }
   objs=objs.filter(o=>!o.hit&&o.y<H+120);
-  // kilometre taşı
   if(stopI<STOPS.length&&dist/10>=STOPS[stopI].km){
     mtoast('📍 '+STOPS[stopI].name);
     blip(523,0.2,0.16); blip(659,0.25,0.12); buzz([25,40,25]);
-    stopI++;
+    stopI++; updHud();
   }
   if(Math.floor(dist)%10===0) updHud();
 }
+function calcScore(){ return Math.floor(dist/10*10 + azik*5); }
 function fall(){
   state='over'; blip(140,0.4,0.18,'sawtooth'); buzz(80);
-  const km=+(dist/10).toFixed(1);
-  const nb=km>best; if(nb){ best=km; try{localStorage.setItem('hicaz_best',best);}catch(e){} }
-  const reached=stopI>0?STOPS[stopI-1].name.replace(' — VARDIN!',''):'İstanbul çıkışı';
-  document.getElementById('endScore').textContent=km+' km · 💧 '+water;
-  document.getElementById('endTitle').textContent= stopI>=STOPS.length?'MEKKE! 🕋':'Mola Zamanı';
-  document.getElementById('endMsg').textContent=(nb?'YENİ REKOR! 🏆 ':'Rekorun: '+best+' km · ')
-    +'Son durağın: '+reached+'. '+(stopI>=STOPS.length?'Yolculuğu tamamladın, helal olsun!':'Biraz dinlen, yola devam!');
+  const km=+(dist/10).toFixed(1), score=calcScore();
+  const nb=score>best; if(nb){ best=score; try{localStorage.setItem('hicaz_best',best);}catch(e){} }
+  const reachedMedine=stopI>MEDINE_I, reachedMekke=stopI>=STOPS.length;
+  const t=document.getElementById('endTitle');
+  if(reachedMekke){ t.textContent='MEKKE! 🕋'; }
+  else if(reachedMedine){ t.textContent="Medine'ye Vardın! 🕌"; }
+  else{ t.textContent="Medine'ye Varamadın 😔"; }
+  document.getElementById('endScore').textContent=score.toLocaleString('tr-TR')+' puan';
+  const reached=stopI>0?STOPS[stopI-1].name.replace(' — VARDIN!',''):'Haydarpaşa çıkışı';
+  document.getElementById('endMsg').textContent=km+' km yol · '+azik+' azık · Son durak: '+reached
+    +(nb?' · YENİ REKOR! 🏆':'')+' — Adını yaz, İlk 100 listesine geç!';
+  lastScore={score,km};
+  document.getElementById('rankEl').textContent='';
+  try{ document.getElementById('nameIn').value=localStorage.getItem('hicaz_name')||''; }catch(e){}
   document.getElementById('endcard').classList.remove('hidden');
+}
+
+/* ── İlk 100 (cihaz içi liste) ── */
+let lastScore=null;
+function getLB(){ try{ return JSON.parse(localStorage.getItem('hicaz_lb'))||[]; }catch(e){ return []; } }
+function saveScore(){
+  if(!lastScore) return;
+  const name=(document.getElementById('nameIn').value||'Yolcu').trim().slice(0,14);
+  try{ localStorage.setItem('hicaz_name',name); }catch(e){}
+  let lb=getLB();
+  lb.push({n:name, s:lastScore.score, km:lastScore.km, t:new Date().toLocaleDateString('tr-TR')});
+  lb.sort((a,b)=>b.s-a.s); lb=lb.slice(0,100);
+  try{ localStorage.setItem('hicaz_lb',JSON.stringify(lb)); }catch(e){}
+  const rank=lb.findIndex(x=>x.s===lastScore.score&&x.n===name)+1;
+  document.getElementById('rankEl').textContent='📜 Listeye yazıldı — sıran: '+rank+'. / '+lb.length;
+  lastScore=null; blip(659,0.2,0.15); buzz(20);
+}
+function showLB(){
+  const lb=getLB();
+  const el=document.getElementById('lbList');
+  el.innerHTML = lb.length===0 ? '<i>Henüz kimse yok — ilk sen ol!</i>'
+    : lb.map((x,i)=>`<div${i<3?' class="me"':''}><b>${i+1}.</b> ${x.n} — ${x.s.toLocaleString('tr-TR')} puan <span style="color:var(--dim)">(${x.km} km · ${x.t})</span></div>`).join('');
+  document.getElementById('lbcard').classList.remove('hidden');
+}
+
+/* ── çizim ── */
+function drawLandmark(){
+  /* yaklaşan durağın silüeti ufukta büyüyerek belirir */
+  if(stopI>=STOPS.length) return;
+  const stop=STOPS[stopI], km=dist/10, remain=stop.km-km;
+  if(remain>7) return;
+  const t=1-Math.max(0,remain/7);           // 0→1 yaklaştıkça
+  const s=(0.45+0.75*t)*Math.min(1,W/420);
+  const lx=W*0.76, ly=H*0.205;
+  const c=stop.lm.c;
+  ctx.save(); ctx.translate(lx,ly); ctx.scale(s,s); ctx.globalAlpha=0.45+0.5*t;
+  ctx.fillStyle=c; ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.lineWidth=2;
+  const T2=stop.lm.t;
+  if(T2==='gar'){ ctx.fillRect(-55,-28,110,28);
+    ctx.beginPath(); ctx.moveTo(-60,-28); ctx.quadraticCurveTo(0,-58,60,-28); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.35)';
+    for(let i=-2;i<=2;i++) ctx.fillRect(i*20-5,-22,10,16); }
+  if(T2==='kule'){ ctx.fillRect(-8,-64,16,64);
+    ctx.fillRect(-12,-72,24,10);
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,-58,5,0,6.28); ctx.fill(); }
+  if(T2==='kubbe'){ ctx.beginPath(); ctx.arc(0,-22,26,Math.PI,0); ctx.fill();
+    ctx.fillRect(-26,-22,52,22);
+    ctx.fillRect(-40,-52,6,52); ctx.fillRect(34,-52,6,52);
+    ctx.beginPath(); ctx.moveTo(-37,-52); ctx.lineTo(-37,-60); ctx.lineTo(-33,-52); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(37,-52); ctx.lineTo(37,-60); ctx.lineTo(33,-52); ctx.fill(); }
+  if(T2==='cami'){ ctx.beginPath(); ctx.arc(0,-18,20,Math.PI,0); ctx.fill();
+    ctx.fillRect(-32,-18,64,18);
+    for(const mx of [-42,42]){ ctx.fillRect(mx-3,-48,6,48);
+      ctx.beginPath(); ctx.moveTo(mx-3,-48); ctx.lineTo(mx,-56); ctx.lineTo(mx+3,-48); ctx.fill(); } }
+  if(T2==='kale'){ ctx.fillRect(-48,-30,96,30);
+    for(let i=-2;i<=2;i++) ctx.fillRect(i*20-6,-38,12,8);
+    ctx.fillRect(-14,-20,28,20); }
+  if(T2==='tepe'){ for(let i=0;i<5;i++){ const hx=-40+i*20, hh=14+((i*7)%12);
+    ctx.fillRect(hx,-hh,16,hh); } }
+  if(T2==='kaya'){ ctx.beginPath(); ctx.moveTo(-50,0); ctx.quadraticCurveTo(-30,-52,0,-46);
+    ctx.quadraticCurveTo(35,-54,50,0); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,.35)';
+    ctx.fillRect(-22,-26,12,16); ctx.fillRect(6,-30,12,18); }
+  if(T2==='kabe'){ ctx.fillStyle='#1a1a1a'; ctx.fillRect(-24,-40,48,40);
+    ctx.fillStyle='#c9a24a'; ctx.fillRect(-24,-16,48,5); }
+  ctx.restore();
+}
+function drawChar(px,py,jump){
+  const ch=CHARS[charI];
+  ctx.save(); ctx.translate(px,py-jump);
+  ctx.rotate((lane-laneX)*-0.15);
+  const dg=ctx.createLinearGradient(0,-30,0,20);
+  dg.addColorStop(0,ch.d1); dg.addColorStop(1,ch.d2);
+  ctx.fillStyle=dg;
+  ctx.beginPath(); ctx.moveTo(0,-34);
+  ctx.bezierCurveTo(22,-20,20,14,0,18);
+  ctx.bezierCurveTo(-20,14,-22,-20,0,-34); ctx.fill();
+  if(ch.scarf){
+    ctx.fillStyle=ch.scarf;
+    ctx.beginPath(); ctx.arc(0,-41,16,0,6.28); ctx.fill();
+    const sw=Math.sin(tick*0.3)*5;
+    ctx.beginPath(); ctx.moveTo(-13,-34);
+    ctx.quadraticCurveTo(-20,-24+sw,-15,-14);
+    ctx.quadraticCurveTo(-6,-18,-8,-30); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(13,-34);
+    ctx.quadraticCurveTo(20,-24-sw,15,-14);
+    ctx.quadraticCurveTo(6,-18,8,-30); ctx.closePath(); ctx.fill();
+    ctx.fillStyle=ch.scarfD;
+    ctx.beginPath(); ctx.arc(0,-48,10,Math.PI*1.1,Math.PI*1.9); ctx.fill();
+  } else {
+    ctx.fillStyle=ch.hair;
+    ctx.beginPath(); ctx.arc(0,-42,14,0,6.28); ctx.fill();
+  }
+  ctx.fillStyle='#ffd9bd';
+  ctx.beginPath(); ctx.arc(0,-39,10.5,0,6.28); ctx.fill();
+  if(ch.cap){ ctx.fillStyle='#f5f0e0';
+    ctx.beginPath(); ctx.arc(0,-46,10.8,Math.PI*1.05,Math.PI*1.95); ctx.fill();
+    ctx.fillRect(-10.8,-47.5,21.6,4); }
+  ctx.fillStyle='#4a3520';
+  ctx.beginPath(); ctx.arc(-3.6,-40,1.9,0,6.28); ctx.arc(3.6,-40,1.9,0,6.28); ctx.fill();
+  ctx.strokeStyle='#c96a5a'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(0,-34.5,3.6,0.3,2.8); ctx.stroke();
+  if(jumpT<=0){
+    ctx.strokeStyle='#8f5a3a'; ctx.lineWidth=4.5; ctx.lineCap='round';
+    const ph2=Math.sin(tick*0.5)*7;
+    ctx.beginPath(); ctx.moveTo(-6,16); ctx.lineTo(-6+ph2,27);
+    ctx.moveTo(6,16); ctx.lineTo(6-ph2,27); ctx.stroke();
+  }
+  ctx.restore();
 }
 function draw(){
   const ph=phaseNow();
   const g=ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0,ph.sky); g.addColorStop(0.35,ph.mid); g.addColorStop(1,ph.bot);
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  // güneş
-  ctx.fillStyle='rgba(255,240,200,.9)';
-  ctx.beginPath(); ctx.arc(W*0.8,H*0.1,32,0,6.28); ctx.fill();
-  // katmanlı tepeler (paralaks — faza göre renk)
   const dOff1=(tick*0.15)%(W*2), dOff2=(tick*0.35)%(W*2);
   ctx.fillStyle='rgba('+ph.hill+',.18)';
   ctx.beginPath(); ctx.moveTo(0,H*0.2);
@@ -181,33 +365,29 @@ function draw(){
   ctx.beginPath(); ctx.moveTo(0,H*0.26);
   for(let x=0;x<=W;x+=40) ctx.lineTo(x,H*0.26-Math.sin((x+dOff2)*0.012+2)*20);
   ctx.lineTo(W,H*0.36); ctx.lineTo(0,H*0.36); ctx.fill();
-  // ufukta kervan (sadece çölde)
+  drawLandmark();
   if(ph.desert){
     ctx.font='17px system-ui'; ctx.textAlign='center'; ctx.globalAlpha=0.55;
     const kx=W+80-((tick*0.4)%(W+260));
-    for(let i=0;i<3;i++) ctx.fillText('🐫', kx+i*34, H*0.245);
+    for(let i=0;i<3;i++) ctx.fillText('🐫', kx+i*34, H*0.26);
     ctx.globalAlpha=1;
   }
-  // yol kenarı bitki örtüsü (faza göre)
   ctx.font='30px system-ui'; ctx.textAlign='center';
   for(const side of [-1,1]){
     const px2=W/2+side*(laneW()*2.6);
     const py2=(tick*speed*0.5+(side>0?200:0))%(H+120)-60;
     ctx.fillText(ph.deco[side>0?0:1], px2, py2);
   }
-  // demiryolu (3 şerit = 3 hat)
   const topW=laneW()*1.1, botW=laneW()*3.4;
-  ctx.fillStyle='#c9a86a';
+  ctx.fillStyle='rgba(120,90,50,.55)';
   ctx.beginPath(); ctx.moveTo(W/2-topW,0); ctx.lineTo(W/2+topW,0);
   ctx.lineTo(W/2+botW,H); ctx.lineTo(W/2-botW,H); ctx.fill();
-  // traversler
   ctx.strokeStyle='rgba(90,58,26,.4)'; ctx.lineWidth=8;
   const off=(tick*speed)%64;
   for(let y=-off;y<H+64;y+=64){
     const t=y/H, w=topW+(botW-topW)*t;
     ctx.beginPath(); ctx.moveTo(W/2-w*0.92,y); ctx.lineTo(W/2+w*0.92,y); ctx.stroke();
   }
-  // telgraf direkleri (Hicaz hattının simgesi)
   const pOff=(tick*speed)%220;
   for(let y=-pOff;y<H+220;y+=220){
     const t=Math.max(0,Math.min(1,y/H)), s=0.35+0.65*t;
@@ -220,7 +400,6 @@ function draw(){
       ctx.beginPath(); ctx.moveTo(px2-10*s,y-36*s); ctx.lineTo(px2+10*s,y-36*s); ctx.stroke();
     }
   }
-  // raylar
   ctx.strokeStyle='#8f7550'; ctx.lineWidth=5;
   for(const l of [-1.4,-0.47,0.47,1.4]){
     ctx.beginPath(); ctx.moveTo(W/2+l*topW*0.78,0); ctx.lineTo(W/2+l*botW*0.78,H); ctx.stroke();
@@ -230,52 +409,15 @@ function draw(){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   for(const o of objs){
     const s=scaleAt(o.y);
-    const lx=W/2+(o.lane-1)*laneW()*(0.35+0.65*s);
-    if(o.type==='su'){ ctx.font=(30*s)+'px system-ui'; ctx.fillText('💧',lx,o.y); }
-    else if(o.type==='kaya'){ ctx.font=(52*s)+'px system-ui'; ctx.fillText('🪨',lx,o.y); }
-    else if(o.type==='kaktus'){ ctx.font=(46*s)+'px system-ui'; ctx.fillText('🌵',lx,o.y); }
-    else { ctx.font=(54*s)+'px system-ui'; ctx.fillText('🐪',lx,o.y); }
+    const lx2=W/2+(o.lane-1)*laneW()*(0.35+0.65*s);
+    ctx.font=((o.type==='azik'?30:o.e==='🐪'?54:46)*s)+'px system-ui';
+    ctx.fillText(o.e, lx2, o.y);
   }
-  // Zehra
   const px=W/2+(laneX-1)*laneW(), py=PLAYER_Y();
   const jump=jumpT>0?Math.sin((28-jumpT)/28*Math.PI)*70:0;
   ctx.fillStyle='rgba(74,53,32,.3)';
   ctx.beginPath(); ctx.ellipse(px,py+22,24-jump*0.15,7,0,0,6.28); ctx.fill();
-  ctx.save(); ctx.translate(px,py-jump);
-  ctx.rotate((lane-laneX)*-0.15);
-  // elbise
-  const dg=ctx.createLinearGradient(0,-30,0,20);
-  dg.addColorStop(0,'#2e8f8a'); dg.addColorStop(1,'#1e6f6a');
-  ctx.fillStyle=dg;
-  ctx.beginPath(); ctx.moveTo(0,-34);
-  ctx.bezierCurveTo(22,-20,20,14,0,18);
-  ctx.bezierCurveTo(-20,14,-22,-20,0,-34); ctx.fill();
-  // başörtüsü (rüzgârda uçuşan uçlarıyla) + yüz
-  ctx.fillStyle='#4aa8a0';
-  ctx.beginPath(); ctx.arc(0,-41,16,0,6.28); ctx.fill();
-  const sw=Math.sin(tick*0.3)*5;
-  ctx.beginPath(); ctx.moveTo(-13,-34);
-  ctx.quadraticCurveTo(-20,-24+sw,-15,-14);
-  ctx.quadraticCurveTo(-6,-18,-8,-30); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(13,-34);
-  ctx.quadraticCurveTo(20,-24-sw,15,-14);
-  ctx.quadraticCurveTo(6,-18,8,-30); ctx.closePath(); ctx.fill();
-  ctx.fillStyle='#3d8f88';
-  ctx.beginPath(); ctx.arc(0,-48,10,Math.PI*1.1,Math.PI*1.9); ctx.fill();
-  ctx.fillStyle='#ffd9bd';
-  ctx.beginPath(); ctx.arc(0,-39,10.5,0,6.28); ctx.fill();
-  ctx.fillStyle='#4a3520';
-  ctx.beginPath(); ctx.arc(-4,-41,2,0,6.28); ctx.arc(4,-41,2,0,6.28); ctx.fill();
-  ctx.strokeStyle='#c96a5a'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.arc(0,-36,4,0.3,2.8); ctx.stroke();
-  if(jumpT<=0){
-    ctx.strokeStyle='#8f5a3a'; ctx.lineWidth=4.5;
-    const ph=Math.sin(tick*0.5)*7;
-    ctx.beginPath(); ctx.moveTo(-6,16); ctx.lineTo(-6+ph,27);
-    ctx.moveTo(6,16); ctx.lineTo(6-ph,27); ctx.stroke();
-  }
-  ctx.restore();
-  // sonraki durak göstergesi + Road to Medina
+  drawChar(px,py,jump);
   if(state==='play'){
     ctx.textAlign='center';
     ctx.fillStyle='rgba(201,134,46,.75)';
@@ -292,6 +434,7 @@ function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loo
 function goLane(d){ if(state!=='play')return; lane=Math.max(0,Math.min(2,lane+d)); blip(300,0.05,0.09); }
 function jump(){ if(state==='play'&&jumpT<=0){ jumpT=28; blip(420,0.1,0.12); buzz(8); } }
 addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
   if(e.code==='ArrowLeft')goLane(-1); if(e.code==='ArrowRight')goLane(1);
   if(e.code==='ArrowUp'||e.code==='Space'){ jump(); e.preventDefault(); }
 });
@@ -309,10 +452,61 @@ addEventListener('touchend',e=>{
 function tap(el,fn){ el._fn=fn;
   const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
   el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
+
+/* karakter seçici (mini önizlemeli) */
+function buildChars(){
+  const box=document.getElementById('chars'); box.innerHTML='';
+  CHARS.forEach((c,i)=>{
+    const b=document.createElement('button');
+    b.className='chbtn'+(i===charI?' on':'');
+    const mc=document.createElement('canvas'); mc.width=88; mc.height=120;
+    const mx=mc.getContext('2d');
+    mx.translate(44,86); mx.scale(1.5,1.5);
+    const saveCtx=ctx, saveCh=charI, saveTick=tick, saveJ=jumpT, saveL=lane, saveLX=laneX;
+    // mini çizim: drawChar'ı geçici bağlamla kullan
+    window.__mini={mx};
+    drawCharMini(mx,c);
+    b.appendChild(mc);
+    const nm=document.createElement('span'); nm.textContent=c.name; b.appendChild(nm);
+    tap(b,()=>{ charI=i; try{localStorage.setItem('hicaz_char',charI);}catch(e){}
+      buildChars(); blip(500,0.08,0.1); });
+    box.appendChild(b);
+  });
+}
+function drawCharMini(mx,ch){
+  const dg=mx.createLinearGradient(0,-30,0,20);
+  dg.addColorStop(0,ch.d1); dg.addColorStop(1,ch.d2);
+  mx.fillStyle=dg;
+  mx.beginPath(); mx.moveTo(0,-34);
+  mx.bezierCurveTo(22,-20,20,14,0,18);
+  mx.bezierCurveTo(-20,14,-22,-20,0,-34); mx.fill();
+  if(ch.scarf){
+    mx.fillStyle=ch.scarf;
+    mx.beginPath(); mx.arc(0,-41,16,0,6.28); mx.fill();
+    mx.fillStyle=ch.scarfD;
+    mx.beginPath(); mx.arc(0,-48,10,Math.PI*1.1,Math.PI*1.9); mx.fill();
+  } else { mx.fillStyle=ch.hair;
+    mx.beginPath(); mx.arc(0,-42,14,0,6.28); mx.fill(); }
+  mx.fillStyle='#ffd9bd';
+  mx.beginPath(); mx.arc(0,-39,10.5,0,6.28); mx.fill();
+  if(ch.cap){ mx.fillStyle='#f5f0e0';
+    mx.beginPath(); mx.arc(0,-46,10.8,Math.PI*1.05,Math.PI*1.95); mx.fill();
+    mx.fillRect(-10.8,-47.5,21.6,4); }
+  mx.fillStyle='#4a3520';
+  mx.beginPath(); mx.arc(-3.6,-40,1.9,0,6.28); mx.arc(3.6,-40,1.9,0,6.28); mx.fill();
+  mx.strokeStyle='#c96a5a'; mx.lineWidth=2;
+  mx.beginPath(); mx.arc(0,-34.5,3.6,0.3,2.8); mx.stroke();
+}
 tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
   reset(); state='play';
-  document.getElementById('intro').classList.add('hidden'); });
+  document.getElementById('intro').classList.add('hidden');
+  setTimeout(()=>mtoast('🚉 Haydarpaşa Garı — Bismillah!'),300); });
 tap(document.getElementById('retryBtn'),()=>{ reset(); state='play';
-  document.getElementById('endcard').classList.add('hidden'); });
-reset(); loop();
+  document.getElementById('endcard').classList.add('hidden');
+  setTimeout(()=>mtoast('🚉 Haydarpaşa Garı — Bismillah!'),300); });
+tap(document.getElementById('saveBtn'),saveScore);
+tap(document.getElementById('lbBtn'),showLB);
+tap(document.getElementById('lbBtn2'),showLB);
+tap(document.getElementById('lbClose'),()=>document.getElementById('lbcard').classList.add('hidden'));
+buildChars(); reset(); loop();
 </script>
