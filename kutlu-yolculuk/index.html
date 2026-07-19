@@ -73,6 +73,29 @@
 </div>
 
 <div class="card hidden" id="endcard">
+  <svg id="winArt" viewBox="0 0 320 150" style="width:min(78vw,320px);display:none">
+    <rect x="0" y="118" width="320" height="32" fill="#cdbb96"/>
+    <rect x="60" y="70" width="200" height="50" rx="4" fill="#e8e0cc"/>
+    <rect x="60" y="70" width="200" height="8" fill="#d9cfb4"/>
+    <path d="M118,70 a42,42 0 0 1 84,0 Z" fill="#e8e0cc"/>
+    <path d="M124,70 a36,36 0 0 1 72,0" fill="#2e8f5a"/>
+    <path d="M132,70 a28,28 0 0 1 21,-27 a45,45 0 0 0 -21,27" fill="rgba(255,255,255,.25)"/>
+    <rect x="157" y="28" width="6" height="12" fill="#c9a24a"/>
+    <circle cx="160" cy="26" r="4" fill="#c9a24a"/>
+    <rect x="40" y="30" width="12" height="90" fill="#e8e0cc"/>
+    <path d="M38,30 L46,12 L54,30 Z" fill="#e8e0cc"/>
+    <rect x="268" y="30" width="12" height="90" fill="#e8e0cc"/>
+    <path d="M266,30 L274,12 L282,30 Z" fill="#e8e0cc"/>
+    <rect x="43" y="44" width="6" height="8" rx="2" fill="#8f7a55"/>
+    <rect x="271" y="44" width="6" height="8" rx="2" fill="#8f7a55"/>
+    <g fill="#d9cfb4">
+      <rect x="78" y="86" width="16" height="22" rx="7"/>
+      <rect x="106" y="86" width="16" height="22" rx="7"/>
+      <rect x="148" y="82" width="24" height="28" rx="9"/>
+      <rect x="198" y="86" width="16" height="22" rx="7"/>
+      <rect x="226" y="86" width="16" height="22" rx="7"/>
+    </g>
+  </svg>
   <h1 id="endTitle"></h1>
   <div class="big" id="endScore"></div>
   <p id="endMsg"></p>
@@ -148,10 +171,11 @@ const REGIONS=[
   {km:2600,item:'🌴', ad:'hurma'},         // Medine yolu
 ];
 /* bitki örtüsü fazları (gerçek coğrafya) */
+/* yumuşatılmış pastel paletler — göz yormaz, yol ile zıt */
 const PHASES=[
-  {km:0,   sky:'#b8dfc0', mid:'#9fcf8a', bot:'#7ab365', deco:['🌳','🌲'], hill:'76,140,60'},
-  {km:350, sky:'#d8e0a8', mid:'#cfc490', bot:'#b0a06f', deco:['🌾','🌿'], hill:'150,140,70'},
-  {km:1700,sky:'#f5dfae', mid:'#e8c98f', bot:'#d4a86a', deco:['🌴','🌵'], hill:'201,134,46'},
+  {km:0,   sky:'#b7d4bb', mid:'#a2c493', bot:'#87a973', deco:['🌳','🌲'], hill:'66,110,58'},
+  {km:350, sky:'#d3d5b1', mid:'#c2b892', bot:'#a89c77', deco:['🌾','🌿'], hill:'128,116,68'},
+  {km:1700,sky:'#e7d5ab', mid:'#d8bd8c', bot:'#bf9c6c', deco:['🌴','🌵'], hill:'168,118,52'},
 ];
 function lerpC(a,b,t){
   const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16));
@@ -236,6 +260,7 @@ function fall(){
   const nb=score>best; if(nb){ best=score; try{localStorage.setItem('hicaz_best',best);}catch(e){} }
   const reachedMedine=stopI>=STOPS.length;
   const t=document.getElementById('endTitle');
+  document.getElementById('winArt').style.display=reachedMedine?'':'none';
   if(reachedMedine){ t.textContent="MEDİNE'YE VARDIN! 🕌"; }
   else{ t.textContent="Medine'ye Varamadın 😔"; }
   document.getElementById('endScore').textContent=score.toLocaleString('tr-TR')+' puan';
@@ -384,15 +409,35 @@ function draw(){
     ctx.fillText(ph.deco[side>0?0:1], px2, py2);
   }
   const topW=laneW()*1.1, botW=laneW()*3.4;
-  ctx.fillStyle='rgba(120,90,50,.55)';
+  /* koyu, net yol yatağı — zeminle zıt */
+  const rg=ctx.createLinearGradient(0,0,0,H);
+  rg.addColorStop(0,'#4a3728'); rg.addColorStop(1,'#5c4534');
+  ctx.fillStyle=rg;
   ctx.beginPath(); ctx.moveTo(W/2-topW,0); ctx.lineTo(W/2+topW,0);
   ctx.lineTo(W/2+botW,H); ctx.lineTo(W/2-botW,H); ctx.fill();
-  ctx.strokeStyle='rgba(90,58,26,.4)'; ctx.lineWidth=8;
+  ctx.strokeStyle='rgba(30,20,12,.45)'; ctx.lineWidth=8;
   const off=(tick*speed)%64;
   for(let y=-off;y<H+64;y+=64){
     const t=y/H, w=topW+(botW-topW)*t;
     ctx.beginPath(); ctx.moveTo(W/2-w*0.92,y); ctx.lineTo(W/2+w*0.92,y); ctx.stroke();
   }
+  /* 3 şerit ayracı: kesikli krem çizgiler — nereden geçeceğin net */
+  ctx.strokeStyle='rgba(255,244,220,.55)'; ctx.lineWidth=3;
+  ctx.setLineDash([16,22]); ctx.lineDashOffset=-(tick*speed)%38;
+  for(const l of [-0.5,0.5]){
+    ctx.beginPath();
+    ctx.moveTo(W/2+l*topW*0.85,0);
+    ctx.lineTo(W/2+l*botW*0.85,H);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  /* oyuncunun şeridi hafifçe aydınlansın */
+  const gl=laneX;
+  ctx.fillStyle='rgba(255,244,220,.07)';
+  ctx.beginPath();
+  ctx.moveTo(W/2+(gl-1.45)*topW*0.62,0); ctx.lineTo(W/2+(gl-0.55)*topW*0.62,0);
+  ctx.lineTo(W/2+(gl-0.55)*botW*0.62,H); ctx.lineTo(W/2+(gl-1.45)*botW*0.62,H);
+  ctx.fill();
   const pOff=(tick*speed)%220;
   for(let y=-pOff;y<H+220;y+=220){
     const t=Math.max(0,Math.min(1,y/H)), s=0.35+0.65*t;
@@ -415,8 +460,22 @@ function draw(){
   for(const o of objs){
     const s=scaleAt(o.y);
     const lx2=W/2+(o.lane-1)*laneW()*(0.35+0.65*s);
-    ctx.font=((o.type==='azik'?30:o.e==='🐪'?54:46)*s)+'px system-ui';
-    ctx.fillText(o.e, lx2, o.y);
+    if(o.type==='azik'){
+      /* toplanacaklar: parlak krem disk + yeşil halka — bir bakışta belli */
+      const pr=(20+Math.sin(tick*0.15+o.y)*2)*s;
+      ctx.fillStyle='rgba(255,250,235,.92)';
+      ctx.beginPath(); ctx.arc(lx2,o.y,pr,0,6.28); ctx.fill();
+      ctx.strokeStyle='rgba(46,143,138,.9)'; ctx.lineWidth=3*s;
+      ctx.beginPath(); ctx.arc(lx2,o.y,pr,0,6.28); ctx.stroke();
+      ctx.font=(26*s)+'px system-ui';
+      ctx.fillText(o.e, lx2, o.y+1);
+    } else {
+      /* engeller: kırmızı uyarı tabanı — azıkla zıt kod */
+      ctx.fillStyle='rgba(180,50,40,.4)';
+      ctx.beginPath(); ctx.ellipse(lx2,o.y+16*s,26*s,8*s,0,0,6.28); ctx.fill();
+      ctx.font=((o.e==='🐪'?54:46)*s)+'px system-ui';
+      ctx.fillText(o.e, lx2, o.y);
+    }
   }
   const px=W/2+(laneX-1)*laneW(), py=PLAYER_Y();
   const jump=jumpT>0?Math.sin((28-jumpT)/28*Math.PI)*70:0;
