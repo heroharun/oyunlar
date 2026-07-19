@@ -60,6 +60,17 @@
   <div style="text-align:right"><div class="label">Azık</div><div class="value" id="coinEl">🥨 0</div></div>
 </div>
 <div id="mtoast"></div>
+<button id="pauseBtn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:5;
+  font-family:inherit;font-size:13px;font-weight:800;color:var(--dim);
+  background:rgba(255,255,255,.35);border:1.5px solid rgba(74,53,32,.3);
+  border-radius:999px;padding:7px 16px;cursor:pointer;display:none">⏸ mola</button>
+
+<div class="card hidden" id="pausecard">
+  <h1>Mola</h1>
+  <p>Zehra bir soluklanıyor... Yol kaçmıyor. ☕</p>
+  <button class="btn" id="resumeBtn">Devam</button>
+  <button class="btn alt" id="quitBtn">Baştan Başla</button>
+</div>
 
 <div class="card" id="intro">
   <h1>KUTLU YOLCULUK</h1>
@@ -259,7 +270,7 @@ function physics(){
 }
 function calcScore(){ return Math.floor(dist/10*10 + azik*5); }
 function fall(){
-  state='over'; blip(140,0.4,0.18,'sawtooth'); buzz(80);
+  state='over'; setPause(false); blip(140,0.4,0.18,'sawtooth'); buzz(80);
   const km=Math.floor(dist/10), score=calcScore();
   const nb=score>best; if(nb){ best=score; try{localStorage.setItem('hicaz_best',best);}catch(e){} }
   const reachedMedine=stopI>=STOPS.length;
@@ -534,11 +545,15 @@ function draw(){
     ctx.textAlign='center';
     ctx.fillStyle='rgba(201,134,46,.75)';
     ctx.font='800 11px "Avenir Next",system-ui,sans-serif';
-    ctx.fillText('—  R O A D   T O   M E D I N A  —', W/2, H*0.045);
+    ctx.fillText('—  R O A D   T O   M E D I N A  —', W/2, H*0.072);
     if(stopI<STOPS.length){
       const remain=Math.ceil(STOPS[stopI].km-dist/10);
-      ctx.fillStyle='rgba(74,53,32,.6)'; ctx.font='700 13px "Avenir Next",system-ui,sans-serif';
-      ctx.fillText('📍 '+STOPS[stopI].name.replace(' — VARDIN!','')+' → '+remain+' km', W/2, H*0.075);
+      const txt='📍 '+STOPS[stopI].name.replace(' — VARDIN!','')+' → '+remain+' km';
+      ctx.font='800 15px "Avenir Next",system-ui,sans-serif';
+      ctx.lineWidth=4; ctx.strokeStyle='rgba(60,42,22,.85)'; ctx.lineJoin='round';
+      ctx.strokeText(txt, W/2, H*0.102);
+      ctx.fillStyle='#ffffff';
+      ctx.fillText(txt, W/2, H*0.102);
     }
   }
 }
@@ -551,7 +566,7 @@ addEventListener('keydown',e=>{
   if(e.code==='ArrowUp'||e.code==='Space'){ jump(); e.preventDefault(); }
 });
 let tX=null,tY=null;
-addEventListener('touchstart',e=>{ if(e.target.closest('.card'))return;
+addEventListener('touchstart',e=>{ if(e.target.closest('.card,#pauseBtn'))return;
   const t=e.changedTouches[0]; tX=t.clientX; tY=t.clientY; audio(); },{passive:true});
 addEventListener('touchend',e=>{
   if(tX===null)return;
@@ -609,11 +624,27 @@ function drawCharMini(mx,ch){
   mx.strokeStyle='#c96a5a'; mx.lineWidth=2;
   mx.beginPath(); mx.arc(0,-34.5,3.6,0.3,2.8); mx.stroke();
 }
+/* ── duraklatma ── */
+const pauseBtn=document.getElementById('pauseBtn');
+function setPause(v){ pauseBtn.style.display=v?'':'none'; }
+function doPause(){ if(state!=='play')return; state='paused';
+  document.getElementById('pausecard').classList.remove('hidden'); }
+function resume(){ if(state!=='paused')return; state='play';
+  document.getElementById('pausecard').classList.add('hidden'); }
+tap(pauseBtn,doPause);
+document.addEventListener('visibilitychange',()=>{ if(document.hidden)doPause(); });
+addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT')return;
+  if(e.code==='Escape'||e.code==='KeyP'){ if(state==='play')doPause(); else resume(); } });
+tap(document.getElementById('resumeBtn'),resume);
+tap(document.getElementById('quitBtn'),()=>{ reset(); state='play';
+  document.getElementById('pausecard').classList.add('hidden');
+  setTimeout(()=>mtoast('🚉 Haydarpaşa Garı — Bismillah!'),300); });
+
 tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
-  reset(); state='play';
+  reset(); state='play'; setPause(true);
   document.getElementById('intro').classList.add('hidden');
   setTimeout(()=>mtoast('🚉 Haydarpaşa Garı — Bismillah!'),300); });
-tap(document.getElementById('retryBtn'),()=>{ reset(); state='play';
+tap(document.getElementById('retryBtn'),()=>{ reset(); state='play'; setPause(true);
   document.getElementById('endcard').classList.add('hidden');
   setTimeout(()=>mtoast('🚉 Haydarpaşa Garı — Bismillah!'),300); });
 tap(document.getElementById('saveBtn'),saveScore);
