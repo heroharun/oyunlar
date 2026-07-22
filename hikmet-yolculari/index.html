@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#3E4A33">
+<title>Hikmet Yolcuları — Hz. Âdem ve İnsanlığın İlk Yolculuğu</title>
+<style>
+/* ================================================================
+   BÖLÜM 1 / 12 — TEMEL HTML YAPISI VE RESPONSIVE TASARIM (CSS)
+   Tasarım dili: parşömen/keşif defteri, zeytin yeşili, toprak,
+   gece laciverti, yumuşak altın. PWA'ya uygun tek dosya.
+   ================================================================ */
+:root{
+  --zemin:#F7F1E3;           /* yumuşak krem parşömen */
+  --zemin2:#EFE6D0;
+  --kagit:#FFFDF6;
+  --murekkep:#3A3428;        /* ana metin */
+  --zeytin:#5A6B3F;          /* soluk zeytin yeşili */
+  --zeytin-koyu:#3E4A33;
+  --toprak:#8A6A4F;
+  --lacivert:#22385C;
+  --altin:#C9A24B;
+  --altin-acik:#E7CE96;
+  --uyari:#B4763F;
+  --radius:20px;
+  --golge:0 5px 0 rgba(58,52,40,.12);
+  --fs:1.03rem;
+}
+body.gece{
+  --zemin:#141B2B; --zemin2:#1D2740; --kagit:#233150;
+  --murekkep:#EFE7D6; --zeytin:#8FA871; --zeytin-koyu:#6C8455;
+  --toprak:#C2A183; --lacivert:#0E1626; --altin:#E2C067; --altin-acik:#8A7642;
+  --golge:0 5px 0 rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  background:var(--zemin);color:var(--murekkep);
+  font-size:var(--fs);line-height:1.65;overflow-x:hidden;
+}
+/* Erişilebilirlik gövde sınıfları */
+body.buyuk{--fs:1.26rem;}
+body.buyuk .btn{font-size:1.2rem;padding:15px 24px;}
+body.kontrast{--zemin:#FFFFFF;--zemin2:#EDEDED;--kagit:#FFFFFF;--murekkep:#101010;--zeytin:#2C4A17;--lacivert:#0A1E3E;--altin:#7A5A00;}
+body.kontrast .kart,body.kontrast .btn,body.kontrast .sec{border:3px solid #101010 !important;}
+body.gece.kontrast{--zemin:#000;--zemin2:#101010;--kagit:#0A0A0A;--murekkep:#FFF;}
+body.az-anim *,body.az-anim *::before,body.az-anim *::after{animation:none !important;transition:none !important;}
+body.sade-yazi{letter-spacing:.06em;word-spacing:.24em;line-height:1.95;}
+body.sade-yazi .anlati{font-family:inherit;}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
+/* Genel */
+h1{font-family:Georgia,"Times New Roman",serif;color:var(--zeytin-koyu);font-size:1.7rem;line-height:1.25;}
+body.gece h1{color:var(--altin);}
+h2{font-family:Georgia,serif;color:var(--zeytin-koyu);font-size:1.28rem;margin-bottom:8px;}
+body.gece h2{color:var(--altin);}
+h3{font-size:1.05rem;color:var(--lacivert);margin-bottom:6px;}
+body.gece h3{color:var(--altin-acik);}
+.anlati{font-family:Georgia,serif;font-size:1.06em;}
+.kucuk{font-size:.86em;opacity:.82;}
+.merkez{text-align:center;}
+.gizli{display:none !important;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:inherit;font-size:1.05rem;font-weight:700;color:#FFFDF6;
+  background:var(--zeytin);border:none;border-radius:var(--radius);
+  padding:13px 22px;min-height:52px;min-width:52px;cursor:pointer;
+  box-shadow:var(--golge);transition:transform .12s,filter .12s;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(58,52,40,.12);}
+.btn:focus-visible{outline:4px solid var(--altin);outline-offset:2px;}
+.btn.altin{background:var(--altin);color:#3A3428;}
+.btn.lacivert{background:var(--lacivert);}
+.btn.toprak{background:var(--toprak);}
+.btn.cizgi{background:var(--kagit);color:var(--zeytin-koyu);border:2px solid var(--zeytin);}
+body.gece .btn.cizgi{color:var(--zeytin);}
+.btn.tam{width:100%;}
+.btn:disabled{filter:grayscale(.55) opacity(.5);cursor:not-allowed;}
+.kart{background:var(--kagit);border:2px solid var(--zemin2);border-radius:var(--radius);padding:16px;box-shadow:var(--golge);margin-bottom:13px;}
+.sec{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font-family:inherit;
+  background:var(--kagit);border:2px solid var(--zemin2);border-radius:16px;
+  padding:12px 14px;margin-bottom:9px;font-size:1rem;cursor:pointer;min-height:52px;color:var(--murekkep);}
+.sec:focus-visible{outline:4px solid var(--altin);}
+.sec.secili{border-color:var(--zeytin);background:color-mix(in srgb,var(--zeytin) 12%,var(--kagit));font-weight:700;}
+.sec.nazik{border-color:var(--altin);background:color-mix(in srgb,var(--altin) 14%,var(--kagit));}
+.sec .ikon{font-size:1.5rem;flex-shrink:0;}
+.ipucu{background:color-mix(in srgb,var(--altin) 16%,var(--kagit));border:2px dashed var(--altin);border-radius:14px;padding:11px 13px;margin-top:10px;font-weight:600;}
+.rozet{display:inline-flex;align-items:center;gap:6px;background:var(--kagit);border:2px solid var(--altin);border-radius:999px;padding:6px 13px;font-weight:800;color:var(--zeytin-koyu);}
+body.gece .rozet{color:var(--altin);}
+input[type=text],select,textarea{font-family:inherit;font-size:1.02rem;padding:11px 13px;border:2px solid var(--zeytin);border-radius:13px;width:100%;background:var(--kagit);color:var(--murekkep);}
+textarea{min-height:84px;resize:vertical;}
+/* Yerleşim */
+#uyg{display:none;min-height:100dvh;padding-bottom:86px;}
+#uyg.acik{display:block;}
+.gorunum{display:none;max-width:780px;margin:0 auto;padding:16px 14px 30px;}
+.gorunum.aktif{display:block;animation:belir .3s ease;}
+@keyframes belir{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:none;}}
+.ust{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+/* Alt gezinme */
+#nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--kagit);
+  border-top:2px solid var(--zemin2);display:flex;justify-content:space-around;padding:6px 2px calc(6px + env(safe-area-inset-bottom));}
+#nav button{flex:1;max-width:120px;display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:none;border:none;font-family:inherit;font-size:.72rem;font-weight:700;color:var(--murekkep);
+  opacity:.62;cursor:pointer;padding:6px 2px;border-radius:12px;min-height:52px;}
+#nav button .n-ikon{font-size:1.35rem;}
+#nav button.aktif{opacity:1;color:var(--zeytin-koyu);background:color-mix(in srgb,var(--zeytin) 12%,var(--kagit));}
+body.gece #nav button.aktif{color:var(--altin);}
+#nav button:focus-visible{outline:3px solid var(--altin);}
+/* Açılış */
+#acilis{display:flex;min-height:100dvh;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:22px 18px;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 0%,var(--zemin2),var(--zemin) 65%);}
+#acilis.kapali{display:none;}
+.motif{position:absolute;opacity:.5;pointer-events:none;animation:sal 7s ease-in-out infinite;}
+@keyframes sal{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-9px) rotate(4deg);}}
+.pusula-buyuk{font-size:4.2rem;animation:don 24s linear infinite;display:inline-block;}
+@keyframes don{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+body.az-anim .pusula-buyuk{animation:none;}
+.acilis-kutu{max-width:460px;width:100%;position:relative;z-index:1;}
+/* Harita — Işık Yolu */
+.durak{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:var(--kagit);
+  border:2px solid var(--zemin2);border-radius:var(--radius);padding:13px;margin-bottom:11px;
+  cursor:pointer;font-family:inherit;font-size:1rem;box-shadow:var(--golge);color:var(--murekkep);position:relative;}
+.durak:focus-visible{outline:4px solid var(--altin);}
+.durak.kilit{opacity:.55;cursor:default;}
+.durak .dikon{width:54px;height:54px;font-size:1.7rem;display:flex;align-items:center;justify-content:center;
+  background:var(--zemin2);border-radius:50%;flex-shrink:0;border:2px solid var(--altin-acik);}
+.durak.tamam .dikon{background:color-mix(in srgb,var(--zeytin) 22%,var(--kagit));border-color:var(--zeytin);}
+.durak .dbaslik{font-weight:800;color:var(--zeytin-koyu);}
+body.gece .durak .dbaslik{color:var(--altin);}
+.yol-cizgi{width:4px;height:16px;background:var(--altin-acik);margin-left:39px;border-radius:2px;}
+.yol-cizgi.dolu{background:var(--zeytin);}
+/* Hikâye */
+.isik-yolu{display:flex;gap:5px;margin:4px 0 12px;}
+.isik-yolu span{flex:1;height:9px;border-radius:99px;background:var(--zemin2);}
+.isik-yolu span.dolu{background:var(--altin);}
+.sahne{border-radius:var(--radius);min-height:120px;margin-bottom:12px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--lacivert) 14%,var(--zemin)) 0%,color-mix(in srgb,var(--zeytin) 18%,var(--zemin)) 100%);
+  display:flex;align-items:center;justify-content:center;font-size:2.6rem;gap:14px;padding:16px;}
+.sahne .s-oge{animation:sal 6s ease-in-out infinite;}
+.sahne .s-oge:nth-child(2){animation-delay:-2s;}
+.sahne .s-oge:nth-child(3){animation-delay:-4s;}
+.kaynak-etiket{display:inline-block;background:var(--zemin2);border-radius:10px;padding:5px 11px;font-size:.82em;font-weight:700;color:var(--lacivert);margin-top:8px;}
+body.gece .kaynak-etiket{color:var(--altin-acik);}
+/* Ses çubuğu */
+.ses-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px;}
+.ses-bar .btn{padding:10px 14px;min-height:46px;font-size:.95rem;}
+/* Oyun ortak */
+.hedefler{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.hedef{border:3px dashed var(--toprak);border-radius:16px;min-height:64px;padding:10px;background:color-mix(in srgb,var(--kagit) 70%,transparent);cursor:pointer;font-family:inherit;font-size:.95rem;color:var(--murekkep);text-align:center;font-weight:800;}
+.hedef.canli{border-color:var(--zeytin);background:color-mix(in srgb,var(--zeytin) 10%,var(--kagit));}
+.hedef:focus-visible{outline:4px solid var(--altin);}
+.cip{display:inline-flex;align-items:center;gap:5px;background:var(--kagit);border:2px solid var(--zeytin);border-radius:999px;padding:5px 11px;margin:3px;font-weight:700;font-size:.9em;}
+.sira-no{display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;border-radius:50%;background:var(--altin);color:#3A3428;font-weight:800;flex-shrink:0;}
+.hatira-anim{font-size:4.2rem;display:inline-block;animation:zip .9s ease infinite alternate;}
+@keyframes zip{from{transform:translateY(0) scale(1);}to{transform:translateY(-13px) scale(1.07);}}
+/* Kart ızgaraları */
+.izgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px;}
+.hafiza-kart{aspect-ratio:3/3.4;border-radius:14px;border:2px solid var(--zemin2);background:var(--lacivert);
+  color:#FFFDF6;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:8px;text-align:center;}
+.hafiza-kart.acikk{background:var(--kagit);color:var(--murekkep);border-color:var(--zeytin);}
+.hafiza-kart.esles{background:color-mix(in srgb,var(--zeytin) 25%,var(--kagit));color:var(--murekkep);border-color:var(--zeytin);cursor:default;}
+.hafiza-kart:focus-visible{outline:4px solid var(--altin);}
+.harf{width:46px;height:50px;border-radius:12px;border:2px solid var(--toprak);background:var(--kagit);
+  font-family:inherit;font-size:1.25rem;font-weight:800;cursor:pointer;color:var(--murekkep);}
+.harf:disabled{opacity:.35;}
+.harf:focus-visible{outline:4px solid var(--altin);}
+/* Anahtar */
+.ayar-satir{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--kagit);border:2px solid var(--zemin2);border-radius:16px;padding:13px;margin-bottom:9px;}
+.anahtar{position:relative;width:60px;height:33px;background:var(--zemin2);border-radius:99px;border:2px solid var(--toprak);cursor:pointer;flex-shrink:0;}
+.anahtar::after{content:"";position:absolute;top:2px;left:2px;width:25px;height:25px;border-radius:50%;background:var(--kagit);transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.anahtar[aria-checked="true"]{background:var(--zeytin);}
+.anahtar[aria-checked="true"]::after{left:29px;}
+.anahtar:focus-visible{outline:4px solid var(--altin);}
+/* Çizim */
+#cizimTuval{border:3px solid var(--toprak);border-radius:16px;background:#FFFFFF;touch-action:none;max-width:100%;display:block;}
+.arac-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0;}
+.renk-nokta{width:42px;height:42px;border-radius:50%;border:3px solid var(--kagit);box-shadow:0 0 0 2px var(--zemin2);cursor:pointer;}
+.renk-nokta.secili{box-shadow:0 0 0 4px var(--zeytin);}
+.renk-nokta:focus-visible{outline:4px solid var(--altin);}
+/* Modal */
+.modal-arka{position:fixed;inset:0;background:rgba(14,22,38,.6);display:flex;align-items:center;justify-content:center;padding:18px;z-index:60;}
+.modal{background:var(--kagit);border-radius:var(--radius);padding:20px;max-width:440px;width:100%;max-height:86dvh;overflow:auto;}
+.istat{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--zemin2);}
+.istat b{color:var(--zeytin-koyu);}
+body.gece .istat b{color:var(--altin);}
+details{background:var(--kagit);border:2px solid var(--zemin2);border-radius:14px;padding:10px 13px;margin-bottom:9px;}
+summary{font-weight:800;cursor:pointer;color:var(--zeytin-koyu);}
+body.gece summary{color:var(--altin-acik);}
+@media(min-width:640px){ .gorunum{padding-top:24px;} h1{font-size:1.95rem;} }
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     AÇILIŞ: yaş modu seçimi + takma ad (Bölüm 3/12'nin HTML iskeleti)
+     ================================================================ -->
+<section id="acilis" aria-label="Açılış">
+  <span class="motif" style="top:8%;left:10%;font-size:1.6rem;">✦</span>
+  <span class="motif" style="top:16%;right:12%;font-size:1.2rem;animation-delay:-3s;">🍃</span>
+  <span class="motif" style="bottom:14%;left:14%;font-size:1.3rem;animation-delay:-5s;">✦</span>
+  <span class="motif" style="bottom:20%;right:10%;font-size:1.5rem;animation-delay:-2s;">🌱</span>
+  <div class="acilis-kutu">
+    <div class="pusula-buyuk">🧭</div>
+    <h1 style="font-size:2.1rem;margin:6px 0 2px;">Hikmet Yolcuları</h1>
+    <p class="anlati" style="margin-bottom:18px;">İlk insanın hikâyesinden hangi hikmetleri keşfedeceksin?</p>
+
+    <div id="acilisAna">
+      <button class="btn altin tam" style="margin-bottom:10px;" data-act="yolculuga-basla">🗺️ Yolculuğa Başla</button>
+      <button class="btn tam gizli" style="margin-bottom:10px;" id="devamBtn" data-act="devam-et">▶️ Kaldığım Yerden Devam Et</button>
+      <button class="btn lacivert tam" style="margin-bottom:10px;" data-act="aile-modu">👨‍👩‍👧 Aile Modu</button>
+      <button class="btn cizgi tam" data-act="acilis-ayar">⚙️ Ayarlar</button>
+    </div>
+
+    <div id="acilisKurulum" class="gizli" style="text-align:left;">
+      <div class="kart">
+        <h2>1 · Yaş modunu seç</h2>
+        <div id="yasSecim"></div>
+      </div>
+      <div class="kart">
+        <h2>2 · Takma adın (isteğe bağlı)</h2>
+        <p class="kucuk">Gerçek adını yazmak zorunda değilsin. Boş bırakırsan "Hikmet Yolcusu" deriz.</p>
+        <input type="text" id="adGirdi" maxlength="20" placeholder="Örn. Yıldız Kâşifi" aria-label="Takma ad">
+      </div>
+      <button class="btn altin tam" data-act="kurulum-bitir">Pusulam hazır! 🧭</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     ANA UYGULAMA: 6 görünüm + alt gezinme
+     ================================================================ -->
+<div id="uyg">
+
+  <!-- YOLCULUK (harita) -->
+  <main class="gorunum" id="g-yolculuk" aria-label="Yolculuk haritası">
+    <div class="ust">
+      <h1>🗺️ Yolculuk</h1>
+      <span class="rozet">🎒 <span id="hatiraSayac">0</span> hatıra</span>
+    </div>
+    <p class="kucuk" id="karsilama" style="margin-bottom:12px;"></p>
+    <div id="haritaListe"></div>
+  </main>
+
+  <!-- HİKÂYE OKUYUCU (harita içinden açılır) -->
+  <main class="gorunum" id="g-hikaye" aria-label="Hikâye">
+    <div class="ust">
+      <button class="btn cizgi" data-act="hikaye-cik">← Harita</button>
+      <span class="rozet" id="hikayeDurak"></span>
+    </div>
+    <div class="isik-yolu" id="isikYolu" aria-hidden="true"></div>
+    <div class="ses-bar" id="sesBar"></div>
+    <div id="hikayeIcerik"></div>
+  </main>
+
+  <!-- OYUNLAR -->
+  <main class="gorunum" id="g-oyunlar" aria-label="Mini oyunlar">
+    <div class="ust"><h1>🎲 Oyunlar</h1><button class="btn cizgi gizli" id="oyunGeri" data-act="oyun-listeye">← Liste</button></div>
+    <div id="oyunAlan"></div>
+  </main>
+
+  <!-- HİKMET ÇANTAM -->
+  <main class="gorunum" id="g-canta" aria-label="Hikmet Çantam">
+    <div class="ust"><h1>🎒 Hikmet Çantam</h1></div>
+    <div id="cantaAlan"></div>
+  </main>
+
+  <!-- KELİMELER -->
+  <main class="gorunum" id="g-kelimeler" aria-label="Günün kelimeleri">
+    <div class="ust"><h1>📖 Kelimeler</h1><span class="rozet">🔎 <span id="kelimeSayac">0</span>/15 incelendi</span></div>
+    <div id="kelimeAlan"></div>
+  </main>
+
+  <!-- AİLE KÖŞESİ -->
+  <main class="gorunum" id="g-aile" aria-label="Aile ve öğretmen köşesi">
+    <div class="ust"><h1>👨‍👩‍👧 Aile Köşesi</h1></div>
+    <div id="aileAlan"></div>
+  </main>
+
+  <!-- AYARLAR -->
+  <main class="gorunum" id="g-ayarlar" aria-label="Ayarlar">
+    <div class="ust"><h1>⚙️ Ayarlar</h1></div>
+    <div id="ayarAlan"></div>
+  </main>
+
+  <!-- ALT GEZİNME -->
+  <nav id="nav" aria-label="Ana gezinme">
+    <button data-nav="g-yolculuk" class="aktif"><span class="n-ikon">🗺️</span>Yolculuk</button>
+    <button data-nav="g-oyunlar"><span class="n-ikon">🎲</span>Oyunlar</button>
+    <button data-nav="g-canta"><span class="n-ikon">🎒</span>Çantam</button>
+    <button data-nav="g-kelimeler"><span class="n-ikon">📖</span>Kelimeler</button>
+    <button data-nav="g-aile"><span class="n-ikon">👨‍👩‍👧</span>Aile</button>
+    <button data-nav="g-ayarlar"><span class="n-ikon">⚙️</span>Ayarlar</button>
+  </nav>
+</div>
+
+<!-- MODALLAR -->
+<div class="modal-arka gizli" id="modalArka" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h2 id="modalBaslik"></h2>
+    <div id="modalGovde"></div>
+    <div style="display:flex;gap:9px;margin-top:14px;" id="modalDugmeler"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ================================================================
+   BÖLÜM 2 / 12 — VERİ MODELİ VE localStorage
+   Tüm ilerleme yalnızca bu cihazda saklanır. İnternete veri gitmez.
+   ================================================================ */
+const bellek = {};
+const depo = {
+  al(k){ try{ const v=localStorage.getItem(k); return v===null ? (bellek[k]??null) : v; }catch(e){ return bellek[k]??null; } },
+  yaz(k,v){ bellek[k]=v; try{ localStorage.setItem(k,v); }catch(e){} },
+  temizle(){ Object.keys(bellek).forEach(k=>delete bellek[k]); try{ localStorage.removeItem("hikmetAdem"); }catch(e){} }
+};
+const varsayilanDurum = () => ({
+  surum:1,
+  kuruldu:false,
+  yasModu:"8-10",              // "5-7" | "8-10" | "11-13" | "aile"
+  ad:"Hikmet Yolcusu",
+  tamamBolumler:[],            // durak id listesi
+  hatiralar:[],                // hatıra id listesi
+  sonDurak:null,               // kaldığım yerden devam
+  oynananOyunlar:[],           // mini oyun id'leri
+  incelenenKelimeler:[],
+  notlar:{},                   // hikmet kartı id -> çocuğun notu
+  yansimalar:{},               // çanta soruları id -> cevap
+  cizimler:[],                 // {baslik, veri(dataURL), tarih}
+  favoriBolum:null,
+  ayarlar:{ gece:false, buyuk:false, kontrast:false, azAnim:false, sadeYazi:false, sesHiz:"normal" }
+});
+let S = varsayilanDurum();
+try{ const h = depo.al("hikmetAdem"); if(h) S = Object.assign(varsayilanDurum(), JSON.parse(h)); }catch(e){}
+function kaydet(){ depo.yaz("hikmetAdem", JSON.stringify(S)); }
+
+/* ================================================================
+   VERİ NESNESİ — stories
+   Yeni kıssalar bu şemayla eklenir (bkz. dosya sonu açıklaması).
+   Dinî içerik yalnızca belirtilen ayet aralıklarına dayanır ve
+   yayın öncesi uzman kontrolü için tek yerde toplanmıştır.
+   ================================================================ */
+const stories = {
+  adem: {
+    title: "Hz. Âdem ve İnsanlığın İlk Yolculuğu",
+    desc: "Bilginin, seçimin, hatanın ve yeniden başlamanın hikâyesi.",
+    sources: "Bakara 2/30-39 · A'râf 7/11-27 · Hicr 15/26-43 · Tâhâ 20/115-123 · Sâd 38/71-85 · Kehf 18/50",
+    anaMesaj: "Hata yapmak insanı değersiz yapmaz. Hatasını fark etmek, özür dilemek, tevbe etmek ve yeniden doğruyu seçmek insanı güzelleştirir.",
+    chapters: [
+      { id:"misafir", ad:"Yeryüzünde Yeni Bir Misafir", ikon:"🌍",
+        hatira:{ id:"sorumluluk-tasi", ad:"Sorumluluk Taşı", ikon:"🪨" },
+        sahne:["🌍","⭐","🌊"],
+        kaynak:"Bakara 2/30-31 · Hicr 15/26-29",
+        kisa:[ "Çok eski zamanlarda dünyada hiç insan yoktu.",
+               "Allah, ilk insan Hz. Âdem'i yarattı ve ona hayat verdi.",
+               "İnsan düşünebilen, öğrenebilen ve seçim yapabilen bir varlıktı." ],
+        orta:[ "Çok ama çok eski zamanlarda, henüz dünyada hiçbir insan yaşamıyordu. Dağlar, denizler, ağaçlar ve hayvanlar vardı. Fakat düşünen, öğrenen, karar verebilen insan henüz yaratılmamıştı.",
+               "Allah, yeryüzünde yaşayacak insanı yaratacağını meleklere bildirdi. Allah her şeyi bilirdi: insanların iyilik yapabileceğini, öğrenebileceğini, sevebileceğini ve yeryüzündeki güzellikleri koruyabileceğini de bilirdi.",
+               "Allah, ilk insan olan Hz. Âdem'i yarattı ve ona hayat verdi. Hz. Âdem yalnızca gören, duyan ve hareket eden bir varlık değildi. O; öğrenebilen, düşünebilen, seçim yapabilen ve sorumluluk taşıyabilen bir insandı.",
+               "İnsanlara akıl, öğrenme yeteneği ve doğru ile yanlış arasında seçim yapabilme imkânı verilmişti. Bu büyük bir nimetti; aynı zamanda büyük bir sorumluluktu." ],
+        derin:[ "Düşünelim: 'İrade' seçim yapabilme gücüdür. Seçim yapabilmek özgürlük getirir; özgürlük ise sorumluluk getirir. İşte insanlığın ilk yolculuğu bu ikisiyle başladı." ],
+        oyun:"nimetSoru" },
+      { id:"hazine", ad:"Bilginin Hazinesi", ikon:"💎",
+        hatira:{ id:"bilgi-tohumu", ad:"Bilgi Tohumu", ikon:"🌱" },
+        sahne:["🌳","🐦","💧"],
+        kaynak:"Bakara 2/31-33",
+        kisa:[ "Allah, Hz. Âdem'e varlıkların isimlerini öğretti.",
+               "Hz. Âdem öğrendi ve öğrendiklerini anlattı.",
+               "Bilgi, iyilik yapmak için verilir." ],
+        orta:[ "Allah, Hz. Âdem'e varlıkların isimlerini öğretti. Hz. Âdem öğrendi, hatırladı ve öğrendiklerini anlattı. Bu olay, insanın öğrenme yeteneğinin ve bilginin değerini gösteriyordu.",
+               "Bir çiçeğin adını bilmek, yalnızca bir kelime öğrenmek değildir. O çiçeği tanımaya, korumaya ve onun hakkında düşünmeye başlamaktır.",
+               "Bilgi insanı kibirli yapmak için değil, faydalı ve sorumlu yapmak için verilmiştir.",
+               "Öğrendiğimiz her güzel bilgi, Hikmet Çantamıza eklenen yeni bir araç gibidir." ],
+        derin:[ "Düşünelim: Bilgi paylaşıldıkça çoğalır. Bildiğin bir şeyi bir arkadaşına öğrettiğinde bilgin azalmaz; iki kişinin bilgisi olur." ],
+        oyun:"isimler" },
+      { id:"kibir", ad:"Kibirli Bir Seçim", ikon:"🪞",
+        hatira:{ id:"tevazu-yapragi", ad:"Tevazu Yaprağı", ikon:"🍃" },
+        sahne:["🍃","✦","🪞"],
+        kaynak:"Bakara 2/34 · A'râf 7/11-18 · Kehf 18/50",
+        kisa:[ "Allah, meleklere Hz. Âdem'e secde etmelerini emretti.",
+               "Melekler emre uydu. İblis uymadı; kibirlendi.",
+               "İblis melek değildi; cinlerdendi." ],
+        orta:[ "Allah, meleklere Hz. Âdem'e secde etmelerini emretti. Bu secde Hz. Âdem'e ibadet etmek için değildi; Allah'ın emrine uymak ve Hz. Âdem'e verilen değeri göstermek içindi.",
+               "Melekler Allah'ın emrine uydular. Fakat İblis emre uymadı. İblis bir melek değildi; o cinlerdendi ve Allah'ın emrine karşı geldi.",
+               "İblis kendisini Hz. Âdem'den üstün gördü. Kibirlenerek kendi yaratılışını daha değerli sandı. En büyük hatası yalnızca emre uymaması değildi; kendisini üstün görmesi ve hatasını kabul etmemesiydi.",
+               "Kibir insana 'Ben daha üstünüm' dedirtir. Tevazu ise 'Benim de öğreneceklerim ve düzelteceklerim var' dedirtir." ],
+        derin:[ "Düşünelim: Kibir ile özgüven aynı şey değildir. Özgüven 'Ben yapabilirim' der; kibir 'Yalnızca ben yapabilirim, diğerleri değersiz' der." ],
+        oyun:"kibirTevazu" },
+      { id:"bahce", ad:"Güzel Bahçe ve Bir Uyarı", ikon:"🌿",
+        hatira:{ id:"dikkat-pusulasi", ad:"Koruyucu Pusula", ikon:"🧭" },
+        sahne:["🌿","🌺","🍇"],
+        kaynak:"Bakara 2/35 · A'râf 7/19",
+        kisa:[ "Hz. Âdem ve eşi güzel bir bahçede yaşıyordu.",
+               "Allah bir ağaca yaklaşmamalarını söyledi.",
+               "Bazı sınırlar bizi korur." ],
+        orta:[ "Hz. Âdem ve eşi güzel bir bahçede yaşıyorlardı. Orada pek çok nimet vardı. Allah, onlara bahçedeki nimetlerden yararlanabileceklerini bildirdi; fakat bir ağaca yaklaşmamalarını söyledi.",
+               "Kur'an'da bu ağacın hangi ağaç olduğu belirtilmez. Bu uyarı, onlara seçim yapabileceklerini fakat seçimlerinin sonuçları olduğunu öğretiyordu.",
+               "Sınırlar her zaman kötü değildir; bazı sınırlar bizi korur. Sıcak fırına dokunmamak, karşıdan karşıya geçerken beklemek, internette tanımadığımız kişilere bilgi vermemek… Bunların hepsi koruyucu sınırlardır." ],
+        derin:[ "Düşünelim: Bir kural gördüğünde 'Bu kural kimi veya neyi koruyor olabilir?' diye sormak, kuralın hikmetini anlamana yardım eder." ],
+        oyun:"sinirlar" },
+      { id:"fisilti", ad:"Fısıltıya Dikkat", ikon:"💭",
+        hatira:{ id:"dikkat-isigi", ad:"Dikkat Işığı", ikon:"🕯️" },
+        sahne:["💭","🍂","🌫️"],
+        kaynak:"Bakara 2/36 · A'râf 7/20-22 · Tâhâ 20/120-121",
+        kisa:[ "İblis, Hz. Âdem ile eşine yanlış şeyler fısıldadı.",
+               "İkisi birlikte aldandı ve yasak ağaçtan yedi.",
+               "Her düşünce doğru olmayabilir; durup düşünmeliyiz." ],
+        orta:[ "İblis, Hz. Âdem ile eşini kandırmaya çalıştı. Onlara doğru olmayan düşünceler fısıldadı; yasaklanan ağaca yaklaşmalarının kendileri için iyi olacağını söyledi.",
+               "Hz. Âdem ve eşi bu fısıltıya aldandılar ve yasaklanan ağaçtan yediler. Bu hata yalnızca Hz. Havva'nın hatası değildi; Kur'an bu olayı ikisinin birlikte yaşadığı bir olay olarak anlatır.",
+               "Bir insan bazen yanlış bir düşünceyi doğru sanabilir. Bu nedenle karar vermeden önce durup düşünmek önemlidir.",
+               "Hikmet Pusulası'nın dört sorusu: Bu davranış doğru mu? Birine zarar verir mi? Güvendiğim bir büyüğe sorabilir miyim? Sonrasında pişman olur muyum?" ],
+        derin:[ "Düşünelim: İnternette gördüğün 'Herkes yapıyor, sen de yap' mesajları da bir tür fısıltıdır. Dört soruyu orada da kullanabilirsin." ],
+        oyun:"fisilti" },
+      { id:"hata", ad:"Hatayı Fark Etmek", ikon:"💧",
+        hatira:{ id:"tevbe-damlasi", ad:"Tevbe Damlası", ikon:"💧" },
+        sahne:["💧","🤲","✨"],
+        kaynak:"A'râf 7/23 · Bakara 2/37",
+        kisa:[ "Hz. Âdem ve eşi hatalarını fark etti.",
+               "Suçu kimseye atmadılar; bağışlanma dilediler.",
+               "Tevbe, yeniden doğruyu seçmektir." ],
+        orta:[ "Hz. Âdem ve eşi hatalarını fark ettiler. İblis gibi kibirlenip hatalarını savunmadılar. 'Biz hiç hata yapmadık' demediler; suçu birbirlerine atmadılar. Allah'tan bağışlanma dilediler.",
+               "Şöyle dua ettiler: 'Rabbimiz, biz kendimize haksızlık ettik. Bizi bağışlamaz ve bize merhamet etmezsen kaybedenlerden oluruz.' (A'râf 7/23 mealinin özeti)",
+               "Bu duanın çocuklara uygun anlamı: 'Allah'ım, yanlış yaptığımızı fark ettik. Bizi bağışla, bize merhamet et ve doğru yolu bulmamıza yardım et.'",
+               "Tevbe yalnızca 'özür dilerim' demek değildir. Tevbe: hatayı fark etmek, pişman olmak, bağışlanma dilemek, yanlışı bırakmak, mümkünse zararı düzeltmek ve yeniden doğru olanı seçmektir." ],
+        derin:[ "Düşünelim: Hatasını saklayan insan yükünü taşımaya devam eder. Hatasını kabul eden insan ise o yükü bırakıp yoluna daha hafif devam eder." ],
+        oyun:"tevbeBasamak" },
+      { id:"baslangic", ad:"Yeni Bir Başlangıç", ikon:"🌅",
+        hatira:{ id:"emanet-rozeti", ad:"Emanet Rozeti", ikon:"🎖️" },
+        sahne:["🌅","🌾","🏞️"],
+        kaynak:"Bakara 2/38-39 · Tâhâ 20/122-123",
+        kisa:[ "Hz. Âdem ve eşi yeryüzündeki hayatlarına başladı.",
+               "Allah insanlara doğru yolu gösterecek rehberler gönderecekti.",
+               "Dünya bizim korumamız gereken bir emanettir." ],
+        orta:[ "Hz. Âdem ve eşi yeryüzündeki hayatlarına başladılar. Dünya artık onların yaşayacağı, çalışacağı, öğreneceği ve sorumluluk alacağı yerdi.",
+               "Yeryüzündeki hayat her zaman kolay olmayacaktı. İnsanlar bazen yorulacak, bazen yanlış yapacak, bazen üzülecekti. Fakat Allah insanları başıboş bırakmayacaktı; onlara doğru yolu gösterecek rehberler gönderecekti.",
+               "Allah'ın gösterdiği doğru yolu takip edenler için umut vardı.",
+               "Hz. Âdem'in hikâyesi yalnızca bir hatanın hikâyesi değildir. Bu kıssa aynı zamanda öğrenmenin, seçim yapmanın, sorumluluğun, tevbenin, bağışlanmanın, umudun ve yeniden başlamanın hikâyesidir." ],
+        derin:[ "Düşünelim: 'Emanet', korunması ve iyi davranılması gereken şeydir. Yeryüzü, canlılar ve sahip olduklarımız bize birer emanettir." ],
+        oyun:"emanetciler" },
+      { id:"canta", ad:"Hikmet Çantası", ikon:"🎒",
+        hatira:{ id:"umut-yildizi", ad:"Umut Yıldızı", ikon:"⭐" },
+        sahne:["🎒","⭐","🧭"],
+        kaynak:"Kıssanın özeti — yukarıdaki tüm ayet aralıkları",
+        kisa:[ "İnsan hata yapabilir.",
+               "Hatasını kabul edip bağışlanma dileyebilir.",
+               "Ve yeniden güzel bir başlangıç yapabilir." ],
+        orta:[ "Hz. Âdem'in kıssasından öğrendiğimiz en büyük şeylerden biri şudur: İnsan hata yapabilir. Fakat hatasını kabul edip Allah'tan bağışlanma dileyebilir, yanlışını düzeltmeye çalışabilir ve yeniden güzel bir başlangıç yapabilir.",
+               "Şimdi bütün yolculuğu hatırlayalım ve öğrendiğimiz hikmetleri çantamıza yerleştirelim." ],
+        derin:[ "Düşünelim: Gerçek bir Hikmet Yolcusu, hiç hata yapmayan kişi değildir. Öğrenen, hatasını fark eden ve iyiliğe yeniden yönelen kişidir." ],
+        oyun:"final" }
+    ],
+    /* Bilgi kartları — "Merak Ettim" */
+    bilgiKartlari: [
+      { b:"İlk peygamber kimdir?", m:"Hz. Âdem ilk insan ve ilk peygamberdir." },
+      { b:"İblis melek miydi?", m:"Hayır. Kur'an, İblis'in cinlerden olduğunu bildirir. İblis Allah'ın emrine karşı gelmiştir. (Kehf 18/50)" },
+      { b:"Yasaklanan meyve elma mıydı?", m:"Kur'an'da yasaklanan ağacın veya meyvenin türü belirtilmez. Bu nedenle kesin olarak elma demek doğru değildir." },
+      { b:"Neden meleklere secde emredildi?", m:"Bu secde Hz. Âdem'e ibadet etmek için değildi. Allah'ın emrine uymak ve Hz. Âdem'e verilen değeri göstermek içindi." },
+      { b:"Hz. Havva mı suçluydu?", m:"Kur'an bu hatayı yalnızca Hz. Havva'ya yüklemez. Hz. Âdem ile eşinin birlikte aldanıp daha sonra birlikte hatalarını fark ettiklerini anlatır." },
+      { b:"Tevbe ne demektir?", m:"İnsanın yanlışını fark etmesi, pişman olması, Allah'tan bağışlanma dilemesi ve yanlış davranışını düzeltmeye çalışmasıdır." },
+      { b:"İnsan neden dünyaya gönderildi?", m:"İnsan yeryüzünde yaşayacak, öğrenecek, seçim yapacak ve sorumluluk taşıyacaktır. Allah insanlara doğru yolu gösterecek rehberler göndermiştir." }
+    ]
+  }
+};
+const KISSA = stories.adem;
+
+/* Hikmet kartları (Çanta) */
+const hikmetKartlari = [
+  { id:"sorumluluk-tasi", kavram:"Sorumluluk", ikon:"🪨", aciklama:"Seçimlerimizin sonuçları olduğunu unutmamalıyız.", yer:"Hz. Âdem'e akıl ve seçim gücü verilmesi", ornek:"Ödevini hatırlatılmadan tamamlamak." },
+  { id:"bilgi-tohumu", kavram:"Bilgi", ikon:"🌱", aciklama:"Öğrenmek, Allah'ın insana verdiği büyük nimetlerden biridir.", yer:"Hz. Âdem'e isimlerin öğretilmesi", ornek:"Merak ettiğin bir konuyu araştırmak." },
+  { id:"tevazu-yapragi", kavram:"Tevazu", ikon:"🍃", aciklama:"Kendimizi başkalarından üstün görmemeliyiz.", yer:"İblis'in kibrine karşı meleklerin itaati", ornek:"Bilmediğin bir şeyi çekinmeden sormak." },
+  { id:"dikkat-pusulasi", kavram:"Koruyucu Sınır", ikon:"🧭", aciklama:"Bazı sınırlar bizi güvende tutar.", yer:"Bahçedeki ağaç uyarısı", ornek:"Emniyet kemeri takmak, kırmızı ışıkta beklemek." },
+  { id:"dikkat-isigi", kavram:"Dikkat", ikon:"🕯️", aciklama:"Her aklımıza gelen düşünce doğru olmayabilir.", yer:"İblis'in fısıltısı", ornek:"Karar vermeden önce dört soruyu sormak." },
+  { id:"tevbe-damlasi", kavram:"Tevbe", ikon:"💧", aciklama:"Hata yaptığımızda saklamak yerine düzeltmeye çalışmalıyız.", yer:"Hz. Âdem ile eşinin bağışlanma dilemesi", ornek:"Özür dileyip kırılan kalbi onarmak." },
+  { id:"emanet-rozeti", kavram:"Emanet", ikon:"🎖️", aciklama:"Dünya bize zarar vermek için değil; korumak ve güzelleştirmek için verilmiştir.", yer:"Yeryüzündeki yeni hayat", ornek:"Suyu israf etmemek, çöpü geri dönüşüme atmak." },
+  { id:"umut-yildizi", kavram:"Umut", ikon:"⭐", aciklama:"Bir hata yaptığımızda her şey bitmiş olmaz.", yer:"Yeni bir başlangıcın mümkün olması", ornek:"Kötü geçen bir sınavdan sonra yeni bir çalışma planı yapmak." }
+];
+/* Çanta yansıma soruları */
+const yansimaSorulari = [
+  { id:"y1", s:"Bu yolculuktan ne öğrendim?" },
+  { id:"y2", s:"Beni en çok hangi olay düşündürdü?" },
+  { id:"y3", s:"Ben olsaydım ne yapardım?" },
+  { id:"y4", s:"Bugün hangi hikmeti uygulayabilirim?" },
+  { id:"y5", s:"Bir hata yaptığımda ne yapmalıyım?" }
+];
+
+/* Kelime kartları (15) */
+const kelimeler = [
+  { k:"Bilgi", a:"Bir şeyi öğrenerek tanımak.", c:"Yeni öğrendiğin her doğru bilgi, dünyayı biraz daha iyi anlamana yardım eder.", g:"Bugün doğadaki bir varlık hakkında yeni bir bilgi öğren." },
+  { k:"Hikmet", a:"Bilgiyi doğru ve faydalı biçimde kullanmak.", c:"Bilmek güzeldir; bildiğini iyilik için kullanmak daha güzeldir.", g:"Bugün bildiğin bir şeyi birine yardım etmek için kullan." },
+  { k:"Kibir", a:"Kendisini başkalarından üstün görmek.", c:"Kibir, İblis'in en büyük hatasıydı.", g:"Bugün bir arkadaşının iyi yaptığı bir şeyi fark edip onu tebrik et." },
+  { k:"Tevazu", a:"Kendisini herkesten üstün görmemek.", c:"Tevazu 'Benim de öğreneceklerim var' diyebilmektir.", g:"Bilmediğin bir şeyi çekinmeden sor." },
+  { k:"İrade", a:"Seçim yapabilme gücü.", c:"İnsana verilen en değerli imkânlardan biridir.", g:"Bugün kolay olan yerine doğru olan bir davranışı seç." },
+  { k:"Sorumluluk", a:"Yapmamız gereken işi kabul etmek ve sonucunu üstlenmek.", c:"Seçim yapabilen insan, seçiminin sonucunu da taşır.", g:"Bugün sana ait bir işi hatırlatılmadan tamamla." },
+  { k:"Emanet", a:"Korunması ve iyi davranılması gereken şey.", c:"Dünya, canlılar ve eşyalarımız birer emanettir.", g:"Bugün odanı, bir bitkiyi veya hayvanı korumak için bir şey yap." },
+  { k:"Tevbe", a:"Yanlıştan vazgeçip Allah'a yönelmek.", c:"Tevbe umutsuzluk kapısı değil, yeniden başlama kapısıdır.", g:"Bugün yaptığın küçük bir hatayı düşün ve nasıl düzeltebileceğini yaz." },
+  { k:"Merhamet", a:"Birinin sıkıntısını fark edip ona iyilikle yaklaşmak.", c:"Merhamet, kalbin en yumuşak dilidir.", g:"Bugün üzgün görünen birine güzel bir söz söyle." },
+  { k:"Umut", a:"Zor bir durumda bile iyiliğin mümkün olduğuna inanmak.", c:"Hz. Âdem'in kıssası bir umut hikâyesidir.", g:"Zorlandığın bir konu için atabileceğin küçük bir adım belirle." },
+  { k:"Vesvese", a:"İnsanı rahatsız eden veya yanlışa yöneltebilen tekrar eden düşünceler.", c:"Aklımıza gelen her düşünce doğru değildir. Bazen durup düşünmemiz ve güvendiğimiz birine danışmamız gerekir.", g:"Seni rahatsız eden bir düşünceyi güvendiğin bir büyüğe anlat." },
+  { k:"Bağışlanma", a:"Bir hatanın affedilmesi.", c:"Bağışlanmak da bağışlamak da kalbi hafifletir.", g:"Birinden özür dilemen gerekiyorsa uygun bir zamanda nazikçe konuş." },
+  { k:"Nimet", a:"Bize verilen güzel ve faydalı şey.", c:"Sağlık, aile, su, bilgi… hepsi birer nimettir.", g:"Bugün sahip olduğun üç nimeti say." },
+  { k:"Şükür", a:"Bize verilen nimetleri fark etmek ve teşekkür etmek.", c:"Şükreden göz, güzellikleri daha kolay görür.", g:"Bugün şükrettiğin üç şeyi yaz veya resmini çiz." },
+  { k:"Adalet", a:"Herkese hakkını vermek ve haksızlık yapmamak.", c:"Adalet, birlikte yaşamanın temelidir.", g:"Bir oyunda sıranın adil biçimde paylaşılmasına yardım et." }
+];
+
+/* Soru bankası (25+) — seviye: kolay | orta | dusun */
+const soruBankasi = [
+  { sv:"kolay", s:"İlk insan kimdir?", c:["Hz. Âdem","Hz. Nuh","Hz. İbrahim"], d:0, ac:"Hz. Âdem ilk insan ve ilk peygamberdir." },
+  { sv:"kolay", s:"Allah, Hz. Âdem'e ne öğretti?", c:["Varlıkların isimlerini","Gemi yapmayı","Yıldız saymayı"], d:0, ac:"İsimlerin öğretilmesi, bilginin değerini gösterir. (Bakara 2/31)" },
+  { sv:"kolay", s:"İblis neden emre uymadı?", c:["Unuttuğu için","Kibirlenip kendini üstün gördüğü için","Korktuğu için"], d:1, ac:"İblis kibirlendi ve hatasını kabul etmedi." },
+  { sv:"kolay", s:"İblis melek miydi?", c:["Evet","Hayır, cinlerdendi"], d:1, ac:"Kur'an, İblis'in cinlerden olduğunu bildirir. (Kehf 18/50)" },
+  { sv:"kolay", s:"Yasaklanan meyvenin elma olduğu kesin midir?", c:["Evet, elmadır","Hayır, Kur'an ağacın türünü bildirmez"], d:1, ac:"Ağacın türü Kur'an'da belirtilmez." },
+  { sv:"kolay", s:"Hz. Âdem ve eşi hata yapınca ne yaptılar?", c:["Suçu birbirine attılar","Hatayı sakladılar","Hatalarını kabul edip bağışlanma dilediler"], d:2, ac:"Kibirlenmediler; tevbe ettiler. (A'râf 7/23)" },
+  { sv:"kolay", s:"Tevbe ne demektir?", c:["Yanlıştan dönmek, bağışlanma dilemek ve hatayı düzeltmeye çalışmak","Sadece üzülmek","Hatayı unutmak"], d:0, ac:"Tevbe bir yeniden başlama kapısıdır." },
+  { sv:"kolay", s:"Kibir ne demektir?", c:["Çok çalışmak","Kendisini başkalarından üstün görmek","Yardım istemek"], d:1, ac:"Kibir, İblis'in en büyük hatasıydı." },
+  { sv:"kolay", s:"Tevazu ne demektir?", c:["Kendisini üstün görmemek ve öğrenmeye açık olmak","Hiç konuşmamak","Her şeyi bilmek"], d:0, ac:"Tevazu insanı küçültmez, güzelleştirir." },
+  { sv:"kolay", s:"Dünya bizim için nasıl bir emanettir?", c:["İstediğimiz gibi harcayacağımız bir şey","Korumamız ve güzelleştirmemiz gereken bir emanet"], d:1, ac:"Yeryüzünü korumak küçük Hikmet Yolcularının da görevidir." },
+  { sv:"orta", s:"Meleklerin Hz. Âdem'e secdesi ibadet amacıyla mıydı?", c:["Evet, ibadetti","Hayır; Allah'ın emrine uyma ve Hz. Âdem'e verilen değeri gösterme amacı taşıyordu"], d:1, ac:"Secde yalnızca Allah'a ibadet için yapılır; buradaki secde emre itaatti." },
+  { sv:"orta", s:"Bilginin insan için önemi nedir?", c:["İnsanı üstün ve kibirli yapar","İnsan öğrenir, anlar ve bilgisiyle faydalı işler yapabilir","Hiçbir önemi yoktur"], d:1, ac:"Bilgi sorumluluk ve fayda içindir." },
+  { sv:"orta", s:"İblis ile Hz. Âdem'in davranışı arasındaki temel fark neydi?", c:["İkisi de hatasını kabul etti","İblis kibirlenip hatasını kabul etmedi; Hz. Âdem ve eşi hatalarını kabul edip bağışlanma dilediler","İkisi de hatasını sakladı"], d:1, ac:"Fark, hataya verilen cevaptır." },
+  { sv:"orta", s:"Kur'an hatayı yalnızca Hz. Havva'ya mı yükler?", c:["Evet","Hayır; olayı ikisinin birlikte yaşadığı bir olay olarak anlatır"], d:1, ac:"Aldanma da tevbe de birlikteydi." },
+  { sv:"orta", s:"Her sınır kötü müdür?", c:["Evet, bütün sınırlar özgürlüğü kısıtlar","Hayır; bazı sınırlar insanı ve çevresini korur"], d:1, ac:"Emniyet kemeri gibi koruyucu sınırlar vardır." },
+  { sv:"orta", s:"Aklımıza gelen her düşünce doğru mudur?", c:["Evet, düşünceler hep doğrudur","Hayır; değerlendirmeli ve gerektiğinde güvendiğimiz kişilere danışmalıyız"], d:1, ac:"Durup düşünmek, Hikmet Pusulası'nın işidir." },
+  { sv:"orta", s:"Hata yaptıktan sonra ilk adım ne olmalıdır?", c:["Hatayı fark etmek ve kabul etmek","Hatayı saklamak","Başkasını suçlamak"], d:0, ac:"Fark etmek, düzeltmenin ilk basamağıdır." },
+  { sv:"orta", s:"Tevbe yalnızca sözle özür dilemek midir?", c:["Evet","Hayır; yanlış davranışı bırakmayı ve mümkünse zararı düzeltmeyi de içerir"], d:1, ac:"Tevbenin altı basamağını hatırla." },
+  { sv:"dusun", s:"Bilgi insanı neden kibirli yapmamalıdır?", or:"Çünkü bilgi bize faydalı olmak ve sorumluluk almak için verilir. Bilen kişi, bilmeyene yardım edebilir; üstünlük taslamak bilginin amacını bozar." },
+  { sv:"dusun", s:"Bir insan neden hatasını saklamak isteyebilir?", or:"Utanmaktan, kızılmaktan veya değersiz görülmekten korkabilir. Oysa hatasını anlatan kişi çoğu zaman anlayışla karşılanır ve rahatlar." },
+  { sv:"dusun", s:"Özür dilemek neden bazen zor gelir?", or:"Gururumuz incinebilir. Ama özür dilemek bizi küçültmez; cesur ve dürüst olduğumuzu gösterir." },
+  { sv:"dusun", s:"Kibir ile özgüven arasındaki fark nedir?", or:"Özgüven 'Ben öğrenebilirim, yapabilirim' der. Kibir 'Ben herkesten üstünüm, diğerleri değersiz' der." },
+  { sv:"dusun", s:"İnternetteki yanlış yönlendirmelerle İblis'in fısıltısı arasında nasıl bir benzerlik kurulabilir?", or:"İkisi de kulağa cazip gelir ama sonunda zarar verebilir. İkisinde de durup düşünmek ve güvendiğimiz birine danışmak bizi korur." },
+  { sv:"dusun", s:"Yeryüzünü korumak neden insanın sorumluluğudur?", or:"Çünkü dünya bize emanettir. Suyu, ağaçları ve canlıları koruduğumuzda hem bugünü hem yarını korumuş oluruz." },
+  { sv:"dusun", s:"Bir hata sonrasında yeniden başlamak için hangi adımlar atılabilir?", or:"Hatayı fark etmek, pişman olmak, bağışlanma dilemek ve özür dilemek, yanlışı bırakmak, zararı düzeltmek ve yeniden doğruyu seçmek." }
+];
+
+/* Doğru mu Yanlış mı */
+const dogruYanlis = [
+  { s:"İblis bir melekti.", d:false, ac:"Kur'an, İblis'in cinlerden olduğunu bildirir. (Kehf 18/50)" },
+  { s:"Hz. Âdem'e isimler öğretildi.", d:true, ac:"Bilginin değerini gösteren olaydır. (Bakara 2/31)" },
+  { s:"Kur'an, yasaklanan ağacın elma olduğunu söyler.", d:false, ac:"Ağacın türü Kur'an'da belirtilmez." },
+  { s:"Hz. Âdem ve eşi hatalarını kabul ettiler.", d:true, ac:"Birlikte bağışlanma dilediler. (A'râf 7/23)" },
+  { s:"Tevbe yalnızca sözle özür dilemektir.", d:false, ac:"Tevbe, yanlışı bırakmayı ve zararı düzeltmeyi de içerir." },
+  { s:"İnsan yaptığı hatayı düzeltmeye çalışabilir.", d:true, ac:"Bu, kıssanın en umut dolu mesajıdır." }
+];
+
+/* Hikâyeyi Tamamla */
+const bosluklar = [
+  { s:"Allah, Hz. Âdem'e varlıkların ______ öğretti.", c:["isimlerini","renklerini","seslerini"], d:0 },
+  { s:"İblis ______ ve emre karşı geldi.", c:["korktu","kibirlendi","unuttu"], d:1 },
+  { s:"Bazı sınırlar bizi ______.", c:["üzer","korur","yorar"], d:1 },
+  { s:"Hz. Âdem ve eşi hatalarını ______ ettiler.", c:["inkâr","fark","tekrar"], d:1 },
+  { s:"Tevbe, yeniden ______ kapısıdır.", c:["başlama","kapanma","bekleme"], d:0 },
+  { s:"Dünya, korumamız gereken bir ______.", c:["oyuncaktır","emanettir","yarıştır"], d:1 }
+];
+
+/* Hafıza çiftleri */
+const hafizaCiftleri = [
+  ["Bilgi","Öğrenmek"], ["Kibir","Üstünlük taslamak"], ["Tevazu","Hatasını kabul etmek"],
+  ["Tevbe","Yeniden doğruya dönmek"], ["Emanet","Korunması gereken şey"]
+];
+/* Kelime Avı */
+const avKelimeleri = ["ÂDEM","BİLGİ","TEVBE","EMANET","SABIR","KİBİR","TEVAZU","UMUT"];
+
+/* Bölüm oyun verileri */
+const isimNesneleri = [
+  { ikon:"🌳", ad:"Ağaç", grup:"canli" }, { ikon:"🐦", ad:"Kuş", grup:"canli" },
+  { ikon:"💧", ad:"Su", grup:"doga" },  { ikon:"⛰️", ad:"Dağ", grup:"doga" },
+  { ikon:"⭐", ad:"Yıldız", grup:"doga" }, { ikon:"🟤", ad:"Toprak", grup:"doga" },
+  { ikon:"🌸", ad:"Çiçek", grup:"canli" }, { ikon:"🐟", ad:"Balık", grup:"canli" }
+];
+const korumaSorulari = [
+  { n:"💧 Su", c:["İsraf etmemek, kirletmemek, ihtiyacımız kadar kullanmak","Muslukları hep açık bırakmak","Nehirlere çöp atmak"], d:0 },
+  { n:"🌳 Ağaç", c:["Dallarını kırmak","Fidan dikmek ve ağaçlara zarar vermemek","Kabuklarına yazı kazımak"], d:1 },
+  { n:"🐦 Kuş", c:["Yuvalarını bozmak","Taş atmak","Sıcak günlerde su bırakmak ve yuvalarını rahatsız etmemek"], d:2 }
+];
+const kibirIfadeleri = [
+  { m:"Ben herkesten daha akıllıyım.", t:"kibir", ac:"Kendini üstün görmek kibirdir; herkesin öğrenecekleri vardır." },
+  { m:"Bu konuda hata yapmış olabilirim.", t:"tevazu", ac:"Hata yapabileceğini kabul etmek zayıflık değildir; gelişmene yardım eder." },
+  { m:"Arkadaşım benden farklı düşünebilir.", t:"tevazu", ac:"Farklı düşüncelere saygı, tevazunun işaretidir." },
+  { m:"Kimsenin fikrini dinlemem.", t:"kibir", ac:"Dinlemeyen insan öğrenemez." },
+  { m:"Bilmediğim şeyi sorabilirim.", t:"tevazu", ac:"Soru sormak öğrenmenin kapısıdır." },
+  { m:"Ben kazandıysam diğerleri değersizdir.", t:"kibir", ac:"Kazanmak güzeldir; başkalarını küçümsemek değildir." },
+  { m:"Arkadaşımı tebrik ederim.", t:"tevazu", ac:"Başkasının başarısına sevinmek kalbi büyütür." },
+  { m:"Özür dilemek beni küçültmez.", t:"tevazu", ac:"Özür dilemek cesur ve dürüst olmaktır." }
+];
+const sinirDurumlari = [
+  { m:"Emniyet kemeri takmak", t:"korur", ac:"Bu sınır seni kazalarda korur." },
+  { m:"İnternette adresini paylaşmak", t:"dikkat", ac:"Kişisel bilgiler yalnızca ailenle paylaşılır; internette paylaşmak tehlikelidir." },
+  { m:"Yabancı birinin gönderdiği bağlantıya tıklamak", t:"dikkat", ac:"Tanımadığın bağlantılar zarar verebilir; önce bir yetişkine danış." },
+  { m:"Kırmızı ışıkta beklemek", t:"korur", ac:"Trafik kuralları hayat kurtaran sınırlardır." },
+  { m:"Arkadaşının çantasını izinsiz açmak", t:"dikkat", ac:"Başkasının özel eşyası bir sınırdır; izin istemek gerekir." },
+  { m:"İlacı bir yetişkine sormadan kullanmak", t:"dikkat", ac:"İlaçlar yalnızca yetişkin gözetiminde kullanılır." },
+  { m:"Oyundan önce kuralları öğrenmek", t:"korur", ac:"Kurallar oyunu herkes için adil ve güvenli yapar." }
+];
+const fisiltilar = [
+  { m:"Kimse görmüyor, yapabilirim.", t:"dur", ac:"Bir kez daha düşünelim: Kimse görmese de bu davranış doğru mu?" },
+  { m:"Arkadaşım yapıyorsa kesin doğrudur.", t:"dur", ac:"Bir kez daha düşünelim: Başkası yapıyor diye bir şey doğru olmaz." },
+  { m:"Önce güvendiğim birine sorabilirim.", t:"guzel", ac:"Ne güzel bir düşünce! Danışmak seni korur." },
+  { m:"Hata yaptığımı kimseye söylememeliyim.", t:"dur", ac:"Bir kez daha düşünelim: Hatayı saklamak yükü büyütür; anlatmak hafifletir." },
+  { m:"Yanlış yaptıysam düzeltebilirim.", t:"guzel", ac:"Evet! Düzeltmek her zaman mümkündür." },
+  { m:"Benden özür dileyen kişiyi dinleyebilirim.", t:"guzel", ac:"Dinlemek ve bağışlamak kalbi hafifletir." },
+  { m:"Kızgınken hemen karar vermeliyim.", t:"dur", ac:"Bir kez daha düşünelim: Kızgınken verilen kararlar pişmanlık getirebilir." },
+  { m:"Biraz sakinleşip sonra konuşabilirim.", t:"guzel", ac:"Sakinleşmek, doğru kararın dostudur." }
+];
+const tevbeBasamaklari = [
+  "Hatamı fark ederim.", "Pişman olurum.", "Allah'tan bağışlanma dilerim.",
+  "Yanlış davranışı bırakırım.", "Verdiğim zararı düzeltmeye çalışırım.", "Yeniden doğruyu seçerim."
+];
+const emanetGorevleri = [
+  { m:"Yerde çöpler var 🗑️", c:["Görmezden gelirim","Çöpleri uygun kutuya atarım","Kenara iterim"], d:1 },
+  { m:"Musluk açık kalmış 💧", c:["Suyu kapatırım","Su aksın, güzel ses çıkarıyor","Başkası kapatsın"], d:0 },
+  { m:"Bir fidan kırılmak üzere 🌱", c:["Koparırım","Üzerine basarım","Destek çubuğuyla desteklerim"], d:2 },
+  { m:"Sıcak bir gün, kuşlar susuz 🐦", c:["Bir kaba su bırakırım","Kuşları kovalarım","Hiçbir şey yapmam"], d:0 },
+  { m:"Boş odada ışık açık kalmış 💡", c:["Açık kalsın","Işığı kapatırım","Bir tane daha açarım"], d:1 },
+  { m:"Kullanılmış kâğıtlar birikmiş 📄", c:["Çöpe atarım","Yakarım","Geri dönüşüme gönderirim"], d:2 }
+];
+const secimDurumlari = [
+  { m:"Yanlışlıkla arkadaşının kalemini kırdın.", c:["Saklarım.","Arkadaşımı suçlarım.","Doğruyu söyler, özür diler ve telafi etmeye çalışırım."], d:2, ac:"Doğruyu söylemek ve telafi etmek, tevbenin günlük hayattaki hâlidir." },
+  { m:"Bir yarışmada kaybettin.", c:["Kazananla alay ederim.","Kazananı tebrik eder ve tekrar çalışırım.","Oyunu bozarım."], d:1, ac:"Tebrik etmek tevazu, tekrar çalışmak umuttur." },
+  { m:"İnternette birisi sana gizli bir bağlantı gönderdi.", c:["Hemen açarım.","Bir yetişkine danışırım.","Bütün arkadaşlarıma yollarım."], d:1, ac:"Fısıltıya dikkat! Danışmak seni korur." },
+  { m:"Bir hata yaptın ve utanıyorsun.", c:["Her şeyi inkâr ederim.","Güvendiğim bir büyüğe anlatıp düzeltmeye çalışırım.","Başkasını suçlarım."], d:1, ac:"Anlatmak yükü hafifletir; düzeltmek yeni bir başlangıçtır." }
+];
+
+/* Aile Köşesi içerikleri */
+const aileIcerik = {
+  kazanimlar:["Bilginin değeri","İnsan iradesi","Kibir ve tevazu","Sınırların koruyucu yönü","Yanlış yönlendirmelere dikkat","Hata sorumluluğu","Tevbe","Merhamet","Yeniden başlama","Yeryüzünü koruma"],
+  konusma:["Hata yaptığında en çok neden korkarsın?","Birisi senden daha başarılı olduğunda nasıl hissedersin?","Özür dilemek neden zor olabilir?","Bir davranışın doğru olup olmadığını nasıl anlarsın?","Dünyayı korumak için evimizde ne yapabiliriz?","Aklımıza gelen her düşüncenin doğru olmadığını nasıl anlayabiliriz?"],
+  uyarilar:["Çocuğu cevap vermeye zorlamayın.","Hata kavramını utandırma amacıyla kullanmayın.","İblis ve cehennem anlatısıyla çocuğu korkutmayın.","Çocuğun gerçek hayattaki hatalarını kıssayı kullanarak yüzüne vurmayın.","Kıssayı kadınları suçlayan bir dille anlatmayın.","Zor sorularda emin değilseniz 'Bunu birlikte araştıralım' deyin.","Kaynağı belirsiz rivayetleri kesin bilgi gibi aktarmayın.","Tevbe kavramını güven ve umutla öğretin."],
+  etkinlikler:["Birlikte üç nimet yazın.","Evde koruyucu sınırlar listesi hazırlayın.","Kibir ve tevazu davranışlarına örnek bulun.","Birlikte bir fidan veya çiçek yetiştirin.","Bir aile iyilik görevi seçin.","Herkes geçmişte düzelttiği küçük bir hatayı anlatsın.","Doğayı korumak için bir haftalık hedef belirleyin."],
+  rehber:"Bölümü çocuğunuzla sırayla okuyun; sayfa sonundaki soruyu önce çocuğunuzun cevaplamasına izin verin. Cevabı yargılamadan dinleyin ve 'Sen ne düşünüyorsun?' diye derinleştirin."
+};
+
+/* ================================================================
+   BÖLÜM 3 / 12 — AÇILIŞ, YAŞ SEÇİMİ, GEZİNME VE BÖLÜM HARİTASI
+   ================================================================ */
+const $ = id => document.getElementById(id);
+function karistir(dizi){ return dizi.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]); }
+function ipucuGoster(el, metin){ el.classList.remove("gizli"); el.textContent = metin; }
+
+/* Modal */
+let modalOdak=null;
+function modalAc(baslik, govdeHTML, dugmeler){
+  $("modalBaslik").textContent = baslik;
+  $("modalGovde").innerHTML = govdeHTML;
+  const dk = $("modalDugmeler"); dk.innerHTML="";
+  (dugmeler||[{m:"Tamam"}]).forEach(dg=>{
+    const b = document.createElement("button");
+    b.className = "btn " + (dg.stil||""); b.style.flex="1"; b.textContent = dg.m;
+    b.onclick = ()=>{ modalKapat(); if(dg.f) dg.f(); };
+    dk.appendChild(b);
+  });
+  $("modalArka").classList.remove("gizli");
+  modalOdak = document.activeElement;
+  dk.querySelector("button").focus();
+}
+function modalKapat(){ $("modalArka").classList.add("gizli"); if(modalOdak) modalOdak.focus(); }
+
+/* Yaş modları */
+const yasModlari = [
+  { id:"5-7",  ad:"5-7 yaş",  ikon:"🐣", not:"Kısa cümleler, az metin, en fazla üç seçenek" },
+  { id:"8-10", ad:"8-10 yaş", ikon:"🦉", not:"Ayrıntılı anlatım, sıralama ve günlük örnekler" },
+  { id:"11-13",ad:"11-13 yaş",ikon:"🧭", not:"Kavramlar, sebep-sonuç ve ayet referansları" },
+  { id:"aile", ad:"Aile modu", ikon:"👨‍👩‍👧", not:"Birlikte okuma + ailece konuşma soruları" }
+];
+function yasSecimCiz(){
+  const kap = $("yasSecim"); kap.innerHTML="";
+  yasModlari.forEach(m=>{
+    const b = document.createElement("button");
+    b.className = "sec" + (S.yasModu===m.id ? " secili":"");
+    b.innerHTML = `<span class="ikon">${m.ikon}</span><span><b>${m.ad}</b><br><span class="kucuk">${m.not}</span></span>`;
+    b.onclick = ()=>{ S.yasModu = m.id; kaydet(); yasSecimCiz(); };
+    kap.appendChild(b);
+  });
+}
+function uygulamayaGec(hedef){
+  $("acilis").classList.add("kapali");
+  $("uyg").classList.add("acik");
+  gorunumGec(hedef || "g-yolculuk");
+}
+function kurulumBaslat(aileMi){
+  if(aileMi){ S.yasModu="aile"; kaydet(); }
+  if(S.kuruldu){ uygulamayaGec("g-yolculuk"); return; }
+  $("acilisAna").classList.add("gizli");
+  $("acilisKurulum").classList.remove("gizli");
+  yasSecimCiz();
+}
+function kurulumBitir(){
+  const ad = $("adGirdi").value.trim();
+  S.ad = ad ? ad.slice(0,20) : "Hikmet Yolcusu";
+  S.kuruldu = true; kaydet();
+  uygulamayaGec("g-yolculuk");
+}
+
+/* Gezinme */
+function gorunumGec(id){
+  seslendirmeDurdurTamamen();
+  document.querySelectorAll(".gorunum").forEach(g=>g.classList.remove("aktif"));
+  $(id).classList.add("aktif");
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("aktif", b.dataset.nav===id || (id==="g-hikaye" && b.dataset.nav==="g-yolculuk")));
+  window.scrollTo(0,0);
+  if(id==="g-yolculuk") haritaCiz();
+  if(id==="g-oyunlar") oyunListesiCiz();
+  if(id==="g-canta") cantaCiz();
+  if(id==="g-kelimeler") kelimeCiz();
+  if(id==="g-aile") aileCiz();
+  if(id==="g-ayarlar") ayarCiz();
+}
+
+/* Harita */
+function haritaCiz(){
+  $("hatiraSayac").textContent = S.hatiralar.length;
+  $("karsilama").textContent = `Hoş geldin ${S.ad}. Bugün insanlığın ilk yolculuğuna çıkıyoruz. Pusulan hazır mı? 🧭`;
+  const kap = $("haritaListe"); kap.innerHTML="";
+  KISSA.chapters.forEach((c,i)=>{
+    const acik = i===0 || S.tamamBolumler.includes(KISSA.chapters[i-1].id);
+    const tamam = S.tamamBolumler.includes(c.id);
+    if(i>0){
+      const cizgi = document.createElement("div");
+      cizgi.className = "yol-cizgi" + (acik ? " dolu":"");
+      kap.appendChild(cizgi);
+    }
+    const b = document.createElement("button");
+    b.className = "durak" + (acik?"":" kilit") + (tamam?" tamam":"");
+    b.innerHTML = `<span class="dikon">${acik ? c.ikon : "🔒"}</span>
+      <span><span class="dbaslik">${i+1}. ${c.ad}</span><br>
+      <span class="kucuk">${tamam ? "✅ Tamamlandı · tekrar oynayabilirsin" : acik ? "✨ Keşfe hazır" : "Önceki durağı tamamlayınca açılır"}</span></span>`;
+    if(acik) b.onclick = ()=> hikayeBaslat(c.id);
+    else { b.disabled = true; b.setAttribute("aria-disabled","true"); }
+    kap.appendChild(b);
+  });
+}
+
+/* ================================================================
+   BÖLÜM 4 / 12 — HİKÂYE ANLATIM EKRANI (yaşa göre metin + Işık Yolu)
+   ================================================================ */
+let hk = { bolum:null, sayfa:0, sayfalar:[], asama:"metin" }; // asama: metin | oyun
+function bolumMetni(c){
+  if(S.yasModu==="5-7") return c.kisa;
+  if(S.yasModu==="11-13") return c.orta.concat(c.derin);
+  return c.orta; // 8-10 ve aile: tam metin (aile modunda sonda konuşma sorusu eklenir)
+}
+function hikayeBaslat(id){
+  const c = KISSA.chapters.find(x=>x.id===id);
+  hk = { bolum:c, sayfa:0, sayfalar:bolumMetni(c), asama:"metin" };
+  S.sonDurak = id; kaydet();
+  gorunumGec("g-hikaye");
+  $("hikayeDurak").textContent = c.ikon + " " + c.ad;
+  hikayeCiz();
+}
+function isikYoluCiz(){
+  const toplam = hk.sayfalar.length + 1; // + oyun
+  const kap = $("isikYolu"); kap.innerHTML="";
+  const dolu = hk.asama==="oyun" ? toplam : hk.sayfa+1;
+  for(let i=0;i<toplam;i++){ const s=document.createElement("span"); if(i<dolu) s.classList.add("dolu"); kap.appendChild(s); }
+}
+function hikayeCiz(){
+  isikYoluCiz(); sesBarCiz();
+  const k = $("hikayeIcerik"); window.scrollTo(0,0);
+  if(hk.asama==="oyun"){ bolumOyunuCiz(k); return; }
+  const c = hk.bolum;
+  const son = hk.sayfa === hk.sayfalar.length-1;
+  k.innerHTML = `
+    <div class="sahne" aria-hidden="true">${c.sahne.map(s=>`<span class="s-oge">${s}</span>`).join("")}</div>
+    <div class="kart anlati"><p id="okunanParagraf">${hk.sayfalar[hk.sayfa]}</p>
+      ${son ? `<span class="kaynak-etiket">📖 Kaynak: ${c.kaynak}</span>` : ""}
+    </div>
+    ${son && S.yasModu==="aile" ? `<div class="kart"><h3>👨‍👩‍👧 Ailece konuşalım</h3><p>${aileIcerik.konusma[KISSA.chapters.indexOf(c) % aileIcerik.konusma.length]}</p><p class="kucuk" style="margin-top:6px;">${aileIcerik.rehber}</p></div>` : ""}
+    <div style="display:flex;gap:9px;flex-wrap:wrap;">
+      ${hk.sayfa>0 ? `<button class="btn cizgi" data-act="hikaye-onceki">← Önceki</button>` : ""}
+      <button class="btn altin" style="flex:1;" data-act="hikaye-sonraki">${son ? "🎲 Bölüm oyununa geç" : "Devam →"}</button>
+      <button class="btn lacivert" data-act="merak">💡 Merak Ettim</button>
+    </div>`;
+}
+function hikayeAdim(yon){
+  if(yon>0){
+    if(hk.sayfa < hk.sayfalar.length-1) hk.sayfa++;
+    else hk.asama="oyun";
+  } else if(hk.sayfa>0) hk.sayfa--;
+  seslendirmeDurdurTamamen();
+  hikayeCiz();
+}
+function merakEttim(){
+  const i = KISSA.chapters.indexOf(hk.bolum) % KISSA.bilgiKartlari.length;
+  const kart = KISSA.bilgiKartlari[i];
+  const digerleri = KISSA.bilgiKartlari.filter((x,j)=>j!==i).map(x=>`<details><summary>${x.b}</summary><p style="margin-top:6px;">${x.m}</p></details>`).join("");
+  modalAc("💡 Merak Ettim", `<div class="kart" style="margin-bottom:10px;"><h3>${kart.b}</h3><p>${kart.m}</p></div>${digerleri}`);
+}
+
+/* ================================================================
+   BÖLÜM 5 / 12 — SESLİ ANLATIM (SpeechSynthesis)
+   ================================================================ */
+const sesDestek = ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
+let sesDurum = "durdu"; // durdu | okunuyor | duraklatildi
+function sesHizDeger(){ return { yavas:0.78, normal:1, hizli:1.22 }[S.ayarlar.sesHiz] || 1; }
+function seslendir(){
+  if(!sesDestek) return;
+  window.speechSynthesis.cancel();
+  const p = $("okunanParagraf"); if(!p) return;
+  const u = new SpeechSynthesisUtterance(p.textContent);
+  u.lang = "tr-TR"; u.rate = sesHizDeger();
+  const trSes = window.speechSynthesis.getVoices().find(v=>v.lang && v.lang.toLowerCase().startsWith("tr"));
+  if(trSes) u.voice = trSes;
+  u.onstart = ()=>{ sesDurum="okunuyor"; p.style.background="color-mix(in srgb,var(--altin) 22%,transparent)"; sesBarCiz(); };
+  u.onend = ()=>{ sesDurum="durdu"; p.style.background=""; sesBarCiz(); };
+  u.onerror = ()=>{ sesDurum="durdu"; sesBarCiz(); };
+  window.speechSynthesis.speak(u);
+}
+function seslendirmeDurdurTamamen(){ if(sesDestek){ window.speechSynthesis.cancel(); } sesDurum="durdu"; }
+function sesBarCiz(){
+  const bar = $("sesBar");
+  if(hk.asama!=="metin"){ bar.innerHTML=""; return; }
+  if(!sesDestek){
+    bar.innerHTML = `<p class="kucuk">🔇 Tarayıcın sesli anlatımı desteklemiyor. Hikâyeyi ekrandan okuyabilirsin.</p>`;
+    return;
+  }
+  bar.innerHTML = "";
+  const dgm = (m, f, pasif)=>{ const b=document.createElement("button"); b.className="btn cizgi"; b.textContent=m; b.disabled=!!pasif; b.onclick=f; bar.appendChild(b); };
+  if(sesDurum==="durdu") dgm("🔊 Dinle", seslendir);
+  if(sesDurum==="okunuyor") dgm("⏸️ Duraklat", ()=>{ window.speechSynthesis.pause(); sesDurum="duraklatildi"; sesBarCiz(); });
+  if(sesDurum==="duraklatildi") dgm("▶️ Devam Et", ()=>{ window.speechSynthesis.resume(); sesDurum="okunuyor"; sesBarCiz(); });
+  if(sesDurum!=="durdu") dgm("⏮️ Baştan Dinle", seslendir);
+}
+
+/* ================================================================
+   BÖLÜM 6 / 12 — ETKİLEŞİMLİ BÖLÜM OYUNLARI
+   Yanlışta ceza, korkutucu ses veya kırmızı uyarı yoktur;
+   nazik yeniden düşünme mesajları vardır.
+   ================================================================ */
+const bolumSonuMesaji = {
+  "misafir":"Sorumluluk Taşını buldun. Seçim yapabilmek güzel bir güç; onu iyilik için kullanabilirsin.",
+  "hazine":"Yeni bir Bilgi Tohumu buldun. Bilgi, paylaşıldığında daha da güzelleşir.",
+  "kibir":"Tevazu Yaprağını buldun. Bilmediğini söylemek ve başkasını dinlemek insanı küçültmez.",
+  "bahce":"Koruyucu Pusulayı buldun. Bazı sınırlar bizi güvende tutar.",
+  "fisilti":"Dikkat Işığını buldun. Aklına gelen her düşünceyi hemen yapmak zorunda değilsin.",
+  "hata":"Tevbe Damlasını buldun. Hatalar düzeltildiğinde yeni başlangıçlara dönüşebilir.",
+  "baslangic":"Emanet Rozetini buldun. Dünya hepimizin evidir ve onu korumak hepimizin görevidir.",
+  "canta":"Umut Yıldızını buldun. Yolculuğun ilk bölümü tamamlandı!"
+};
+function bolumOyunuCiz(k){
+  ({ nimetSoru:oyunNimet, isimler:oyunIsimler, kibirTevazu:oyunKibir, sinirlar:oyunSinirlar,
+     fisilti:oyunFisilti, tevbeBasamak:oyunTevbe, emanetciler:oyunEmanet, final:oyunFinal })[hk.bolum.oyun](k);
+}
+function bolumBitir(){
+  const c = hk.bolum;
+  if(!S.tamamBolumler.includes(c.id)) S.tamamBolumler.push(c.id);
+  if(!S.hatiralar.includes(c.hatira.id)) S.hatiralar.push(c.hatira.id);
+  kaydet();
+  const sonBolum = c.id==="canta";
+  const k = $("hikayeIcerik");
+  k.innerHTML = `
+    <div class="merkez">
+      <div class="hatira-anim">${c.hatira.ikon}</div>
+      <h1 style="margin:8px 0 4px;">${c.hatira.ad}</h1>
+      <p class="anlati" style="margin-bottom:8px;">${bolumSonuMesaji[c.id]}</p>
+      <p class="kucuk">Bu bir puan değil; hikâyeden öğrendiğin kavramın sembolü. Hikmet Çantana eklendi. 🎒</p>
+      <div style="height:14px;"></div>
+      ${sonBolum ? "" : `<button class="btn altin tam" style="margin-bottom:9px;" data-act="hikaye-cik">🗺️ Haritaya dön</button>
+      <button class="btn cizgi tam" data-act="cantaya-git">🎒 Hikmet Çantama bak</button>`}
+      ${sonBolum ? sonEkranHTML() : ""}
+    </div>`;
+}
+function sonEkranHTML(){
+  return `
+    <div class="kart" style="text-align:left;margin-top:6px;">
+      <h2>🌟 Yolculuğun İlk Bölümünü Tamamladın</h2>
+      <p>Hz. Âdem'in kıssasında bilginin değerini, kibrin zararını, seçimlerin sorumluluğunu ve hatalardan sonra yeniden başlamanın mümkün olduğunu öğrendin.</p>
+      <p style="margin:8px 0;">${hikmetKartlari.map(h=>`<span class="cip">${h.ikon} ${h.kavram}</span>`).join("")}</p>
+      <p class="anlati">${KISSA.anaMesaj}</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+      <button class="btn" data-act="cantaya-git">🎒 Hikmet Çantamı Aç</button>
+      <button class="btn toprak" data-act="hikaye-cik">🔁 En Sevdiğim Bölümü Tekrarla</button>
+      <button class="btn lacivert" data-act="aileye-git">👨‍👩‍👧 Ailemle Konuş</button>
+      <button class="btn altin" data-act="yarismaya-git">🧠 Bilgi Yarışması</button>
+      <button class="btn toprak" data-act="cizime-git">🎨 Yeni Bir Resim Çiz</button>
+      <button class="btn cizgi" data-act="bastan-basla">↺ Baştan Başla</button>
+    </div>`;
+}
+
+/* --- Durak 1: Nimet sorusu --- */
+function oyunNimet(k){
+  const secenekler = S.yasModu==="5-7"
+    ? ["Çünkü yeni şeyleri anlayabiliriz.","Çünkü öğrendiklerimizle iyilik yapabiliriz.","Hepsi."]
+    : ["Çünkü yeni şeyleri anlayabiliriz.","Çünkü hatalarımızdan ders çıkarabiliriz.","Çünkü öğrendiğimiz bilgilerle iyilik yapabiliriz.","Hepsi."];
+  k.innerHTML = `<h2>🧠 Küçük Soru</h2>
+    <div class="kart anlati"><p>Sence öğrenebilmek neden büyük bir nimettir?</p></div>
+    <div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+  secenekler.forEach((m,i)=>{
+    const b = document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${m}</span>`;
+    b.onclick = ()=>{
+      const dogru = i===secenekler.length-1;
+      if(dogru){ ipucuGoster($("oyunMesaj"),"⭐ Evet, hepsi! Öğrenmek anlamamıza, ders çıkarmamıza ve iyilik yapmamıza yardım eder."); b.classList.add("secili");
+        document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true); setTimeout(bolumBitir,1500); }
+      else { ipucuGoster($("oyunMesaj"),"💛 Bu da güzel bir sebep! Peki yalnızca bu mu? Bütün sebepleri kapsayan seçeneğe bakalım."); b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100); }
+    };
+    $("oyunListe").appendChild(b);
+  });
+}
+
+/* --- Durak 2: İsimleri Keşfet (yaşa göre 1-3 aşama) --- */
+function oyunIsimler(k){
+  let asama = 1;
+  const ciz1 = ()=>{  // eşleştirme: nesne → isim (dokun-dokun)
+    let secili=null, kalan=isimNesneleri.length;
+    k.innerHTML = `<h2>💎 İsimleri Keşfet</h2>
+      <p class="kucuk">Önce bir varlığa, sonra ismine dokun.</p>
+      <div id="nesneler" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;"></div>
+      <div id="isimler" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      <p class="ipucu gizli" id="oyunMesaj"></p>`;
+    isimNesneleri.forEach(n=>{
+      const b=document.createElement("button"); b.className="sec"; b.style.width="auto"; b.style.fontSize="1.6rem"; b.textContent=n.ikon;
+      b.setAttribute("aria-label", n.ad + " simgesi");
+      b.onclick=()=>{ document.querySelectorAll("#nesneler .sec").forEach(x=>x.classList.remove("secili")); b.classList.add("secili"); secili={n,b}; };
+      $("nesneler").appendChild(b);
+    });
+    karistir(isimNesneleri.slice()).forEach(n=>{
+      const b=document.createElement("button"); b.className="sec"; b.style.width="auto"; b.textContent=n.ad;
+      b.onclick=()=>{
+        if(!secili){ ipucuGoster($("oyunMesaj"),"Önce yukarıdan bir varlığa dokun. 😊"); return; }
+        if(secili.n.ad===n.ad){
+          b.disabled=true; b.classList.add("secili"); secili.b.disabled=true; secili.b.classList.remove("secili"); secili.b.style.opacity=".4"; secili=null; kalan--;
+          ipucuGoster($("oyunMesaj"), kalan? "⭐ Doğru eşleştirme!" : "🌟 Hepsini eşleştirdin!");
+          if(!kalan) setTimeout(()=> S.yasModu==="5-7" ? bolumBitir() : (asama=2, ciz2()), 1000);
+        } else { ipucuGoster($("oyunMesaj"),"💛 Bir daha bakalım; simge ile isim aynı varlığı anlatmalı."); }
+      };
+      $("isimler").appendChild(b);
+    });
+  };
+  const ciz2 = ()=>{  // gruplama: canlı / doğa
+    let secili=null, kalan=isimNesneleri.length;
+    k.innerHTML = `<h2>💎 Hangi Gruba Ait?</h2>
+      <p class="kucuk">Varlığa dokun, sonra grubuna dokun.</p>
+      <div id="nesneler" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;"></div>
+      <div class="hedefler">
+        <button class="hedef" data-grup="canli">🌱 Canlılar<div class="icerik"></div></button>
+        <button class="hedef" data-grup="doga">🏞️ Doğa ve Gökyüzü<div class="icerik"></div></button>
+      </div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+    isimNesneleri.forEach(n=>{
+      const b=document.createElement("button"); b.className="sec"; b.style.width="auto"; b.textContent=`${n.ikon} ${n.ad}`;
+      b.onclick=()=>{ document.querySelectorAll("#nesneler .sec").forEach(x=>x.classList.remove("secili")); b.classList.add("secili"); secili={n,b};
+        document.querySelectorAll(".hedef").forEach(h=>h.classList.add("canli")); };
+      $("nesneler").appendChild(b);
+    });
+    document.querySelectorAll(".hedef").forEach(h=>{
+      h.onclick=()=>{
+        if(!secili){ ipucuGoster($("oyunMesaj"),"Önce bir varlık seç. 😊"); return; }
+        if(secili.n.grup===h.dataset.grup){
+          h.querySelector(".icerik").innerHTML += `<span class="cip">${secili.n.ikon}</span>`;
+          secili.b.disabled=true; secili.b.style.opacity=".4"; secili=null; kalan--;
+          document.querySelectorAll(".hedef").forEach(x=>x.classList.remove("canli"));
+          ipucuGoster($("oyunMesaj"), kalan? "⭐ Yerini buldu!" : "🌟 Bütün varlıklar grubunda!");
+          if(!kalan) setTimeout(()=> S.yasModu==="11-13" ? (asama=3, ciz3()) : bolumBitir(), 1000);
+        } else ipucuGoster($("oyunMesaj"),"💛 Bir daha düşünelim: bu varlık canlı mı?");
+      };
+    });
+  };
+  const ciz3 = ()=>{  // 11-13: koruma soruları
+    let i=0;
+    const soru=()=>{
+      const q=korumaSorulari[i];
+      k.innerHTML = `<h2>💎 Bu Varlığı Nasıl Koruruz?</h2>
+        <div class="kart anlati"><p><b>${q.n}</b> için en güzel davranış hangisi?</p></div>
+        <div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+      q.c.forEach((m,j)=>{
+        const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${m}</span>`;
+        b.onclick=()=>{
+          if(j===q.d){ b.classList.add("secili"); document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true);
+            ipucuGoster($("oyunMesaj"),"⭐ Evet! Tanıdığımız varlığı korumak da bize düşer.");
+            i++; setTimeout(()=> i<korumaSorulari.length ? soru() : bolumBitir(), 1300); }
+          else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+            ipucuGoster($("oyunMesaj"),"💛 Bir kez daha düşünelim: bu davranış varlığa zarar verir mi?"); }
+        };
+        $("oyunListe").appendChild(b);
+      });
+    };
+    soru();
+  };
+  ciz1();
+}
+
+/* --- Ortak sınıflandırma oyunu kurucusu (Kibir/Tevazu, Sınırlar, Fısıltı) --- */
+function siniflandirmaOyunu(k, ayar){
+  let secili=null, kalan=ayar.ogeler.length;
+  k.innerHTML = `<h2>${ayar.baslik}</h2><p class="kucuk">${ayar.yonerge}</p>
+    <div id="ogeler" style="margin:10px 0;"></div>
+    <div class="hedefler">
+      <button class="hedef" data-t="${ayar.a.t}">${ayar.a.m}</button>
+      <button class="hedef" data-t="${ayar.b.t}">${ayar.b.m}</button>
+    </div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+  ayar.ogeler.forEach(o=>{
+    const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>“${o.m}”</span>`;
+    b.onclick=()=>{ document.querySelectorAll("#ogeler .sec").forEach(x=>x.classList.remove("secili")); b.classList.add("secili"); secili={o,b};
+      document.querySelectorAll(".hedef").forEach(h=>h.classList.add("canli")); };
+    $("ogeler").appendChild(b);
+  });
+  document.querySelectorAll(".hedef").forEach(h=>{
+    h.onclick=()=>{
+      if(!secili){ ipucuGoster($("oyunMesaj"),"Önce yukarıdan bir ifade seç. 😊"); return; }
+      if(secili.o.t===h.dataset.t){
+        ipucuGoster($("oyunMesaj"),"⭐ " + secili.o.ac);
+        secili.b.disabled=true; secili.b.classList.remove("secili"); secili.b.style.opacity=".45"; secili=null; kalan--;
+        document.querySelectorAll(".hedef").forEach(x=>x.classList.remove("canli"));
+        if(!kalan) setTimeout(bolumBitir, 1500);
+      } else ipucuGoster($("oyunMesaj"),"💛 Bir kez daha düşünelim. " + ayar.nazik);
+    };
+  });
+}
+function oyunKibir(k){
+  siniflandirmaOyunu(k, { baslik:"🪞 Kibir mi, Tevazu mu?", yonerge:"İfadeye dokun, sonra ait olduğu kutuya dokun.",
+    a:{t:"kibir",m:"🪨 Kibir"}, b:{t:"tevazu",m:"🍃 Tevazu"},
+    ogeler:(S.yasModu==="5-7" ? kibirIfadeleri.slice(0,4) : kibirIfadeleri),
+    nazik:"Bu söz, söyleyeni üstün mü gösteriyor yoksa öğrenmeye açık mı?" });
+}
+function oyunSinirlar(k){
+  siniflandirmaOyunu(k, { baslik:"🧭 Koruyucu Sınırlar", yonerge:"Durum beni korur mu, yoksa dikkat mi etmeliyim?",
+    a:{t:"korur",m:"🛡️ Beni korur"}, b:{t:"dikkat",m:"⚠️ Dikkat etmeliyim"},
+    ogeler:(S.yasModu==="5-7" ? sinirDurumlari.slice(0,4) : sinirDurumlari),
+    nazik:"Bu durum seni güvende mi tutuyor, yoksa zarar görebilir misin?" });
+}
+function oyunFisilti(k){
+  siniflandirmaOyunu(k, { baslik:"💭 Fısıltıyı Yakala", yonerge:"Düşünce baloncuğuna dokun: durup yeniden mi düşünmeli, yoksa güzel bir düşünce mi?",
+    a:{t:"dur",m:"🕯️ Dur, yeniden düşün"}, b:{t:"guzel",m:"🌟 Güzel düşünce"},
+    ogeler:(S.yasModu==="5-7" ? fisiltilar.slice(0,4) : fisiltilar),
+    nazik:"Bu fikir sonrasında birine zarar verebilir mi?" });
+}
+
+/* --- Sıralama kurucusu (Tevbe basamakları, olay sıralama) --- */
+function siralamaOyunu(k, ayar){
+  const dogruSira = ayar.ogeler; let sira=0;
+  k.innerHTML = `<h2>${ayar.baslik}</h2><p class="kucuk">${ayar.yonerge}</p>
+    <div id="oyunListe" style="margin-top:8px;"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+  karistir(dogruSira.map((m,i)=>({m,i}))).forEach(o=>{
+    const b=document.createElement("button"); b.className="sec";
+    b.innerHTML=`<span class="sira-no">?</span><span>${o.m}</span>`;
+    b.onclick=()=>{
+      if(o.i===sira){
+        sira++; b.classList.add("secili"); b.disabled=true; b.querySelector(".sira-no").textContent=sira;
+        ipucuGoster($("oyunMesaj"), sira<dogruSira.length ? "⭐ Tam sırası!" : "🌟 " + ayar.sonMesaj);
+        if(sira===dogruSira.length) setTimeout(ayar.bitis || bolumBitir, 1600);
+      } else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+        ipucuGoster($("oyunMesaj"),"💛 Bir daha düşünelim… Bundan önce başka bir adım vardı."); }
+    };
+    $("oyunListe").appendChild(b);
+  });
+}
+function oyunTevbe(k){
+  siralamaOyunu(k, { baslik:"💧 Tevbenin Basamakları", yonerge:"Basamakları doğru sıraya koy: ilk adım hangisiyse önce ona dokun.",
+    ogeler:tevbeBasamaklari, sonMesaj:"Tevbe, umutsuzluk kapısı değil, yeniden başlama kapısıdır." });
+}
+
+/* --- Durak 7: Dünyanın Emanetçileri --- */
+function oyunEmanet(k){
+  let i=0, tamam=0;
+  const sahne = ()=> `<div class="sahne" aria-hidden="true">${"🥀🌷".repeat(1)}${Array.from({length:emanetGorevleri.length},(_,j)=> j<tamam?"🌷":"🥀").join("")}</div>`;
+  const gorev=()=>{
+    const g=emanetGorevleri[i];
+    k.innerHTML = `<h2>🎖️ Dünyanın Emanetçileri</h2>${sahne()}
+      <div class="kart anlati"><p><b>${g.m}</b> — Ne yaparsın?</p></div>
+      <div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+    g.c.forEach((m,j)=>{
+      const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${m}</span>`;
+      b.onclick=()=>{
+        if(j===g.d){ tamam++; i++;
+          b.classList.add("secili"); document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true);
+          ipucuGoster($("oyunMesaj"), i<emanetGorevleri.length ? "⭐ Bahçe biraz daha canlandı!" : "🌟 Yeryüzünü korumak yalnızca büyüklerin değil, küçük Hikmet Yolcularının da görevidir.");
+          setTimeout(()=> i<emanetGorevleri.length ? gorev() : bolumBitir(), 1400); }
+        else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+          ipucuGoster($("oyunMesaj"),"💛 Bir kez daha düşünelim: bu seçim emanete iyi bakmak mı?"); }
+      };
+      $("oyunListe").appendChild(b);
+    });
+  };
+  gorev();
+}
+
+/* --- Durak 8: Final = Olayları Sırala + Doğru Seçimi Bul --- */
+const olayListesi = [
+  "Allah, Hz. Âdem'i yarattı.","Hz. Âdem'e isimler öğretildi.","Meleklere secde emri verildi.",
+  "İblis kibirlendi ve emre karşı geldi.","Hz. Âdem ve eşi bahçede yaşamaya başladı.",
+  "Yasaklanan ağaçla ilgili uyarı yapıldı.","İblis onları kandırmaya çalıştı.",
+  "Hz. Âdem ve eşi hata yaptıklarını fark etti.","Allah'tan bağışlanma dilediler.","Yeryüzündeki hayatlarına başladılar."
+];
+function oyunFinal(k){
+  const adet = S.yasModu==="5-7" ? 5 : S.yasModu==="8-10" ? 7 : 10;
+  const secilmis = adet===10 ? olayListesi : olayListesi.filter((_,i)=> adet===5 ? [0,3,6,8,9].includes(i) : [0,1,3,5,6,8,9].includes(i));
+  siralamaOyunu(k, { baslik:"📜 Olayları Sırala", yonerge:"Bütün yolculuğu hatırlayalım: olaylara oluş sırasıyla dokun.",
+    ogeler:secilmis, sonMesaj:"Bütün kıssayı hatırladın!",
+    bitis: ()=> dogruSecimTuru(k) });
+}
+function dogruSecimTuru(k){
+  let i=0;
+  const durum=()=>{
+    const q=secimDurumlari[i];
+    k.innerHTML = `<h2>🌟 Doğru Seçimi Bul · ${i+1}/${secimDurumlari.length}</h2>
+      <div class="kart anlati"><p>${q.m}</p></div>
+      <div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+    q.c.forEach((m,j)=>{
+      const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${m}</span>`;
+      b.onclick=()=>{
+        if(j===q.d){ b.classList.add("secili"); document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true);
+          ipucuGoster($("oyunMesaj"),"⭐ " + q.ac); i++;
+          setTimeout(()=> i<secimDurumlari.length ? durum() : bolumBitir(), 1500); }
+        else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+          ipucuGoster($("oyunMesaj"),"💛 Bir kez daha düşünelim. Kıssadaki hikmetleri hatırlıyor musun: dürüstlük, tevazu, danışmak…"); }
+      };
+      $("oyunListe").appendChild(b);
+    });
+  };
+  durum();
+}
+
+/* ================================================================
+   BÖLÜM 7 / 12 — HİKMET ÇANTASI (kartlar, notlar, yansımalar)
+   ================================================================ */
+function cantaCiz(){
+  const kap = $("cantaAlan"); kap.innerHTML="";
+  if(S.hatiralar.length===0){
+    kap.innerHTML = `<div class="kart merkez"><div style="font-size:3rem;">🎒</div>
+      <p>Çantan şimdilik boş — ama dolmayı bekliyor! Yolculuk haritasından ilk durağı tamamladığında ilk hatıran buraya gelecek.</p></div>`;
+  }
+  hikmetKartlari.filter(h=>S.hatiralar.includes(h.id)).forEach(h=>{
+    const d = document.createElement("details"); d.className="";
+    d.innerHTML = `<summary>${h.ikon} ${h.kavram}</summary>
+      <p style="margin-top:8px;"><b>Açıklama:</b> ${h.aciklama}</p>
+      <p><b>Kıssadaki yeri:</b> ${h.yer}</p>
+      <p><b>Günlük hayattan:</b> ${h.ornek}</p>
+      <label class="kucuk" for="not-${h.id}" style="display:block;margin-top:8px;font-weight:700;">📝 Benim notum (istersen boş bırakabilirsin):</label>
+      <textarea id="not-${h.id}" placeholder="Bu hikmet bana ne düşündürdü?">${S.notlar[h.id]||""}</textarea>
+      <button class="btn cizgi" style="margin-top:8px;" data-not="${h.id}">Notumu kaydet</button>
+      <span class="kucuk gizli" id="notok-${h.id}"> ✅ Kaydedildi</span>`;
+    kap.appendChild(d);
+  });
+  if(S.hatiralar.length>0){
+    const y = document.createElement("div"); y.className="kart";
+    y.innerHTML = `<h2>🪞 Düşünme Köşem</h2><p class="kucuk">İstersen cevapla, istersen boş bırak — burada yanlış cevap yok.</p>` +
+      yansimaSorulari.map(q=>`
+        <label class="kucuk" for="yans-${q.id}" style="display:block;margin-top:10px;font-weight:700;">${q.s}</label>
+        <textarea id="yans-${q.id}">${S.yansimalar[q.id]||""}</textarea>`).join("") +
+      `<button class="btn tam" style="margin-top:10px;" data-act="yansima-kaydet">Cevaplarımı kaydet</button>
+       <span class="kucuk gizli" id="yansimaOk"> ✅ Kaydedildi</span>`;
+    kap.appendChild(y);
+  }
+  const ilerleme = document.createElement("div"); ilerleme.className="kart";
+  const kelimeN = S.incelenenKelimeler.length;
+  ilerleme.innerHTML = `<h2>🧭 Yolculuğum</h2>
+    <p>${S.hatiralar.length} hikmet keşfettin.${kelimeN? ` ${kelimeN} kelimeyi inceledin.`:""}${S.hatiralar.length? ` ${hikmetKartlari.filter(h=>S.hatiralar.includes(h.id)).slice(-2).map(h=>h.ad||h.kavram).join(" ve ")} artık Hikmet Çantanda.`:""}</p>
+    <p class="kucuk">Burada puan, sıralama veya kıyaslama yoktur; yalnızca senin keşiflerin vardır.</p>`;
+  kap.appendChild(ilerleme);
+  const ciz = document.createElement("div"); ciz.className="kart";
+  ciz.innerHTML = `<h2>🎨 Benim Hikmet Sayfam</h2>
+    <p class="kucuk">Kendi hikmet rozetini veya öğrendiğin bir kavramın resmini çizebilirsin.</p>
+    <button class="btn toprak tam" style="margin-top:8px;" data-act="cizime-git">Çizim alanını aç</button>` +
+    (S.cizimler.length? `<h3 style="margin-top:12px;">Kaydettiğim çizimler</h3>` +
+      S.cizimler.map((c,i)=>`<div style="margin-top:8px;"><b>${c.baslik}</b> <span class="kucuk">(${c.tarih})</span><br><img src="${c.veri}" alt="${c.baslik}" style="max-width:100%;border:2px solid var(--zemin2);border-radius:12px;margin-top:4px;"></div>`).join("") : "");
+  kap.appendChild(ciz);
+}
+
+/* ================================================================
+   BÖLÜM 8 / 12 — KELİME KARTLARI
+   ================================================================ */
+function kelimeCiz(){
+  $("kelimeSayac").textContent = S.incelenenKelimeler.length;
+  const kap = $("kelimeAlan"); kap.innerHTML="";
+  kelimeler.forEach(kk=>{
+    const inc = S.incelenenKelimeler.includes(kk.k);
+    const d = document.createElement("details");
+    d.innerHTML = `<summary>${inc?"✅":"🔎"} ${kk.k}</summary>
+      <p style="margin-top:8px;"><b>Kısa anlam:</b> ${kk.a}</p>
+      <p><b>Sana notum:</b> ${kk.c}</p>
+      <p><b>🌟 Küçük görev:</b> ${kk.g}</p>
+      ${inc? "" : `<button class="btn cizgi" style="margin-top:8px;" data-kelime="${kk.k}">Bu kelimeyi inceledim</button>`}`;
+    kap.appendChild(d);
+  });
+}
+
+/* ================================================================
+   BÖLÜM 9 / 12 — MİNİ OYUNLAR VE SORU BANKASI
+   ================================================================ */
+const miniOyunlar = [
+  { id:"hafiza", ad:"Hikmet Hafızası", ikon:"🃏", f:()=>miniHafiza() },
+  { id:"av", ad:"Kelime Avı", ikon:"🔤", f:()=>miniAv() },
+  { id:"pusula", ad:"Pusula Soruları", ikon:"🧭", f:()=>miniPusula() },
+  { id:"tamamla", ad:"Hikâyeyi Tamamla", ikon:"✍️", f:()=>miniTamamla() },
+  { id:"dy", ad:"Doğru mu, Yanlış mı?", ikon:"⚖️", f:()=>miniDY() }
+];
+function oyunListesiCiz(){
+  $("oyunGeri").classList.add("gizli");
+  const kap = $("oyunAlan"); kap.innerHTML = `<p class="kucuk" style="margin-bottom:10px;">İstediğin kadar tekrar oynayabilirsin. Puan yok, keşif var!</p>`;
+  miniOyunlar.forEach(o=>{
+    const b=document.createElement("button"); b.className="durak";
+    b.innerHTML = `<span class="dikon">${o.ikon}</span><span><span class="dbaslik">${o.ad}</span><br><span class="kucuk">${S.oynananOyunlar.includes(o.id)?"Daha önce oynadın · tekrar oyna":"Yeni keşif seni bekliyor"}</span></span>`;
+    b.onclick = ()=>{ if(!S.oynananOyunlar.includes(o.id)){S.oynananOyunlar.push(o.id);kaydet();} $("oyunGeri").classList.remove("gizli"); o.f(); };
+    kap.appendChild(b);
+  });
+}
+function miniHafiza(){
+  const kap = $("oyunAlan");
+  const kartlar = karistir(hafizaCiftleri.flatMap((c,i)=>[{m:c[0],e:i},{m:c[1],e:i}]));
+  kap.innerHTML = `<h2>🃏 Hikmet Hafızası</h2><p class="kucuk">Kavram ile anlamını eşleştir. İki kart aç!</p><div class="izgara" id="hafizaAlan" style="margin-top:10px;"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+  let acikk=[], kilit=false, kalanCift=hafizaCiftleri.length;
+  kartlar.forEach(kart=>{
+    const b=document.createElement("button"); b.className="hafiza-kart"; b.textContent="✦"; b.setAttribute("aria-label","Kapalı kart");
+    b.onclick=()=>{
+      if(kilit || b.classList.contains("acikk") || b.classList.contains("esles")) return;
+      b.classList.add("acikk"); b.textContent=kart.m; acikk.push({b,kart});
+      if(acikk.length===2){
+        kilit=true;
+        setTimeout(()=>{
+          if(acikk[0].kart.e===acikk[1].kart.e){
+            acikk.forEach(x=>{x.b.classList.remove("acikk");x.b.classList.add("esles");}); kalanCift--;
+            ipucuGoster($("oyunMesaj"), kalanCift? "⭐ Güzel bir eşleşme!" : "🌟 Bütün hikmet çiftlerini buldun!");
+          } else { acikk.forEach(x=>{x.b.classList.remove("acikk");x.b.textContent="✦";}); ipucuGoster($("oyunMesaj"),"💛 Olsun, hafızan güçleniyor. Tekrar dene!"); }
+          acikk=[]; kilit=false;
+        }, 750);
+      }
+    };
+    $("hafizaAlan").appendChild(b);
+  });
+}
+function miniAv(){
+  const kap = $("oyunAlan");
+  let i=0;
+  const tur=()=>{
+    const kelime = avKelimeleri[i]; const harfler = karistir(kelime.split(""));
+    let yazilan = "";
+    kap.innerHTML = `<h2>🔤 Kelime Avı · ${i+1}/${avKelimeleri.length}</h2>
+      <p class="kucuk">Harflere dokunarak kıssadan bir kelime oluştur.</p>
+      <div class="kart merkez" style="font-size:1.5rem;letter-spacing:.2em;min-height:64px;" id="avYazi">_</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;" id="avHarfler"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn cizgi" style="flex:1;" id="avSil">⌫ Sil</button>
+        <button class="btn altin" style="flex:1;" id="avKontrol">Kontrol et</button>
+      </div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+    const tazele=()=>{ $("avYazi").textContent = yazilan || "_"; };
+    harfler.forEach(h=>{
+      const b=document.createElement("button"); b.className="harf"; b.textContent=h;
+      b.onclick=()=>{ yazilan+=h; b.disabled=true; tazele(); };
+      $("avHarfler").appendChild(b);
+    });
+    $("avSil").onclick=()=>{
+      if(!yazilan) return;
+      const son = yazilan.slice(-1); yazilan = yazilan.slice(0,-1);
+      const geri=[...document.querySelectorAll("#avHarfler .harf")].find(b=>b.disabled && b.textContent===son);
+      if(geri) geri.disabled=false; tazele();
+    };
+    $("avKontrol").onclick=()=>{
+      if(yazilan===kelime){ ipucuGoster($("oyunMesaj"),"⭐ Evet: " + kelime + "!"); i++;
+        setTimeout(()=> i<avKelimeleri.length ? tur() : (ipucuGoster($("oyunMesaj"),"🌟 Bütün kelimeleri avladın!"), setTimeout(oyunListesiCiz,1400)), 1000); }
+      else ipucuGoster($("oyunMesaj"),"💛 Harf sırası biraz karışmış olabilir. ⌫ ile düzeltebilirsin. İpucu: kelime " + kelime.length + " harfli ve '" + kelime[0] + "' ile başlıyor.");
+    };
+  };
+  tur();
+}
+function seviyeSorulari(){
+  if(S.yasModu==="5-7") return soruBankasi.filter(q=>q.sv==="kolay");
+  if(S.yasModu==="11-13") return soruBankasi.filter(q=>q.sv!=="kolay");
+  return soruBankasi.filter(q=>q.sv!=="dusun");
+}
+function miniPusula(){
+  const kap = $("oyunAlan");
+  const sorular = karistir(seviyeSorulari()).slice(0,3);
+  let i=0;
+  const tur=()=>{
+    const q=sorular[i];
+    if(q.sv==="dusun"){
+      kap.innerHTML = `<h2>🧭 Pusula Soruları · ${i+1}/3</h2>
+        <div class="kart anlati"><p>${q.s}</p></div>
+        <p class="kucuk">Bu bir düşünme sorusu — tek doğru cevabı yok. Önce kendi cevabını düşün.</p>
+        <textarea id="dusunceKutu" placeholder="İstersen düşünceni buraya yazabilirsin (kaydedilmez, sadece senin için)."></textarea>
+        <button class="btn altin tam" style="margin-top:9px;" id="ornekBtn">Örnek bir cevaba bak</button>
+        <p class="ipucu gizli" id="oyunMesaj"></p>
+        <button class="btn tam gizli" style="margin-top:9px;" id="devamSoru">Devam →</button>`;
+      $("ornekBtn").onclick=()=>{ ipucuGoster($("oyunMesaj"),"💡 Örnek: " + q.or + " — Senin farklı düşüncen de değerlidir!"); $("devamSoru").classList.remove("gizli"); };
+      $("devamSoru").onclick=()=>{ i++; i<3 ? tur() : oyunListesiCiz(); };
+      return;
+    }
+    kap.innerHTML = `<h2>🧭 Pusula Soruları · ${i+1}/3</h2>
+      <div class="kart anlati"><p>${q.s}</p></div><div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+    q.c.forEach((m,j)=>{
+      const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${m}</span>`;
+      b.onclick=()=>{
+        if(j===q.d){ b.classList.add("secili"); document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true);
+          ipucuGoster($("oyunMesaj"),"⭐ " + q.ac); i++;
+          setTimeout(()=> i<3 ? tur() : oyunListesiCiz(), 1600); }
+        else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+          ipucuGoster($("oyunMesaj"),"💛 Bir kez daha düşünelim!"); }
+      };
+      $("oyunListe").appendChild(b);
+    });
+  };
+  tur();
+}
+function miniTamamla(){
+  const kap = $("oyunAlan"); let i=0;
+  const tur=()=>{
+    const q=bosluklar[i];
+    kap.innerHTML = `<h2>✍️ Hikâyeyi Tamamla · ${i+1}/${bosluklar.length}</h2>
+      <div class="kart anlati"><p>${q.s}</p></div><div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+    q.c.forEach((m,j)=>{
+      const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${m}</span>`;
+      b.onclick=()=>{
+        if(j===q.d){ b.classList.add("secili"); document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true);
+          ipucuGoster($("oyunMesaj"),"⭐ Cümle tamamlandı: " + q.s.replace("______", m.toUpperCase())); i++;
+          setTimeout(()=> i<bosluklar.length ? tur() : oyunListesiCiz(), 1500); }
+        else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+          ipucuGoster($("oyunMesaj"),"💛 Cümleyi bir daha okuyalım; hangisi anlamı tamamlıyor?"); }
+      };
+      $("oyunListe").appendChild(b);
+    });
+  };
+  tur();
+}
+function miniDY(){
+  const kap = $("oyunAlan"); let i=0;
+  const tur=()=>{
+    const q=dogruYanlis[i];
+    kap.innerHTML = `<h2>⚖️ Doğru mu, Yanlış mı? · ${i+1}/${dogruYanlis.length}</h2>
+      <div class="kart anlati"><p>“${q.s}”</p></div>
+      <div class="hedefler">
+        <button class="hedef" id="dyDogru">✅ Doğru</button>
+        <button class="hedef" id="dyYanlis">❌ Yanlış</button>
+      </div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+    const cevapla = secim=>{
+      if(secim===q.d){ ipucuGoster($("oyunMesaj"),"⭐ Evet! " + q.ac); i++;
+        setTimeout(()=> i<dogruYanlis.length ? tur() : oyunListesiCiz(), 1700); }
+      else ipucuGoster($("oyunMesaj"),"💛 Bir kez daha düşünelim. İpucu: " + q.ac.split(".")[0] + ".");
+    };
+    $("dyDogru").onclick=()=>cevapla(true);
+    $("dyYanlis").onclick=()=>cevapla(false);
+  };
+  tur();
+}
+
+/* ================================================================
+   BÖLÜM 10 / 12 — ÇİZİM VE YARATICILIK ALANI (Benim Hikmet Sayfam)
+   ================================================================ */
+const cizimOneriler = ["Dünyayı koruyan bir çocuk çiz.","Tevazuyu anlatan bir sembol çiz.","Yeniden başlamayı anlatan bir yol çiz.","Şükrettiğin üç nimeti çiz.","Hikmet Çantanı çiz.","Bir bilgi tohumu çiz ve içine öğrendiğin şeyi yaz."];
+let tuval = { ctx:null, ciziyor:false, renk:"#3A3428", kalinlik:5, silgi:false };
+function cizimAc(){
+  gorunumGec("g-canta");
+  const kap = $("cantaAlan");
+  kap.innerHTML = `
+    <button class="btn cizgi" style="margin-bottom:10px;" data-act="cantaya-git">← Çantama dön</button>
+    <h2>🎨 Benim Hikmet Sayfam</h2>
+    <p class="kucuk">Öneri: ${cizimOneriler[Math.floor(Math.random()*cizimOneriler.length)]} (Peygamber resmi çizmiyoruz.)</p>
+    <canvas id="cizimTuval" width="640" height="420" aria-label="Çizim alanı"></canvas>
+    <div class="arac-bar" id="renkBar"></div>
+    <div class="arac-bar">
+      <span class="kucuk"><b>Kalınlık:</b></span>
+      <button class="btn cizgi" data-kalin="3">İnce</button>
+      <button class="btn cizgi" data-kalin="6">Orta</button>
+      <button class="btn cizgi" data-kalin="12">Kalın</button>
+      <button class="btn toprak" id="silgiBtn">🧽 Silgi</button>
+      <button class="btn lacivert" id="temizleBtn">🗑️ Temizle</button>
+    </div>
+    <input type="text" id="cizimBaslik" maxlength="40" placeholder="Çizimine bir başlık ver (örn. Umut Yolu)">
+    <div style="display:flex;gap:9px;margin-top:9px;">
+      <button class="btn altin" style="flex:1;" id="cizimKaydet">💾 Çantama kaydet</button>
+      <button class="btn" style="flex:1;" id="cizimIndir">⬇️ PNG indir</button>
+    </div>
+    <p class="ipucu gizli" id="cizimMesaj"></p>`;
+  const c = $("cizimTuval");
+  let ctx=null; try{ ctx = c.getContext("2d"); }catch(e){}
+  if(!ctx){ ipucuGoster($("cizimMesaj"),"Tarayıcın çizim alanını desteklemiyor; diğer bölümleri kullanmaya devam edebilirsin."); return; }
+  tuval = { ctx, ciziyor:false, renk:(S.ayarlar.gece?"#EFE7D6":"#3A3428"), kalinlik:5, silgi:false };
+  ctx.fillStyle="#FFFFFF"; ctx.fillRect(0,0,c.width,c.height);
+  ctx.lineCap="round"; ctx.lineJoin="round";
+  ["#3A3428","#5A6B3F","#22385C","#C9A24B","#8A6A4F","#B4763F","#7A9E7E","#A85D5D"].forEach((r,i)=>{
+    const b=document.createElement("button"); b.className="renk-nokta"+(i===0?" secili":""); b.style.background=r;
+    b.setAttribute("aria-label","Renk "+(i+1));
+    b.onclick=()=>{ tuval.renk=r; tuval.silgi=false; document.querySelectorAll(".renk-nokta").forEach(x=>x.classList.remove("secili")); b.classList.add("secili"); };
+    $("renkBar").appendChild(b);
+  });
+  document.querySelectorAll("[data-kalin]").forEach(b=> b.onclick=()=>{ tuval.kalinlik=parseInt(b.dataset.kalin,10); tuval.silgi=false; });
+  $("silgiBtn").onclick=()=>{ tuval.silgi=true; };
+  $("temizleBtn").onclick=()=>{ ctx.fillStyle="#FFFFFF"; ctx.fillRect(0,0,c.width,c.height); };
+  const nokta = e=>{ const r=c.getBoundingClientRect(); return { x:(e.clientX-r.left)*(c.width/r.width), y:(e.clientY-r.top)*(c.height/r.height) }; };
+  c.addEventListener("pointerdown", e=>{ tuval.ciziyor=true; const p=nokta(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault(); });
+  c.addEventListener("pointermove", e=>{
+    if(!tuval.ciziyor) return; const p=nokta(e);
+    ctx.strokeStyle = tuval.silgi ? "#FFFFFF" : tuval.renk;
+    ctx.lineWidth = tuval.silgi ? 22 : tuval.kalinlik;
+    ctx.lineTo(p.x,p.y); ctx.stroke(); e.preventDefault();
+  });
+  ["pointerup","pointerleave","pointercancel"].forEach(t=> c.addEventListener(t, ()=>{ tuval.ciziyor=false; }));
+  $("cizimKaydet").onclick=()=>{
+    const baslik = ($("cizimBaslik").value.trim() || "Hikmet Sayfam").slice(0,40);
+    try{
+      const veri = c.toDataURL("image/png");
+      S.cizimler.push({ baslik, veri, tarih:new Date().toLocaleDateString("tr-TR") });
+      if(S.cizimler.length>6) S.cizimler.shift();  // depolama sınırı için en eskisi çıkar
+      kaydet();
+      ipucuGoster($("cizimMesaj"),`💾 "${baslik}" çantana kaydedildi! (En fazla 6 çizim saklanır.)`);
+    }catch(e){ ipucuGoster($("cizimMesaj"),"Kaydedilemedi — cihaz depolaması dolu olabilir. PNG indirmeyi deneyebilirsin."); }
+  };
+  $("cizimIndir").onclick=()=>{
+    try{
+      const a=document.createElement("a");
+      a.download=(($("cizimBaslik").value.trim()||"hikmet-sayfam")+".png");
+      a.href=c.toDataURL("image/png"); a.click();
+    }catch(e){ ipucuGoster($("cizimMesaj"),"İndirme bu tarayıcıda desteklenmiyor."); }
+  };
+}
+
+/* ================================================================
+   BÖLÜM 11 / 12 — AİLE VE ÖĞRETMEN KÖŞESİ (yetişkin doğrulamalı)
+   ================================================================ */
+let aileAcik = false, kapiCevabi = 0;
+const sayiYaziyla = n => ["","bir","iki","üç","dört","beş","altı","yedi","sekiz","dokuz","on","on bir","on iki","on üç","on dört","on beş","on altı","on yedi","on sekiz","on dokuz","yirmi"][n]||n;
+function yetiskinKapisi(baslik, sonra){
+  const a = 11+Math.floor(Math.random()*8), b = 12+Math.floor(Math.random()*9);
+  kapiCevabi = a*b;
+  modalAc(baslik,
+    `<p>Bu bölüm yetişkinler içindir. Sorunun cevabını <b>rakamla</b> yazın:</p>
+     <p class="anlati" style="margin:10px 0;">${sayiYaziyla(a).charAt(0).toUpperCase()+sayiYaziyla(a).slice(1)} çarpı ${sayiYaziyla(b)} kaç eder?</p>
+     <input type="text" id="kapiGirdi" inputmode="numeric" autocomplete="off" aria-label="Doğrulama cevabı">`,
+    [ {m:"Vazgeç", stil:"cizgi"},
+      {m:"Giriş", stil:"altin", f:()=>{
+        const v = parseInt(($("kapiGirdi")||{}).value,10);
+        if(v===kapiCevabi) sonra();
+        else setTimeout(()=> yetiskinKapisi(baslik+" — cevap doğru değildi, tekrar deneyin", sonra), 50);
+      }} ]);
+}
+function aileCiz(){
+  const kap = $("aileAlan");
+  if(!aileAcik){
+    kap.innerHTML = `<div class="kart merkez"><div style="font-size:2.6rem;">🔒</div>
+      <p>Aile ve Öğretmen Köşesi yetişkinler içindir.</p>
+      <button class="btn altin" style="margin-top:10px;" data-act="aile-kilit-ac">Yetişkin doğrulaması</button></div>`;
+    return;
+  }
+  const dk = Math.round((S.tamamBolumler.length? S.tamamBolumler.length*5 : 0));
+  kap.innerHTML = `
+    <div class="kart"><h2>🧒 ${S.ad} — yolculuk özeti</h2>
+      <div class="istat"><span>Tamamlanan durak</span><b>${S.tamamBolumler.length} / ${KISSA.chapters.length}</b></div>
+      <div class="istat"><span>Toplanan hikmet kartı</span><b>${S.hatiralar.length} / ${hikmetKartlari.length}</b></div>
+      <div class="istat"><span>İncelenen kelime</span><b>${S.incelenenKelimeler.length} / ${kelimeler.length}</b></div>
+      <div class="istat"><span>Oynanan mini oyun</span><b>${S.oynananOyunlar.length} / ${miniOyunlar.length}</b></div>
+      <div class="istat"><span>Yaş modu</span><b>${yasModlari.find(m=>m.id===S.yasModu).ad}</b></div>
+      <p class="kucuk" style="margin-top:8px;">Bu uygulama puan, "iman notu", günah puanı veya çocuklar arası sıralama kullanmaz.</p></div>
+    <div class="kart"><h2>🎯 Kıssanın temel kazanımları</h2><p>${aileIcerik.kazanimlar.map(x=>`<span class="cip">${x}</span>`).join(" ")}</p></div>
+    <div class="kart"><h2>💬 Çocuğunuzla konuşma önerileri</h2>${aileIcerik.konusma.map(x=>`<p style="margin-bottom:6px;">• ${x}</p>`).join("")}
+      <p class="kucuk" style="margin-top:6px;">${aileIcerik.rehber}</p></div>
+    <div class="kart"><h2>⚠️ Yetişkinlere önemli notlar</h2>${aileIcerik.uyarilar.map(x=>`<p style="margin-bottom:6px;">• ${x}</p>`).join("")}</div>
+    <div class="kart"><h2>🏡 Aile etkinlikleri</h2>${aileIcerik.etkinlikler.map(x=>`<p style="margin-bottom:6px;">• ${x}</p>`).join("")}</div>
+    <div class="kart"><h2>📖 Kaynaklar ve içerik güvenliği</h2>
+      <p class="kucuk">Anlatım yalnızca şu ayet aralıklarına dayanır: ${KISSA.sources}. İsrailiyat türü rivayetlere, uydurma hadislere ve kaynağı belirsiz ayrıntılara (elma, yılan, belirli iniş yerleri vb.) yer verilmemiştir. Ayet mealleri kısa özet niteliğindedir; <b>yayın öncesinde bir din eğitimi uzmanının kontrolü gereklidir.</b></p></div>`;
+}
+
+/* ================================================================
+   BÖLÜM 12 / 12 — AYARLAR, TEMA, ERİŞİLEBİLİRLİK VE VERİ AKTARIMI
+   ================================================================ */
+const ayarTanimlari = [
+  { k:"gece",    ad:"🌙 Gece teması",         n:"Koyu, dinlendirici renkler." },
+  { k:"buyuk",   ad:"🔠 Büyük yazı",           n:"Tüm yazıları büyütür." },
+  { k:"kontrast",ad:"🌓 Yüksek kontrast",      n:"Renkleri daha belirgin yapar." },
+  { k:"azAnim",  ad:"🦋 Animasyonları azalt",  n:"Hareketli ögeleri durdurur." },
+  { k:"sadeYazi",ad:"📖 Sade yazı modu",       n:"Okuma güçlüğü için aralıklı, sade yazı." }
+];
+function ayarlariUygula(){
+  document.body.classList.toggle("gece", !!S.ayarlar.gece);
+  document.body.classList.toggle("buyuk", !!S.ayarlar.buyuk);
+  document.body.classList.toggle("kontrast", !!S.ayarlar.kontrast);
+  document.body.classList.toggle("az-anim", !!S.ayarlar.azAnim);
+  document.body.classList.toggle("sade-yazi", !!S.ayarlar.sadeYazi);
+}
+function ayarCiz(){
+  const kap = $("ayarAlan"); kap.innerHTML="";
+  const gorunumKart = document.createElement("div"); gorunumKart.className="kart";
+  gorunumKart.innerHTML = `<h2>🎛️ Görünüm ve erişilebilirlik</h2>`;
+  ayarTanimlari.forEach(a=>{
+    const satir=document.createElement("div"); satir.className="ayar-satir"; satir.style.marginBottom="8px";
+    satir.innerHTML = `<div><b>${a.ad}</b><div class="kucuk">${a.n}</div></div>`;
+    const an=document.createElement("button"); an.className="anahtar"; an.setAttribute("role","switch");
+    an.setAttribute("aria-label",a.ad); an.setAttribute("aria-checked", String(!!S.ayarlar[a.k]));
+    an.onclick=()=>{ S.ayarlar[a.k]=!S.ayarlar[a.k]; an.setAttribute("aria-checked",String(S.ayarlar[a.k])); ayarlariUygula(); kaydet(); };
+    satir.appendChild(an); gorunumKart.appendChild(satir);
+  });
+  kap.appendChild(gorunumKart);
+
+  const modKart = document.createElement("div"); modKart.className="kart";
+  modKart.innerHTML = `<h2>🐣 Yaş modu</h2><select id="yasSelect" aria-label="Yaş modu">${yasModlari.map(m=>`<option value="${m.id}" ${S.yasModu===m.id?"selected":""}>${m.ikon} ${m.ad}</option>`).join("")}</select>
+    <h2 style="margin-top:14px;">🙋 Takma ad</h2>
+    <input type="text" id="adAyar" maxlength="20" value="${S.ad.replace(/"/g,"&quot;")}" aria-label="Takma ad">
+    <button class="btn cizgi tam" style="margin-top:8px;" id="adKaydetBtn">Adı kaydet</button>`;
+  kap.appendChild(modKart);
+  modKart.querySelector("#yasSelect").addEventListener("change", e=>{ S.yasModu=e.target.value; kaydet(); });
+  modKart.querySelector("#adKaydetBtn").onclick=()=>{ const v=$("adAyar").value.trim(); S.ad = v? v.slice(0,20):"Hikmet Yolcusu"; kaydet(); modalAc("Kaydedildi","<p>Takma adın güncellendi. 🌟</p>"); };
+
+  const sesKart=document.createElement("div"); sesKart.className="kart";
+  sesKart.innerHTML = `<h2>🔊 Sesli anlatım</h2>
+    ${sesDestek? `<p class="kucuk">Hikâye sayfalarındaki "Dinle" düğmesi tarayıcının Türkçe sesini kullanır.</p>
+    <select id="hizSelect" aria-label="Okuma hızı">
+      <option value="yavas" ${S.ayarlar.sesHiz==="yavas"?"selected":""}>🐢 Yavaş</option>
+      <option value="normal" ${S.ayarlar.sesHiz==="normal"?"selected":""}>🚶 Normal</option>
+      <option value="hizli" ${S.ayarlar.sesHiz==="hizli"?"selected":""}>🐇 Hızlı</option>
+    </select>` : `<p>🔇 Tarayıcın sesli anlatımı desteklemiyor. Hikâyeleri ekrandan okuyabilirsin.</p>`}`;
+  kap.appendChild(sesKart);
+  const hs = sesKart.querySelector("#hizSelect");
+  if(hs) hs.addEventListener("change", e=>{ S.ayarlar.sesHiz=e.target.value; kaydet(); });
+
+  const veriKart=document.createElement("div"); veriKart.className="kart";
+  veriKart.innerHTML = `<h2>💾 Verilerim</h2>
+    <p class="kucuk">Tüm ilerleme yalnızca bu cihazda saklanır; internete hiçbir veri gönderilmez, reklam yoktur.</p>
+    <div style="display:flex;gap:9px;margin-top:9px;flex-wrap:wrap;">
+      <button class="btn" style="flex:1;" id="disaBtn">⬆️ JSON dışa aktar</button>
+      <button class="btn toprak" style="flex:1;" id="iceBtn">⬇️ JSON içe aktar</button>
+    </div>
+    <input type="file" id="iceDosya" accept="application/json,.json" class="gizli" aria-label="Yedek dosyası seç">
+    <button class="btn tam" style="margin-top:9px;background:#9A4B3F;" id="silBtn">🗑️ Tüm verileri sil</button>`;
+  kap.appendChild(veriKart);
+  $("disaBtn").onclick=()=>{
+    try{
+      const a=document.createElement("a");
+      a.download="hikmet-yolculari-yedek.json";
+      a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(S,null,2));
+      a.click();
+    }catch(e){ modalAc("Olmadı","<p>Bu tarayıcıda dışa aktarma desteklenmiyor.</p>"); }
+  };
+  $("iceBtn").onclick=()=> $("iceDosya").click();
+  $("iceDosya").addEventListener("change", e=>{
+    const dosya=e.target.files && e.target.files[0]; if(!dosya) return;
+    const r=new FileReader();
+    r.onload=()=>{ try{
+        const veri=JSON.parse(r.result);
+        if(typeof veri!=="object" || !("tamamBolumler" in veri)) throw 0;
+        S = Object.assign(varsayilanDurum(), veri); kaydet(); ayarlariUygula(); ayarCiz();
+        modalAc("Tamam","<p>Yedeğin içe aktarıldı. Yolculuğun kaldığı yerden devam ediyor. 🌟</p>");
+      }catch(err){ modalAc("Olmadı","<p>Bu dosya geçerli bir yedek değil.</p>"); } };
+    r.readAsText(dosya);
+  });
+  $("silBtn").onclick=()=> yetiskinKapisi("Verileri silme — yetişkin doğrulaması", ()=>
+    modalAc("Emin misiniz?","<p>Tüm ilerleme, notlar ve çizimler bu cihazdan silinecek. Bu işlem geri alınamaz.</p>",
+      [ {m:"Vazgeç", stil:"cizgi"},
+        {m:"Evet, sil", f:()=>{ depo.temizle(); S=varsayilanDurum(); kaydet(); aileAcik=false; ayarlariUygula();
+          $("uyg").classList.remove("acik"); $("acilis").classList.remove("kapali");
+          $("acilisAna").classList.remove("gizli"); $("acilisKurulum").classList.add("gizli"); devamGoster(); }} ]));
+  kap.appendChild(Object.assign(document.createElement("p"),{className:"kucuk",textContent:"Sürüm: MVP 1.0 · Tek dosya, çevrimdışı çalışır · PWA'ya hazır yapı"}));
+}
+
+/* ================================================================
+   OLAY DELEGASYONU + BAŞLATMA
+   ================================================================ */
+document.addEventListener("click", e=>{
+  const nav = e.target.closest("[data-nav]");
+  if(nav){ gorunumGec(nav.dataset.nav); return; }
+  const kelimeBtn = e.target.closest("[data-kelime]");
+  if(kelimeBtn){ if(!S.incelenenKelimeler.includes(kelimeBtn.dataset.kelime)){ S.incelenenKelimeler.push(kelimeBtn.dataset.kelime); kaydet(); } kelimeCiz(); return; }
+  const notBtn = e.target.closest("[data-not]");
+  if(notBtn){ const id=notBtn.dataset.not; S.notlar[id]=$("not-"+id).value; kaydet(); $("notok-"+id).classList.remove("gizli"); return; }
+  const el = e.target.closest("[data-act]");
+  if(!el || el.disabled) return;
+  switch(el.dataset.act){
+    case "yolculuga-basla": kurulumBaslat(false); break;
+    case "aile-modu":       kurulumBaslat(true); break;
+    case "devam-et":        uygulamayaGec("g-yolculuk"); if(S.sonDurak) hikayeBaslat(S.sonDurak); break;
+    case "acilis-ayar":     uygulamayaGec("g-ayarlar"); break;
+    case "kurulum-bitir":   kurulumBitir(); break;
+    case "hikaye-cik":      gorunumGec("g-yolculuk"); break;
+    case "hikaye-sonraki":  hikayeAdim(1); break;
+    case "hikaye-onceki":   hikayeAdim(-1); break;
+    case "merak":           merakEttim(); break;
+    case "cantaya-git":     gorunumGec("g-canta"); break;
+    case "aileye-git":      gorunumGec("g-aile"); break;
+    case "cizime-git":      cizimAc(); break;
+    case "yarismaya-git":   gorunumGec("g-oyunlar"); $("oyunGeri").classList.remove("gizli"); miniPusula(); break;
+    case "oyun-listeye":    oyunListesiCiz(); break;
+    case "aile-kilit-ac":   yetiskinKapisi("Aile Köşesi — yetişkin doğrulaması", ()=>{ aileAcik=true; aileCiz(); }); break;
+    case "bastan-basla":
+      modalAc("Baştan başla","<p>Yolculuk haritası sıfırlanır (çantandaki kartlar, notların ve çizimlerin korunur). Devam edilsin mi?</p>",
+        [ {m:"Vazgeç", stil:"cizgi"}, {m:"Evet", f:()=>{ S.tamamBolumler=[]; S.sonDurak=null; kaydet(); gorunumGec("g-yolculuk"); }} ]);
+      break;
+    case "yansima-kaydet":
+      yansimaSorulari.forEach(q=>{ const t=$("yans-"+q.id); if(t) S.yansimalar[q.id]=t.value; });
+      kaydet(); $("yansimaOk").classList.remove("gizli"); break;
+  }
+});
+function devamGoster(){ $("devamBtn").classList.toggle("gizli", !(S.kuruldu && S.sonDurak)); }
+ayarlariUygula();
+devamGoster();
+if(sesDestek && window.speechSynthesis.getVoices().length===0){
+  window.speechSynthesis.addEventListener?.("voiceschanged", ()=>{}, { once:true });
+}
+</script>
+</body>
+</html>
