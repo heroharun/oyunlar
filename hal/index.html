@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hâl — Müminin farkındalık ve yaşam defteri</title>
+<!--
+  HÂL — Müminin farkındalık ve yaşam defteri
+  ─────────────────────────────────────────────
+  • Tek dosyalık, çevrimdışı çalışan prototip (vanilla JS, harici kütüphane yok)
+  • Tüm veriler yalnızca bu cihazda, localStorage içinde saklanır
+  • PIN kilidi PROTOTİP düzeyindedir: veriler şifrelenmez, yalnızca arayüz kilidi sağlar.
+    Gerçek güvenlik için ileride şifreleme (ör. WebCrypto) eklenmelidir.
+  • Bildirimler yalnızca sekme AÇIKKEN güvenilir çalışır (Notification API sınırı).
+    Arka plan bildirimi için PWA + service worker + push gerekir (dosya sonunda not var).
+  Bölümler (Ctrl+F ile arayın):
+    [CSS]  tasarım sistemi
+    [DATA] günlük içerik veri setleri (ayet / hadis / söz / kelime)
+    [CORE] durum, localStorage, yardımcılar
+    [ONBD] karşılama & kurulum
+    [TAB1] Bugün   [TAB2] İbadet   [TAB3] Günlük   [TAB4] Keşfet   [TAB5] Profil
+    [NOTF] bildirim sistemi   [CAL] takvim & arşiv   [SUM] özetler
+-->
+<style>
+/* ══════════ [CSS] TASARIM SİSTEMİ ══════════ */
+:root{
+  /* Işık tema — krem, kırık beyaz, toprak, soluk zeytin, gece laciverti, yumuşak altın */
+  --bg:#F5F0E6; --bg2:#EFE8D9; --card:#FFFDF7; --card2:#FAF5EA;
+  --ink:#28304A; --ink2:#4A5068; --muted:#8B8574; --line:#E4DBC6;
+  --olive:#7E8A62; --olive-soft:#EBEDE0; --earth:#A9835F; --earth-soft:#F1E6D8;
+  --navy:#28304A; --gold:#B99552; --gold-soft:#F3EAD5;
+  --ok:#7E8A62; --warn:#B07A4A; --danger:#A05252;
+  --r:18px; --r-sm:12px;
+  --shadow:0 2px 10px rgba(40,48,74,.06);
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-disp:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
+  --fs:16px;
+}
+[data-theme="dark"]{
+  --bg:#1B2132; --bg2:#161B2A; --card:#242B40; --card2:#2A3148;
+  --ink:#EAE3D2; --ink2:#C9C2B0; --muted:#8E93A6; --line:#343C55;
+  --olive:#9AA67E; --olive-soft:#2C3340; --earth:#C09A72; --earth-soft:#33313E;
+  --navy:#EAE3D2; --gold:#CBA765; --gold-soft:#33344A;
+  --ok:#9AA67E; --warn:#C09A72; --danger:#C77;
+  --shadow:0 2px 12px rgba(0,0,0,.28);
+}
+[data-elder="1"]{ --fs:19px; }
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html{font-size:var(--fs);}
+body{font-family:var(--font-body); background:var(--bg); color:var(--ink); line-height:1.55; min-height:100vh; transition:background .3s,color .3s;}
+h1,h2,h3,.disp{font-family:var(--font-disp); font-weight:600; letter-spacing:.2px;}
+button{font-family:inherit; font-size:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+input,select,textarea{font-family:inherit; font-size:1rem; color:var(--ink); background:var(--card2); border:1px solid var(--line); border-radius:var(--r-sm); padding:.6em .8em; width:100%;}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--gold); outline-offset:1px;}
+textarea{resize:vertical; min-height:2.6em;}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important;}}
+
+/* Yerleşim */
+#app{max-width:640px; margin:0 auto; padding:0 16px calc(84px + env(safe-area-inset-bottom)); }
+header.top{padding:20px 2px 8px; display:flex; align-items:flex-end; justify-content:space-between; gap:10px;}
+header.top .brand{font-family:var(--font-disp); font-size:1.05rem; color:var(--muted); letter-spacing:.5px;}
+header.top .brand b{color:var(--gold); font-weight:700;}
+.tagline{font-size:.78rem; color:var(--muted); font-style:italic;}
+main{display:block;}
+.page-title{font-size:1.45rem; margin:10px 0 4px;}
+.page-sub{color:var(--muted); font-size:.88rem; margin-bottom:14px;}
+
+/* İmza öğe: gün başlığındaki ince altın "hilal çizgisi" */
+.hilal{height:3px; width:64px; border-radius:3px; margin:10px 0 16px;
+  background:linear-gradient(90deg,var(--gold),transparent); position:relative;}
+.hilal::before{content:""; position:absolute; left:-2px; top:-3.5px; width:10px; height:10px;
+  border-radius:50%; border:2px solid var(--gold); border-left-color:transparent; border-bottom-color:transparent; transform:rotate(-45deg);}
+
+/* Kartlar */
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:16px; margin-bottom:14px;}
+.card h3{font-size:1.02rem; margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+.card h3 .em{font-size:1.1em;}
+.hint{font-size:.78rem; color:var(--muted);}
+.row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+.grow{flex:1;}
+.stack>*+*{margin-top:8px;}
+
+/* Butonlar */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  padding:.55em 1em; border-radius:var(--r-sm); border:1px solid var(--line);
+  background:var(--card2); color:var(--ink); font-weight:500; transition:transform .08s;}
+.btn:active{transform:scale(.97);}
+.btn.primary{background:var(--navy); color:var(--bg); border-color:var(--navy);}
+[data-theme="dark"] .btn.primary{background:var(--gold); color:#1B2132; border-color:var(--gold);}
+.btn.gold{background:var(--gold-soft); border-color:var(--gold); color:var(--ink);}
+.btn.danger{background:transparent; border-color:var(--danger); color:var(--danger);}
+.btn.small{padding:.3em .7em; font-size:.85rem;}
+.btn.ghost{background:transparent;}
+.btn.round{border-radius:50%; width:2.4em; height:2.4em; padding:0; font-size:1.05rem;}
+.btn[disabled]{opacity:.45; cursor:not-allowed;}
+
+/* Çip / seçim grupları */
+.chips{display:flex; flex-wrap:wrap; gap:8px;}
+.chip{padding:.45em .85em; border-radius:999px; border:1px solid var(--line); background:var(--card2); font-size:.88rem;}
+.chip.on{background:var(--olive-soft); border-color:var(--olive); color:var(--ink); font-weight:600;}
+.chip.gold.on{background:var(--gold-soft); border-color:var(--gold);}
+
+/* Ruh hâli */
+.moods{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+.mood{display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 4px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--card2); font-size:.72rem; color:var(--ink2);}
+.mood .em{font-size:1.5rem;}
+.mood.on{border-color:var(--gold); background:var(--gold-soft); font-weight:600; color:var(--ink);}
+
+/* Su sayacı */
+.water-cups{display:flex; flex-wrap:wrap; gap:5px; margin:8px 0;}
+.cup{font-size:1.3rem; filter:grayscale(1) opacity(.35);}
+.cup.full{filter:none;}
+.progress{height:8px; background:var(--bg2); border-radius:6px; overflow:hidden; margin-top:6px;}
+.progress>i{display:block; height:100%; background:linear-gradient(90deg,var(--olive),var(--gold)); border-radius:6px; transition:width .3s;}
+
+/* Namaz satırları */
+.vakit{border-top:1px dashed var(--line); padding:10px 0;}
+.vakit:first-of-type{border-top:none;}
+.vakit .name{font-weight:600; min-width:4.2em;}
+.vakit select{width:auto; flex:1; min-width:0; font-size:.9rem; padding:.4em .5em;}
+.st-tag{font-size:.72rem; padding:.15em .55em; border-radius:999px; background:var(--bg2);}
+.st-vaktinde{background:var(--olive-soft); color:var(--olive);}
+.st-muaf{background:var(--gold-soft); color:var(--gold);}
+
+/* Günlük kartları */
+.j-card{position:relative;}
+.j-card .j-date{font-size:.75rem; color:var(--muted);}
+.j-card img{max-width:100%; border-radius:var(--r-sm); margin-top:8px;}
+.tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;}
+.tag{font-size:.72rem; background:var(--olive-soft); color:var(--ink2); padding:.15em .6em; border-radius:999px;}
+.j-locked{filter:blur(0); text-align:center; padding:22px 10px; color:var(--muted);}
+
+/* Keşfet */
+.k-card{border-left:4px solid var(--gold);}
+.k-card.ayet{border-left-color:var(--olive);}
+.k-card.hadis{border-left-color:var(--earth);}
+.k-card.soz{border-left-color:var(--gold);}
+.k-card.kelime{border-left-color:var(--navy);}
+[data-theme="dark"] .k-card.kelime{border-left-color:var(--gold);}
+.k-text{font-family:var(--font-disp); font-size:1.06rem; line-height:1.65; margin-bottom:8px;}
+.k-src{font-size:.78rem; color:var(--muted);}
+.k-type{display:inline-block; font-size:.7rem; letter-spacing:.6px; text-transform:uppercase; color:var(--gold); margin-bottom:6px; font-weight:700;}
+
+/* Takvim */
+.cal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center;}
+.cal-grid .dow{font-size:.7rem; color:var(--muted); padding:4px 0;}
+.cal-day{padding:8px 0; border-radius:10px; font-size:.85rem; position:relative; background:var(--card2); border:1px solid transparent;}
+.cal-day.other{opacity:.3;}
+.cal-day.today{border-color:var(--gold); font-weight:700;}
+.cal-day.has::after{content:""; position:absolute; bottom:4px; left:50%; transform:translateX(-50%); width:5px; height:5px; border-radius:50%; background:var(--olive);}
+.cal-day.regl{background:var(--earth-soft);}
+
+/* Alt menü */
+nav.bottom{position:fixed; bottom:0; left:0; right:0; z-index:50;
+  background:var(--card); border-top:1px solid var(--line);
+  display:flex; justify-content:space-around; padding:6px 4px calc(6px + env(safe-area-inset-bottom));}
+nav.bottom button{display:flex; flex-direction:column; align-items:center; gap:2px; font-size:.68rem; color:var(--muted); padding:4px 10px; border-radius:12px; min-width:56px;}
+nav.bottom button .em{font-size:1.35rem; line-height:1;}
+nav.bottom button.on{color:var(--ink); font-weight:700; background:var(--gold-soft);}
+
+/* Modal & kilit */
+.overlay{position:fixed; inset:0; background:rgba(20,24,38,.55); z-index:90; display:flex; align-items:flex-end; justify-content:center;}
+.overlay .sheet{background:var(--card); width:100%; max-width:640px; max-height:88vh; overflow:auto; border-radius:22px 22px 0 0; padding:20px 18px calc(20px + env(safe-area-inset-bottom));}
+@media(min-width:700px){ .overlay{align-items:center;} .overlay .sheet{border-radius:22px; max-height:84vh;} }
+#lockScreen{position:fixed; inset:0; z-index:200; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; text-align:center;}
+.pin-dots{display:flex; gap:12px;}
+.pin-dots i{width:14px; height:14px; border-radius:50%; border:2px solid var(--gold); display:block;}
+.pin-dots i.f{background:var(--gold);}
+.pin-pad{display:grid; grid-template-columns:repeat(3,72px); gap:12px;}
+.pin-pad button{height:60px; border-radius:16px; background:var(--card); border:1px solid var(--line); font-size:1.3rem; font-family:var(--font-disp);}
+
+/* Onboarding */
+#onboard{position:fixed; inset:0; z-index:150; background:var(--bg); overflow:auto; padding:28px 20px 40px;}
+#onboard .inner{max-width:520px; margin:0 auto;}
+#onboard h1{font-size:2rem; color:var(--ink);}
+#onboard .big-tag{font-family:var(--font-disp); font-style:italic; color:var(--gold); margin:6px 0 22px;}
+
+/* Toast */
+#toast{position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px); background:var(--navy); color:var(--bg); padding:.6em 1.2em; border-radius:999px; font-size:.88rem; opacity:0; pointer-events:none; transition:all .25s; z-index:300; max-width:88vw; text-align:center;}
+[data-theme="dark"] #toast{background:var(--gold); color:#1B2132;}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* Çocuk modu */
+[data-child="1"] .card{border-radius:24px;}
+[data-child="1"]{--gold:#D9A441; --olive:#7FA65A;}
+.garden{display:flex; flex-wrap:wrap; gap:6px; font-size:1.7rem; min-height:2.2em; padding:10px; background:var(--olive-soft); border-radius:var(--r-sm);}
+.child-q{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px; border-radius:16px; background:var(--card2); border:1px solid var(--line); margin-bottom:8px;}
+.child-q .q{font-size:.95rem;}
+
+.small-note{font-size:.74rem; color:var(--muted); border-top:1px dashed var(--line); margin-top:10px; padding-top:8px;}
+.divider{border:none; border-top:1px dashed var(--line); margin:12px 0;}
+.center{text-align:center;}
+.hidden{display:none!important;}
+.fav-btn{font-size:1.1rem; opacity:.5;}
+.fav-btn.on{opacity:1;}
+.kaza-grid{display:grid; grid-template-columns:1fr auto auto auto; gap:8px 6px; align-items:center;}
+.kaza-grid .num{font-weight:700; font-family:var(--font-disp); min-width:2.5em; text-align:center;}
+.summary-line{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px dashed var(--line); font-size:.92rem;}
+.summary-line:last-child{border-bottom:none;}
+.summary-line b{font-family:var(--font-disp);}
+.view-toggle{display:flex; gap:6px; margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<!-- PIN kilit ekranı -->
+<div id="lockScreen" class="hidden">
+  <div class="disp" style="font-size:1.8rem;color:var(--gold)">Hâl</div>
+  <p class="hint">Devam etmek için PIN girin</p>
+  <div class="pin-dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+  <div class="pin-pad" id="pinPad"></div>
+  <p class="hint" id="pinMsg"></p>
+</div>
+
+<!-- Karşılama & kurulum -->
+<div id="onboard" class="hidden"></div>
+
+<div id="app" class="hidden">
+  <header class="top">
+    <div>
+      <div class="brand"><b>Hâl</b> · farkındalık defteri</div>
+      <div class="tagline">“Kendini yargılamak için değil, hâlini fark etmek için.”</div>
+    </div>
+    <button class="btn round ghost" id="themeBtn" title="Tema değiştir">🌙</button>
+  </header>
+  <main id="view"></main>
+</div>
+
+<nav class="bottom hidden" id="nav">
+  <button data-tab="bugun"><span class="em">🌤️</span>Bugün</button>
+  <button data-tab="ibadet"><span class="em">🕌</span>İbadet</button>
+  <button data-tab="gunluk"><span class="em">📖</span>Günlük</button>
+  <button data-tab="kesfet"><span class="em">✨</span>Keşfet</button>
+  <button data-tab="profil"><span class="em">🌿</span>Profil</button>
+</nav>
+
+<div id="modalRoot"></div>
+<div id="toast"></div>
+
+<script>
+/* ══════════ [DATA] GÜNLÜK İÇERİKLER ══════════
+   Ayet mealleri kısa ve özet niteliğindedir; sure adı ve ayet numarası verilmiştir.
+   Hadisler yaygın olarak bilinen sahih kaynaklardan derlenmiştir.
+   Sözlerde tür etiketi açıkça belirtilir; kaynağı belirsiz söz hadis olarak sunulmaz. */
+const AYETLER=[
+{m:"Allah hiç kimseye gücünün yeteceğinden fazlasını yüklemez.",s:"Bakara",n:"2/286"},
+{m:"Şüphesiz her zorlukla beraber bir kolaylık vardır.",s:"İnşirâh",n:"94/5-6"},
+{m:"Bilin ki kalpler ancak Allah'ı anmakla huzura kavuşur.",s:"Ra'd",n:"13/28"},
+{m:"Beni anın ki ben de sizi anayım; bana şükredin, nankörlük etmeyin.",s:"Bakara",n:"2/152"},
+{m:"Allah'ın rahmetinden ümidinizi kesmeyin; şüphesiz O çok bağışlayandır.",s:"Zümer",n:"39/53"},
+{m:"Kim Allah'a güvenip dayanırsa O, ona yeter.",s:"Talâk",n:"65/3"},
+{m:"Sabır ve namazla yardım isteyin; şüphesiz Allah sabredenlerle beraberdir.",s:"Bakara",n:"2/153"},
+{m:"Şükrederseniz elbette size olan nimetimi artırırım.",s:"İbrahim",n:"14/7"},
+{m:"Rabbin sana verecek ve sen hoşnut olacaksın.",s:"Duhâ",n:"93/5"},
+{m:"Bizim uğrumuzda çaba gösterenleri elbette yollarımıza eriştiririz.",s:"Ankebût",n:"29/69"},
+{m:"Kullarım sana beni sorarsa: Ben çok yakınım; dua edenin duasına karşılık veririm.",s:"Bakara",n:"2/186"},
+{m:"Bir işe azmettiğinde Allah'a dayan; Allah kendisine güvenenleri sever.",s:"Âl-i İmrân",n:"3/159"},
+{m:"Allah katında en değerliniz, O'na karşı gelmekten en çok sakınanınızdır.",s:"Hucurât",n:"49/13"},
+{m:"Anne babana 'öf' bile deme; onlara güzel söz söyle.",s:"İsrâ",n:"17/23"},
+{m:"Allah göklerin ve yerin nurudur.",s:"Nûr",n:"24/35"},
+{m:"Rahmân'ın kulları yeryüzünde vakar ve alçakgönüllülükle yürürler.",s:"Furkān",n:"25/63"},
+{m:"İnsan gerçekten ziyandadır; ancak iman edip iyi işler yapanlar müstesna.",s:"Asr",n:"103/1-3"},
+{m:"Yalnız sana kulluk eder ve yalnız senden yardım dileriz.",s:"Fâtiha",n:"1/5"},
+{m:"Seni ancak âlemlere rahmet olarak gönderdik.",s:"Enbiyâ",n:"21/107"},
+{m:"Şüphesiz Allah adaleti, iyiliği ve yakınlara yardım etmeyi emreder.",s:"Nahl",n:"16/90"},
+{m:"Hanginizin daha güzel iş yapacağını denemek için ölümü ve hayatı yaratan O'dur.",s:"Mülk",n:"67/2"},
+{m:"Nerede olursanız olun O sizinle beraberdir.",s:"Hadîd",n:"57/4"},
+{m:"Biz ona şah damarından daha yakınız.",s:"Kāf",n:"50/16"},
+{m:"Allah koruyucuların en hayırlısıdır; O, merhametlilerin en merhametlisidir.",s:"Yûsuf",n:"12/64"},
+{m:"Kim Allah'a iman ederse Allah onun kalbini doğruya yöneltir.",s:"Tegābün",n:"64/11"},
+{m:"Şüphesiz Allah'ın rahmeti iyilik edenlere çok yakındır.",s:"A'râf",n:"7/56"},
+{m:"İyilik ederseniz kendinize iyilik etmiş olursunuz.",s:"İsrâ",n:"17/7"},
+{m:"Aranıza sevgi ve merhamet koyması O'nun varlığının delillerindendir.",s:"Rûm",n:"30/21"},
+{m:"Sizi biraz korku ve açlıkla deneriz; sabredenleri müjdele.",s:"Bakara",n:"2/155"},
+{m:"Size bir selam verildiğinde ondan daha güzeliyle karşılık verin.",s:"Nisâ",n:"4/86"}];
+
+const HADISLER=[
+{m:"Ameller niyetlere göredir.",k:"Buhârî, Bed'ü'l-Vahy 1"},
+{m:"Müslüman, elinden ve dilinden diğer insanların güvende olduğu kimsedir.",k:"Buhârî, Îmân 4"},
+{m:"Kolaylaştırın, zorlaştırmayın; müjdeleyin, nefret ettirmeyin.",k:"Buhârî, İlim 11"},
+{m:"Merhamet etmeyene merhamet olunmaz.",k:"Buhârî, Edeb 18"},
+{m:"Kardeşine tebessüm etmen senin için bir sadakadır.",k:"Tirmizî, Birr 36"},
+{m:"Temizlik imanın yarısıdır.",k:"Müslim, Tahâret 1"},
+{m:"Kendisi için istediğini kardeşi için de istemedikçe hiçbiriniz gerçek anlamda iman etmiş olmaz.",k:"Buhârî, Îmân 7"},
+{m:"Allah'a en sevimli amel, az da olsa devamlı olanıdır.",k:"Buhârî, Rikāk 18"},
+{m:"Güzel söz sadakadır.",k:"Buhârî, Edeb 34"},
+{m:"Kim Allah'a ve âhiret gününe inanıyorsa ya hayır söylesin ya sussun.",k:"Buhârî, Edeb 31"},
+{m:"Gerçek pehlivan, öfkelendiği anda kendine hâkim olabilendir.",k:"Buhârî, Edeb 76"},
+{m:"Din kolaylıktır.",k:"Buhârî, Îmân 29"},
+{m:"Hiçbir baba çocuğuna güzel terbiyeden daha değerli bir bağışta bulunmamıştır.",k:"Tirmizî, Birr 33"},
+{m:"İki nimet vardır ki insanların çoğu bunları değerlendirmede aldanmıştır: sağlık ve boş zaman.",k:"Buhârî, Rikāk 1"},
+{m:"Sizin en hayırlınız Kur'an'ı öğrenen ve öğretendir.",k:"Buhârî, Fedâilü'l-Kur'ân 21"},
+{m:"Allah'a ve âhiret gününe iman eden komşusuna ikram etsin.",k:"Buhârî, Edeb 31"},
+{m:"Veren el, alan elden üstündür.",k:"Buhârî, Zekât 18"},
+{m:"Sadaka malı eksiltmez.",k:"Müslim, Birr 69"},
+{m:"Birbirinize haset etmeyin, sırt çevirmeyin; ey Allah'ın kulları, kardeş olun.",k:"Müslim, Birr 23"},
+{m:"İnsanlara teşekkür etmeyen, Allah'a şükretmez.",k:"Tirmizî, Birr 35"},
+{m:"Dua ibadettir.",k:"Tirmizî, Deavât 1"},
+{m:"Ben günde yüz defa Allah'tan bağışlanma dilerim.",k:"Müslim, Zikir 41"},
+{m:"Mümin, aynı delikten iki kez ısırılmaz.",k:"Buhârî, Edeb 83"},
+{m:"Allah'a en sevimli amel, vaktinde kılınan namazdır.",k:"Buhârî, Mevâkīt 5"},
+{m:"Kim bir hayra öncülük ederse, ona o hayrı yapanın ecri kadar sevap vardır.",k:"Müslim, İmâre 133"},
+{m:"Küçüğümüze merhamet etmeyen, büyüğümüze saygı göstermeyen bizden değildir.",k:"Tirmizî, Birr 15"},
+{m:"Allah sizin görünüşlerinize ve mallarınıza değil, kalplerinize ve amellerinize bakar.",k:"Müslim, Birr 34"},
+{m:"Yarım hurma ile de olsa ateşten korunun.",k:"Buhârî, Zekât 10"},
+{m:"Açı doyurun, hastayı ziyaret edin.",k:"Buhârî, Merdâ 4"},
+{m:"Kişi sevdiğiyle beraberdir.",k:"Buhârî, Edeb 96"}];
+
+const SOZLER=[
+{m:"Sabreden derviş muradına ermiş.",t:"Atasözü",k:"Türk atasözü"},
+{m:"Damlaya damlaya göl olur.",t:"Atasözü",k:"Türk atasözü"},
+{m:"İyilik eden iyilik bulur.",t:"Atasözü",k:"Türk atasözü"},
+{m:"Tatlı dil yılanı deliğinden çıkarır.",t:"Atasözü",k:"Türk atasözü"},
+{m:"Bir fincan kahvenin kırk yıl hatırı vardır.",t:"Atasözü",k:"Türk atasözü"},
+{m:"Ağaç yaşken eğilir.",t:"Atasözü",k:"Türk atasözü"},
+{m:"Komşu komşunun külüne muhtaçtır.",t:"Atasözü",k:"Türk atasözü"},
+{m:"Ne varlığa sevinirim, ne yokluğa yerinirim.",t:"Edebî söz",k:"Yunus Emre"},
+{m:"Sevelim, sevilelim; dünya kimseye kalmaz.",t:"Edebî söz",k:"Yunus Emre"},
+{m:"Bir kez gönül yıktın ise, bu kıldığın namaz değil.",t:"Edebî söz",k:"Yunus Emre"},
+{m:"Her ne arar isen kendinde ara.",t:"Edebî söz",k:"Hacı Bektâş-ı Velî'ye atfedilir"},
+{m:"Eline, diline, beline sahip ol.",t:"Edebî söz",k:"Hacı Bektâş-ı Velî'ye atfedilir"},
+{m:"Ya olduğun gibi görün, ya göründüğün gibi ol.",t:"Edebî söz",k:"Mevlânâ'ya atfedilir"},
+{m:"Ne kadar bilirsen bil, söylediklerin karşındakinin anladığı kadardır.",t:"Edebî söz",k:"Mevlânâ'ya atfedilir"},
+{m:"Kalp kırmak, Kâbe'yi yıkmak gibidir denilmiştir; gönül almak da onu onarmaktır.",t:"Âlim sözü",k:"Tasavvuf geleneğinden aktarım"},
+{m:"Kendini hesaba çekmeyen, zamanın onu nasıl harcadığını fark etmez.",t:"Âlim sözü",k:"Muhasebe geleneğinden özetle"},
+{m:"Az yemek, az uyumak, az konuşmak; gönlü diri tutar denilmiştir.",t:"Âlim sözü",k:"Tasavvuf geleneğinden aktarım"},
+{m:"İlim, amele dönüşmedikçe yük olur.",t:"Âlim sözü",k:"Klasik ahlâk eserlerinden özetle"},
+{m:"Bugün fark ettiğin küçük bir güzellik, yarının şükrüdür.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Kaçırdığın bir gün seni tanımlamaz; bugün yeniden başlayabilirsin.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Sabır, hiçbir şey hissetmemek değil; hissettiklerinle güzelce durabilmektir.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Kalbine nazik davran; o da sana emanet.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Bir bardak su içmek de bedenine teşekkür etmenin bir yoludur.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Niyetini tazelemek, güne ikinci bir başlangıç vermektir.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Küçük ve devamlı olan, büyük ve kesik olandan bereketlidir.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Bugün birine iyi davranmak, kendine de iyi davranmaktır.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Yorgunluğunu fark etmek, tembellik değil dürüstlüktür.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Dua, kalbin en sade konuşmasıdır.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Karşılaştırma bitince huzur başlar.",t:"Uygulama farkındalık notu",k:"Hâl"},
+{m:"Hâlini yazmak, hâlini görmektir.",t:"Uygulama farkındalık notu",k:"Hâl"}];
+
+/* k:kelime, a:kısa anlam, c:çocuk açıklaması, y:yetişkin açıklaması, o:günlük örnek, u:bugünün küçük uygulaması */
+const KELIMELER=[
+{k:"Tevekkül",a:"Elinden geleni yaptıktan sonra sonucu Allah'a bırakmak.",c:"Çalışırsın, sonra merak etmeden Allah'a güvenirsin.",y:"Tedbiri terk etmeden, sonuç kaygısını Allah'a teslim etme hâlidir.",o:"Sınava çalışıp sonucu kaygıyla kontrol etmek yerine elinden geleni yaptığına güvenmek.",u:"Kontrol edemediğin bir şeyi yaz, yanına 'Elimden geleni yapıyorum' notunu ekle."},
+{k:"Şükür",a:"Sahip olduklarının kıymetini bilip teşekkür etmek.",c:"Güzel şeyler için 'iyi ki var' demek.",y:"Nimeti fark etmek, dile getirmek ve o nimeti güzel kullanmaktır.",o:"Sıcak bir yemek yerken bunu fark edip içinden teşekkür etmek.",u:"Bugün üç küçük şeye içtenlikle 'elhamdülillah' de."},
+{k:"Sabır",a:"Zorluk karşısında güzelce durabilmek.",c:"Zor bir şey olunca hemen vazgeçmemek.",y:"Şikâyeti azaltıp çabayı sürdürerek zorluğu taşımaktır; pasiflik değildir.",o:"Trafikte beklerken öfkelenmek yerine derin nefes almak.",u:"Bugün seni zorlayan bir anda 10'a kadar say ve tepki vermeden önce dur."},
+{k:"İhlas",a:"Bir işi yalnızca Allah rızası için, samimiyetle yapmak.",c:"İyi bir şeyi gösteriş için değil, gerçekten isteyerek yapmak.",y:"Amelde niyetin arınması; görülme beklentisinden temizlenmesidir.",o:"Kimse görmese de yerdeki çöpü kaldırmak.",u:"Bugün bir iyiliği kimseye söylemeden yap."},
+{k:"Takva",a:"Allah'a saygıyla, dikkatle yaşamak.",c:"Yanlış olduğunu bildiğin şeylerden uzak durmak.",y:"Allah bilinciyle davranışlarına özen göstermek; kalbin koruyucu duyarlılığıdır.",o:"Kimsenin görmediği yerde de dürüst kalmak.",u:"Bugün bir seçim yaparken 'bu doğru mu?' diye bir kez daha düşün."},
+{k:"Kanaat",a:"Elindekiyle yetinip gözü tok olmak.",c:"Sahip olduklarınla mutlu olabilmek.",y:"Meşru çabayı bırakmadan, hırsın esiri olmamaktır.",o:"Yeni telefon reklamı görünce 'benimki işimi görüyor' diyebilmek.",u:"Bugün almak istediğin ama ihtiyacın olmayan bir şeyi ertele."},
+{k:"Merhamet",a:"Canlılara şefkatle, incitmeden davranmak.",c:"Kalbinin yumuşak olması; kimseyi üzmemek.",y:"Başkasının hâlini kalbinde hissedip yardıma dönüştürmektir.",o:"Yorgun görünen birine yer vermek.",u:"Bugün bir canlıya (insan, hayvan, bitki) küçük bir iyilik yap."},
+{k:"Tefekkür",a:"Derin derin düşünmek, ibret almak.",c:"Gökyüzüne bakıp 'bunu kim yarattı?' diye düşünmek.",y:"Varlık üzerine düşünerek kalbi ve aklı Allah'a yöneltmektir.",o:"Yürüyüşte telefona değil ağaçlara, göğe bakmak.",u:"Bugün 5 dakika sessizce bir doğa unsuru üzerine düşün."},
+{k:"Tevazu",a:"Alçakgönüllü olmak.",c:"Kendini başkalarından üstün görmemek.",y:"Değerini bilmekle kibir arasındaki dengeli duruştur.",o:"Bir konuda haklı çıkınca bunu başa kakmamak.",u:"Bugün birinden bir şey öğrenmeye açık ol ve teşekkür et."},
+{k:"İsraf",a:"Gereğinden fazla harcamak, ziyan etmek.",c:"Yemeği, suyu, eşyayı boşa harcamak.",y:"Nimeti amacı dışında ve ölçüsüz tüketmektir; zaman israfı da buna dâhildir.",o:"Tabakta yemek bırakmamak için az koymak.",u:"Bugün muslukları ve ışıkları bir kez daha kontrol et."},
+{k:"Gıybet",a:"Bir kişiyi arkasından hoşlanmayacağı şekilde anmak.",c:"Arkadaşın yokken onun kötü konuşulması.",y:"Doğru bile olsa kişiyi yokluğunda inciten sözdür.",o:"Sohbet dedikoduya dönünce konuyu değiştirmek.",u:"Bugün biri gıyabında konuşulursa güzel bir yönünü söyle."},
+{k:"Masiva",a:"Allah'tan başka her şey.",c:"Kalbin en çok Allah'ı sevmesi gerektiğini hatırlatan bir kelime.",y:"Kalbi asıl sahibinden alıkoyan geçici bağlılıkları ifade eder.",o:"Telefonu bırakıp bir an iç dünyana dönmek.",u:"Bugün seni en çok oyalayan şeyi bir cümleyle yaz."},
+{k:"Muhasebe",a:"Kendini hesaba çekmek.",c:"Akşam 'bugün neleri iyi yaptım?' diye düşünmek.",y:"Günün sonunda niyet ve amelleri dürüstçe gözden geçirmektir.",o:"Yatmadan önce günü 2 dakika zihinden geçirmek.",u:"Bugün için bir 'iyi giden' ve bir 'geliştirilecek' not yaz."},
+{k:"Tevbe",a:"Hatadan dönüp Allah'a yönelmek.",c:"Yanlış yapınca özür dileyip düzeltmeye çalışmak.",y:"Pişmanlık, vazgeçme ve telafi niyetini içeren yeniden başlangıçtır.",o:"Kırdığın birinden aynı gün özür dilemek.",u:"Küçük bir hatan için içtenlikle bağışlanma dile ve kendini de affet."},
+{k:"Rıza",a:"Allah'ın takdirinden hoşnut olmak.",c:"Olanları kabullenip huzurlu kalmak.",y:"Çabadan vazgeçmeden, sonuca gönül hoşluğuyla teslim olmaktır.",o:"Planın bozulunca 'demek ki böylesi hayırlı' diyebilmek.",u:"Bugün değiştiremediğin bir durumu yaz ve yanına 'kabul ediyorum' ekle."},
+{k:"Emanet",a:"Sana bırakılan şeyi korumak.",c:"Ödünç aldığın eşyaya kendi eşyan gibi bakmak.",y:"Mal, söz, sır, görev ve bedenin hepsi emanettir; emanete sadakat imandandır.",o:"Verilen sırrı kimseyle paylaşmamak.",u:"Bugün üzerindeki bir emaneti (görev, söz) özenle yerine getir."},
+{k:"Kul hakkı",a:"İnsanların üzerimizdeki hakları.",c:"Kimsenin eşyasını, emeğini, kalbini incitmemek.",y:"Helalleşilmeden düşmeyen, insana karşı sorumluluk alanıdır.",o:"Sırada beklerken kimsenin önüne geçmemek.",u:"Aklına gelen küçük bir kırgınlık için gönül almayı dene."},
+{k:"Hüsnüzan",a:"İnsanlar hakkında güzel düşünmek.",c:"Arkadaşının iyi niyetli olduğuna inanmak.",y:"Kesin bilgi yokken yorumları iyiye çekme ahlâkıdır.",o:"Mesajına geç dönen için 'meşguldür' diyebilmek.",u:"Bugün birinin davranışına iyi niyetli bir açıklama bul."},
+{k:"Suizan",a:"Delilsiz kötü düşünmek.",c:"Bilmeden birinin kötü olduğunu sanmak.",y:"Kanıtsız olumsuz yorum; kalbi yoran bir alışkanlıktır.",o:"'Kesin beni çekiştiriyorlardır' düşüncesini fark edip bırakmak.",u:"Olumsuz bir varsayımını yakala ve 'emin miyim?' diye sor."},
+{k:"İnfak",a:"Sahip olduğundan Allah için vermek.",c:"Harçlığından biriyle paylaşmak.",y:"Maldan, zamandan, ilimden; imkânı ihtiyaç sahibiyle buluşturmaktır.",o:"Okunan kitabı ihtiyacı olana hediye etmek.",u:"Bugün küçük de olsa bir paylaşımda bulun."},
+{k:"İhsan",a:"Allah'ı görüyormuşçasına güzel davranmak.",c:"Her işini en güzel şekilde yapmaya çalışmak.",y:"Kulluğun estetik boyutu; işi ve ahlâkı güzelleştirmektir.",o:"Ödevi 'yeter ki bitsin' değil özenle yapmak.",u:"Bugün bir işini normalde yaptığından biraz daha özenli yap."},
+{k:"Hamd",a:"Her hâlde Allah'a övgü ve teşekkür.",c:"'Elhamdülillah' demek.",y:"Nimette de zorlukta da sahibini övmeyi sürdüren şükrün geniş hâlidir.",o:"Güne 'elhamdülillah' diyerek uyanmak.",u:"Bugün zorlandığın bir anda da 'her hâle hamd olsun' de."},
+{k:"Zikir",a:"Allah'ı anmak, hatırlamak.",c:"Allah'ın adını sevgiyle anmak.",y:"Dil, kalp ve amelle süreklileşen hatırlama hâlidir.",o:"Yürürken içinden tesbih çekmek.",u:"Bugün 2 dakikanı yalnızca zikre ayır."},
+{k:"Hikmet",a:"Derin kavrayış; her şeyi yerli yerinde yapmak.",c:"Ne zaman ne söyleyeceğini bilmek.",y:"Bilgiyi doğru zamanda doğru amaçla kullanma olgunluğudur.",o:"Kızgınken susup sakinken konuşmayı seçmek.",u:"Bugün bir tepkini erteleyip önce düşün."},
+{k:"Adalet",a:"Herkese hakkını vermek.",c:"Paylaşırken kimseyi ayırmamak.",y:"Sevdiğine de sevmediğine de ölçüyü korumaktır.",o:"Kavgada haklı olan kardeşinin yanında durmak.",u:"Bugün bir değerlendirmende taraf tutmadığından emin ol."},
+{k:"Feraset",a:"Kalp gözüyle sezmek, ince kavrayış.",c:"Bir şeyi söylenmeden anlayabilmek.",y:"İmanın kazandırdığı derin sezgi ve isabetli bakıştır.",o:"Arkadaşının üzgün olduğunu yüzünden anlayıp yanında olmak.",u:"Bugün çevrendeki birinin hâlini fark etmeye çalış."},
+{k:"Teslimiyet",a:"Gönülden Allah'a bağlanmak.",c:"Allah'ın senin için iyiyi bildiğine güvenmek.",y:"İtiraz yorgunluğunu bırakıp iradeyi rızayla buluşturmaktır.",o:"Çok istediğin şey olmayınca kahrolmak yerine güvenmek.",u:"'Sen daha iyi bilirsin' cümlesini bugün bir dua yap."},
+{k:"Niyet",a:"Kalpteki amaç ve karar.",c:"Bir işi neden yaptığını bilmek.",y:"Ameli değerli kılan iç yöneliştir; 'ameller niyetlere göredir.'",o:"Spora 'bedenim emanet' niyetiyle gitmek.",u:"Bugün bir işine başlarken niyetini bir cümleyle içinden söyle."},
+{k:"Sıla-i rahim",a:"Akrabayla bağı koparmamak.",c:"Büyüklerini arayıp hatırlarını sormak.",y:"Ziyaret, arayış ve yardımla akrabalık bağını diri tutmaktır.",o:"Uzaktaki teyzeyi sebepsiz aramak.",u:"Bugün bir akrabana kısa bir mesaj at ya da onu ara."},
+{k:"İstikamet",a:"Dosdoğru olmak, yolda kalmak.",c:"Doğru bildiğin yoldan şaşmamak.",y:"İnişte çıkışta istikrarla dürüst kalabilmektir.",o:"Kimse denetlemese de işini doğru yapmak.",u:"Bugün küçük bir sözünü mutlaka tut."},
+{k:"Edep",a:"Her durumda güzel davranış ölçüsü.",c:"Nazik ve saygılı olmak.",y:"Bilgiyi süsleyen, ilişkileri koruyan davranış inceliğidir.",o:"Kapıdan girerken selam vermek, izin istemek.",u:"Bugün 'lütfen' ve 'teşekkür ederim'i bolca kullan."},
+{k:"Hayâ",a:"Utanma duygusu, iç fren.",c:"Ayıp şeylerden çekinmek.",y:"Kalbi koruyan zarif bir duyarlılıktır; pısırıklık değildir.",o:"Kaba bir şakaya katılmamak.",u:"Bugün söylemeden önce 'bunu herkesin içinde söyler miydim?' diye sor."},
+{k:"Vefa",a:"İyiliği ve dostluğu unutmamak.",c:"Eski arkadaşını unutmamak.",y:"Geçmişteki emeğe ve bağa sadakat göstermektir.",o:"Sana emeği geçen öğretmenini arayıp teşekkür etmek.",u:"Bugün emeği geçmiş birine minnetini ilet."},
+{k:"Cömertlik",a:"Gönül rahatlığıyla vermek.",c:"Paylaşmayı sevmek.",y:"Vermeyi kayıp değil bereket bilmektir.",o:"Simidini arkadaşınla bölüşmek.",u:"Bugün vaktinden ya da imkânından biraz ver."},
+{k:"Îsâr",a:"Kendine gerekliyken başkasını öne almak.",c:"Çok istediğin şeyi arkadaşına vermek.",y:"Cömertliğin zirvesi; ihtiyaç hâlinde bile tercih etmektir.",o:"Son kalan tatlıyı kardeşine bırakmak.",u:"Bugün küçük bir konuda birini kendine tercih et."},
+{k:"Sadakat",a:"Bağlılıkta ve sözde doğruluk.",c:"Sözünde durmak.",y:"Zor zamanda da bağlılığı sürdürmektir.",o:"Arkadaşın hakkında konuşulunca onu savunmak.",u:"Verdiğin bir sözü bugün yerine getir."},
+{k:"Samimiyet",a:"İçten, gösterişsiz olmak.",c:"Rol yapmadan, gerçekten sevmek.",y:"İç ile dışın uyumu; ilişkilerin ve kulluğun mayasıdır.",o:"'Nasılsın?' diye sorarken cevabı gerçekten dinlemek.",u:"Bugün bir kişiyi tam dikkatle dinle."},
+{k:"Dua",a:"Allah'a yürekten yakarış.",c:"Allah'la konuşmak, ondan istemek.",y:"Kulluğun özü; aczin en asil ifadesidir.",o:"Uyumadan önce sevdiklerin için dua etmek.",u:"Bugün biri için gizlice dua et."},
+{k:"Bereket",a:"Azın çoğalması, hayrın artması.",c:"Paylaşınca azalmayan güzellik.",y:"Nicelikten öte, hayrın süreklilik kazanmasıdır.",o:"Sofraya besmeleyle oturmak.",u:"Bugün bir işine besmeleyle başla."},
+{k:"Helal",a:"Dinen izin verilmiş, temiz olan.",c:"Allah'ın izin verdiği güzel şeyler.",y:"Kazançta ve tüketimde meşruiyet hassasiyetidir.",o:"Emeksiz kazanca itibar etmemek.",u:"Bugün bir tercihinde 'helal mi, hakkım mı?' diye sor."},
+{k:"İtidal",a:"Aşırılıklardan uzak denge.",c:"Ne çok az ne çok fazla; tam kararında.",y:"İbadette, yemede, sözde ölçüyü korumaktır.",o:"Geceyi ne uykusuz ne de hep uykuda geçirmemek.",u:"Bugün abarttığın bir alışkanlığı biraz dengele."},
+{k:"Af",a:"Hakkından vazgeçip bağışlamak.",c:"Özür dileyeni bağışlamak.",y:"Gücü yetmişken bağışlamak; kalbi yükten kurtarır.",o:"Sana çarpıp özür dileyene gülümsemek.",u:"İçinde taşıdığın küçük bir kırgınlığı bugün bırakmayı dene."},
+{k:"Hilm",a:"Yumuşak huyluluk, öfkeye hâkimiyet.",c:"Kızsan bile sakin kalabilmek.",y:"Öfke gücü varken teenniyle davranma olgunluğudur.",o:"Haksız eleştiriye sükûnetle cevap vermek.",u:"Bugün ses tonunu bir perde yumuşat."},
+{k:"Şefkat",a:"Koruyucu, ince sevgi.",c:"Küçüklere ve zayıflara iyi davranmak.",y:"Merhametin eyleme dönük, sarıp sarmalayan hâlidir.",o:"Ağlayan bir çocuğa eğilip gülümsemek.",u:"Bugün senden güçsüz birine nazik ol."},
+{k:"Kardeşlik",a:"Müminlerin birbirine bağlılığı.",c:"Arkadaşlarını kardeş gibi sevmek.",y:"Din kardeşliği; sevinci ve yükü paylaşma ahlâkıdır.",o:"Hasta arkadaşın notlarını ona götürmek.",u:"Bugün bir kardeşinin yükünü biraz hafiflet."},
+{k:"Misafirperverlik",a:"Misafiri güzel ağırlamak.",c:"Eve gelenlere güler yüz göstermek.",y:"İkramı külfet değil şeref bilme geleneğidir.",o:"Gelen misafire içecek bir şey ikram etmek.",u:"Bugün birine küçük bir ikramda bulun."},
+{k:"İstişare",a:"Danışarak karar vermek.",c:"Bilene sormak.",y:"Aklını başkalarının tecrübesiyle çoğaltma sünnetidir.",o:"Önemli kararda güvendiğin birine danışmak.",u:"Bugünkü bir kararında bir bilene danış."},
+{k:"Azim",a:"Kararlılıkla devam etmek.",c:"Zor olsa da pes etmemek.",y:"Niyeti eyleme, eylemi sürekliliğe taşıyan iradedir.",o:"Öğrenemediğin konuyu ertesi gün yine denemek.",u:"Yarım kalan küçük bir işini bugün bitir."},
+{k:"Gayret",a:"Çaba, emek, çalışkanlık.",c:"Elinden gelenin en iyisini yapmak.",y:"Tevekkülün ön şartı; kulluğun emek boyutudur.",o:"Sonuç garantisi olmasa da düzenli çalışmak.",u:"Bugün ertelediğin işe 15 dakika ayır."},
+{k:"Recâ",a:"Allah'ın rahmetinden ümitli olmak.",c:"Allah'ın seni sevdiğine güvenmek.",y:"Korku ile denge içinde, rahmetten ümit kesmemektir.",o:"Hata sonrası 'bitti ben' değil 'telafi ederim' demek.",u:"Bugün kendine bir ümit cümlesi yaz."},
+{k:"Havf",a:"Allah'a karşı saygı dolu çekinme.",c:"Yanlıştan, Allah'ı üzmekten çekinmek.",y:"Recâ ile birlikte kalbi dengede tutan saygı korkusudur.",o:"Kul hakkına girmemek için sözüne dikkat etmek.",u:"Bugün bir davranışını 'incitir mi?' süzgecinden geçir."},
+{k:"Huzur",a:"Kalbin sükûnu, iç dinginlik.",c:"İçinin rahat olması.",y:"Zikir, şükür ve helal dairesinde kalbin bulduğu dinginliktir.",o:"Akşam telefonsuz bir çay molası vermek.",u:"Bugün 5 dakikalık sessiz bir mola planla."},
+{k:"Huşû",a:"İbadette kalp huzuru ve derin saygı.",c:"Namazda başka şey düşünmemeye çalışmak.",y:"Bedenin sükûnu ve kalbin hazır bulunuşudur.",o:"Namaza acele etmeden, toparlanarak durmak.",u:"Bir namazda yalnızca okuduklarının anlamını düşün."},
+{k:"İstiğfar",a:"Allah'tan bağışlanma dilemek.",c:"'Affet beni Allah'ım' demek.",y:"Kalbi düzenli temizleyen manevi bakım alışkanlığıdır.",o:"Gün içinde içinden 'estağfirullah' demek.",u:"Bugün 10 kez içtenlikle istiğfar et."},
+{k:"Basiret",a:"Görünenin ötesini görebilmek.",c:"Bir işin sonunu düşünebilmek.",y:"Olaylara ibret ve öngörüyle bakma yetisidir.",o:"Kısa vadeli kolaycılık yerine uzun vadeli iyiyi seçmek.",u:"Bugünkü bir seçimin 1 yıl sonrasını hayal et."},
+{k:"İffet",a:"Onurlu ölçülülük, kendini koruma.",c:"Sana yakışmayan şeylerden uzak durmak.",y:"Arzularda ve istemede vakarlı bir duruştur.",o:"İhtiyaç yokken el açmamak, hâlini arz etmemek.",u:"Bugün bir isteğini vakarla ertele."},
+{k:"Hüsn-i hâtime",a:"Güzel bir son ile tamamlamak.",c:"Her işi güzel bitirmeye çalışmak.",y:"Ömür ve amelde sonu güzelleştirme duası ve gayretidir.",o:"Günü kırgınlıkla değil helalleşerek kapatmak.",u:"Bugünü güzel bir cümleyle kapat: yaz ya da söyle."},
+{k:"Tebessüm",a:"Gülümseme; sadaka sayılan incelik.",c:"Gülümsemek de iyiliktir.",y:"Maliyetsiz ama tesirli bir ikram ve sünnettir.",o:"Kapıcıya, şoföre, kasiyere gülümsemek.",u:"Bugün en az üç kişiye bilinçli gülümse."},
+{k:"Selam",a:"Esenlik dileği; barışın anahtarı.",c:"Karşılaştığın kişilere 'selam' vermek.",y:"Selamı yaymak, güven ve muhabbeti yaymaktır.",o:"Asansörde komşuya önce selam vermek.",u:"Bugün selamı sen başlat."},
+{k:"Nasihat",a:"İçten iyilik tavsiyesi.",c:"Arkadaşına iyiliği güzelce söylemek.",y:"Kırmadan, üstten bakmadan hakkı hatırlatmaktır.",o:"Uyarıyı herkesin içinde değil baş başa yapmak.",u:"Bugün bir tavsiyeni yumuşak bir dille paylaş."},
+{k:"Rızık",a:"Allah'ın verdiği maddi-manevi nasip.",c:"Yediğimiz, içtiğimiz her şey Allah'tandır.",y:"Kazanç kaygısını emek + tevekkül dengesine oturtan kavramdır.",o:"Kaygı yerine işini güzel yapıp gerisine güvenmek.",u:"Bugün rızkın için bir kez bilinçli şükret."},
+{k:"Ahde vefa",a:"Verilen söze bağlı kalmak.",c:"Söz verdiysen yapmak.",y:"Sözleşmelere, randevulara, vaatlere sadakattir.",o:"'5 dakikaya oradayım' deyince gerçekten olmak.",u:"Bugün verdiğin en küçük sözü bile aksatma."},
+{k:"Sükût",a:"Yerinde susmayı bilmek.",c:"Bazen susmak en güzel cevaptır.",y:"Sözün fitne ya da faydasız olacağı yerde susma hikmetidir.",o:"Tartışma kızışınca sükûneti seçmek.",u:"Bugün bir tartışmada son sözü bırakabilmeyi dene."}];
+
+/* Bildirim mesaj havuzu (sekme açıkken kullanılır) */
+const NOTIF_POOL=[
+ d=>"🌤️ Bugün şükrettiğin bir şeyi not etmek ister misin?",
+ d=>"🤲 Küçük bir sabır anını kaydetmek için güzel bir vakit.",
+ d=>"💧 Bir bardak su içmeyi unutma.",
+ d=>"📖 Bugünün ayetine göz atmak ister misin?",
+ d=>"✨ Günün kelimesi seni bekliyor: "+KELIMELER[dayIndex()%KELIMELER.length].k,
+ d=>"🕌 Namaz takibini işaretlemek ister misin?",
+ d=>"📝 Birkaç satır günlük, hâlini görmenin en kısa yolu.",
+ d=>"🌱 Bugün küçük bir iyilik için fırsat kolla."
+];
+
+/* ══════════ [CORE] DURUM & YARDIMCILAR ══════════ */
+const LS_KEY="hal_v1";
+const VAKITLER=[["sabah","Sabah"],["ogle","Öğle"],["ikindi","İkindi"],["aksam","Akşam"],["yatsi","Yatsı"]];
+const KAZA_VAKIT=[...VAKITLER,["vitir","Vitir"]];
+const PSTATUS=[["", "Henüz işaretlemedim"],["vaktinde","Vaktinde kıldım"],["sonradan","Sonradan kıldım"],["kaza","Kaza olarak kıldım"],["kilamadim","Kılamadım"],["muaf","Muafiyet"]];
+const MOODS=[["cokiyi","😄","Çok iyi"],["iyi","🙂","İyi"],["sakin","😌","Sakin"],["yorgun","🥱","Yorgun"],["uzgun","😢","Üzgün"],["kaygili","😟","Kaygılı"],["kizgin","😠","Kızgın"],["karisik","🤔","Karışık"]];
+const IBADET_EK=[["kuranOku","📖","Kur'an okuma"],["kuranDinle","🎧","Kur'an dinleme"],["dua","🤲","Dua"],["zikir","📿","Zikir"],["salavat","🌹","Salavat"],["sadaka","🪙","Sadaka"],["oruc","🌙","Oruç"],["nafile","🕌","Nafile namaz"],["tefekkur","🌌","Tefekkür"],["sila","☎️","Sıla-i rahim"],["yardim","🤝","Birine yardım"],["kitap","📚","Dinî kitap okuma"]];
+const TRACKERS=[["okul","🏫","Okul","",""],["ders","📓","Ders çalışma","dk","60"],["is","💼","İş","saat","8"],["yuruyus","🚶","Yürüyüş","dk","30"],["adim","👣","Adım","adım","6000"],["egzersiz","🏃","Egzersiz","dk","20"],["kitapOku","📚","Kitap okuma","dk","20"],["kuran","📖","Kur'an okuma","sayfa","2"],["ekran","📱","Ekran süresi","dk","120"],["ilac","💊","İlaç","doz","1"],["ogun","🍽️","Öğün","öğün","3"],["acikhava","🌳","Açık hava","dk","30"],["aile","👨‍👩‍👧","Aileyle zaman","dk","30"],["arkadas","🧑‍🤝‍🧑","Arkadaşlarla zaman","dk","30"],["iyilik","💛","Günün iyiliği","adet","1"]];
+const CHILD_QS=[["sevindirdin","🎈","Bugün kimi sevindirdin?"],["paylastin","🍎","Bugün neyi paylaştın?"],["dogru","🗣️","Bugün doğruyu söyledin mi?"],["tesekkur","🌷","Bugün ne için teşekkür ettin?"],["sira","⏳","Bugün sıranı bekleyebildin mi?"],["yardimBuyuk","🧓","Bugün bir büyüğüne yardım ettin mi?"]];
+const DEFAULT_TAGS=["Aile","Okul","İş","Dua","Şükür","Sabır","Sağlık","Hatıra","Kendime not","Önemli"];
+const GARDEN_EMOJI=["🌱","🌿","🌷","🌻","🌸","🌳","🍀","🌺"];
+
+let S=load();
+let currentTab="bugun", pinBuf="", pinCb=null, notifTimer=null, calCursor=new Date();
+
+function load(){
+  try{ const raw=localStorage.getItem(LS_KEY); if(raw) return JSON.parse(raw); }
+  catch(e){ console.warn("Veri okunamadı:",e); }
+  return {profile:null, days:{}, kaza:{sabah:0,ogle:0,ikindi:0,aksam:0,yatsi:0,vitir:0}, kazaLog:[],
+          journal:[], future:[], custom:[], customTags:[], favs:{ayet:[],hadis:[],soz:[],kelime:[]},
+          women:{logs:{}}, thoughts:{}};
+}
+function save(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+  catch(e){ toast("⚠️ Depolama alanı doldu. Eski fotoğrafları silmeyi veya verileri dışa aktarmayı deneyin."); }
+}
+function todayKey(d=new Date()){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function dayIndex(d=new Date()){ return Math.floor(d.getTime()/86400000); }
+function getDay(key=todayKey()){
+  if(!S.days[key]) S.days[key]={mood:"",sukur:["","",""],sabir:["","",""],iyilik:"",mutlu:"",kendim:"",yarin:"",
+    water:0,waterGoal:8,sleep:{yat:"",uyan:"",kalite:""},prayers:{},ibadet:{},trk:{},child:{},childNote:""};
+  return S.days[key];
+}
+function esc(s){ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmtDate(key){ const [y,m,d]=key.split("-").map(Number);
+  return new Date(y,m-1,d).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric",weekday:"long"}); }
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2600); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function isChild(){ return S.profile && S.profile.age==="cocuk"; }
+function modName(){ return S.profile?.name || "dost"; }
+
+/* Modal */
+function openModal(html){ document.getElementById("modalRoot").innerHTML=
+  `<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="sheet">${html}</div></div>`; }
+function closeModal(){ document.getElementById("modalRoot").innerHTML=""; }
+function confirmBox(msg,onYes,yesLabel="Evet",danger=false){
+  openModal(`<h3 style="margin-bottom:10px">Emin misin?</h3><p style="margin-bottom:16px">${msg}</p>
+   <div class="row"><button class="btn grow" onclick="closeModal()">Vazgeç</button>
+   <button class="btn grow ${danger?'danger':'primary'}" id="cfYes">${yesLabel}</button></div>`);
+  document.getElementById("cfYes").onclick=()=>{ closeModal(); onYes(); };
+}
+
+/* ══════════ [ONBD] KARŞILAMA & KURULUM ══════════ */
+function showOnboard(){
+  const ob=document.getElementById("onboard"); ob.classList.remove("hidden");
+  ob.innerHTML=`<div class="inner">
+   <h1>Hâl</h1><div class="big-tag">Müminin farkındalık ve yaşam defteri</div>
+   <p style="margin-bottom:18px">Hoş geldin. Hâl; ibadetlerini, günlük rutinlerini, ruh hâlini, şükür ve sabır notlarını
+   <b>yargılamadan</b> takip etmen için tasarlandı. Bir günü kaçırman bir şeyi bozmaz — burada seri yok, sadece <i>hâlini fark etmek</i> var. 🌿</p>
+   <div class="card stack">
+     <label>İsmin veya rumuzun<input id="obName" placeholder="Örn. Zeynep" maxlength="24"></label>
+     <label>Yaş grubun
+       <select id="obAge"><option value="cocuk">Çocuk</option><option value="genc" selected>Genç</option>
+       <option value="yetiskin">Yetişkin</option><option value="ileri">İleri yaş</option></select></label>
+     <label>Tema
+       <select id="obTheme"><option value="light">Açık</option><option value="dark">Koyu</option></select></label>
+     <label>Bildirim sıklığı <span class="hint">(yalnızca uygulama açıkken çalışır)</span>
+       <select id="obNotif"><option value="kapali">Kapalı</option><option value="1">Günde 1</option>
+       <option value="2">Günde 2</option><option value="3">Günde 3</option>
+       <option value="sabah">Sadece sabah</option><option value="aksam">Sadece akşam</option>
+       <option value="ozel">Belirlediğim saatlerde</option></select></label>
+     <div><div style="margin-bottom:6px">Takip etmek istediğin modüller</div>
+       <div class="chips" id="obMods"></div></div>
+     <label class="row" style="justify-content:space-between">
+       <span>Kadın sağlığı bölümü açık olsun</span>
+       <input type="checkbox" id="obWomen" style="width:auto;transform:scale(1.3)"></label>
+   </div>
+   <button class="btn primary" style="width:100%;padding:.9em" onclick="finishOnboard()">Deftere başla 🌙</button>
+   <p class="hint center" style="margin-top:12px">Verilerin yalnızca bu cihazda saklanır; iznin olmadan hiçbir yere gönderilmez.</p>
+  </div>`;
+  const mods=[["namaz","🕌 Namaz"],["su","💧 Su"],["uyku","😴 Uyku"],["rutin","📋 Rutinler"],["gunluk","📖 Günlük"],["kesfet","✨ Keşfet"]];
+  const box=document.getElementById("obMods");
+  box.innerHTML=mods.map(([k,l])=>`<button type="button" class="chip on" data-m="${k}">${l}</button>`).join("");
+  box.querySelectorAll(".chip").forEach(c=>c.onclick=()=>c.classList.toggle("on"));
+}
+function finishOnboard(){
+  const mods={}; document.querySelectorAll("#obMods .chip").forEach(c=>mods[c.dataset.m]=c.classList.contains("on"));
+  S.profile={name:document.getElementById("obName").value.trim()||"dost",
+    age:document.getElementById("obAge").value, theme:document.getElementById("obTheme").value,
+    notif:{mode:document.getElementById("obNotif").value, hours:["09:00","20:00"], ranges:{sabah:["08:00","11:00"],ogle:["12:00","16:00"],aksam:["18:00","21:30"]}},
+    women:document.getElementById("obWomen").checked, mods, pin:"", elder:document.getElementById("obAge").value==="ileri"};
+  save(); document.getElementById("onboard").classList.add("hidden"); boot();
+  toast("Hoş geldin, "+esc(S.profile.name)+" 🌿");
+  if(S.profile.notif.mode!=="kapali") explainAndAskNotif();
+}
+
+/* ══════════ PIN KİLİDİ (prototip düzeyinde) ══════════ */
+function showLock(cb,msg="Devam etmek için PIN girin"){
+  pinBuf=""; pinCb=cb;
+  const ls=document.getElementById("lockScreen"); ls.classList.remove("hidden");
+  ls.querySelector(".hint").textContent=msg; document.getElementById("pinMsg").textContent="";
+  renderPinDots();
+  const pad=document.getElementById("pinPad");
+  pad.innerHTML=[1,2,3,4,5,6,7,8,9,"←",0,"✓"].map(n=>`<button data-k="${n}">${n}</button>`).join("");
+  pad.querySelectorAll("button").forEach(b=>b.onclick=()=>pinKey(b.dataset.k));
+}
+function renderPinDots(){ document.getElementById("pinDots").innerHTML=
+  [0,1,2,3].map(i=>`<i class="${i<pinBuf.length?'f':''}"></i>`).join(""); }
+function pinKey(k){
+  if(k==="←"){ pinBuf=pinBuf.slice(0,-1); }
+  else if(k==="✓"){ tryPin(); return; }
+  else if(pinBuf.length<4){ pinBuf+=k; if(pinBuf.length===4){ renderPinDots(); return tryPin(); } }
+  renderPinDots();
+}
+function tryPin(){
+  if(pinBuf===S.profile.pin){ document.getElementById("lockScreen").classList.add("hidden");
+    const cb=pinCb; pinCb=null; if(cb)cb(); }
+  else{ document.getElementById("pinMsg").textContent="PIN eşleşmedi, tekrar dene."; pinBuf=""; renderPinDots(); }
+}
+
+/* ══════════ SEKME YÖNETİMİ ══════════ */
+function switchTab(t){ currentTab=t;
+  document.querySelectorAll("nav.bottom button").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  const R={bugun:renderBugun,ibadet:renderIbadet,gunluk:renderGunluk,kesfet:renderKesfet,profil:renderProfil};
+  document.getElementById("view").innerHTML=R[t]();
+  afterRender(t); window.scrollTo({top:0});
+}
+function afterRender(t){ if(t==="bugun"&&!isChild()) bindTodayInputs(); if(t==="profil") renderCalendar(); }
+
+/* ══════════ [TAB1] BUGÜN ══════════ */
+function greet(){ const h=new Date().getHours();
+  const g=h<6?"Hayırlı geceler":h<12?"Hayırlı sabahlar":h<18?"Hayırlı günler":"Hayırlı akşamlar";
+  return g+", "+esc(modName())+"."; }
+function renderBugun(){
+  const d=getDay();
+  if(isChild()) return renderBugunChild(d);
+  const p=S.profile.mods||{};
+  return `
+  <h2 class="page-title">${greet()}</h2>
+  <p class="page-sub">Bugün kalbin nasıl, ${esc(modName())}? · ${fmtDate(todayKey())}</p>
+  <div class="hilal"></div>
+
+  <div class="card"><h3><span class="em">💛</span>Bugünün hâli</h3>
+    <div class="moods">${MOODS.map(([k,e,l])=>`
+      <button class="mood ${d.mood===k?'on':''}" onclick="setMood('${k}')"><span class="em">${e}</span>${l}</button>`).join("")}
+    </div></div>
+
+  <div class="card"><h3><span class="em">🌷</span>Bugün şükrettiğim üç şey</h3>
+    <div class="stack">${[0,1,2].map(i=>`<input class="tf" data-f="sukur" data-i="${i}" placeholder="${i+1}. şükür…" value="${esc(d.sukur[i])}">`).join("")}</div></div>
+
+  <div class="card"><h3><span class="em">🕊️</span>Bugün sabrettiğim üç şey</h3>
+    <div class="stack">${[0,1,2].map(i=>`<input class="tf" data-f="sabir" data-i="${i}" placeholder="${i+1}. sabır…" value="${esc(d.sabir[i])}">`).join("")}</div></div>
+
+  <div class="card stack"><h3><span class="em">🤲</span>Küçük farkındalıklar</h3>
+    <label class="hint">Bugün yaptığım bir iyilik<input class="tf" data-f="iyilik" value="${esc(d.iyilik)}"></label>
+    <label class="hint">Bugün beni mutlu eden küçük şey<input class="tf" data-f="mutlu" value="${esc(d.mutlu)}"></label>
+    <label class="hint">Bugün kendim için yaptığım güzel şey<input class="tf" data-f="kendim" value="${esc(d.kendim)}"></label>
+    <label class="hint">Yarın daha güzel yapmak istediğim şey<input class="tf" data-f="yarin" value="${esc(d.yarin)}"></label>
+    <p class="hint">Hiçbir alan zorunlu değil; doldurdukça kaydedilir. Eski günlere Profil › Takvim'den ulaşabilirsin.</p></div>
+
+  ${p.su!==false?waterCard(d):""}
+  ${p.uyku!==false?sleepCard(d):""}
+  ${p.rutin!==false?trackersCard(d):""}`;
+}
+function bindTodayInputs(){
+  document.querySelectorAll(".tf").forEach(el=>{
+    el.addEventListener("change",()=>{ const d=getDay(), f=el.dataset.f;
+      if(el.dataset.i!==undefined) d[f][+el.dataset.i]=el.value; else d[f]=el.value;
+      save(); });
+  });
+  document.querySelectorAll(".trkf").forEach(el=>{
+    el.addEventListener("change",()=>{ getDay().trk[el.dataset.k]=el.value; save(); });
+  });
+  document.querySelectorAll(".slf").forEach(el=>{
+    el.addEventListener("change",()=>{ getDay().sleep[el.dataset.k]=el.value; save(); switchTab("bugun"); });
+  });
+}
+function setMood(k){ const d=getDay(); d.mood=(d.mood===k?"":k); save(); switchTab("bugun"); }
+
+function waterCard(d){
+  const pct=Math.min(100,Math.round(d.water/d.waterGoal*100));
+  return `<div class="card"><h3><span class="em">💧</span>Su</h3>
+   <div class="row">
+     <button class="btn round" onclick="water(-1)">−</button>
+     <div class="grow center"><b class="disp" style="font-size:1.3rem">${d.water}</b> / ${d.waterGoal} bardak</div>
+     <button class="btn round gold" onclick="water(1)">＋</button>
+   </div>
+   <div class="water-cups">${Array.from({length:d.waterGoal},(_,i)=>`<span class="cup ${i<d.water?'full':''}">🥛</span>`).join("")}</div>
+   <div class="progress"><i style="width:${pct}%"></i></div>
+   <div class="row" style="margin-top:8px"><span class="hint grow">Günlük hedef</span>
+     <button class="btn small" onclick="waterGoal(-1)">−</button><span>${d.waterGoal}</span>
+     <button class="btn small" onclick="waterGoal(1)">＋</button></div></div>`;
+}
+function water(n){ const d=getDay(); d.water=Math.max(0,d.water+n); save(); switchTab("bugun");
+  if(d.water===d.waterGoal) toast("Su hedefin tamam, afiyet olsun 💧"); }
+function waterGoal(n){ const d=getDay(); d.waterGoal=Math.min(20,Math.max(1,d.waterGoal+n)); save(); switchTab("bugun"); }
+
+function sleepDur(s){ if(!s.yat||!s.uyan) return null;
+  const [h1,m1]=s.yat.split(":").map(Number),[h2,m2]=s.uyan.split(":").map(Number);
+  let mins=(h2*60+m2)-(h1*60+m1); if(mins<=0)mins+=1440; return mins; }
+function sleepCard(d){
+  const dur=sleepDur(d.sleep);
+  return `<div class="card"><h3><span class="em">😴</span>Uyku</h3>
+   <div class="row">
+     <label class="grow hint">Yatış<input type="time" class="slf" data-k="yat" value="${d.sleep.yat}"></label>
+     <label class="grow hint">Uyanış<input type="time" class="slf" data-k="uyan" value="${d.sleep.uyan}"></label>
+   </div>
+   ${dur!=null?`<p style="margin-top:8px">Toplam: <b class="disp">${Math.floor(dur/60)} sa ${dur%60} dk</b></p>`:""}
+   <div style="margin-top:8px"><span class="hint">Uyku kalitesi</span>
+    <div class="chips" style="margin-top:6px">${["Çok iyi","İyi","Orta","Kötü","Çok kötü"].map(q=>`
+      <button class="chip ${d.sleep.kalite===q?'on':''}" onclick="setSleepQ('${q}')">${q}</button>`).join("")}</div></div></div>`;
+}
+function setSleepQ(q){ const d=getDay(); d.sleep.kalite=(d.sleep.kalite===q?"":q); save(); switchTab("bugun"); }
+
+function trackersCard(d){
+  const on=S.profile.trackers||{};
+  const rows=TRACKERS.filter(t=>on[t[0]]).map(([k,e,l,unit,goal])=>trkRow(k,e,l,unit,goal,d));
+  const customs=S.custom.map(c=>trkRow("c_"+c.id,c.emoji,c.name,c.unit,c.goal,d,true));
+  return `<div class="card"><h3><span class="em">📋</span>Günlük rutinler</h3>
+   ${rows.join("")+customs.join("")||'<p class="hint">Henüz açık rutin yok.</p>'}
+   <div class="row" style="margin-top:10px">
+     <button class="btn small grow" onclick="openTrackerPicker()">Rutinleri düzenle</button>
+     <button class="btn small grow gold" onclick="openCustomTracker()">＋ Özel alan</button></div></div>`;
+}
+function trkRow(k,e,l,unit,goal,d,custom=false){
+  const v=d.trk[k]??"";
+  return `<div class="row" style="padding:6px 0;border-top:1px dashed var(--line)">
+    <span style="min-width:1.5em">${e}</span><span class="grow" style="font-size:.92rem">${esc(l)}</span>
+    <input class="trkf" data-k="${k}" value="${esc(v)}" placeholder="${unit?goal+" "+unit+" hedef":"✓ / not"}" style="width:110px">
+    ${custom?`<button class="btn small ghost" onclick="delCustom('${k.slice(2)}')">🗑</button>`:""}</div>`;
+}
+function openTrackerPicker(){
+  const on=S.profile.trackers||(S.profile.trackers={});
+  openModal(`<h3 style="margin-bottom:10px">Takip alanları</h3>
+   <div class="chips">${TRACKERS.map(([k,e,l])=>`
+     <button class="chip ${on[k]?'on':''}" onclick="toggleTracker('${k}',this)">${e} ${l}</button>`).join("")}</div>
+   <button class="btn primary" style="width:100%;margin-top:16px" onclick="closeModal();switchTab('bugun')">Tamam</button>`);
+}
+function toggleTracker(k,el){ S.profile.trackers[k]=!S.profile.trackers[k]; el.classList.toggle("on"); save(); }
+function openCustomTracker(){
+  openModal(`<h3 style="margin-bottom:10px">Özel takip alanı</h3><div class="stack">
+   <label class="hint">İsim<input id="ctName" placeholder="Örn. Sınava çalışma"></label>
+   <div class="row"><label class="grow hint">Emoji<input id="ctEmoji" value="⭐" maxlength="4"></label>
+   <label class="grow hint">Hedef<input id="ctGoal" placeholder="30"></label>
+   <label class="grow hint">Birim<input id="ctUnit" placeholder="dk"></label></div>
+   <button class="btn primary" onclick="addCustom()">Ekle</button></div>`);
+}
+function addCustom(){ const name=document.getElementById("ctName").value.trim();
+  if(!name) return toast("Bir isim yazmalısın");
+  S.custom.push({id:uid(),name,emoji:document.getElementById("ctEmoji").value||"⭐",
+    goal:document.getElementById("ctGoal").value,unit:document.getElementById("ctUnit").value});
+  save(); closeModal(); switchTab("bugun"); toast("Özel alan eklendi ⭐"); }
+function delCustom(id){ confirmBox("Bu özel takip alanı silinsin mi? (Girilen günlük değerler durur.)",()=>{
+  S.custom=S.custom.filter(c=>c.id!==id); save(); switchTab("bugun"); },"Sil",true); }
+
+/* Çocuk modu Bugün sayfası */
+function renderBugunChild(d){
+  const flowers=Object.values(S.days).reduce((a,day)=>a+Object.values(day.child||{}).filter(v=>v).length,0);
+  return `
+  <h2 class="page-title">Merhaba ${esc(modName())}! 🌈</h2>
+  <p class="page-sub">${fmtDate(todayKey())}</p>
+  <div class="card"><h3><span class="em">💛</span>Bugün nasılsın?</h3>
+    <div class="moods">${MOODS.map(([k,e,l])=>`
+      <button class="mood ${d.mood===k?'on':''}" onclick="setMood('${k}')"><span class="em">${e}</span>${l}</button>`).join("")}</div></div>
+  <div class="card"><h3><span class="em">🌟</span>Bugünün güzellikleri</h3>
+    ${CHILD_QS.map(([k,e,q])=>`<div class="child-q"><span class="q">${e} ${q}</span>
+      <button class="btn small ${d.child[k]?'gold':''}" onclick="childToggle('${k}')">${d.child[k]?'Evet! 🌸':'İşaretle'}</button></div>`).join("")}
+    <label class="hint">İstersen kısaca anlat ✏️<textarea class="tf-child" onchange="childNote(this.value)" placeholder="Bugün...">${esc(d.childNote)}</textarea></label>
+    <div class="row" style="margin-top:8px"><button class="btn small" onclick="childPhoto()">📷 Resim ekle</button>
+    <button class="btn small" disabled title="Yakında">🎤 Ses kaydı (yakında)</button></div></div>
+  <div class="card"><h3><span class="em">🌻</span>İyilik Bahçen</h3>
+    <p class="hint">Her iyiliğinle bahçende bir çiçek açar. Bu bahçe sadece senin — kimseyle yarışmıyorsun. 🌷</p>
+    <div class="garden">${flowers?Array.from({length:Math.min(flowers,120)},(_,i)=>GARDEN_EMOJI[i%GARDEN_EMOJI.length]).join(""):'<span class="hint">İlk çiçeğin ilk iyiliğinle açacak 🌱</span>'}</div></div>`;
+}
+function childToggle(k){ const d=getDay(); d.child[k]=!d.child[k]; save(); switchTab("bugun");
+  if(d.child[k]) toast("Bahçende bir çiçek açtı 🌸"); }
+function childNote(v){ getDay().childNote=v; save(); }
+function childPhoto(){ toast("Resmini Günlük sekmesinden ekleyebilirsin 📖"); switchTab("gunluk"); }
+
+/* ══════════ [TAB2] İBADET ══════════ */
+function renderIbadet(){
+  const d=getDay();
+  const womenOn=S.profile.women;
+  const reglToday=womenOn && S.women.logs[todayKey()]?.regl;
+  return `
+  <h2 class="page-title">İbadet</h2>
+  <p class="page-sub">Puanlama yok, yarış yok; sadece kayıt ve fark ediş. 🕌</p>
+  <div class="hilal"></div>
+  ${reglToday?`<div class="card" style="border-color:var(--gold)"><p>Bugün regl günü olarak işaretli. İstersen namazlar için "muafiyet" seçeneğini kullanabilirsin — bu günler eksik olarak sayılmaz. 🌷
+   <button class="btn small gold" style="margin-top:8px" onclick="applyMuafAll()">Bugüne muafiyet uygula</button></p></div>`:""}
+  <div class="card"><h3><span class="em">🕌</span>Namaz takibi · bugün</h3>
+   ${VAKITLER.map(([k,l])=>{
+     const p=d.prayers[k]||{st:"",note:""};
+     return `<div class="vakit">
+      <div class="row"><span class="name">${l}</span>
+        <select onchange="setPrayer('${k}',this.value)">
+          ${PSTATUS.map(([v,t])=>`<option value="${v}" ${p.st===v?'selected':''}>${t}</option>`).join("")}
+        </select>
+        ${p.st?`<span class="st-tag st-${p.st}">${p.st==="muaf"?"muaf":p.st==="vaktinde"?"✓":"•"}</span>`:""}</div>
+      <input placeholder="Not (isteğe bağlı) — örn. cemaatle kıldım" value="${esc(p.note)}"
+        onchange="setPrayerNote('${k}',this.value)" style="margin-top:6px;font-size:.85rem">
+     </div>`;}).join("")}
+   <p class="small-note">Muafiyet seçilen vakitler eksik ya da "kılınmadı" olarak değerlendirilmez.</p></div>
+
+  <div class="card"><h3><span class="em">🧮</span>Kaza namazı takibi</h3>
+   <div class="kaza-grid">
+    ${KAZA_VAKIT.map(([k,l])=>`
+      <span>${l}</span>
+      <button class="btn small" onclick="kazaAdj('${k}',1)">＋</button>
+      <span class="num">${S.kaza[k]}</span>
+      <button class="btn small gold" onclick="kazaKildim('${k}')" ${S.kaza[k]<=0?'disabled':''}>kıldım −1</button>`).join("")}
+   </div>
+   <div class="row" style="margin-top:12px">
+    <button class="btn small grow" onclick="openKazaManual()">Toplu giriş</button>
+    <button class="btn small grow" onclick="openKazaEstimate()">Tarihe göre tahmin</button>
+    <button class="btn small" onclick="kazaUndo()" ${S.kazaLog.length?'':'disabled'}>↩︎ Geri al</button>
+   </div>
+   <p class="small-note">Bu hesaplama yaklaşık bir kişisel takip aracıdır. Dinî hüküm veya kesin fetva niteliğinde değildir.</p></div>
+
+  <div class="card"><h3><span class="em">🌙</span>Diğer ibadetler · bugün</h3>
+   <div class="chips">${IBADET_EK.map(([k,e,l])=>`
+     <button class="chip ${d.ibadet[k]?'on':''}" onclick="toggleIbadet('${k}')">${e} ${l}</button>`).join("")}</div>
+   <p class="small-note">İbadetler puanlanmaz; yalnızca kaydedilir. Haftalık özetini Profil'de görebilirsin.</p></div>`;
+}
+function setPrayer(k,v){ const d=getDay(); d.prayers[k]=d.prayers[k]||{st:"",note:""}; d.prayers[k].st=v; save(); switchTab("ibadet"); }
+function setPrayerNote(k,v){ const d=getDay(); d.prayers[k]=d.prayers[k]||{st:"",note:""}; d.prayers[k].note=v; save(); }
+function toggleIbadet(k){ const d=getDay(); d.ibadet[k]=!d.ibadet[k]; save(); switchTab("ibadet"); }
+function applyMuafAll(){ confirmBox("Bugünün beş vaktine 'muafiyet' işaretlensin mi? (İşaretli vakitler değişmez.)",()=>{
+  const d=getDay(); VAKITLER.forEach(([k])=>{ if(!(d.prayers[k]?.st)) d.prayers[k]={st:"muaf",note:""}; });
+  save(); switchTab("ibadet"); toast("Muafiyet uygulandı 🌷"); },"Uygula"); }
+
+function kazaAdj(k,n){ S.kaza[k]=Math.max(0,S.kaza[k]+n); S.kazaLog.push({k,n}); save(); switchTab("ibadet"); }
+function kazaKildim(k){ if(S.kaza[k]<=0)return; S.kaza[k]--; S.kazaLog.push({k,n:-1,kildi:true}); save(); switchTab("ibadet");
+  toast("Kabul olsun 🤲 ("+k+" kazası güncellendi)"); }
+function kazaUndo(){ const last=S.kazaLog.pop(); if(!last)return;
+  S.kaza[last.k]=Math.max(0,S.kaza[last.k]-last.n); save(); switchTab("ibadet"); toast("Son işlem geri alındı ↩︎"); }
+function openKazaManual(){
+  openModal(`<h3 style="margin-bottom:10px">Kaza namazı · toplu giriş</h3>
+   <p class="hint" style="margin-bottom:10px">Her vakit için mevcut kaza sayını yaz. Bu, sayaçların üzerine yazar.</p>
+   <div class="stack">${KAZA_VAKIT.map(([k,l])=>`
+     <label class="row"><span style="min-width:5em">${l}</span>
+     <input type="number" min="0" id="km_${k}" value="${S.kaza[k]}"></label>`).join("")}
+   <button class="btn primary" onclick="saveKazaManual()">Kaydet</button></div>`);
+}
+function saveKazaManual(){ KAZA_VAKIT.forEach(([k])=>{ const v=parseInt(document.getElementById("km_"+k).value)||0; S.kaza[k]=Math.max(0,v); });
+  S.kazaLog=[]; save(); closeModal(); switchTab("ibadet"); toast("Kaza sayıları güncellendi"); }
+function openKazaEstimate(){
+  openModal(`<h3 style="margin-bottom:10px">Tarihe göre tahmini hesap</h3>
+   <div class="stack">
+    <label class="hint">Namaz yükümlülüğünün başladığını düşündüğün tarih<input type="date" id="keStart"></label>
+    <label class="hint">Düzenli namaza başladığın tarih<input type="date" id="keReg"></label>
+    <label class="hint">O dönemde yaklaşık kıldığın gün oranı (%)<input type="number" id="keRate" min="0" max="100" value="0"></label>
+    ${S.profile.women?`<label class="hint">Aylık ortalama muafiyet günü (kadın kullanıcılar)<input type="number" id="keMuaf" min="0" max="15" value="6"></label>`:""}
+    <button class="btn primary" onclick="calcKazaEstimate()">Hesapla</button>
+    <p class="small-note">Bu hesaplama yaklaşık bir kişisel takip aracıdır. Dinî hüküm veya kesin fetva niteliğinde değildir.</p>
+   </div><div id="keResult"></div>`);
+}
+function calcKazaEstimate(){
+  const s=document.getElementById("keStart").value, r=document.getElementById("keReg").value;
+  if(!s||!r) return toast("Her iki tarihi de seçmelisin");
+  let days=Math.round((new Date(r)-new Date(s))/86400000);
+  if(days<=0) return toast("Düzenli başlangıç tarihi, yükümlülük tarihinden sonra olmalı");
+  const rate=(parseInt(document.getElementById("keRate").value)||0)/100;
+  const muafEl=document.getElementById("keMuaf");
+  if(muafEl){ const m=parseInt(muafEl.value)||0; days=Math.round(days*(1-m/30)); }
+  const missed=Math.max(0,Math.round(days*(1-rate)));
+  document.getElementById("keResult").innerHTML=`
+   <hr class="divider"><p>Tahminî eksik gün: <b class="disp">${missed}</b><br>
+   <span class="hint">Her vakit için ≈ ${missed} kaza (vitir dâhil ${missed} vitir).</span></p>
+   <button class="btn gold" style="width:100%;margin-top:10px" onclick="applyKazaEstimate(${missed})">Sayaçlara işle</button>
+   <p class="small-note">Bu hesaplama yaklaşık bir kişisel takip aracıdır. Dinî hüküm veya kesin fetva niteliğinde değildir.</p>`;
+}
+function applyKazaEstimate(n){ confirmBox("Tahminî değerler mevcut sayaçların üzerine yazılsın mı?",()=>{
+  KAZA_VAKIT.forEach(([k])=>S.kaza[k]=n); S.kazaLog=[]; save(); closeModal(); switchTab("ibadet"); toast("Tahmin sayaçlara işlendi"); }); }
+
+/* ══════════ [TAB3] GÜNLÜK ══════════ */
+let jView=localStorage.getItem("hal_jview")||"card", jSearch="", jTag="";
+function renderGunluk(){
+  const allTags=[...DEFAULT_TAGS,...S.customTags];
+  let list=[...S.journal].sort((a,b)=>b.ts-a.ts);
+  if(jSearch){ const q=jSearch.toLocaleLowerCase("tr");
+    list=list.filter(j=>!j.locked&&((j.title||"").toLocaleLowerCase("tr").includes(q)||(j.text||"").toLocaleLowerCase("tr").includes(q))); }
+  if(jTag) list=list.filter(j=>(j.tags||[]).includes(jTag));
+  const openable=S.future.filter(f=>!f.opened&&todayKey()>=f.openDate);
+  return `
+  <h2 class="page-title">Günlük</h2>
+  <p class="page-sub">Serbestçe yaz; burası yalnızca sana ait. 📖</p>
+  <div class="hilal"></div>
+  ${openable.length?`<div class="card" style="border-color:var(--gold)"><b>💌 Geçmişteki senden bir mesaj var.</b>
+    <p class="hint">Açılma tarihi gelen ${openable.length} notun seni bekliyor.</p>
+    <button class="btn gold small" style="margin-top:6px" onclick="openFutureList()">Notlara git</button></div>`:""}
+  <div class="row" style="margin-bottom:12px">
+    <button class="btn primary grow" onclick="openJournalEditor()">＋ Yeni kayıt</button>
+    <button class="btn grow" onclick="openFutureList()">💌 Gelecekteki Bana</button></div>
+  <div class="row" style="margin-bottom:10px">
+    <input placeholder="Ara…" value="${esc(jSearch)}" onchange="jSearch=this.value;switchTab('gunluk')" class="grow">
+    <select onchange="jTag=this.value;switchTab('gunluk')" style="width:auto">
+      <option value="">Tüm etiketler</option>${allTags.map(t=>`<option ${jTag===t?'selected':''}>${esc(t)}</option>`).join("")}</select></div>
+  <div class="view-toggle">
+    ${[["card","🗂 Kart"],["list","📃 Liste"],["cal","📅 Takvim"]].map(([v,l])=>`
+     <button class="btn small ${jView===v?'gold':''}" onclick="setJView('${v}')">${l}</button>`).join("")}</div>
+  ${jView==="cal"?journalCalendar():list.length?list.map(j=>journalCard(j)).join(""):`
+   <div class="card center"><p>Henüz kayıt yok. İlk sayfa seni bekliyor ✒️</p></div>`}`;
+}
+function setJView(v){ jView=v; localStorage.setItem("hal_jview",v); switchTab("gunluk"); }
+function journalCard(j){
+  const moodE=MOODS.find(m=>m[0]===j.mood);
+  if(j.locked) return `<div class="card j-card j-locked">🔒 Kilitli kayıt · ${fmtDate(j.date)}
+    <div><button class="btn small" style="margin-top:8px" onclick="unlockJournal('${j.id}')">Kilidi aç</button></div></div>`;
+  const body=jView==="list"?"":`
+    ${j.text?`<p style="white-space:pre-wrap;margin-top:6px">${esc(j.text)}</p>`:""}
+    ${j.photo?`<img src="${j.photo}" alt="Günlük fotoğrafı">`:""}`;
+  return `<div class="card j-card">
+   <div class="row" style="justify-content:space-between">
+     <div><b>${esc(j.title||"Başlıksız")}</b> ${moodE?moodE[1]:""} ${j.emoji||""}
+       <div class="j-date">${fmtDate(j.date)}</div></div>
+     <div class="row" style="gap:2px">
+       <button class="fav-btn ${j.fav?'on':''}" onclick="jFav('${j.id}')" title="Favori">${j.fav?"⭐":"☆"}</button>
+       <button class="btn small ghost" onclick="openJournalEditor('${j.id}')">✏️</button>
+       <button class="btn small ghost" onclick="jDel('${j.id}')">🗑</button></div></div>
+   ${body}
+   ${(j.tags||[]).length?`<div class="tags">${j.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>`:""}
+  </div>`;
+}
+function jFav(id){ const j=S.journal.find(x=>x.id===id); if(j){ j.fav=!j.fav; save(); switchTab("gunluk"); } }
+function jDel(id){ confirmBox("Bu günlük kaydı kalıcı olarak silinsin mi?",()=>{
+  S.journal=S.journal.filter(x=>x.id!==id); save(); switchTab("gunluk"); toast("Kayıt silindi"); },"Sil",true); }
+function unlockJournal(id){
+  const open=()=>{ const j=S.journal.find(x=>x.id===id); if(j){ j.locked=false; save(); switchTab("gunluk"); } };
+  if(S.profile.pin) showLock(open,"Kilidi açmak için PIN girin"); else open();
+}
+function openJournalEditor(id){
+  const j=id?S.journal.find(x=>x.id===id):{id:"",date:todayKey(),title:"",text:"",mood:"",tags:[],photo:"",emoji:"",fav:false,locked:false};
+  const allTags=[...DEFAULT_TAGS,...S.customTags];
+  openModal(`<h3 style="margin-bottom:10px">${id?"Kaydı düzenle":"Yeni günlük kaydı"}</h3>
+  <div class="stack">
+   <div class="row"><input id="jTitle" class="grow" placeholder="Başlık" value="${esc(j.title)}">
+     <input id="jEmoji" placeholder="😊" value="${esc(j.emoji)}" maxlength="4" style="width:64px;text-align:center"></div>
+   <input type="date" id="jDate" value="${j.date}">
+   <textarea id="jText" rows="6" placeholder="Bugün…">${esc(j.text)}</textarea>
+   <div><span class="hint">Ruh hâli</span><div class="chips" style="margin-top:6px" id="jMoods">
+     ${MOODS.map(([k,e,l])=>`<button type="button" class="chip ${j.mood===k?'on':''}" data-m="${k}">${e} ${l}</button>`).join("")}</div></div>
+   <div><span class="hint">Etiketler</span><div class="chips" style="margin-top:6px" id="jTags">
+     ${allTags.map(t=>`<button type="button" class="chip ${ (j.tags||[]).includes(t)?'on':''}" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+     <div class="row" style="margin-top:6px"><input id="jNewTag" class="grow" placeholder="Yeni etiket…">
+       <button class="btn small" onclick="addTagFromEditor()">Ekle</button></div></div>
+   <div class="row"><label class="btn small grow" style="text-align:center">📷 Fotoğraf seç
+     <input type="file" id="jPhoto" accept="image/*" class="hidden" onchange="jPhotoPick(this)"></label>
+     <button class="btn small grow" disabled title="Gelecek sürüm için yer tutucu">🎤 Ses (yakında)</button></div>
+   <div id="jPhotoPrev">${j.photo?`<img src="${j.photo}" style="max-width:100%;border-radius:12px">
+     <button class="btn small danger" onclick="jPhotoClear()">Fotoğrafı kaldır</button>`:""}</div>
+   <label class="row" style="justify-content:space-between"><span>🔒 Bu kaydı kilitle</span>
+     <input type="checkbox" id="jLock" ${j.locked?"checked":""} style="width:auto;transform:scale(1.3)"></label>
+   <button class="btn primary" onclick="saveJournal('${id||""}')">Kaydet</button>
+  </div>`);
+  window._jPhoto=j.photo||"";
+  document.querySelectorAll("#jMoods .chip").forEach(c=>c.onclick=()=>{ document.querySelectorAll("#jMoods .chip").forEach(x=>x.classList.remove("on")); c.classList.toggle("on"); });
+  document.querySelectorAll("#jTags .chip").forEach(c=>c.onclick=()=>c.classList.toggle("on"));
+}
+function addTagFromEditor(){ const v=document.getElementById("jNewTag").value.trim(); if(!v)return;
+  if(![...DEFAULT_TAGS,...S.customTags].includes(v)){ S.customTags.push(v); save(); }
+  const box=document.getElementById("jTags");
+  const b=document.createElement("button"); b.type="button"; b.className="chip on"; b.dataset.t=v; b.textContent=v;
+  b.onclick=()=>b.classList.toggle("on"); box.appendChild(b);
+  document.getElementById("jNewTag").value=""; }
+function jPhotoPick(input){
+  const file=input.files[0]; if(!file)return;
+  const img=new Image(), reader=new FileReader();
+  reader.onload=e=>{ img.onload=()=>{
+    const MAX=800, sc=Math.min(1,MAX/Math.max(img.width,img.height));
+    const cv=document.createElement("canvas"); cv.width=img.width*sc; cv.height=img.height*sc;
+    cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+    window._jPhoto=cv.toDataURL("image/jpeg",.72);
+    document.getElementById("jPhotoPrev").innerHTML=`<img src="${window._jPhoto}" style="max-width:100%;border-radius:12px">
+      <button class="btn small danger" onclick="jPhotoClear()">Fotoğrafı kaldır</button>`; };
+    img.src=e.target.result; };
+  reader.readAsDataURL(file);
+}
+function jPhotoClear(){ window._jPhoto=""; document.getElementById("jPhotoPrev").innerHTML=""; }
+function saveJournal(id){
+  const mood=document.querySelector("#jMoods .chip.on")?.dataset.m||"";
+  const tags=[...document.querySelectorAll("#jTags .chip.on")].map(c=>c.dataset.t);
+  const obj={ id:id||uid(), ts:id?(S.journal.find(x=>x.id===id)?.ts||Date.now()):Date.now(),
+   date:document.getElementById("jDate").value||todayKey(),
+   title:document.getElementById("jTitle").value.trim(),
+   emoji:document.getElementById("jEmoji").value.trim(),
+   text:document.getElementById("jText").value, mood, tags, photo:window._jPhoto||"",
+   locked:document.getElementById("jLock").checked,
+   fav:id?(S.journal.find(x=>x.id===id)?.fav||false):false };
+  if(id) S.journal=S.journal.map(x=>x.id===id?obj:x); else S.journal.push(obj);
+  save(); closeModal(); switchTab("gunluk"); toast("Kaydedildi 📖");
+  checkWellbeing();
+}
+function journalCalendar(){
+  const byDate={}; S.journal.forEach(j=>{ (byDate[j.date]=byDate[j.date]||[]).push(j); });
+  return calendarGrid(d=>byDate[d]?.length?("has"):"", d=>{ jView="card"; jSearch=""; jTag="";
+    openDayDetail(d); }, "jcal");
+}
+
+/* Gelecekteki Bana */
+function openFutureList(){
+  const t=todayKey();
+  const cards=S.future.sort((a,b)=>a.openDate.localeCompare(b.openDate)).map(f=>{
+    const ready=t>=f.openDate;
+    if(f.opened||ready) return `<div class="card" style="border-color:var(--gold)">
+      ${!f.opened?`<b>💌 Geçmişteki senden bir mesaj var.</b><br>`:""}
+      <b>${esc(f.title)}</b><div class="j-date">Yazıldı: ${fmtDate(f.created)} · Açılma: ${fmtDate(f.openDate)}</div>
+      <p style="white-space:pre-wrap;margin-top:6px">${esc(f.msg)}</p>
+      ${f.photo?`<img src="${f.photo}" style="max-width:100%;border-radius:12px;margin-top:6px">`:""}
+      ${f.mood?`<p class="hint">O günkü hâlin: ${(MOODS.find(m=>m[0]===f.mood)||["","",""])[1]} ${(MOODS.find(m=>m[0]===f.mood)||["","",""])[2]}</p>`:""}
+      <div class="row" style="margin-top:8px">${!f.opened?`<button class="btn gold small" onclick="futureMarkOpened('${f.id}')">Okudum 💛</button>`:""}
+      <button class="btn small danger" onclick="futureDel('${f.id}')">Sil</button></div></div>`;
+    return `<div class="card center" style="opacity:.9">🔒 <b>${esc(f.title)}</b>
+      <p class="hint">Bu not ${fmtDate(f.openDate)} tarihinde açılacak.</p>
+      <button class="btn small ghost" onclick="futureEarly('${f.id}')">Erken açmak istiyorum</button></div>`;
+  }).join("");
+  openModal(`<h3 style="margin-bottom:4px">💌 Gelecekteki Bana</h3>
+   <p class="hint" style="margin-bottom:12px">Gelecekteki sana bir mektup bırak; tarihi gelince açılır.</p>
+   <button class="btn primary" style="width:100%;margin-bottom:12px" onclick="openFutureEditor()">＋ Yeni not bırak</button>
+   ${cards||'<p class="hint center">Henüz not yok.</p>'}`);
+}
+function openFutureEditor(){
+  const min=todayKey(new Date(Date.now()+86400000));
+  openModal(`<h3 style="margin-bottom:10px">Gelecekteki bana not</h3><div class="stack">
+   <input id="fTitle" placeholder="Başlık">
+   <textarea id="fMsg" rows="5" placeholder="Sevgili gelecekteki ben…"></textarea>
+   <label class="hint">Açılma tarihi<input type="date" id="fDate" min="${min}" value="${min}"></label>
+   <div><span class="hint">Bugünkü ruh hâlin</span><div class="chips" id="fMoods" style="margin-top:6px">
+     ${MOODS.map(([k,e,l])=>`<button type="button" class="chip" data-m="${k}">${e} ${l}</button>`).join("")}</div></div>
+   <label class="btn small" style="text-align:center">📷 Fotoğraf ekle
+     <input type="file" accept="image/*" class="hidden" onchange="fPhotoPick(this)"></label>
+   <div id="fPhotoPrev"></div>
+   <button class="btn primary" onclick="saveFuture()">Zaman kapsülüne koy 💌</button></div>`);
+  window._fPhoto="";
+  document.querySelectorAll("#fMoods .chip").forEach(c=>c.onclick=()=>{ document.querySelectorAll("#fMoods .chip").forEach(x=>x.classList.remove("on")); c.classList.add("on"); });
+}
+function fPhotoPick(input){ const file=input.files[0]; if(!file)return;
+  const img=new Image(), reader=new FileReader();
+  reader.onload=e=>{ img.onload=()=>{ const MAX=700, sc=Math.min(1,MAX/Math.max(img.width,img.height));
+    const cv=document.createElement("canvas"); cv.width=img.width*sc; cv.height=img.height*sc;
+    cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+    window._fPhoto=cv.toDataURL("image/jpeg",.7);
+    document.getElementById("fPhotoPrev").innerHTML=`<img src="${window._fPhoto}" style="max-width:100%;border-radius:12px">`; };
+    img.src=e.target.result; }; reader.readAsDataURL(file); }
+function saveFuture(){
+  const title=document.getElementById("fTitle").value.trim()||"Not";
+  const msg=document.getElementById("fMsg").value.trim();
+  const date=document.getElementById("fDate").value;
+  if(!msg||!date) return toast("Mesaj ve tarih gerekli");
+  if(date<=todayKey()) return toast("Açılma tarihi yarından itibaren olmalı");
+  S.future.push({id:uid(),title,msg,openDate:date,created:todayKey(),
+    mood:document.querySelector("#fMoods .chip.on")?.dataset.m||"", photo:window._fPhoto||"", opened:false});
+  save(); openFutureList(); toast("Notun geleceğe bırakıldı 💌"); }
+function futureEarly(id){ confirmBox("Bu not gelecekteki senin için yazıldı. Tarihinden önce açmak istediğine emin misin?",()=>{
+  const f=S.future.find(x=>x.id===id); if(f){ f.openDate=todayKey(); save(); openFutureList(); } },"Erken aç"); }
+function futureMarkOpened(id){ const f=S.future.find(x=>x.id===id); if(f){ f.opened=true; save(); openFutureList(); } }
+function futureDel(id){ confirmBox("Bu not silinsin mi?",()=>{ S.future=S.future.filter(x=>x.id!==id); save(); openFutureList(); },"Sil",true); }
+
+/* ══════════ [TAB4] KEŞFET ══════════ */
+function pick(arr){ return arr[dayIndex()%arr.length]; }
+function renderKesfet(){
+  const a=pick(AYETLER), h=pick(HADISLER), s=pick(SOZLER), k=pick(KELIMELER);
+  const child=isChild();
+  const fav=(type,i)=>`<button class="fav-btn ${S.favs[type].includes(i)?'on':''}" onclick="toggleFav('${type}',${i})">${S.favs[type].includes(i)?"⭐":"☆"}</button>`;
+  const ai=dayIndex()%AYETLER.length, hi=dayIndex()%HADISLER.length, si=dayIndex()%SOZLER.length, ki=dayIndex()%KELIMELER.length;
+  return `
+  <h2 class="page-title">Keşfet</h2>
+  <p class="page-sub">Her gün yenilenen dört küçük ışık. ✨</p>
+  <div class="hilal"></div>
+
+  <div class="card k-card ayet"><span class="k-type">Günün Ayeti</span>${fav("ayet",ai)}
+   <p class="k-text">“${a.m}”</p>
+   <p class="k-src">${a.s} Sûresi, ${a.n} · Kısa meal (özet çeviri)</p>
+   <button class="btn small" style="margin-top:8px" onclick="openThought('ayet')">💭 Düşüncemi yaz</button>
+   <div class="hint" style="margin-top:6px">${esc(S.thoughts["ayet_"+todayKey()]||"")}</div></div>
+
+  <div class="card k-card hadis"><span class="k-type">Günün Hadisi</span>${fav("hadis",hi)}
+   <p class="k-text">“${h.m}”</p>
+   <p class="k-src">Kaynak: ${h.k} · Yaygın kabul gören sahih derlemelerden</p></div>
+
+  <div class="card k-card soz"><span class="k-type">Günün Özlü Sözü · ${s.t}</span>${fav("soz",si)}
+   <p class="k-text">“${s.m}”</p>
+   <p class="k-src">${s.k} — bu bir ${s.t.toLocaleLowerCase("tr")}dür; hadis veya ayet değildir.</p></div>
+
+  <div class="card k-card kelime"><span class="k-type">Günün Kelimesi</span>${fav("kelime",ki)}
+   <h3 class="disp" style="font-size:1.5rem;margin-bottom:6px">${k.k}</h3>
+   <p><b>Kısa anlam:</b> ${k.a}</p>
+   ${child?`<p style="margin-top:6px"><b>🧒 Sana göre:</b> ${k.c}</p>`
+          :`<p style="margin-top:6px"><b>Çocuklar için:</b> ${k.c}</p><p style="margin-top:6px"><b>Yetişkinler için:</b> ${k.y}</p>`}
+   <p style="margin-top:6px"><b>Günlük örnek:</b> ${k.o}</p>
+   <hr class="divider"><p>🌱 <b>Bugünün küçük uygulaması:</b> ${k.u}</p></div>
+
+  <div class="card"><h3><span class="em">⭐</span>Favorilerim</h3>${renderFavs()}</div>`;
+}
+function toggleFav(type,i){ const arr=S.favs[type]; const p=arr.indexOf(i);
+  if(p>=0)arr.splice(p,1); else arr.push(i); save(); switchTab("kesfet"); }
+function renderFavs(){
+  const map={ayet:[AYETLER,x=>`“${x.m}” — ${x.s} ${x.n}`],hadis:[HADISLER,x=>`“${x.m}” — ${x.k}`],
+    soz:[SOZLER,x=>`“${x.m}” — ${x.k} (${x.t})`],kelime:[KELIMELER,x=>`${x.k}: ${x.a}`]};
+  let out=""; for(const t in map){ S.favs[t].forEach(i=>{ out+=`<p style="font-size:.88rem;padding:5px 0;border-bottom:1px dashed var(--line)">${map[t][1](map[t][0][i])}</p>`; }); }
+  return out||'<p class="hint">Beğendiğin içerikleri ☆ ile buraya ekleyebilirsin.</p>';
+}
+function openThought(type){
+  const key=type+"_"+todayKey();
+  openModal(`<h3 style="margin-bottom:10px">💭 Bu ayet bana ne düşündürdü?</h3>
+   <textarea id="thT" rows="5">${esc(S.thoughts[key]||"")}</textarea>
+   <button class="btn primary" style="width:100%;margin-top:10px" onclick="saveThought('${key}')">Kaydet</button>`);
+}
+function saveThought(key){ S.thoughts[key]=document.getElementById("thT").value; save(); closeModal(); switchTab("kesfet"); }
+
+/* ══════════ [TAB5] PROFİL ══════════ */
+function renderProfil(){
+  const p=S.profile;
+  return `
+  <h2 class="page-title">Profil</h2>
+  <p class="page-sub">Ayarlar, özetler ve arşiv 🌿</p>
+  <div class="hilal"></div>
+
+  <div class="card stack"><h3><span class="em">🙍</span>Ben</h3>
+   <label class="hint">İsim / rumuz<input value="${esc(p.name)}" onchange="S.profile.name=this.value.trim()||'dost';save();toast('Güncellendi')"></label>
+   <label class="hint">Yaş grubu<select onchange="setAge(this.value)">
+     ${[["cocuk","Çocuk"],["genc","Genç"],["yetiskin","Yetişkin"],["ileri","İleri yaş"]].map(([v,l])=>`<option value="${v}" ${p.age===v?'selected':''}>${l}</option>`).join("")}</select></label>
+   <label class="row" style="justify-content:space-between"><span>Büyük yazı (ileri yaş modu)</span>
+     <input type="checkbox" ${p.elder?'checked':''} onchange="S.profile.elder=this.checked;save();applyTheme()" style="width:auto;transform:scale(1.3)"></label>
+   <label class="row" style="justify-content:space-between"><span>Kadın sağlığı bölümü</span>
+     <input type="checkbox" ${p.women?'checked':''} onchange="S.profile.women=this.checked;save();switchTab('profil')" style="width:auto;transform:scale(1.3)"></label></div>
+
+  ${p.women?womenCard():""}
+
+  <div class="card"><h3><span class="em">🔔</span>Bildirimler</h3>
+   <p class="hint" style="margin-bottom:8px">Bildirimler; şükür soruları, günün ayeti/kelimesi, su ve namaz hatırlatmaları gibi nazik dokunuşlar gönderir.
+   <b>Teknik sınır:</b> Bu bir web sayfası olduğu için bildirimler yalnızca sekme açıkken güvenilir çalışır; tarayıcı kapalıyken bildirim gönderilemez (bunun için PWA + push gerekir).</p>
+   <select onchange="setNotifMode(this.value)">
+     ${[["kapali","Kapalı"],["1","Günde 1"],["2","Günde 2"],["3","Günde 3"],["sabah","Sadece sabah"],["aksam","Sadece akşam"],["ozel","Belirlediğim saatlerde"]]
+       .map(([v,l])=>`<option value="${v}" ${p.notif.mode===v?'selected':''}>${l}</option>`).join("")}</select>
+   ${p.notif.mode==="ozel"?`<div class="row" style="margin-top:8px">
+     ${p.notif.hours.map((h,i)=>`<input type="time" value="${h}" onchange="S.profile.notif.hours[${i}]=this.value;save();scheduleNotifs()" style="width:auto">`).join("")}
+     <button class="btn small" onclick="S.profile.notif.hours.push('12:00');save();switchTab('profil')">＋ saat</button></div>`:""}
+   ${["1","2","3"].includes(p.notif.mode)?`<p class="hint" style="margin-top:6px">Saatler; sabah 08.00–11.00, öğle 12.00–16.00, akşam 18.00–21.30 aralıklarından her gün rastgele seçilir.</p>`:""}
+   <button class="btn small" style="margin-top:8px" onclick="explainAndAskNotif()">Tarayıcı izni iste / dene</button></div>
+
+  <div class="card"><h3><span class="em">📊</span>Haftalık özet</h3>${summaryHTML(7)}</div>
+  <div class="card"><h3><span class="em">🗓️</span>Aylık özet</h3>${summaryHTML(30)}</div>
+
+  <div class="card"><h3><span class="em">📅</span>Takvim & arşiv</h3>
+   <p class="hint">Bir güne dokunarak o günün tüm kayıtlarını gör.</p>
+   <div id="calBox"></div></div>
+
+  <div class="card stack"><h3><span class="em">🔐</span>Gizlilik</h3>
+   <p class="hint">Verilerin varsayılan olarak yalnızca bu cihazda saklanır; iznin olmadan hiçbir veri paylaşılmaz. Çocuk günlükleri ebeveyne otomatik açılmaz. PIN, prototip düzeyinde bir arayüz kilididir; verileri şifrelemez.</p>
+   ${p.pin?`<div class="row"><button class="btn grow" onclick="changePin()">PIN değiştir</button>
+     <button class="btn grow danger" onclick="removePin()">PIN'i kaldır</button></div>`
+    :`<button class="btn" onclick="setNewPin()">🔒 Uygulama PIN'i oluştur</button>`}</div>
+
+  <div class="card stack"><h3><span class="em">💾</span>Veriler</h3>
+   <button class="btn" onclick="exportData()">⬇️ JSON olarak dışa aktar</button>
+   <label class="btn" style="text-align:center">⬆️ JSON içe aktar
+     <input type="file" accept="application/json" class="hidden" onchange="importData(this)"></label>
+   <button class="btn danger" onclick="wipeAll()">🗑 Tüm verileri sil</button></div>
+
+  <p class="hint center" style="margin:18px 0">Hâl · v1 prototip · “Kendini yargılamak için değil, hâlini fark etmek için.”</p>`;
+}
+function setAge(v){ S.profile.age=v; S.profile.elder=(v==="ileri"); save(); applyTheme(); switchTab("profil"); }
+
+/* Kadın sağlığı */
+function womenCard(){
+  const t=todayKey(), log=S.women.logs[t]||{};
+  const starts=Object.entries(S.women.logs).filter(([k,v])=>v.reglStart).map(([k])=>k).sort();
+  let predict=""; if(starts.length>=2){
+    const gaps=[]; for(let i=1;i<starts.length;i++) gaps.push((new Date(starts[i])-new Date(starts[i-1]))/86400000);
+    const avg=Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length);
+    const next=new Date(new Date(starts[starts.length-1]).getTime()+avg*86400000);
+    predict=`<p class="hint">Tahminî sonraki dönem: <b>${next.toLocaleDateString("tr-TR")}</b> (ort. ${avg} gün döngü)</p>`;
+  } else if(starts.length===1){ predict=`<p class="hint">Tahmin için en az iki başlangıç kaydı gerekir.</p>`; }
+  return `<div class="card stack"><h3><span class="em">🌷</span>Kadın sağlığı · bugün</h3>
+   <div class="chips">
+     <button class="chip ${log.reglStart?'on':''}" onclick="wToggle('reglStart')">Regl başlangıcı</button>
+     <button class="chip ${log.regl?'on':''}" onclick="wToggle('regl')">Regl günü</button>
+     <button class="chip ${log.reglEnd?'on':''}" onclick="wToggle('reglEnd')">Regl bitişi</button>
+     <button class="chip ${log.agri?'on':''}" onclick="wToggle('agri')">Ağrı</button>
+     <button class="chip ${log.bas?'on':''}" onclick="wToggle('bas')">Baş ağrısı</button>
+     <button class="chip ${log.ilac?'on':''}" onclick="wToggle('ilac')">İlaç</button></div>
+   <label class="hint">Kanama yoğunluğu<select onchange="wSet('yogunluk',this.value)">
+     <option value="">—</option>${["Az","Orta","Yoğun"].map(x=>`<option ${log.yogunluk===x?'selected':''}>${x}</option>`).join("")}</select></label>
+   <label class="hint">Kişisel not<input value="${esc(log.not||"")}" onchange="wSet('not',this.value)"></label>
+   ${predict}
+   <p class="small-note">Bu bölüm kişisel takip amaçlıdır. Tıbbi değerlendirme veya dinî fetva yerine geçmez.</p></div>`;
+}
+function wLog(){ const t=todayKey(); return S.women.logs[t]=S.women.logs[t]||{}; }
+function wToggle(k){ const l=wLog(); l[k]=!l[k]; if(k==="reglStart"&&l[k]) l.regl=true; save(); switchTab("profil");
+  if((k==="regl"||k==="reglStart")&&l[k]) askMuafSuggest(); }
+function wSet(k,v){ wLog()[k]=v; save(); }
+function askMuafSuggest(){
+  confirmBox("Bugünü regl günü olarak işaretledin. Namaz takibinde bugün için 'muafiyet' önerilsin mi? (Onaylamadan hiçbir şey otomatik işaretlenmez.)",
+   ()=>{ const d=getDay(); VAKITLER.forEach(([k])=>{ if(!(d.prayers[k]?.st)) d.prayers[k]={st:"muaf",note:""}; });
+     save(); toast("Muafiyet işaretlendi 🌷"); },"Muafiyet uygula");
+}
+
+/* PIN yönetimi */
+function setNewPin(){ pinEntry("Yeni 4 haneli PIN belirle",p1=>{
+  pinEntry("PIN'i tekrar gir",p2=>{ if(p1===p2){ S.profile.pin=p1; save(); toast("PIN oluşturuldu 🔒"); switchTab("profil"); }
+    else toast("PIN'ler eşleşmedi"); }); }); }
+function changePin(){ showLock(()=>setNewPin(),"Önce mevcut PIN'i gir"); }
+function removePin(){ showLock(()=>{ S.profile.pin=""; save(); toast("PIN kaldırıldı"); switchTab("profil"); },"PIN'i kaldırmak için gir"); }
+function pinEntry(msg,cb){ /* geçici pin girişi: kilit ekranını hedef karşılaştırmasız kullanır */
+  pinBuf=""; const ls=document.getElementById("lockScreen"); ls.classList.remove("hidden");
+  ls.querySelector(".hint").textContent=msg; document.getElementById("pinMsg").textContent=""; renderPinDots();
+  const pad=document.getElementById("pinPad");
+  pad.innerHTML=[1,2,3,4,5,6,7,8,9,"←",0,"✓"].map(n=>`<button data-k="${n}">${n}</button>`).join("");
+  pad.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k;
+    if(k==="←") pinBuf=pinBuf.slice(0,-1);
+    else if(k!=="✓"&&pinBuf.length<4) pinBuf+=k;
+    renderPinDots();
+    if(pinBuf.length===4){ ls.classList.add("hidden"); cb(pinBuf); }
+  });
+}
+
+/* Veri aktarımı */
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="hal-yedek-"+todayKey()+".json"; a.click(); URL.revokeObjectURL(a.href);
+  toast("Yedek indirildi ⬇️");
+}
+function importData(input){
+  const f=input.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{ try{ const data=JSON.parse(e.target.result);
+    if(!data.days||!data.profile) throw 0;
+    confirmBox("İçe aktarılan veriler mevcut verilerin ÜZERİNE yazılacak. Devam edilsin mi?",()=>{
+      S=data; save(); applyTheme(); switchTab("profil"); toast("Veriler içe aktarıldı ⬆️"); },"İçe aktar");
+  }catch(err){ toast("Dosya okunamadı: geçerli bir Hâl yedeği değil."); } };
+  r.readAsText(f);
+}
+function wipeAll(){
+  confirmBox("TÜM verilerin (günlükler, fotoğraflar, ibadet kayıtları, ayarlar) kalıcı olarak silinecek. Bu işlem geri alınamaz. Emin misin?",()=>{
+    confirmBox("Son bir kez soruyorum: her şey silinsin mi?",()=>{
+      localStorage.removeItem(LS_KEY); location.reload(); },"Evet, hepsini sil",true);
+  },"Devam",true);
+}
+
+/* ══════════ [SUM] ÖZETLER ══════════ */
+function lastKeys(n){ const out=[]; for(let i=0;i<n;i++) out.push(todayKey(new Date(Date.now()-i*86400000))); return out; }
+function summaryHTML(n){
+  const keys=lastKeys(n), days=keys.map(k=>S.days[k]).filter(Boolean);
+  if(!days.length) return '<p class="hint">Bu aralıkta henüz kayıt yok. Zamanla burada nazik bir özet oluşacak. 🌱</p>';
+  const moodCount={}; days.forEach(d=>{ if(d.mood) moodCount[d.mood]=(moodCount[d.mood]||0)+1; });
+  const topMood=Object.entries(moodCount).sort((a,b)=>b[1]-a[1])[0];
+  const moodInfo=topMood?MOODS.find(m=>m[0]===topMood[0]):null;
+  const sukur=days.reduce((a,d)=>a+d.sukur.filter(x=>x.trim()).length,0);
+  const iyilik=days.reduce((a,d)=>a+(d.iyilik.trim()?1:0)+Object.values(d.child||{}).filter(v=>v===true).length,0);
+  const suOk=days.filter(d=>d.water>=d.waterGoal).length;
+  const durs=days.map(d=>sleepDur(d.sleep)).filter(x=>x!=null);
+  const avgSleep=durs.length?Math.round(durs.reduce((a,b)=>a+b,0)/durs.length):null;
+  const jDays=new Set(S.journal.filter(j=>keys.includes(j.date)).map(j=>j.date)).size;
+  let kilindi=0,kaza=0,muaf=0;
+  days.forEach(d=>Object.values(d.prayers).forEach(p=>{ if(p.st==="vaktinde"||p.st==="sonradan")kilindi++;
+    if(p.st==="kaza")kaza++; if(p.st==="muaf")muaf++; }));
+  const kazaKilinan=S.kazaLog.filter(l=>l.kildi).length;
+  const tagCount={}; S.journal.filter(j=>keys.includes(j.date)).forEach(j=>(j.tags||[]).forEach(t=>tagCount[t]=(tagCount[t]||0)+1));
+  const topTag=Object.entries(tagCount).sort((a,b)=>b[1]-a[1])[0];
+  const line=(l,v)=>`<div class="summary-line"><span>${l}</span><b>${v}</b></div>`;
+  let gentle="";
+  if(durs.length>=3 && (Math.max(...durs)-Math.min(...durs))>150)
+    gentle=`<p class="hint" style="margin-top:8px">Uyku düzenin biraz dalgalı görünüyor. Önümüzdeki günler için küçük bir uyku hedefi belirlemek ister misin? 🌙</p>`;
+  return `${moodInfo?line("En sık hâl",moodInfo[1]+" "+moodInfo[2]):""}
+   ${line("Yazılan şükür",sukur)}
+   ${line("Kaydedilen iyilik",iyilik)}
+   ${line("Su hedefi tutan gün",suOk+" / "+days.length)}
+   ${avgSleep!=null?line("Ortalama uyku",Math.floor(avgSleep/60)+" sa "+avgSleep%60+" dk"):""}
+   ${line("Günlük yazılan gün",jDays)}
+   ${line("Kılındı işaretli namaz",kilindi+(muaf?` (+${muaf} muaf)`:""))}
+   ${kazaKilinan?line("Kılınan kaza",kazaKilinan):""}
+   ${topTag?line("En sık etiket",esc(topTag[0])):""}
+   ${gentle}`;
+}
+
+/* Uzun süreli yoğun üzüntü kontrolü — nazik destek önerisi */
+function checkWellbeing(){
+  const keys=lastKeys(7);
+  const sadDays=keys.filter(k=>["uzgun","kaygili"].includes(S.days[k]?.mood)).length;
+  if(sadDays>=5 && !S._wbShown){
+    S._wbShown=todayKey(); save();
+    openModal(`<h3 style="margin-bottom:10px">🌷 Bir dost notu</h3>
+     <p>Son günlerde defterine sık sık üzgün ya da kaygılı hisler not etmişsin. Bunları yazman çok kıymetli — ve bazen yükü paylaşmak da iyi gelir.</p>
+     <p style="margin-top:8px">Güvendiğin bir yakınına açılmak ya da bir uzmandan (doktor, psikolog, rehber öğretmen) destek almak güçsüzlük değil; kendine gösterdiğin bir merhamettir. Dua ile birlikte profesyonel destek de bir şifa kapısıdır. 🤲</p>
+     <button class="btn primary" style="width:100%;margin-top:12px" onclick="closeModal()">Teşekkürler</button>`);
+  }
+}
+
+/* ══════════ [CAL] TAKVİM & ARŞİV ══════════ */
+function calendarGrid(classFn,clickFn,idp){
+  const y=calCursor.getFullYear(), m=calCursor.getMonth();
+  const first=new Date(y,m,1), start=(first.getDay()+6)%7; // Pazartesi başlangıç
+  const dim=new Date(y,m+1,0).getDate(), tk=todayKey();
+  let cells="";
+  for(let i=0;i<start;i++) cells+=`<span class="cal-day other"></span>`;
+  for(let d=1;d<=dim;d++){
+    const key=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    const extra=classFn?classFn(key):"";
+    const regl=S.profile.women&&S.women.logs[key]?.regl?" regl":"";
+    cells+=`<button class="cal-day ${key===tk?'today':''} ${extra}${regl}" onclick="(window._calClick||openDayDetail)('${key}')">${d}</button>`;
+  }
+  window._calClick=clickFn||null;
+  return `<div class="cal-head">
+    <button class="btn small" onclick="calMove(-1)">‹</button>
+    <b class="disp">${calCursor.toLocaleDateString("tr-TR",{month:"long",year:"numeric"})}</b>
+    <button class="btn small" onclick="calMove(1)">›</button></div>
+   <div class="cal-grid">${["Pt","Sa","Ça","Pe","Cu","Ct","Pz"].map(d=>`<span class="dow">${d}</span>`).join("")}${cells}</div>`;
+}
+function calMove(n){ calCursor=new Date(calCursor.getFullYear(),calCursor.getMonth()+n,1);
+  if(currentTab==="profil") renderCalendar(); else switchTab(currentTab); }
+function renderCalendar(){ const box=document.getElementById("calBox"); if(!box) return;
+  box.innerHTML=calendarGrid(k=>{ const d=S.days[k];
+    const has=d&&(d.mood||d.sukur.some(x=>x)||Object.keys(d.prayers).length||d.water>0)||S.journal.some(j=>j.date===k);
+    return has?"has":""; },null,"pcal"); }
+function openDayDetail(key){
+  const d=S.days[key], journals=S.journal.filter(j=>j.date===key);
+  const mood=d&&MOODS.find(m=>m[0]===d.mood);
+  const di=Math.floor(new Date(key).getTime()/86400000);
+  const a=AYETLER[di%AYETLER.length], h=HADISLER[di%HADISLER.length], s=SOZLER[di%SOZLER.length], k2=KELIMELER[di%KELIMELER.length];
+  const w=S.profile.women&&S.women.logs[key];
+  const dur=d&&sleepDur(d.sleep);
+  const sec=(t,c)=>c?`<hr class="divider"><b>${t}</b>${c}`:"";
+  openModal(`<h3 style="margin-bottom:2px">${fmtDate(key)}</h3>
+   ${d?`
+   ${mood?`<p style="margin-top:8px">Hâl: ${mood[1]} ${mood[2]}</p>`:""}
+   ${sec("🌷 Şükürler", d.sukur.filter(x=>x).map(x=>`<p>· ${esc(x)}</p>`).join(""))}
+   ${sec("🕊️ Sabırlar", d.sabir.filter(x=>x).map(x=>`<p>· ${esc(x)}</p>`).join(""))}
+   ${sec("🤲 Notlar", [["İyilik",d.iyilik],["Mutlu eden",d.mutlu],["Kendim için",d.kendim],["Yarın",d.yarin]]
+      .filter(([_,v])=>v).map(([l,v])=>`<p>· <i>${l}:</i> ${esc(v)}</p>`).join(""))}
+   ${sec("🕌 Namaz", Object.keys(d.prayers).length?VAKITLER.map(([kk,l])=>{
+      const p=d.prayers[kk]; if(!p||!p.st)return"";
+      const t=PSTATUS.find(x=>x[0]===p.st)[1];
+      return `<p>· ${l}: ${t}${p.note?" — "+esc(p.note):""}</p>`; }).join(""):"")}
+   ${d.water?sec("💧 Su",`<p>${d.water} / ${d.waterGoal} bardak</p>`):""}
+   ${dur!=null?sec("😴 Uyku",`<p>${Math.floor(dur/60)} sa ${dur%60} dk ${d.sleep.kalite?"· "+d.sleep.kalite:""}</p>`):""}
+   ${Object.keys(d.ibadet).filter(k3=>d.ibadet[k3]).length?sec("🌙 Diğer ibadetler",
+      "<p>"+IBADET_EK.filter(([k3])=>d.ibadet[k3]).map(([k3,e,l])=>e+" "+l).join(" · ")+"</p>"):""}
+   `:"<p class='hint' style='margin-top:8px'>Bu gün için kayıt yok.</p>"}
+   ${journals.length?sec("📖 Günlük",journals.map(j=>j.locked?"<p>🔒 Kilitli kayıt</p>":
+      `<p><b>${esc(j.title||"Başlıksız")}</b><br>${esc((j.text||"").slice(0,200))}${(j.text||"").length>200?"…":""}</p>${j.photo?`<img src="${j.photo}" style="max-width:100%;border-radius:10px">`:""}`).join("")):""}
+   ${w?sec("🌷 Kadın sağlığı",`<p>${[w.reglStart&&"Regl başlangıcı",w.regl&&"Regl günü",w.reglEnd&&"Regl bitişi",w.agri&&"Ağrı",w.bas&&"Baş ağrısı",w.ilac&&"İlaç",w.yogunluk&&("Yoğunluk: "+w.yogunluk)].filter(Boolean).join(" · ")||"—"}${w.not?"<br>Not: "+esc(w.not):""}</p>`):""}
+   <hr class="divider"><b>✨ O günün içerikleri</b>
+   <p class="hint" style="margin-top:4px">Ayet: “${a.m}” (${a.s} ${a.n})<br>Hadis: “${h.m}” (${h.k})<br>Söz: “${s.m}” (${s.t})<br>Kelime: ${k2.k} — ${k2.a}</p>
+   <button class="btn primary" style="width:100%;margin-top:12px" onclick="closeModal()">Kapat</button>`);
+}
+
+/* ══════════ [NOTF] BİLDİRİMLER ══════════ */
+function explainAndAskNotif(){
+  openModal(`<h3 style="margin-bottom:10px">🔔 Bildirimler ne işe yarar?</h3>
+   <p>İzin verirsen Hâl, sen bu sekme açıkken sana nazik hatırlatmalar gösterir: bir şükür sorusu, günün ayeti, su içme ya da günlük yazma hatırlatması gibi.</p>
+   <p class="hint" style="margin-top:8px">Önemli: Bu bir web sayfası olduğu için <b>tarayıcı veya sekme kapalıyken bildirim gönderilemez</b>. Güvenilir arka plan bildirimi için uygulamanın PWA'ya dönüştürülüp bir sunucudan push gönderilmesi gerekir. Bu sürümde bildirimler yalnızca uygulama açıkken çalışır.</p>
+   <div class="row" style="margin-top:12px"><button class="btn grow" onclick="closeModal()">Şimdi değil</button>
+   <button class="btn primary grow" onclick="reqNotifPermission()">İzin ver</button></div>`);
+}
+function reqNotifPermission(){ closeModal();
+  if(!("Notification" in window)) return toast("Bu tarayıcı bildirimleri desteklemiyor.");
+  Notification.requestPermission().then(p=>{
+    if(p==="granted"){ toast("Bildirim izni verildi 🔔"); scheduleNotifs();
+      new Notification("Hâl 🌿",{body:"Bildirimler hazır. Hatırlatmalar bu sekme açıkken gelecek."}); }
+    else toast("İzin verilmedi; bildirimler kapalı kalacak."); });
+}
+function setNotifMode(v){ S.profile.notif.mode=v; save(); switchTab("profil"); scheduleNotifs();
+  if(v!=="kapali"&&("Notification" in window)&&Notification.permission!=="granted") explainAndAskNotif(); }
+function randInRange(a,b){ // "HH:MM" aralığında bugüne ait rastgele Date
+  const [h1,m1]=a.split(":").map(Number),[h2,m2]=b.split(":").map(Number);
+  const t1=h1*60+m1, t2=h2*60+m2, t=t1+Math.floor(Math.random()*(t2-t1));
+  const d=new Date(); d.setHours(Math.floor(t/60),t%60,0,0); return d;
+}
+function scheduleNotifs(){
+  if(notifTimer) clearTimeout(notifTimer);
+  const cfg=S.profile?.notif; if(!cfg||cfg.mode==="kapali") return;
+  if(!("Notification" in window)||Notification.permission!=="granted") return;
+  const R=cfg.ranges, now=new Date(); let times=[];
+  if(cfg.mode==="1") times=[randInRange(...R.ogle)];
+  else if(cfg.mode==="2") times=[randInRange(...R.sabah),randInRange(...R.aksam)];
+  else if(cfg.mode==="3") times=[randInRange(...R.sabah),randInRange(...R.ogle),randInRange(...R.aksam)];
+  else if(cfg.mode==="sabah") times=[randInRange(...R.sabah)];
+  else if(cfg.mode==="aksam") times=[randInRange(...R.aksam)];
+  else if(cfg.mode==="ozel") times=cfg.hours.map(h=>{ const [hh,mm]=h.split(":").map(Number);
+    const d=new Date(); d.setHours(hh,mm,0,0); return d; });
+  times=times.filter(t=>t>now).sort((a,b)=>a-b);
+  const next=times[0];
+  if(!next){ // yarın için gece yarısından sonra yeniden planla
+    const mid=new Date(); mid.setHours(24,0,30,0);
+    notifTimer=setTimeout(scheduleNotifs, mid-now); return; }
+  notifTimer=setTimeout(()=>{
+    const msg=NOTIF_POOL[Math.floor(Math.random()*NOTIF_POOL.length)]();
+    try{ new Notification("Hâl 🌿",{body:msg}); }catch(e){ toast(msg); }
+    scheduleNotifs();
+  }, next-now);
+}
+
+/* ══════════ BAŞLATMA ══════════ */
+function applyTheme(){
+  document.documentElement.dataset.theme=S.profile?.theme||"light";
+  document.documentElement.dataset.elder=S.profile?.elder?"1":"0";
+  document.documentElement.dataset.child=isChild()?"1":"0";
+  const tb=document.getElementById("themeBtn"); if(tb) tb.textContent=S.profile?.theme==="dark"?"☀️":"🌙";
+}
+function boot(){
+  applyTheme();
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("nav").classList.remove("hidden");
+  document.querySelectorAll("nav.bottom button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+  document.getElementById("themeBtn").onclick=()=>{ S.profile.theme=S.profile.theme==="dark"?"light":"dark"; save(); applyTheme(); };
+  switchTab("bugun"); scheduleNotifs();
+  const openable=S.future.filter(f=>!f.opened&&todayKey()>=f.openDate);
+  if(openable.length) setTimeout(()=>toast("💌 Geçmişteki senden bir mesaj var — Günlük sekmesine bak."),900);
+}
+(function init(){
+  if(!S.profile){ showOnboard(); return; }
+  if(S.profile.pin){ applyTheme(); showLock(boot); } else boot();
+})();
+</script>
+<!--
+  ═══ PWA'YA DÖNÜŞTÜRME NOTU ═══
+  1) Bu dosyanın yanına manifest.json ve service-worker.js ekleyin (örnekleri pakette).
+  2) <head> içine:  <link rel="manifest" href="manifest.json">
+  3) Script sonuna: if("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+  4) HTTPS üzerinden servis edin (localhost da geçerlidir). Ana ekrana ekleyerek uygulama gibi kullanın.
+  5) Gerçek arka plan bildirimi için Push API + bir sunucu (VAPID anahtarları) gerekir.
+-->
+</body>
+</html>
