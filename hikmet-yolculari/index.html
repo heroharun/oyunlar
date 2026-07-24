@@ -324,6 +324,7 @@ const varsayilanDurum = () => ({
   tamamBolumler:[],            // durak id listesi
   hatiralar:[],                // hatıra id listesi
   sonDurak:null,               // kaldığım yerden devam
+  aktifKissa:"adem",           // haritada seçili kıssa
   oynananOyunlar:[],           // mini oyun id'leri
   incelenenKelimeler:[],
   notlar:{},                   // hikmet kartı id -> çocuğun notu
@@ -461,9 +462,88 @@ const stories = {
       { b:"Tevbe ne demektir?", m:"İnsanın yanlışını fark etmesi, pişman olması, Allah'tan bağışlanma dilemesi ve yanlış davranışını düzeltmeye çalışmasıdır." },
       { b:"İnsan neden dünyaya gönderildi?", m:"İnsan yeryüzünde yaşayacak, öğrenecek, seçim yapacak ve sorumluluk taşıyacaktır. Allah insanlara doğru yolu gösterecek rehberler göndermiştir." }
     ]
+  },
+  nuh: {
+    title: "Hz. Nuh ve Sabır Gemisi",
+    desc: "Sabrın, özenli işin, merhametin ve tevekkülün hikâyesi.",
+    sources: "Hûd 11/36-48 · Kamer 54/9-15 · Nûh 71/1-28 · Mü'minûn 23/23-30",
+    anaMesaj: "Güzel işler zaman alabilir. Elinden geleni özenle yap, sonrasını Allah'a bırak; canlılara merhamet et ve vazgeçme.",
+    chapters: [
+      { id:"nuh-davet", ad:"Sabırlı Davet", ikon:"🕊️",
+        hatira:{ id:"nuh-davet-feneri", ad:"Davet Feneri", ikon:"🏮" },
+        sahne:["🕊️","🌙","✦"],
+        kaynak:"Nûh 71/1-28 · Kamer 54/9-10",
+        kisa:[ "Hz. Nuh, insanları yalnız Allah'a inanmaya çağırdı.",
+               "Yıllarca sabırla ve güzel sözle anlattı.",
+               "Az kişi inandı ama o vazgeçmedi." ],
+        orta:[ "Çok eski zamanlarda bir memlekette insanlar, kendi elleriyle yaptıkları putlara tapıyor ve birbirlerine haksızlık ediyordu. Allah, onlara Hz. Nuh'u peygamber olarak gönderdi.",
+               "Hz. Nuh yıllarca, bıkmadan usanmadan insanları yalnız Allah'a inanmaya ve güzel davranmaya çağırdı. Gece gündüz, gizli ve açık anlattı.",
+               "Pek az kişi ona inandı; kimileri onunla alay etti. Ama Hz. Nuh kırıcı olmadı, vazgeçmedi; sabretti ve görevine devam etti." ],
+        derin:[ "Düşünelim: Nûh sûresi bu sabırlı daveti anlatır. Güzel bir işte devam edebilmek, hemen sonuç almaktan daha değerlidir." ],
+        oyun:"nuhSoru" },
+      { id:"nuh-gemi", ad:"Gemi Yapılıyor", ikon:"🔨",
+        hatira:{ id:"nuh-usta-cekici", ad:"Usta Çekici", ikon:"🔨" },
+        sahne:["🪵","🔨","⛵"],
+        kaynak:"Hûd 11/37-38",
+        kisa:[ "Allah, Hz. Nuh'a bir gemi yapmasını bildirdi.",
+               "İnanmayanlar güldü; o ise işine özenle devam etti.",
+               "Gemi parça parça yükseldi." ],
+        orta:[ "Sonra Allah, Hz. Nuh'a gözetimi altında büyük bir gemi yapmasını bildirdi. Ortada deniz yokken gemi yapmak… İnanmayanlar buna güldüler.",
+               "Hz. Nuh ise Rabbine güvenerek işine özenle devam etti. Sağlam tahtalar, su geçirmez zift, halatlar… Gemi parça parça yükseldi.",
+               "Bir işi güzel yapmak, onu aceleyle bitirmek değildir; özenle, sabırla ve güvenle yapmaktır." ],
+        derin:[ "Düşünelim: Alay edilse bile doğru bildiğin güzel işe devam edebilmek bir olgunluktur. Hz. Nuh bunun en güzel örneğidir." ],
+        oyun:"nuhMalzeme" },
+      { id:"nuh-dostlar", ad:"Canlı Dostlar Gemide", ikon:"🐘",
+        hatira:{ id:"nuh-merhamet-yuvasi", ad:"Merhamet Yuvası", ikon:"🪺" },
+        sahne:["🕊️","🐘","🐢"],
+        kaynak:"Hûd 11/40",
+        kisa:[ "Her canlı türünden birer çift gemiye alındı.",
+               "İnananlar da gemiye bindi.",
+               "Bütün canlılar şefkate değerdir." ],
+        orta:[ "Gemi tamamlanınca, Allah'ın bildirmesiyle her canlı türünden birer çift gemiye alındı; Hz. Nuh'a inananlar da bindi.",
+               "Kuşlar, büyük dostlar, minik dostlar… Her canlıya güvenli ve uygun bir yer ayrıldı. Çünkü bütün canlılar korunmaya ve şefkate değerdi." ],
+        derin:[ "Düşünelim: Canlılara merhamet yalnızca onları sevmek değil; ihtiyaçlarını anlamak ve onlara uygun davranmaktır." ],
+        oyun:"nuhHayvan" },
+      { id:"nuh-tufan", ad:"Tufan ve Güven", ikon:"🌧️",
+        hatira:{ id:"nuh-tevekkul-capasi", ad:"Tevekkül Çapası", ikon:"⚓" },
+        sahne:["🌧️","⛵","🌊"],
+        kaynak:"Hûd 11/42-44 · Kamer 54/11-14",
+        kisa:[ "Yağmur yağdı, sular yükseldi.",
+               "Gemi, Allah'ın korumasıyla güvenle ilerledi.",
+               "Önce çalışmak, sonra güvenmek: buna tevekkül denir." ],
+        orta:[ "Sonra gökten yağmur boşandı, yerden sular kaynadı. Sular yükseldi ve gemi, dağlar gibi dalgalar arasında Allah'ın korumasıyla güvenle ilerledi.",
+               "Gemidekiler korunmuştu. Çünkü Hz. Nuh elinden geleni yapmış, sonrasını Allah'a bırakmıştı. Buna tevekkül denir: önce çalışmak, sonra güvenmek.",
+               "Bir süre sonra yağmur dindi, sular çekildi ve gemi Cûdî'ye oturdu." ],
+        derin:[ "Düşünelim: Tevekkül tembellik değildir. Önce gemi yapılır, sonra Allah'a güvenilir." ],
+        oyun:"nuhSira" },
+      { id:"nuh-son", ad:"Yeni Bir Başlangıç", ikon:"🌈",
+        hatira:{ id:"nuh-gokkusagi", ad:"Yeni Başlangıç Gökkuşağı", ikon:"🌈" },
+        sahne:["🌈","🌱","🏞️"],
+        kaynak:"Hûd 11/44-48",
+        kisa:[ "Gemidekiler selametle indi.",
+               "Yeryüzünde yepyeni bir başlangıç oldu.",
+               "Sabır, merhamet ve güven: kıssanın hikmeti bu." ],
+        orta:[ "Gemidekiler selametle indiler ve yeryüzünde yepyeni bir başlangıç oldu.",
+               "Hz. Nuh'un kıssası bize sabrı, görevini en güzel şekilde yapmayı, canlılara merhameti ve Allah'a güvenmeyi (tevekkülü) fısıldar." ],
+        derin:[ "Düşünelim: Zor günler bittiğinde geriye kazandığımız hikmetler kalır. Sabırla taşınan her yük, bir başlangıcın kapısını açar." ],
+        oyun:"nuhQuiz" }
+    ],
+    bilgiKartlari: [
+      { b:"Gemi neden yapıldı?", m:"Allah'ın bildirmesiyle, inananları ve canlıları tufandan korumak için yapıldı. (Hûd 11/37)" },
+      { b:"Hayvanlar gemiye nasıl alındı?", m:"Her canlı türünden birer çift alındı. (Hûd 11/40)" },
+      { b:"Gemi nereye oturdu?", m:"Kur'an'a göre sular çekilince gemi Cûdî'ye oturdu. (Hûd 11/44)" },
+      { b:"Kıssanın ana mesajı nedir?", m:"Sabır, görevi özenle yapmak, canlılara merhamet ve tevekkül: elinden geleni yap, sonrasını Allah'a bırak." }
+    ]
   }
 };
-const KISSA = stories.adem;
+function aktifKissa(){ return stories[S.aktifKissa] || stories.adem; }
+function bolumBul(id){
+  for(const anah in stories){
+    const c = stories[anah].chapters.find(x=>x.id===id);
+    if(c) return { kissa:anah, bolum:c };
+  }
+  return null;
+}
 
 /* Hikmet kartları (Çanta) */
 const hikmetKartlari = [
@@ -474,7 +554,12 @@ const hikmetKartlari = [
   { id:"dikkat-isigi", kavram:"Dikkat", ikon:"🕯️", aciklama:"Her aklımıza gelen düşünce doğru olmayabilir.", yer:"İblis'in fısıltısı", ornek:"Karar vermeden önce dört soruyu sormak." },
   { id:"tevbe-damlasi", kavram:"Tevbe", ikon:"💧", aciklama:"Hata yaptığımızda saklamak yerine düzeltmeye çalışmalıyız.", yer:"Hz. Âdem ile eşinin bağışlanma dilemesi", ornek:"Özür dileyip kırılan kalbi onarmak." },
   { id:"emanet-rozeti", kavram:"Emanet", ikon:"🎖️", aciklama:"Dünya bize zarar vermek için değil; korumak ve güzelleştirmek için verilmiştir.", yer:"Yeryüzündeki yeni hayat", ornek:"Suyu israf etmemek, çöpü geri dönüşüme atmak." },
-  { id:"umut-yildizi", kavram:"Umut", ikon:"⭐", aciklama:"Bir hata yaptığımızda her şey bitmiş olmaz.", yer:"Yeni bir başlangıcın mümkün olması", ornek:"Kötü geçen bir sınavdan sonra yeni bir çalışma planı yapmak." }
+  { id:"umut-yildizi", kavram:"Umut", ikon:"⭐", aciklama:"Bir hata yaptığımızda her şey bitmiş olmaz.", yer:"Yeni bir başlangıcın mümkün olması", ornek:"Kötü geçen bir sınavdan sonra yeni bir çalışma planı yapmak." },
+  { id:"nuh-davet-feneri", kavram:"Güzel Davet", ikon:"🏮", aciklama:"İnsanları iyiliğe güzel sözle ve sabırla çağırmalıyız.", yer:"Hz. Nuh'un yıllarca süren daveti", ornek:"Arkadaşlarını nazikçe güzel bir işe davet etmek." },
+  { id:"nuh-usta-cekici", kavram:"Özenli İş", ikon:"🔨", aciklama:"Bir işi güzel yapmak; özen, sabır ve güvenle yapmaktır.", yer:"Geminin alaylara rağmen özenle yapılması", ornek:"Ödevini aceleyle değil, özenle bitirmek." },
+  { id:"nuh-merhamet-yuvasi", kavram:"Merhamet", ikon:"🪺", aciklama:"Bütün canlılar korunmaya ve şefkate değerdir.", yer:"Her canlıdan birer çiftin gemiye alınması", ornek:"Sıcak günlerde kuşlar için su bırakmak." },
+  { id:"nuh-tevekkul-capasi", kavram:"Tevekkül", ikon:"⚓", aciklama:"Elinden geleni yap, sonrasını Allah'a bırak.", yer:"Geminin dalgalar arasında güvenle ilerlemesi", ornek:"Sınava iyice çalışıp sonrası için kaygılanmamak." },
+  { id:"nuh-gokkusagi", kavram:"Yeniden Başlamak", ikon:"🌈", aciklama:"Zor günlerin ardından yeni başlangıçlar gelir.", yer:"Suların çekilmesi ve yeni hayat", ornek:"Taşındığın yeni okulda yeni dostluklar kurmak." }
 ];
 /* Çanta yansıma soruları */
 const yansimaSorulari = [
@@ -709,10 +794,23 @@ function gorunumGec(id){
 /* Harita */
 function haritaCiz(){
   $("hatiraSayac").textContent = S.hatiralar.length;
-  $("karsilama").textContent = `Hoş geldin ${S.ad}. Bugün insanlığın ilk yolculuğuna çıkıyoruz. Pusulan hazır mı? 🧭`;
+  $("karsilama").textContent = `Hoş geldin ${S.ad}. Pusulan hazır mı? 🧭 Bir yolculuk seç:`;
   const kap = $("haritaListe"); kap.innerHTML="";
-  KISSA.chapters.forEach((c,i)=>{
-    const acik = i===0 || S.tamamBolumler.includes(KISSA.chapters[i-1].id);
+  const secici = document.createElement("div");
+  secici.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px;";
+  Object.entries(stories).forEach(([anah,st])=>{
+    const b = document.createElement("button");
+    b.className = "sec" + (S.aktifKissa===anah ? " secili":"");
+    b.style.flexDirection="column"; b.style.alignItems="flex-start"; b.style.margin="0";
+    const biten = st.chapters.filter(c=>S.tamamBolumler.includes(c.id)).length;
+    b.innerHTML = `<b>${st.chapters[0].ikon} ${st.title.split(" ve ")[0]}</b><span class="kucuk">${biten}/${st.chapters.length} durak · ${st.desc}</span>`;
+    b.dataset.kissa = anah;
+    secici.appendChild(b);
+  });
+  kap.appendChild(secici);
+  const st = aktifKissa();
+  st.chapters.forEach((c,i)=>{
+    const acik = i===0 || S.tamamBolumler.includes(st.chapters[i-1].id);
     const tamam = S.tamamBolumler.includes(c.id);
     if(i>0){
       const cizgi = document.createElement("div");
@@ -740,7 +838,9 @@ function bolumMetni(c){
   return c.orta; // 8-10 ve aile: tam metin (aile modunda sonda konuşma sorusu eklenir)
 }
 function hikayeBaslat(id){
-  const c = KISSA.chapters.find(x=>x.id===id);
+  const bul = bolumBul(id); if(!bul) return;
+  S.aktifKissa = bul.kissa;
+  const c = bul.bolum;
   hk = { bolum:c, sayfa:0, sayfalar:bolumMetni(c), asama:"metin" };
   S.sonDurak = id; kaydet();
   gorunumGec("g-hikaye");
@@ -764,7 +864,7 @@ function hikayeCiz(){
     <div class="kart anlati"><p id="okunanParagraf">${hk.sayfalar[hk.sayfa]}</p>
       ${son ? `<span class="kaynak-etiket">📖 Kaynak: ${c.kaynak}</span>` : ""}
     </div>
-    ${son && S.yasModu==="aile" ? `<div class="kart"><h3>👨‍👩‍👧 Ailece konuşalım</h3><p>${aileIcerik.konusma[KISSA.chapters.indexOf(c) % aileIcerik.konusma.length]}</p><p class="kucuk" style="margin-top:6px;">${aileIcerik.rehber}</p></div>` : ""}
+    ${son && S.yasModu==="aile" ? `<div class="kart"><h3>👨‍👩‍👧 Ailece konuşalım</h3><p>${aileIcerik.konusma[aktifKissa().chapters.indexOf(c) % aileIcerik.konusma.length]}</p><p class="kucuk" style="margin-top:6px;">${aileIcerik.rehber}</p></div>` : ""}
     <div style="display:flex;gap:9px;flex-wrap:wrap;">
       ${hk.sayfa>0 ? `<button class="btn cizgi" data-act="hikaye-onceki">← Önceki</button>` : ""}
       <button class="btn altin" style="flex:1;" data-act="hikaye-sonraki">${son ? "🎲 Bölüm oyununa geç" : "Devam →"}</button>
@@ -780,9 +880,10 @@ function hikayeAdim(yon){
   hikayeCiz();
 }
 function merakEttim(){
-  const i = KISSA.chapters.indexOf(hk.bolum) % KISSA.bilgiKartlari.length;
-  const kart = KISSA.bilgiKartlari[i];
-  const digerleri = KISSA.bilgiKartlari.filter((x,j)=>j!==i).map(x=>`<details><summary>${x.b}</summary><p style="margin-top:6px;">${x.m}</p></details>`).join("");
+  const kartlar = aktifKissa().bilgiKartlari;
+  const i = aktifKissa().chapters.indexOf(hk.bolum) % kartlar.length;
+  const kart = kartlar[i];
+  const digerleri = kartlar.filter((x,j)=>j!==i).map(x=>`<details><summary>${x.b}</summary><p style="margin-top:6px;">${x.m}</p></details>`).join("");
   modalAc("💡 Merak Ettim", `<div class="kart" style="margin-bottom:10px;"><h3>${kart.b}</h3><p>${kart.m}</p></div>${digerleri}`);
 }
 
@@ -834,18 +935,24 @@ const bolumSonuMesaji = {
   "fisilti":"Dikkat Işığını buldun. Aklına gelen her düşünceyi hemen yapmak zorunda değilsin.",
   "hata":"Tevbe Damlasını buldun. Hatalar düzeltildiğinde yeni başlangıçlara dönüşebilir.",
   "baslangic":"Emanet Rozetini buldun. Dünya hepimizin evidir ve onu korumak hepimizin görevidir.",
-  "canta":"Umut Yıldızını buldun. Yolculuğun ilk bölümü tamamlandı!"
+  "canta":"Umut Yıldızını buldun. Yolculuğun ilk bölümü tamamlandı!",
+  "nuh-davet":"Davet Fenerini buldun. Güzel söz ve sabır, en güçlü davettir.",
+  "nuh-gemi":"Usta Çekicini buldun. Özenle yapılan iş, alayları bile susturur.",
+  "nuh-dostlar":"Merhamet Yuvasını buldun. Bütün canlılar şefkate değerdir.",
+  "nuh-tufan":"Tevekkül Çapasını buldun. Önce çalış, sonra güven.",
+  "nuh-son":"Yeni Başlangıç Gökkuşağını buldun. Hz. Nuh'un yolculuğu tamamlandı!"
 };
 function bolumOyunuCiz(k){
   ({ nimetSoru:oyunNimet, isimler:oyunIsimler, kibirTevazu:oyunKibir, sinirlar:oyunSinirlar,
-     fisilti:oyunFisilti, tevbeBasamak:oyunTevbe, emanetciler:oyunEmanet, final:oyunFinal })[hk.bolum.oyun](k);
+     fisilti:oyunFisilti, tevbeBasamak:oyunTevbe, emanetciler:oyunEmanet, final:oyunFinal,
+     nuhSoru:oyunNuhSoru, nuhMalzeme:oyunNuhMalzeme, nuhHayvan:oyunNuhHayvan, nuhSira:oyunNuhSira, nuhQuiz:oyunNuhQuiz })[hk.bolum.oyun](k);
 }
 function bolumBitir(){
   const c = hk.bolum;
   if(!S.tamamBolumler.includes(c.id)) S.tamamBolumler.push(c.id);
   if(!S.hatiralar.includes(c.hatira.id)) S.hatiralar.push(c.hatira.id);
   kaydet();
-  const sonBolum = c.id==="canta";
+  const sonBolum = c.id==="canta" || c.id==="nuh-son";
   const k = $("hikayeIcerik");
   k.innerHTML = `
     <div class="merkez">
@@ -856,7 +963,7 @@ function bolumBitir(){
       <div style="height:14px;"></div>
       ${sonBolum ? "" : `<button class="btn altin tam" style="margin-bottom:9px;" data-act="hikaye-cik">🗺️ Haritaya dön</button>
       <button class="btn cizgi tam" data-act="cantaya-git">🎒 Hikmet Çantama bak</button>`}
-      ${sonBolum ? sonEkranHTML() : ""}
+      ${c.id==="canta" ? sonEkranHTML() : ""}${c.id==="nuh-son" ? nuhSonHTML() : ""}
     </div>`;
 }
 function sonEkranHTML(){
@@ -864,8 +971,8 @@ function sonEkranHTML(){
     <div class="kart" style="text-align:left;margin-top:6px;">
       <h2>🌟 Yolculuğun İlk Bölümünü Tamamladın</h2>
       <p>Hz. Âdem'in kıssasında bilginin değerini, kibrin zararını, seçimlerin sorumluluğunu ve hatalardan sonra yeniden başlamanın mümkün olduğunu öğrendin.</p>
-      <p style="margin:8px 0;">${hikmetKartlari.map(h=>`<span class="cip">${h.ikon} ${h.kavram}</span>`).join("")}</p>
-      <p class="anlati">${KISSA.anaMesaj}</p>
+      <p style="margin:8px 0;">${hikmetKartlari.slice(0,8).map(h=>`<span class="cip">${h.ikon} ${h.kavram}</span>`).join("")}</p>
+      <p class="anlati">${stories.adem.anaMesaj}</p>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
       <button class="btn" data-act="cantaya-git">🎒 Hikmet Çantamı Aç</button>
@@ -1107,6 +1214,165 @@ function dogruSecimTuru(k){
     });
   };
   durum();
+}
+
+/* --- HZ. NUH OYUNLARI --- */
+function oyunNuhSoru(k){
+  const q = { s:"Hz. Nuh, insanları neye davet etti?",
+    c:["Yalnız Allah'a inanmaya ve güzel davranmaya","Büyük bir yüzme yarışına","Yeni bir şehir kurmaya"], d:0,
+    ac:"Evet! Hz. Nuh yıllarca sabırla bu daveti yaptı." };
+  k.innerHTML = `<h2>🏮 Küçük Soru</h2><div class="kart anlati"><p>${q.s}</p></div><div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+  karistir(q.c.map((m,i)=>({m,i}))).forEach(o=>{
+    const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${o.m}</span>`;
+    b.onclick=()=>{
+      if(o.i===q.d){ b.classList.add("secili"); document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true);
+        ipucuGoster($("oyunMesaj"),"⭐ " + q.ac); setTimeout(bolumBitir,1500); }
+      else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+        ipucuGoster($("oyunMesaj"),"💛 Bir kez daha düşünelim; Hz. Nuh'un daveti kalplere yönelikti."); }
+    };
+    $("oyunListe").appendChild(b);
+  });
+}
+const nuhMalzemeler = [
+  { ad:"Sağlam ahşap tahtalar", ikon:"🪵", dogru:true,  not:"Geminin gövdesi için tam da bu lazım!" },
+  { ad:"Zift (su geçirmez katran)", ikon:"🛢️", dogru:true,  not:"Tahtaların arasından su girmesin diye harika seçim!" },
+  { ad:"Kalın halatlar", ikon:"🪢", dogru:true,  not:"Parçaları birbirine bağlamak için çok işe yarar!" },
+  { ad:"Marangoz aletleri", ikon:"🪓", dogru:true,  not:"Ustalar aletsiz çalışamaz, aferin!" },
+  { ad:"Cam sürahi", ikon:"🏺", dogru:false, not:"Cam kırılgandır; gemide işimize yaramaz." },
+  { ad:"Kâğıt sayfalar", ikon:"📄", dogru:false, not:"Kâğıt suda dağılır; daha sağlam bir şey seçelim." },
+  { ad:"Çiçek demeti", ikon:"💐", dogru:false, not:"Çiçekler güzeldir ama gemiyi ayakta tutamaz. 😊" },
+  { ad:"Bir avuç kum", ikon:"🏖️", dogru:false, not:"Kum akar gider; sağlam malzeme gerek!" }
+];
+function oyunNuhMalzeme(k){
+  const secilen=new Set(); const gerekli=nuhMalzemeler.filter(m=>m.dogru).length;
+  k.innerHTML = `<h2>🔨 Gemi Malzemeleri</h2><p class="kucuk">Ustalara yardım edelim! Gemi yapımında işe yarayacak <b>4 malzemeye</b> dokun.</p>
+    <div id="oyunListe" style="margin-top:8px;"></div><p class="ipucu gizli" id="oyunMesaj"></p>
+    <button class="btn altin tam gizli" id="malzemeBitir">Malzemeler hazır! →</button>`;
+  nuhMalzemeler.forEach((m,i)=>{
+    const b=document.createElement("button"); b.className="sec";
+    b.innerHTML=`<span class="ikon">${m.ikon}</span><span>${m.ad}</span>`;
+    b.onclick=()=>{
+      if(m.dogru){
+        if(secilen.has(i)){ secilen.delete(i); b.classList.remove("secili"); }
+        else { secilen.add(i); b.classList.add("secili"); }
+        ipucuGoster($("oyunMesaj"),"⭐ " + m.not);
+      } else {
+        b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1200);
+        ipucuGoster($("oyunMesaj"),"💛 " + m.not);
+      }
+      $("malzemeBitir").classList.toggle("gizli", secilen.size !== gerekli);
+    };
+    $("oyunListe").appendChild(b);
+  });
+  $("malzemeBitir").onclick=()=>{ ipucuGoster($("oyunMesaj"),"🌟 Bütün doğru malzemeleri buldun. Gemi yükseliyor!"); setTimeout(bolumBitir,1000); };
+}
+const nuhHayvanlar = [
+  { ad:"Güvercin", ikon:"🕊️", b:"kus" }, { ad:"Baykuş", ikon:"🦉", b:"kus" },
+  { ad:"Fil", ikon:"🐘", b:"buyuk" }, { ad:"At", ikon:"🐴", b:"buyuk" },
+  { ad:"Tavşan", ikon:"🐇", b:"kucuk" }, { ad:"Kaplumbağa", ikon:"🐢", b:"kucuk" }
+];
+function oyunNuhHayvan(k){
+  let secili=null, kalan=nuhHayvanlar.length;
+  k.innerHTML = `<h2>🐾 Hayvanları Yerleştir</h2><p class="kucuk">Her canlıdan birer çift gemiye alınıyor. Önce hayvana, sonra uygun bölüme dokun!</p>
+    <div id="ogeler" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;"></div>
+    <div class="hedefler">
+      <button class="hedef" data-b="kus">🪶 Kuşlar Bölümü<div class="icerik"></div></button>
+      <button class="hedef" data-b="buyuk">🌾 Büyük Dostlar<div class="icerik"></div></button>
+      <button class="hedef" data-b="kucuk" style="grid-column:1/-1;">🌿 Minik Dostlar<div class="icerik"></div></button>
+    </div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+  nuhHayvanlar.forEach(hy=>{
+    const b=document.createElement("button"); b.className="sec"; b.style.width="auto"; b.style.flex="1 1 45%";
+    b.innerHTML=`<span class="ikon">${hy.ikon}</span><span>${hy.ad} çifti</span>`;
+    b.onclick=()=>{ document.querySelectorAll("#ogeler .sec").forEach(x=>x.classList.remove("secili")); b.classList.add("secili");
+      secili={hy,b}; document.querySelectorAll(".hedef").forEach(x=>x.classList.add("canli"));
+      ipucuGoster($("oyunMesaj"),`${hy.ikon} ${hy.ad} çiftini seçtin. Şimdi uygun bölüme dokun!`); };
+    $("ogeler").appendChild(b);
+  });
+  document.querySelectorAll(".hedef").forEach(hd=>{
+    hd.onclick=()=>{
+      if(!secili){ ipucuGoster($("oyunMesaj"),"Önce bir hayvan çiftine dokun. 😊"); return; }
+      if(secili.hy.b===hd.dataset.b){
+        hd.querySelector(".icerik").innerHTML += `<span class="cip">${secili.hy.ikon}</span>`;
+        secili.b.disabled=true; secili.b.classList.remove("secili"); secili.b.style.opacity=".45"; secili=null; kalan--;
+        document.querySelectorAll(".hedef").forEach(x=>x.classList.remove("canli"));
+        ipucuGoster($("oyunMesaj"), kalan? "⭐ Yerleşti! Sırada kim var?" : "🌟 Bütün dostlar güvenle yerleşti! Gemi yola hazır.");
+        if(!kalan) setTimeout(bolumBitir,1400);
+      } else {
+        const ip = secili.hy.b==="kus" ? "kanatlı dostlar yukarıyı sever" : secili.hy.b==="buyuk" ? "iri dostlara geniş yer gerek" : "minik dostlar sıcak köşeleri sever";
+        ipucuGoster($("oyunMesaj"),`💛 Hmm, ${secili.hy.ad} için burası pek uygun değil gibi. İpucu: ${ip}. Bir daha deneyelim!`);
+      }
+    };
+  });
+}
+const nuhOlaylar = [
+  "Hz. Nuh, insanları yalnız Allah'a inanmaya davet etti.",
+  "Allah'ın bildirmesiyle büyük bir gemi yapılmaya başlandı.",
+  "Her canlıdan birer çift ve inananlar gemiye bindi.",
+  "Yağmur yağdı, sular yükseldi; gemi güvenle ilerledi.",
+  "Sular çekildi, gemi Cûdî'ye oturdu ve yeni bir başlangıç oldu."
+];
+function oyunNuhSira(k){
+  siralamaOyunu(k, { baslik:"📜 Kıssayı Hatırla", yonerge:"Olaylara oluş sırasıyla dokun.",
+    ogeler:nuhOlaylar, sonMesaj:"Kıssayı baştan sona hatırladın!" });
+}
+const nuhSorular = [
+  { s:"Gemiye hayvanlar nasıl alındı?", c:["Yalnızca kuşlar alındı","Her canlıdan birer çift alındı","Hiç hayvan alınmadı"], d:1, ac:"Doğru! Böylece canlılar tufandan güvenle korundu. (Hûd 11/40)" },
+  { s:"İnsanlar gemi yapımıyla alay ettiğinde Hz. Nuh ne yaptı?", c:["Üzülüp işi yarım bıraktı","Onlarla tartışıp kızdı","Allah'a güvendi ve işine sabırla devam etti"], d:2, ac:"İşte hikmet bu: sabır ve tevekkül!" },
+  { s:"Tevekkül nedir?", c:["Hiç çalışmadan beklemek","Elinden geleni yapıp sonrasını Allah'a bırakmak","Her şeyi başkasına yaptırmak"], d:1, ac:"Önce gemi yapılır, sonra güvenilir." }
+];
+const nuhSenaryo = {
+  s:"Okulda bir proje hazırlıyorsun. Çok uğraşıyorsun ama iş uzun sürüyor ve bazı arkadaşların 'boşuna uğraşıyorsun' diyor. Ne yaparsın?",
+  c:[ { m:"Sabırla çalışmaya devam ederim; güzel işler zaman alır.", g:"🌟 Tıpkı gemiyi sabırla yapanlar gibi! Yorulursan mola vermek de sabrın parçasıdır." },
+      { m:"Arkadaşlarımı güzel sözlerle yardıma davet ederim.", g:"🌟 Hz. Nuh da insanları güzellikle davet etmişti. Katılmasalar bile nazik kalmak değerlidir." },
+      { m:"Bir büyüğümden yardım isterim.", g:"🌟 Yardım istemek güçsüzlük değil, akıllılıktır!" },
+      { m:"Üzülür ve projeyi bırakırım.", g:"💛 Üzülmek çok normal. Ama gemiyi hatırla: alaylara rağmen yarım bırakılmadı. Kısa bir mola verip yeniden denemek iyi gelebilir." } ]
+};
+function oyunNuhQuiz(k){
+  let i=0;
+  const soru=()=>{
+    if(i===nuhSorular.length){ senaryo(); return; }
+    const q=nuhSorular[i];
+    k.innerHTML = `<h2>💡 Bilgi Yolculuğu · ${i+1}/${nuhSorular.length}</h2>
+      <div class="kart anlati"><p>${q.s}</p></div><div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+    q.c.forEach((m,j)=>{
+      const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${m}</span>`;
+      b.onclick=()=>{
+        if(j===q.d){ b.classList.add("secili"); document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true);
+          ipucuGoster($("oyunMesaj"),"⭐ " + q.ac); i++; setTimeout(soru,1500); }
+        else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+          ipucuGoster($("oyunMesaj"),"💛 Bir kez daha düşünelim; kıssadaki ipucunu hatırlıyor musun?"); }
+      };
+      $("oyunListe").appendChild(b);
+    });
+  };
+  const senaryo=()=>{
+    k.innerHTML = `<h2>🎒 Hayatıma Taşıyorum</h2>
+      <div class="kart anlati"><p>${nuhSenaryo.s}</p></div>
+      <p class="kucuk" style="margin-bottom:8px;">Tek doğru yok — her seçeneğin sonucunu keşfedebilirsin!</p>
+      <div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>
+      <button class="btn altin tam gizli" id="senaryoBitir">Hatıramı al! 🌈</button>`;
+    nuhSenaryo.c.forEach(sc=>{
+      const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${sc.m}</span>`;
+      b.onclick=()=>{ document.querySelectorAll("#oyunListe .sec").forEach(x=>x.classList.remove("secili")); b.classList.add("secili");
+        ipucuGoster($("oyunMesaj"), sc.g); $("senaryoBitir").classList.remove("gizli"); };
+      $("oyunListe").appendChild(b);
+    });
+    $("senaryoBitir").onclick=bolumBitir;
+  };
+  soru();
+}
+function nuhSonHTML(){
+  return `
+    <div class="kart" style="text-align:left;margin-top:6px;">
+      <h2>🌈 Hz. Nuh'un Yolculuğu Tamamlandı</h2>
+      <p style="margin:8px 0;">${hikmetKartlari.slice(8).map(x=>`<span class="cip">${x.ikon} ${x.kavram}</span>`).join("")}</p>
+      <p class="anlati">${stories.nuh.anaMesaj}</p>
+      <span class="kaynak-etiket">📖 Kaynaklar: ${stories.nuh.sources}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+      <button class="btn" data-act="cantaya-git">🎒 Hikmet Çantam</button>
+      <button class="btn altin" data-act="hikaye-cik">🗺️ Haritaya dön</button>
+    </div>`;
 }
 
 /* ================================================================
@@ -1432,7 +1698,7 @@ function aileCiz(){
   const dk = Math.round((S.tamamBolumler.length? S.tamamBolumler.length*5 : 0));
   kap.innerHTML = `
     <div class="kart"><h2>🧒 ${S.ad} — yolculuk özeti</h2>
-      <div class="istat"><span>Tamamlanan durak</span><b>${S.tamamBolumler.length} / ${KISSA.chapters.length}</b></div>
+      <div class="istat"><span>Tamamlanan durak</span><b>${S.tamamBolumler.length} / ${Object.values(stories).reduce((t,k)=>t+k.chapters.length,0)}</b></div>
       <div class="istat"><span>Toplanan hikmet kartı</span><b>${S.hatiralar.length} / ${hikmetKartlari.length}</b></div>
       <div class="istat"><span>İncelenen kelime</span><b>${S.incelenenKelimeler.length} / ${kelimeler.length}</b></div>
       <div class="istat"><span>Oynanan mini oyun</span><b>${S.oynananOyunlar.length} / ${miniOyunlar.length}</b></div>
@@ -1444,7 +1710,7 @@ function aileCiz(){
     <div class="kart"><h2>⚠️ Yetişkinlere önemli notlar</h2>${aileIcerik.uyarilar.map(x=>`<p style="margin-bottom:6px;">• ${x}</p>`).join("")}</div>
     <div class="kart"><h2>🏡 Aile etkinlikleri</h2>${aileIcerik.etkinlikler.map(x=>`<p style="margin-bottom:6px;">• ${x}</p>`).join("")}</div>
     <div class="kart"><h2>📖 Kaynaklar ve içerik güvenliği</h2>
-      <p class="kucuk">Anlatım yalnızca şu ayet aralıklarına dayanır: ${KISSA.sources}. İsrailiyat türü rivayetlere, uydurma hadislere ve kaynağı belirsiz ayrıntılara (elma, yılan, belirli iniş yerleri vb.) yer verilmemiştir. Ayet mealleri kısa özet niteliğindedir; <b>yayın öncesinde bir din eğitimi uzmanının kontrolü gereklidir.</b></p></div>`;
+      <p class="kucuk">Anlatım yalnızca şu ayet aralıklarına dayanır — Hz. Âdem: ${stories.adem.sources} · Hz. Nuh: ${stories.nuh.sources}. İsrailiyat türü rivayetlere, uydurma hadislere ve kaynağı belirsiz ayrıntılara (elma, yılan, belirli iniş yerleri vb.) yer verilmemiştir. Ayet mealleri kısa özet niteliğindedir; <b>yayın öncesinde bir din eğitimi uzmanının kontrolü gereklidir.</b></p></div>`;
 }
 
 /* ================================================================
@@ -1542,6 +1808,8 @@ function ayarCiz(){
    OLAY DELEGASYONU + BAŞLATMA
    ================================================================ */
 document.addEventListener("click", e=>{
+  const ks = e.target.closest("[data-kissa]");
+  if(ks){ S.aktifKissa = ks.dataset.kissa; kaydet(); haritaCiz(); return; }
   const nav = e.target.closest("[data-nav]");
   if(nav){ gorunumGec(nav.dataset.nav); return; }
   const kelimeBtn = e.target.closest("[data-kelime]");
