@@ -575,6 +575,76 @@ q("\"Kelîmullah\" (Allah ile konuşan) unvanı hangi peygambere aittir?","Hz. M
 q("Peygamberlere iman, imanın şartlarından kaçıncısıdır?","Dördüncüsüdür","Birincisidir","Altıncısıdır","İkincisidir")
 ]}
 ];
+
+/* --- her vakit dönüşünde sorulan, o vakte özel sorular --- */
+var VAKIT_SORULARI=[
+[ /* 0 İmsak */
+q("İmsak vakti ne ile başlar?","Fecr-i sâdıkın doğması, tan yerinin ağarmasıyla","Güneşin doğmasıyla","Gece yarısıyla","Şafağın kaybolmasıyla"),
+q("İmsak vaktiyle birlikte hangi namazın vakti girer?","Sabah namazının","Yatsı namazının","Öğle namazının","Vitir namazının"),
+q("Ramazan'da imsak vakti ne anlama gelir?","Orucun başlaması, yeme içmenin kesilmesi","Orucun bitmesi","Teravihin başlaması","İftarın açılması"),
+q("İmsaktan önce yenen yemeğe ne ad verilir?","Sahur","İftar","Kahvaltı","Fıtır"),
+q("Peygamberimiz sahur hakkında ne buyurmuştur?","Sahur yapın, çünkü sahurda bereket vardır","Sahur yapmayın","Sahur sadece gençler içindir","Sahur yerine iftarı geciktirin"),
+q("Ufukta beliren, sonra kaybolup asıl fecre yer bırakan aydınlığa ne denir?","Fecr-i kâzib","Fecr-i sâdık","Şafak","Zeval"),
+q("İmsak vakti girmeden sabah namazı kılınabilir mi?","Kılınamaz, vakti girmemiştir","Kılınabilir","Sadece yolcu kılabilir","Sadece cemaatle kılınır"),
+q("İmsak ile güneşin doğuşu arasındaki süre hangi namazın vaktidir?","Sabah namazının","İkindi namazının","Yatsı namazının","Öğle namazının"),
+q("Sabah namazına kalkabilmek için en güzel hazırlık nedir?","Erken yatmak ve niyet ederek uyumak","Geç yatıp alarm kurmak","Hiç uyumamak","Gündüz telafi etmek")
+],
+[ /* 1 Sabah */
+q("Sabah namazının farzı kaç rekâttır?","2 rekât","3 rekât","4 rekât","6 rekât"),
+q("Sünnetiyle birlikte sabah namazı kaç rekâttır?","4 rekât","2 rekât","6 rekât","8 rekât"),
+q("Sabah namazının vakti ne zaman çıkar?","Güneş doğunca","Kuşluk vaktinde","Öğle ezanında","Zevalde"),
+q("Güneş tam doğarken namaz kılınır mı?","Kılınmaz, kerâhet vaktidir","Kılınır","Sadece nafile kılınır","Sadece kaza kılınır"),
+q("Sabah namazının sünneti için Peygamberimiz ne buyurmuştur?","Dünyadan ve içindekilerden hayırlıdır","Terk edilebilir","Sadece kışın kılınır","Farzdan sonra kılınır"),
+q("Güneş bir miktar yükseldikten sonra kılınan nafile namazın adı nedir?","Kuşluk (duhâ) namazı","Vitir namazı","Teravih namazı","Evvâbîn namazı"),
+q("Uyuyup sabah namazını kaçıran kimse ne yapar?","Uyanıp hatırladığında kazâ eder","Namazı düşer","Sadece tövbe eder","Ertesi gün iki kat kılar"),
+q("Sabah namazını cemaatle kılmanın fazileti hakkında ne bildirilmiştir?","Gecenin tamamını ibadetle geçirmiş gibi olur","Sadece sevabı iki katına çıkar","Fazileti yoktur","Yalnız camide kılınırsa sayılır"),
+q("Peygamberimiz sabahın erken vakti için nasıl dua etmiştir?","Ümmetimin erken vaktini bereketli kıl diye","Erken kalkmayı hoş görmemiştir","Sadece yolculuk için dua etmiştir","Öğleye kadar uyumayı tavsiye etmiştir")
+],
+[ /* 2 Öğle */
+q("Öğle namazının farzı kaç rekâttır?","4 rekât","2 rekât","3 rekât","6 rekât"),
+q("Sünnetleriyle birlikte öğle namazı kaç rekâttır?","10 rekât","8 rekât","6 rekât","12 rekât"),
+q("Öğle namazının vakti ne zaman başlar?","Güneş tepe noktasını geçince","Güneş doğunca","Gölge iki katına çıkınca","Şafak kaybolunca"),
+q("Güneşin tam tepe noktasında bulunduğu ana ne denir?","Zeval vakti","Fecir vakti","Şafak vakti","İşrak vakti"),
+q("Zeval vaktinde namaz kılınır mı?","Kılınmaz, kerâhet vaktidir","Kılınır","Sadece farz kılınır","Sadece cuma günü kılınır"),
+q("Cuma günü öğle vaktinde hangi namaz kılınır?","Cuma namazı","Bayram namazı","Teravih namazı","Küsûf namazı"),
+q("Cuma namazının farzı kaç rekâttır?","2 rekât","4 rekât","3 rekât","6 rekât"),
+q("Cuma namazının farzından önce ne yapılır?","Hutbe okunur","Kamet getirilmez","Teravih kılınır","Vitir kılınır"),
+q("Öğle namazının ilk sünneti kaç rekâttır?","4 rekât","2 rekât","3 rekât","6 rekât")
+],
+[ /* 3 İkindi */
+q("İkindi namazının farzı kaç rekâttır?","4 rekât","2 rekât","3 rekât","5 rekât"),
+q("Sünnetiyle birlikte ikindi namazı kaç rekâttır?","8 rekât","6 rekât","10 rekât","4 rekât"),
+q("İkindi namazının vakti ne zaman sona erer?","Güneş batınca","Şafak kaybolunca","Gece yarısı","Zevalde"),
+q("Güneş batmak üzereyken namaz kılınır mı?","Kılınmaz, kerâhet vaktidir","Kılınır","Sadece nafile kılınır","Sadece cemaatle kılınır"),
+q("Kur'an'da geçen \u201Corta namaz\u201D (salât-ı vustâ) çoğunlukla hangi namaz kabul edilir?","İkindi namazı","Sabah namazı","Yatsı namazı","Akşam namazı"),
+q("İkindi namazını kaçırmak hakkında nasıl bir uyarı vardır?","Ailesini ve malını kaybetmiş gibi olacağı bildirilmiştir","Bir şey gerekmediği bildirilmiştir","Sadece tövbe yeterlidir","Ertesi gün kılınması gerekir"),
+q("İkindi namazının sünneti hangi türdendir?","Gayr-i müekked sünnettir","Vâciptir","Farzdır","Müekked sünnettir"),
+q("İkindi namazından sonra nafile namaz kılınır mı?","Güneş batıncaya kadar kerâhet sebebiyle kılınmaz","Serbestçe kılınır","Sadece vitir kılınır","Sadece cuma günü kılınır"),
+q("Asr sûresi adını hangi vakitten alır?","İkindi vaktinden","Sabah vaktinden","Akşam vaktinden","Gece yarısından")
+],
+[ /* 4 Akşam */
+q("Akşam namazının farzı kaç rekâttır?","3 rekât","2 rekât","4 rekât","5 rekât"),
+q("Sünnetiyle birlikte akşam namazı kaç rekâttır?","5 rekât","3 rekât","7 rekât","4 rekât"),
+q("Akşam namazının vakti ne zaman başlar?","Güneş battığı anda","Şafak kaybolunca","Gölge uzayınca","Gece yarısı"),
+q("Akşam namazının vakti ne zaman sona erer?","Ufuktaki kızıllık (şafak) kaybolunca","Gece yarısı","Güneş doğunca","İmsakta"),
+q("Beş vakit içinde vakti en kısa olan namaz hangisidir?","Akşam namazı","Öğle namazı","Yatsı namazı","İkindi namazı"),
+q("Ramazan'da akşam ezanıyla ne yapılır?","Oruç açılır, iftar edilir","Sahur yapılır","Teravih kılınır","İmsak başlar"),
+q("Farzı tek rekât sayısına sahip olan namaz hangisidir?","Akşam namazı","Sabah namazı","Öğle namazı","Yatsı namazı"),
+q("Akşam namazından sonra kılınan nafile namazın adı nedir?","Evvâbîn namazı","Teheccüd namazı","Duhâ namazı","İstihâre namazı"),
+q("Peygamberimiz akşam namazı konusunda neyi tavsiye etmiştir?","Vakti girince fazla geciktirmemeyi","Gece yarısına ertelemeyi","Yatsıyla birleştirmeyi","Sadece cemaatle kılmayı")
+],
+[ /* 5 Yatsı */
+q("Yatsı namazının farzı kaç rekâttır?","4 rekât","2 rekât","3 rekât","6 rekât"),
+q("Sünnetleri ve vitirle birlikte yatsı kaç rekâttır?","13 rekât","10 rekât","11 rekât","17 rekât"),
+q("Yatsı namazının vakti ne zaman başlar?","Ufuktaki şafak kaybolunca","Güneş batınca","Gece yarısı","İmsakta"),
+q("Yatsıdan sonra kılınan ve hükmü vâcip olan namaz hangisidir?","Vitir namazı","Teravih namazı","Teheccüd namazı","Evvâbîn namazı"),
+q("Ramazan gecelerinde yatsıdan sonra kılınan namaz hangisidir?","Teravih namazı","Vitir namazı","Bayram namazı","Küsûf namazı"),
+q("Teravih namazı kaç rekât olarak kılınagelmiştir?","20 rekât","8 rekât","12 rekât","4 rekât"),
+q("Gece uykudan kalkıp kılınan nafile namazın adı nedir?","Teheccüd namazı","Duhâ namazı","Evvâbîn namazı","İşrak namazı"),
+q("Yatsıyı cemaatle kılmak hakkında ne bildirilmiştir?","Gecenin yarısını ibadetle geçirmiş gibi olacağı","Fazileti bulunmadığı","Sadece Ramazan'da sayıldığı","Vitirle birlikte sayılmadığı"),
+q("Yatsıdan sonra en güzel davranış nedir?","Gereksiz oturmayıp erkenden uyumak","Gece boyu sohbet etmek","Sabaha kadar uyanık kalmak","Namazı erteleyip yatmak")
+]
+];
 </script>
 <style>.gizli{display:none!important}</style>
 <script>
@@ -584,21 +654,22 @@ var $=function(s){return document.getElementById(s);};
 
 /* ---------------- vakitler ---------------- */
 var VAKITLER=[
- {ad:"İmsak", ust:"#050a1c", alt:"#1b2450", yer:"#0c1330", uzak:"#141d40", gok:"yildiz"},
- {ad:"Sabah", ust:"#2f4f88", alt:"#f5b271", yer:"#2a2540", uzak:"#3d3a5e", gok:"gunes"},
- {ad:"Öğle",  ust:"#1f79c2", alt:"#c9e8f8", yer:"#2f4a52", uzak:"#43626c", gok:"gunes"},
- {ad:"İkindi",ust:"#3a86b6", alt:"#f2cd93", yer:"#3a3a48", uzak:"#4f5162", gok:"gunes"},
- {ad:"Akşam", ust:"#361f52", alt:"#e0715c", yer:"#231832", uzak:"#33234a", gok:"gunes"},
- {ad:"Yatsı", ust:"#04081a", alt:"#16224a", yer:"#0a1029", uzak:"#111a3a", gok:"yildiz"}
+ {ad:"İmsak", ust:"#0c1738", alt:"#3a4d87", yer:"#1c2750", uzak:"#243363", gok:"yildiz", lamba:1, engel:"#66739f"},
+ {ad:"Sabah", ust:"#2f4f88", alt:"#f5b271", yer:"#2a2540", uzak:"#3d3a5e", gok:"gunes",  lamba:0, engel:"#2b2118"},
+ {ad:"Öğle",  ust:"#1f79c2", alt:"#c9e8f8", yer:"#2f4a52", uzak:"#43626c", gok:"gunes",  lamba:0, engel:"#2b2118"},
+ {ad:"İkindi",ust:"#3a86b6", alt:"#f2cd93", yer:"#3a3a48", uzak:"#4f5162", gok:"gunes",  lamba:0, engel:"#2b2118"},
+ {ad:"Akşam", ust:"#3d2359", alt:"#e0715c", yer:"#2a1d3c", uzak:"#3b2a55", gok:"gunes",  lamba:1, engel:"#2b2118"},
+ {ad:"Yatsı", ust:"#0a1233", alt:"#2f3f7a", yer:"#18234f", uzak:"#212e60", gok:"yildiz", lamba:1, engel:"#66739f"}
 ];
 
 /* ---------------- kayıt ---------------- */
-var VARSAYILAN={mi:0,qi:0,sira:null,dogru:0,yanlis:0,toplam:0,rekor:0,ses:1};
+var VARSAYILAN={mi:0,qi:0,sira:null,dogru:0,yanlis:0,toplam:0,msoru:0,rekor:0,ses:1};
 var st;
 function yukle(){
   try{ st=JSON.parse(localStorage.getItem("nv2")||"null"); }catch(e){ st=null; }
   if(!st||typeof st.mi!=="number") st=JSON.parse(JSON.stringify(VARSAYILAN));
   if(st.mi>=MENZILLER.length) st.mi=0;
+  if(typeof st.msoru!=="number") st.msoru=st.toplam||0;
   if(!st.sira||!st.sira.length||st.sira.length!==MENZILLER[st.mi].sorular.length) yeniSira();
   if(st.qi>=st.sira.length) st.qi=0;
 }
@@ -682,6 +753,38 @@ function cami(x,taban,ol,renk){
   cx.lineTo(x+g*2.4+4.5*ol,taban-k*2.8);cx.fill();
 }
 
+function lamba(x,taban,ol,yanik,v){
+  var h=94*ol, lx=x+18*ol, ly=taban-h+10*ol;
+  if(yanik){                                   /* yerdeki ışık havuzu */
+    var p=cx.createRadialGradient(lx,taban,0,lx,taban,58*ol);
+    p.addColorStop(0,"rgba(255,206,132,.26)");
+    p.addColorStop(1,"rgba(255,206,132,0)");
+    cx.save();cx.translate(lx,taban);cx.scale(1,.3);
+    cx.fillStyle=p;cx.beginPath();cx.arc(0,0,58*ol,0,7);cx.fill();cx.restore();
+  }
+  cx.fillStyle=yanik?"#3d4870":"#2b2118";
+  cx.fillRect(x,taban-h,3.5*ol,h);
+  cx.fillRect(x-2*ol,taban-5*ol,7.5*ol,5*ol);
+  cx.strokeStyle=yanik?"#3d4870":"#2b2118";cx.lineWidth=3*ol;
+  cx.beginPath();cx.moveTo(x+3.5*ol,taban-h+2*ol);
+  cx.quadraticCurveTo(x+15*ol,taban-h,x+18*ol,ly-4*ol);cx.stroke();
+  if(yanik){
+    var g=cx.createRadialGradient(lx,ly,0,lx,ly,52*ol);
+    g.addColorStop(0,"rgba(255,222,158,.55)");
+    g.addColorStop(.4,"rgba(255,199,112,.15)");
+    g.addColorStop(1,"rgba(255,199,112,0)");
+    cx.fillStyle=g;cx.beginPath();cx.arc(lx,ly,52*ol,0,7);cx.fill();
+    cx.fillStyle="#ffe9bb";
+  }else cx.fillStyle="#4a4438";
+  cx.beginPath();cx.moveTo(lx-6.5*ol,ly-4*ol);cx.lineTo(lx+6.5*ol,ly-4*ol);
+  cx.lineTo(lx+4.5*ol,ly+5*ol);cx.lineTo(lx-4.5*ol,ly+5*ol);cx.closePath();cx.fill();
+  cx.lineWidth=1;
+}
+function lambalar(){
+  var v=VAKITLER[vakitIx], ara=260*S, kay=(mesafe*.62)%ara;
+  for(var c=-1;c*ara-kay<W+ara;c++) lamba(c*ara-kay,ZEMIN,S*0.92,v.lamba===1,v);
+}
+
 var yildizlar=[];
 for(var yi=0;yi<70;yi++) yildizlar.push({x:Math.random(),y:Math.random()*.55,p:Math.random()});
 
@@ -725,6 +828,7 @@ function arkaPlan(){
   cx.fillStyle="rgba(255,255,255,.10)";
   var t=(mesafe*1)%64;
   for(var d=-t;d<W;d+=64) cx.fillRect(d,ZEMIN+14*S,22*S,2);
+  lambalar();
 }
 
 function oyuncuCiz(){
@@ -765,7 +869,7 @@ function oyuncuCiz(){
 }
 
 function engelCiz(e){
-  cx.fillStyle="#2b2118";
+  cx.fillStyle=VAKITLER[vakitIx].engel;
   if(e.tip==="kus"){
     var k=Math.sin(mesafe*.09)*e.h*0.5;
     cx.beginPath();
@@ -845,8 +949,8 @@ function dongu(zaman){
     if(kalkan>0) kalkan-=dt/60;
     else{ var c=carpisma(); if(c){ soruAc(); } }
 
-    var yv=Math.floor(mesafe/4200)%VAKITLER.length;
-    if(yv!==vakitIx){ vakitIx=yv; seritCiz(); }
+    var yv=Math.floor(mesafe/9000)%VAKITLER.length;
+    if(yv!==vakitIx && durum==="oyun"){ vakitIx=yv; seritCiz(); vakitSoruAc(); }
 
     $("skor").textContent=skor;
     if(skor>st.rekor){ st.rekor=skor; $("rekor").textContent="REKOR "+skor; }
@@ -857,19 +961,17 @@ function dongu(zaman){
 }
 
 /* ---------------- sorular ---------------- */
-var aktifSoru=null,aktifDogru=0;
-function soruAc(){
-  durum="soru";
-  var m=MENZILLER[st.mi], s=m.sorular[st.sira[st.qi]];
-  aktifSoru=s;
+var aktifSoru=null,aktifDogru=0,vakitSorusu=false;
+function soruHazirla(s,baslik,sayac,oran,renk){
+  durum="soru"; aktifSoru=s;
   var sik=s.o.slice(), dgr=s.o[0];
   for(var i=sik.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=sik[i];sik[i]=sik[j];sik[j]=t;}
   aktifDogru=sik.indexOf(dgr);
-
-  $("sorumenzil").textContent=m.ad;
-  var tur=Math.floor(st.toplam/10)+1, ici=st.toplam%10+1;
-  $("sorusayac").textContent=tur+". tur · "+ici+" / 10";
-  $("cubukic").style.width=Math.round(st.qi/m.sorular.length*100)+"%";
+  $("sorumenzil").textContent=baslik;
+  $("sorumenzil").style.color=renk;
+  $("sorusayac").textContent=sayac;
+  $("cubukic").style.width=Math.round(oran*100)+"%";
+  $("cubukic").style.background=renk;
   $("sorumetin").textContent=s.s;
   $("geribildirim").textContent="";
   $("devam").classList.add("gizli");
@@ -882,6 +984,19 @@ function soruAc(){
   for(var d=0;d<dgm.length;d++) dgm[d].addEventListener("click",cevapla);
   $("soruperde").classList.remove("gizli");
 }
+function soruAc(){
+  vakitSorusu=false;
+  var m=MENZILLER[st.mi];
+  var tur=Math.floor(st.msoru/10)+1, ici=st.msoru%10+1;
+  soruHazirla(m.sorular[st.sira[st.qi]], m.ad, tur+". tur · "+ici+" / 10",
+              st.qi/m.sorular.length, m.renk);
+}
+function vakitSoruAc(){
+  vakitSorusu=true;
+  var v=VAKITLER[vakitIx], liste=VAKIT_SORULARI[vakitIx];
+  soruHazirla(liste[Math.floor(Math.random()*liste.length)],
+              "Vakit sorusu · "+v.ad, v.ad+" vakti girdi", 1, "#d9a441");
+}
 function cevapla(ev){
   var btn=ev.currentTarget, sec=parseInt(btn.getAttribute("data-i"),10);
   var dgm=$("sikler").querySelectorAll(".sik"),i;
@@ -891,26 +1006,33 @@ function cevapla(ev){
   if(sec===aktifDogru){
     btn.classList.add("dogru");
     st.dogru++; sesDogru();
-    $("geribildirim").textContent="Doğru. Kalkanla devam ediyorsun.";
+    $("geribildirim").textContent=vakitSorusu
+      ? "Doğru. "+VAKITLER[vakitIx].ad+" vaktinde koşmaya devam."
+      : "Doğru. Kalkanla devam ediyorsun.";
   }else{
     btn.classList.add("yanlis");
     st.yanlis++; sesYanlis();
     $("geribildirim").textContent="Doğrusu: "+aktifSoru.o[0];
   }
-  st.qi++;
-  var bitti=false;
-  if(st.qi>=st.sira.length){ st.mi=(st.mi+1)%MENZILLER.length; yeniSira(); bitti=true; }
+  var menzilBitti=false, turBitti=false;
+  if(!vakitSorusu){
+    st.msoru++; st.qi++;
+    if(st.qi>=st.sira.length){ st.mi=(st.mi+1)%MENZILLER.length; yeniSira(); menzilBitti=true; }
+    turBitti=(st.msoru%10===0);
+  }
+  var vakitti=vakitSorusu;
   kaydet(); istatistikYaz();
   $("devam").classList.remove("gizli");
-  $("devam").onclick=function(){ soruKapat(bitti, st.toplam%10===0); };
+  $("devam").onclick=function(){ soruKapat(menzilBitti,turBitti,vakitti); };
 }
-function soruKapat(menzilBitti,turBitti){
+function soruKapat(menzilBitti,turBitti,vakitti){
   $("soruperde").classList.add("gizli");
   durum="oyun"; kalkan=2.6;
   engeller=engeller.filter(function(e){ return e.x>W*0.55; });
   $("menziladi").textContent=MENZILLER[st.mi].ad;
-  if(menzilBitti){ sesMenzil(); mujde("Yeni menzil","→ "+MENZILLER[st.mi].ad); }
-  else if(turBitti){ sesMenzil(); mujde((Math.floor(st.toplam/10))+". tur tamam","Toplam doğru: "+st.dogru); }
+  if(vakitti){ sesMenzil(); mujde(VAKITLER[vakitIx].ad+" vakti","Yeni vakit başladı"); }
+  else if(menzilBitti){ sesMenzil(); mujde("Yeni menzil","→ "+MENZILLER[st.mi].ad); }
+  else if(turBitti){ sesMenzil(); mujde((Math.floor(st.msoru/10))+". tur tamam","Toplam doğru: "+st.dogru); }
 }
 var mujdeZaman=null;
 function mujde(b,i){
