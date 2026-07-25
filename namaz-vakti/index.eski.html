@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>NAMAZ VAKTİ — Camiye Koş, Namazı Öğren</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --gece:#1e2a4a; --ink:#f5f2e8; --dim:#a8b0c9; --gold:#e8c25f; --yesil:#3fa06a; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--gece);color:var(--ink);
+    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  canvas{display:block;width:100%;height:100%}
+  #hud{position:fixed;top:0;left:0;right:0;text-align:center;padding:12px;pointer-events:none}
+  .label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .value{font-size:19px;font-weight:800}
+  #secim{position:fixed;left:0;right:0;bottom:0;display:none;flex-direction:column;gap:8px;
+    padding:14px 16px calc(18px + env(safe-area-inset-bottom));z-index:4;
+    background:linear-gradient(0deg,rgba(30,42,74,.97),rgba(30,42,74,0))}
+  #soru{text-align:center;font-size:15px;font-weight:800;color:var(--gold);letter-spacing:.03em;margin-bottom:2px}
+  .sec{font:inherit;font-size:16px;font-weight:800;color:var(--ink);text-align:left;
+    background:rgba(245,242,232,.08);border:2px solid rgba(245,242,232,.25);border-radius:16px;
+    padding:13px 18px;cursor:pointer}
+  .sec small{display:block;font-size:11.5px;font-weight:600;color:var(--dim);margin-top:2px}
+  .sec:active{background:rgba(232,194,95,.25);border-color:var(--gold)}
+  .sec.dogru{background:rgba(63,160,106,.35);border-color:var(--yesil)}
+  .sec.yanlis{background:rgba(200,80,80,.25);border-color:#c85050}
+  #toast{position:fixed;top:20%;left:50%;transform:translateX(-50%);font-size:24px;font-weight:900;
+    color:var(--gold);opacity:0;pointer-events:none;text-shadow:0 2px 10px rgba(0,0,0,.5);white-space:nowrap;z-index:5}
+  #toast.pop{animation:tp 1.4s ease-out}
+  @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.6)}
+    12%{opacity:1;transform:translateX(-50%) scale(1.06)}86%{opacity:1}100%{opacity:0}}
+  .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:13px;text-align:center;background:rgba(30,42,74,.96);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .card.hidden .btn{pointer-events:none}
+  .card h1{font-size:clamp(32px,8.5vw,64px);font-weight:900;line-height:1;text-wrap:balance;
+    background:linear-gradient(180deg,#e8c25f,#f5f2e8);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .card p{max-width:38ch;color:var(--dim);font-size:14.5px;line-height:1.6}
+  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.08em;text-transform:uppercase;
+    color:#1e2a4a;background:linear-gradient(180deg,#e8c25f,#c9a23f);border:none;border-radius:999px;
+    padding:14px 38px;cursor:pointer;box-shadow:0 5px 0 #8f7020}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #8f7020}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  .hint{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+</style>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div class="label" id="hudLabel"></div><div class="value" id="hudVal"></div></div>
+<div id="toast"></div>
+<div id="secim">
+  <div id="soru">Sıradaki hareket hangisi?</div>
+</div>
+
+<div class="card" id="intro">
+  <h1>🕌 NAMAZ VAKTİ</h1>
+  <p>Ezan okunuyor! Önce dokunarak Yusuf'u camiye koştur, su birikintilerinden atla. Camiye varınca namazın hareketlerini <b>doğru sırayla</b> seçerek öğren: Tekbir'den Selam'a! Her doğru seçimde Yusuf hareketi yapar. 🤲</p>
+  <button class="btn" id="startBtn">Bismillah, Başla</button>
+  <span class="hint">öğretici oyun · 5-10 yaş</span>
+</div>
+
+<div class="card hidden" id="endcard">
+  <h1>MAŞALLAH! 🌙</h1>
+  <p id="endMsg"></p>
+  <button class="btn" id="againBtn">Bir Daha Oyna</button>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+addEventListener('resize',resize); resize();
+
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function nota(f,d=0.25,v=0.15){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type='triangle';o.frequency.value=f;
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+0.02);}catch(e){} }
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
+
+/* namaz hareketleri — öğretici sıra */
+const ADIMLAR=[
+  {ad:'Tekbir',  desc:'Eller kulak hizasına: "Allahu Ekber"', poz:'tekbir'},
+  {ad:'Kıyam',   desc:'Ayakta duruş — eller bağlanır, Fatiha okunur', poz:'kiyam'},
+  {ad:'Rükû',    desc:'Öne eğilme — eller dizlerde, sırt düz', poz:'ruku'},
+  {ad:'Doğrulma',desc:'Rükûdan kalkıp dik durma', poz:'kiyam2'},
+  {ad:'Secde',   desc:'Alın yere konur — en yakın olduğumuz an', poz:'secde'},
+  {ad:'Oturuş',  desc:'Dizler üstünde oturma', poz:'oturus'},
+  {ad:'İkinci Secde', desc:'Tekrar secdeye gidilir', poz:'secde'},
+  {ad:'Tahiyyat', desc:'Oturarak dua okunur', poz:'oturus'},
+  {ad:'Selam',   desc:'Baş sağa ve sola çevrilir: "Esselamü aleyküm"', poz:'selam'},
+];
+let state='intro', phase='yol', tick=0;
+let px=0, yolProg=0, jumpT=0, engeller=[], adimI=0, dogru=0, deneme=0, poz='kiyam', pozAnim=0;
+
+function startGame(){
+  phase='yol'; yolProg=0; jumpT=0; adimI=0; dogru=0; deneme=0; poz='yuru'; pozAnim=0;
+  engeller=[0.3,0.55,0.78];
+  document.getElementById('hudLabel').textContent='CAMİYE KOŞ';
+  document.getElementById('hudVal').textContent='dokun = zıpla';
+  document.getElementById('secim').style.display='none';
+  state='play';
+}
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+/* ── FAZ 1: camiye koşu ── */
+addEventListener('touchstart',e=>{ if(state!=='play'||phase!=='yol'||e.target.closest('.card'))return;
+  if(jumpT<=0){ jumpT=26; nota(392,0.12); buzz(6); } audio(); },{passive:true});
+addEventListener('mousedown',e=>{ if(state!=='play'||phase!=='yol'||e.target.closest('.card'))return;
+  if(jumpT<=0){ jumpT=26; nota(392,0.12); } });
+
+function yolPhysics(){
+  yolProg+=0.0022;
+  if(jumpT>0)jumpT--;
+  for(const e of engeller){
+    if(Math.abs(yolProg-e)<0.012&&jumpT<=0){
+      yolProg=Math.max(0,e-0.08); toast('Ayağın ıslandı! 💦'); buzz(30);
+    }
+  }
+  document.getElementById('hudVal').textContent='Camiye: %'+Math.min(100,yolProg*100|0);
+  if(yolProg>=1){
+    phase='namaz'; poz='kiyam'; pozAnim=1;
+    document.getElementById('hudLabel').textContent='NAMAZI ÖĞREN';
+    document.getElementById('hudVal').textContent='';
+    toast('Hoş geldin! 🕌');
+    nota(523,0.3); nota(659,0.35);
+    setTimeout(buildSoru,900);
+  }
+}
+/* ── FAZ 2: hareket sırası ── */
+function buildSoru(){
+  const box=document.getElementById('secim');
+  [...box.querySelectorAll('.sec')].forEach(b=>b.remove());
+  if(adimI>=ADIMLAR.length){ finish(); return; }
+  document.getElementById('hudVal').textContent='Adım '+(adimI+1)+' / '+ADIMLAR.length;
+  const dogruAdim=ADIMLAR[adimI];
+  const yanlislar=ADIMLAR.filter((a,i)=>i!==adimI&&a.ad!==dogruAdim.ad);
+  const secs=[dogruAdim,
+    yanlislar[Math.floor(Math.random()*yanlislar.length)]];
+  let y2; do{ y2=yanlislar[Math.floor(Math.random()*yanlislar.length)]; }while(y2===secs[1]);
+  secs.push(y2);
+  secs.sort(()=>Math.random()-0.5);
+  for(const s of secs){
+    const b=document.createElement('button');
+    b.className='sec';
+    b.innerHTML=s.ad+'<small>'+s.desc+'</small>';
+    const h=e=>{ e.preventDefault(); e.stopPropagation();
+      if(s===dogruAdim){
+        b.classList.add('dogru');
+        dogru++; poz=s.poz.replace('2',''); pozAnim=0;
+        nota(523+adimI*30,0.25); buzz(15);
+        adimI++;
+        setTimeout(buildSoru,800);
+      } else {
+        b.classList.add('yanlis'); deneme++;
+        toast('Tekrar düşün 🙂'); nota(220,0.2,0.1); buzz(25);
+        setTimeout(()=>b.classList.remove('yanlis'),700);
+      } };
+    b.addEventListener('click',h); b.addEventListener('touchend',h);
+    box.appendChild(b);
+  }
+  box.style.display='flex';
+}
+function finish(){
+  document.getElementById('secim').style.display='none';
+  state='over';
+  document.getElementById('endMsg').textContent=
+    'Namazın '+ADIMLAR.length+' adımını da doğru sırayla öğrendin'+
+    (deneme===0?' — hem de hiç şaşırmadan! 🌟':' ('+deneme+' ufak şaşırmayla).')+
+    ' Şimdi büyüklerinle beraber kılmayı deneyebilirsin. 🤲';
+  document.getElementById('endcard').classList.remove('hidden');
+  nota(523,0.3); nota(659,0.35); nota(784,0.5); buzz([30,50,30,50,60]);
+}
+
+/* ── çizim ── */
+function drawFigur(x,y,s,p,t){
+  /* takkeli çocuk — pozisyona göre */
+  ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+  ctx.lineCap='round';
+  const ten='#f5d5b8', kiyafet='#4a7ab8', kiyafet2='#3a5a94', takke='#f5f2e8';
+  const kafa=(hx,hy,r,selam)=>{
+    ctx.fillStyle=ten; ctx.beginPath(); ctx.arc(hx,hy,r,0,6.28); ctx.fill();
+    ctx.fillStyle=takke; ctx.beginPath(); ctx.arc(hx+(selam?3:0),hy-r*0.55,r*0.82,Math.PI*1.05,Math.PI*1.95); ctx.fill();
+    ctx.fillStyle='#3a2c1a';
+    ctx.beginPath(); ctx.arc(hx+(selam||2),hy-2,1.8,0,6.28); ctx.fill();
+  };
+  if(p==='yuru'){
+    kafa(0,-58,11);
+    ctx.strokeStyle=kiyafet; ctx.lineWidth=13;
+    ctx.beginPath(); ctx.moveTo(0,-46); ctx.lineTo(0,-14); ctx.stroke();
+    ctx.strokeStyle=kiyafet2; ctx.lineWidth=7;
+    const ph=Math.sin(t*0.35)*10;
+    ctx.beginPath(); ctx.moveTo(0,-14); ctx.lineTo(-7+ph,6);
+    ctx.moveTo(0,-14); ctx.lineTo(7-ph,6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-40); ctx.lineTo(-10-ph*0.5,-24);
+    ctx.moveTo(0,-40); ctx.lineTo(10+ph*0.5,-24); ctx.stroke();
+  }
+  if(p==='tekbir'){
+    kafa(0,-58,11);
+    ctx.strokeStyle=kiyafet; ctx.lineWidth=13;
+    ctx.beginPath(); ctx.moveTo(0,-46); ctx.lineTo(0,-12); ctx.stroke();
+    ctx.strokeStyle=kiyafet2; ctx.lineWidth=7;
+    ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(-6,8); ctx.moveTo(0,-12); ctx.lineTo(6,8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-42); ctx.lineTo(-13,-52); ctx.moveTo(0,-42); ctx.lineTo(13,-52); ctx.stroke();
+    ctx.fillStyle=ten;
+    ctx.beginPath(); ctx.arc(-14,-55,4,0,6.28); ctx.arc(14,-55,4,0,6.28); ctx.fill();
+  }
+  if(p==='kiyam'){
+    kafa(0,-58,11);
+    ctx.strokeStyle=kiyafet; ctx.lineWidth=13;
+    ctx.beginPath(); ctx.moveTo(0,-46); ctx.lineTo(0,-12); ctx.stroke();
+    ctx.strokeStyle=kiyafet2; ctx.lineWidth=7;
+    ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(-6,8); ctx.moveTo(0,-12); ctx.lineTo(6,8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-40); ctx.lineTo(-8,-30); ctx.lineTo(0,-27);
+    ctx.moveTo(0,-40); ctx.lineTo(8,-30); ctx.lineTo(0,-27); ctx.stroke();
+  }
+  if(p==='ruku'){
+    ctx.strokeStyle=kiyafet; ctx.lineWidth=13;
+    ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(2,-34); ctx.lineTo(26,-38); ctx.stroke();
+    kafa(34,-40,10);
+    ctx.strokeStyle=kiyafet2; ctx.lineWidth=7;
+    ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(-5,8); ctx.moveTo(0,-12); ctx.lineTo(6,8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(16,-37); ctx.lineTo(14,-18); ctx.stroke();
+    ctx.fillStyle=ten; ctx.beginPath(); ctx.arc(14,-15,4,0,6.28); ctx.fill();
+  }
+  if(p==='secde'){
+    ctx.strokeStyle=kiyafet; ctx.lineWidth=12;
+    ctx.beginPath(); ctx.moveTo(-18,2); ctx.lineTo(-6,-18); ctx.lineTo(18,-6); ctx.stroke();
+    kafa(30,0,9);
+    ctx.strokeStyle=kiyafet2; ctx.lineWidth=6;
+    ctx.beginPath(); ctx.moveTo(14,-7); ctx.lineTo(20,4); ctx.moveTo(-18,2); ctx.lineTo(-24,6); ctx.stroke();
+    ctx.fillStyle=ten;
+    ctx.beginPath(); ctx.arc(21,6,3.5,0,6.28); ctx.arc(38,6,3.5,0,6.28); ctx.fill();
+  }
+  if(p==='oturus'){
+    ctx.strokeStyle=kiyafet; ctx.lineWidth=12;
+    ctx.beginPath(); ctx.moveTo(-4,4); ctx.lineTo(0,-28); ctx.stroke();
+    kafa(2,-40,10);
+    ctx.strokeStyle=kiyafet2; ctx.lineWidth=7;
+    ctx.beginPath(); ctx.moveTo(-6,4); ctx.lineTo(14,2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-24); ctx.lineTo(9,-12);
+    ctx.moveTo(0,-24); ctx.lineTo(-8,-12); ctx.stroke();
+    ctx.fillStyle=ten;
+    ctx.beginPath(); ctx.arc(10,-9,3.5,0,6.28); ctx.arc(-9,-9,3.5,0,6.28); ctx.fill();
+  }
+  if(p==='selam'){
+    kafa(0,-58,11,Math.sin(t*0.1)>0?6:-6);
+    ctx.strokeStyle=kiyafet; ctx.lineWidth=13;
+    ctx.beginPath(); ctx.moveTo(0,-46); ctx.lineTo(0,-12); ctx.stroke();
+    ctx.strokeStyle=kiyafet2; ctx.lineWidth=7;
+    ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(-6,8); ctx.moveTo(0,-12); ctx.lineTo(6,8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-40); ctx.lineTo(-8,-30); ctx.lineTo(0,-27);
+    ctx.moveTo(0,-40); ctx.lineTo(8,-30); ctx.lineTo(0,-27); ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawCami(x,y,s){
+  ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+  ctx.fillStyle='#e8e0cc';
+  ctx.fillRect(-70,-50,140,50);
+  ctx.beginPath(); ctx.arc(0,-50,42,Math.PI,0); ctx.fill();
+  ctx.fillStyle='#3fa06a';
+  ctx.beginPath(); ctx.arc(0,-50,36,Math.PI,0); ctx.fill();
+  ctx.fillStyle='#c9a24a'; ctx.fillRect(-2.5,-96,5,12);
+  ctx.beginPath(); ctx.arc(0,-98,4,0,6.28); ctx.fill();
+  for(const mx of [-88,88]){
+    ctx.fillStyle='#e8e0cc'; ctx.fillRect(mx-6,-92,12,92);
+    ctx.beginPath(); ctx.moveTo(mx-8,-92); ctx.lineTo(mx,-108); ctx.lineTo(mx+8,-92); ctx.fill();
+    ctx.fillStyle='#c9bfa5'; ctx.fillRect(mx-9,-58,18,7);
+  }
+  ctx.fillStyle='#8a6b4a';
+  ctx.beginPath(); ctx.moveTo(-14,0); ctx.lineTo(-14,-26);
+  ctx.arc(0,-26,14,Math.PI,0); ctx.lineTo(14,0); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='rgba(232,194,95,.9)';
+  for(const wx of [-46,46]){ ctx.beginPath();
+    ctx.moveTo(wx-8,-14); ctx.lineTo(wx-8,-28); ctx.arc(wx,-28,8,Math.PI,0);
+    ctx.lineTo(wx+8,-14); ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+function draw(){
+  tick++;
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#16203c'); g.addColorStop(0.7,'#2a3a63'); g.addColorStop(1,'#3a4a75');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  /* ay ve yıldızlar */
+  ctx.fillStyle='#f5f2e8';
+  ctx.beginPath(); ctx.arc(W*0.82,H*0.1,24,0,6.28); ctx.fill();
+  ctx.fillStyle='#16203c';
+  ctx.beginPath(); ctx.arc(W*0.82+9,H*0.1-3,21,0,6.28); ctx.fill();
+  ctx.fillStyle='rgba(245,242,232,.6)';
+  for(let i=0;i<24;i++){ ctx.globalAlpha=0.3+0.4*Math.sin(tick*0.03+i);
+    ctx.fillRect((i*127)%W,(i*67)%(H*0.4),2.5,2.5); }
+  ctx.globalAlpha=1;
+  if(phase==='yol'&&state!=='intro'){
+    const gy=H*0.72;
+    /* sokak */
+    ctx.fillStyle='#2f3a5c'; ctx.fillRect(0,gy,W,H-gy);
+    ctx.strokeStyle='rgba(245,242,232,.2)'; ctx.lineWidth=3; ctx.setLineDash([18,14]);
+    ctx.beginPath(); ctx.moveTo(0,gy+40); ctx.lineTo(W,gy+40); ctx.stroke(); ctx.setLineDash([]);
+    /* evler geçiyor */
+    for(let i=0;i<4;i++){
+      const hx=((i*0.31-yolProg*1.6)%1.3+1.3)%1.3*W*1.4-W*0.2;
+      ctx.fillStyle=i%2?'#3a4a75':'#43547f';
+      ctx.fillRect(hx,gy-90,90,90);
+      ctx.fillStyle='#2a3560';
+      ctx.beginPath(); ctx.moveTo(hx-6,gy-90); ctx.lineTo(hx+45,gy-120); ctx.lineTo(hx+96,gy-90); ctx.fill();
+      ctx.fillStyle='rgba(232,194,95,.85)';
+      ctx.fillRect(hx+14,gy-64,20,22); ctx.fillRect(hx+54,gy-64,20,22);
+    }
+    /* cami yaklaşıyor */
+    const cx=W*0.82+(1-yolProg)*W*0.9;
+    drawCami(cx,gy,0.9+yolProg*0.5);
+    /* su birikintileri */
+    for(const e of engeller){
+      const ex=(e-yolProg)*W*3+W*0.24;
+      if(ex>-60&&ex<W+60){
+        ctx.fillStyle='rgba(120,180,232,.5)';
+        ctx.beginPath(); ctx.ellipse(ex,gy+16,34,9,0,0,6.28); ctx.fill();
+        ctx.strokeStyle='rgba(200,230,255,.5)'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.ellipse(ex,gy+16,24,5,0,0,6.28); ctx.stroke();
+      }
+    }
+    /* Yusuf koşuyor */
+    const jy=jumpT>0?Math.sin((26-jumpT)/26*Math.PI)*46:0;
+    ctx.fillStyle='rgba(0,0,0,.3)';
+    ctx.beginPath(); ctx.ellipse(W*0.24,gy+18,20-jy*0.15,6,0,0,6.28); ctx.fill();
+    drawFigur(W*0.24,gy+14-jy,1.15,'yuru',tick);
+  }
+  if(phase==='namaz'){
+    /* cami içi: halı + mihrap */
+    const gy=H*0.66;
+    const hg=ctx.createLinearGradient(0,gy,0,H);
+    hg.addColorStop(0,'#7a3a3a'); hg.addColorStop(1,'#5c2a2a');
+    ctx.fillStyle=hg; ctx.fillRect(0,gy,W,H-gy);
+    /* seccade desenleri */
+    for(let i=0;i<5;i++){
+      const sx=W*0.5+(i-2)*W*0.21;
+      ctx.strokeStyle='rgba(232,194,95,.4)'; ctx.lineWidth=2.5;
+      ctx.beginPath();
+      ctx.moveTo(sx-32,H-14); ctx.lineTo(sx-32,gy+26);
+      ctx.arc(sx,gy+26,32,Math.PI,0);
+      ctx.lineTo(sx+32,H-14); ctx.stroke();
+    }
+    /* mihrap */
+    ctx.fillStyle='#2a3560';
+    ctx.beginPath(); ctx.moveTo(W/2-70,gy); ctx.lineTo(W/2-70,gy-140);
+    ctx.arc(W/2,gy-140,70,Math.PI,0); ctx.lineTo(W/2+70,gy); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='#e8c25f'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(W/2-60,gy); ctx.lineTo(W/2-60,gy-134);
+    ctx.arc(W/2,gy-134,60,Math.PI,0); ctx.lineTo(W/2+60,gy); ctx.stroke();
+    /* kandiller */
+    for(const kx of [W*0.16,W*0.84]){
+      ctx.strokeStyle='rgba(245,242,232,.35)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(kx,0); ctx.lineTo(kx,H*0.2); ctx.stroke();
+      ctx.fillStyle='#e8c25f';
+      ctx.beginPath(); ctx.arc(kx,H*0.2+8,9,0,6.28); ctx.fill();
+      ctx.globalAlpha=0.25+0.12*Math.sin(tick*0.06+kx);
+      ctx.beginPath(); ctx.arc(kx,H*0.2+8,20,0,6.28); ctx.fill();
+      ctx.globalAlpha=1;
+    }
+    /* figür — güncel poz */
+    if(pozAnim<1)pozAnim+=0.06;
+    drawFigur(W/2,gy+H*0.1,2.1,poz,tick);
+    /* adım adı */
+    if(adimI>0&&adimI<=ADIMLAR.length){
+      ctx.fillStyle='rgba(232,194,95,.9)';
+      ctx.font='800 17px "Avenir Next",system-ui,sans-serif'; ctx.textAlign='center';
+      ctx.fillText('✓ '+ADIMLAR[adimI-1].ad, W/2, gy+H*0.16);
+    }
+  }
+}
+function loop(){ if(state==='play'&&phase==='yol') yolPhysics(); draw(); requestAnimationFrame(loop); }
+function tap(el,fn){ el._fn=fn;
+  const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
+  el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
+tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
+  startGame(); document.getElementById('intro').classList.add('hidden'); });
+tap(document.getElementById('againBtn'),()=>{
+  startGame(); document.getElementById('endcard').classList.add('hidden'); });
+loop();
+</script>
