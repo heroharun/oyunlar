@@ -131,16 +131,16 @@ const LVLCACHE={};
 function genLevel(n){
   if(LVLCACHE[n]) return LVLCACHE[n];
   const r=RNG(n*7919+13);
-  /* ZORLUK MÜFREDATI — tekdüze artar, rastgelelik sadece dizilişte:
-     araç: 6-17→3, 18-29→4, 30-41→5, 42-53→6, 54-65→7, 66-77→8, 78+→9
-     duvar: <12→0, <35→1, <65→2, sonra 3
-     açı: <15 hep dik · <35 dik/yatay · <60 dört yön · 60+ her 3 bölümde çapraz */
-  const nc=Math.min(9, 3+Math.floor((n-6)/12));
-  const nw=n<12?0 : n<35?1 : n<65?2 : 3;
-  const angPool=n<15?[-1.5708] : n<35?[-1.5708,0,3.1416] : [0,3.1416,-1.5708,1.5708];
-  const diag=n>=60&&n%3===0;
-  const mSpot=Math.max(0.12,0.18-(n/100)*0.06);   /* ileride araçlar park yerine daha yakın */
-  const mCar =Math.max(0.11,0.14-(n/100)*0.03);
+  /* ZORLUK MÜFREDATI (sert) — tekdüze artar, rastgelelik sadece dizilişte:
+     araç: 1-11→4, 12-22→5, 23-33→6, 34-44→7, 45-55→8, 56-66→9, 67+→10
+     duvar: <4→0, <18→1, <40→2, sonra 3
+     açı: <8 dik · <20 dik/yatay · <38 dört yön · 38+ her 2 bölümde çapraz */
+  const nc=Math.min(10, 4+Math.floor((n-1)/11));
+  const nw=n<4?0 : n<18?1 : n<40?2 : 3;
+  const angPool=n<8?[-1.5708] : n<20?[-1.5708,0,3.1416] : [0,3.1416,-1.5708,1.5708];
+  const diag=n>=38&&n%2===0;
+  const mSpot=Math.max(0.105,0.16-(n/100)*0.055);  /* araçlar park yerine daha da yakın */
+  const mCar =Math.max(0.10,0.125-(n/100)*0.025);
   for(let attempt=0;attempt<60;attempt++){
     const relax=attempt>35?0.02:0;               /* çok sıkışırsa payı azıcık gevşet */
     const start={x:0.14+r()*0.72, y:0.88, a:-1.5708};
@@ -176,7 +176,7 @@ function genLevel(n){
   }
   return LVLCACHE[n]=LEVELS[(n-1)%LEVELS.length];
 }
-function getLevel(n){ return n<=LEVELS.length?LEVELS[n-1]:genLevel(n); }
+function getLevel(n){ return genLevel(n); }
 const CARW=()=>Math.min(46,W*0.115), CARH=()=>CARW()*1.9;
 let lvl=1, can=3, car, state='intro', tick=0, parkedT=0;
 const keys={L:false,R:false,I:false,G:false};
