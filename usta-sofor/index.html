@@ -45,9 +45,10 @@
     padding:14px 38px;cursor:pointer;box-shadow:0 5px 0 #a8840a}
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a8840a}
   .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-  .lvlrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-  .lvl{width:50px;height:50px;border-radius:14px;border:2px solid rgba(240,242,245,.3);
-    background:rgba(240,242,245,.08);font:inherit;font-size:17px;font-weight:800;color:var(--ink);cursor:pointer}
+  .lvlrow{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;justify-content:center;
+    max-height:38vh;overflow-y:auto;width:min(88vw,340px);padding:4px}
+  .lvl{width:100%;aspect-ratio:1;border-radius:12px;border:2px solid rgba(240,242,245,.3);
+    background:rgba(240,242,245,.08);font:inherit;font-size:14px;font-weight:800;color:var(--ink);cursor:pointer}
   .lvl.lock{opacity:.35;pointer-events:none}
 </style>
 
@@ -70,7 +71,7 @@
 
 <div class="card" id="intro">
   <h1>USTA ŞOFÖR</h1>
-  <p>Arabayı çizgili park yerine sok! ↺ ↻ direksiyon, İLERİ/GERİ pedallar. Duvarlara ve arabalara çarpma — 3 hasar hakkın var. Düzgün park = sonraki bölüm! 🅿️</p>
+  <p>100 bölümlük usta şoförlük yolu! Arabayı çizgili park yerine sok! ↺ ↻ direksiyon, İLERİ/GERİ pedallar. Duvarlara ve arabalara çarpma — 3 hasar hakkın var. Düzgün park = sonraki bölüm! 🅿️</p>
   <div class="lvlrow" id="lvlRow"></div>
 </div>
 
@@ -122,13 +123,56 @@ const LEVELS=[
     cars:[{x:0.6,y:0.85,a:0},{x:0.85,y:0.6,a:-1.5708},{x:0.3,y:0.3,a:0.6},{x:0.6,y:0.2,a:0}],
     walls:[{x:0.45,y:0.55,w:0.5,h:0.045},{x:0.2,y:0.55,w:0.045,h:0.3}] },
 ];
+const TOTAL=100;
+function RNG(x){ let t=x*2654435761%4294967296;
+  return ()=>{ t=(t*1103515245+12345)%2147483648; return t/2147483648; }; }
+function farFrom(a,b,dx,dy){ return Math.abs(a.x-b.x)>dx||Math.abs(a.y-b.y)>dy; }
+const LVLCACHE={};
+function genLevel(n){
+  if(LVLCACHE[n]) return LVLCACHE[n];
+  const r=RNG(n*7919+13);
+  const d=Math.min(1,(n-5)/60);
+  const angles=[0,3.1416,-1.5708,1.5708];
+  for(let attempt=0;attempt<40;attempt++){
+    const start={x:0.14+r()*0.72, y:0.88, a:-1.5708};
+    const spot={x:0.15+r()*0.7, y:0.12+r()*0.48,
+      a:angles[Math.floor(r()*(n>40?4:3))]};
+    if(Math.abs(spot.x-start.x)<0.18&&spot.y>0.55) continue;
+    const cars=[]; const nc=Math.min(8,2+Math.floor(d*5+r()*2));
+    let ok=true;
+    for(let i=0;i<nc;i++){
+      let placed=false;
+      for(let t2=0;t2<30;t2++){
+        const c={x:0.1+r()*0.8, y:0.1+r()*0.66, a:angles[Math.floor(r()*4)]};
+        if(farFrom(c,spot,0.17,0.15)&&farFrom(c,start,0.19,0.17)&&
+           cars.every(o=>farFrom(c,o,0.15,0.13))){ cars.push(c); placed=true; break; }
+      }
+      if(!placed){ ok=false; break; }
+    }
+    if(!ok) continue;
+    const walls=[]; const nw=n>15?Math.floor(r()*3):Math.floor(r()*2);
+    for(let i=0;i<nw;i++){
+      for(let t2=0;t2<25;t2++){
+        const vert=r()<0.5;
+        const w2=vert?{x:0.15+r()*0.7,y:0.3+r()*0.38,w:0.045,h:0.18+r()*0.18}
+                     :{x:0.22+r()*0.56,y:0.26+r()*0.42,w:0.22+r()*0.22,h:0.045};
+        if(farFrom(w2,spot,0.15+w2.w/2,0.13+w2.h/2)&&
+           farFrom(w2,start,0.15+w2.w/2,0.15+w2.h/2)&&
+           cars.every(o=>farFrom(w2,o,0.11+w2.w/2,0.11+w2.h/2))){ walls.push(w2); break; }
+      }
+    }
+    return LVLCACHE[n]={start,spot,cars,walls};
+  }
+  return LVLCACHE[n]=LEVELS[(n-1)%LEVELS.length];
+}
+function getLevel(n){ return n<=LEVELS.length?LEVELS[n-1]:genLevel(n); }
 const CARW=()=>Math.min(46,W*0.115), CARH=()=>CARW()*1.9;
 let lvl=1, can=3, car, state='intro', tick=0, parkedT=0;
 const keys={L:false,R:false,I:false,G:false};
 
 function loadLevel(n){
   lvl=n; can=3;
-  const L=LEVELS[n-1];
+  const L=getLevel(n);
   car={x:L.start.x*W, y:L.start.y*H, a:L.start.a, v:0};
   parkedT=0; updHud();
   document.getElementById('lvlEl').textContent=n;
@@ -142,7 +186,7 @@ function carCorners(x,y,a,w2,h2){
     [x+px*c-py*s, y+px*s+py*c]);
 }
 function rectsOfLevel(){
-  const L=LEVELS[lvl-1], out=[];
+  const L=getLevel(lvl), out=[];
   out.push({x:W/2,y:-8,w:W,h:16,a:0},{x:W/2,y:H+8,w:W,h:16,a:0},
     {x:-8,y:H/2,w:16,h:H,a:0},{x:W+8,y:H/2,w:16,h:H,a:0});
   for(const w2 of L.walls) out.push({x:w2.x*W,y:w2.y*H,w:w2.w*W,h:w2.h*H,a:0});
@@ -183,7 +227,7 @@ function physics(){
     car.v=0;
   }
   /* park kontrolü */
-  const L=LEVELS[lvl-1], sx=L.spot.x*W, sy=L.spot.y*H;
+  const L=getLevel(lvl), sx=L.spot.x*W, sy=L.spot.y*H;
   const da=Math.abs(((car.a-L.spot.a)%3.1416+3.1416)%3.1416);
   const angOk=da<0.3||da>2.84;
   if(Math.hypot(car.x-sx,car.y-sy)<CARW()*0.6 && angOk && Math.abs(car.v)<0.3){
@@ -193,16 +237,16 @@ function physics(){
 }
 function success(){
   state='over';
-  if(lvl>=prog.unlocked&&lvl<LEVELS.length){ prog.unlocked=lvl+1; saveProg(); }
+  if(lvl>=prog.unlocked&&lvl<TOTAL){ prog.unlocked=lvl+1; saveProg(); }
   const t=document.getElementById('endTitle'), m=document.getElementById('endMsg'),
         b=document.getElementById('nextBtn');
   t.textContent='USTA PARK! 🅿️✨';
   ding(4); ding(7); buzz([30,50,30]);
-  if(lvl<LEVELS.length){ m.textContent='Bölüm '+(lvl+1)+' açıldı — orada yer daha dar!';
+  if(lvl<TOTAL){ m.textContent='Bölüm '+(lvl+1)+' / '+TOTAL+' açıldı — orada yer daha dar!';
     b.style.display=''; b.textContent='Sonraki Bölüm';
     b._fn=()=>{ loadLevel(lvl+1); state='play';
       document.getElementById('endcard').classList.add('hidden'); };
-  } else { m.textContent='Tüm bölümleri bitirdin! Ehliyeti hak ettin. 🏆';
+  } else { m.textContent='100 bölümün hepsini bitirdin! Efsane şoförsün. 🏆';
     b.style.display='none'; }
   document.getElementById('endcard').classList.remove('hidden');
 }
@@ -261,7 +305,7 @@ function draw(){
   ctx.fillStyle='rgba(255,255,255,.03)';
   for(let i=0;i<40;i++) ctx.fillRect((i*97)%W,(i*61)%H,3,3);
   if(state==='intro'){ return; }
-  const L=LEVELS[lvl-1];
+  const L=getLevel(lvl);
   /* park çizgileri (hedef) */
   const sx=L.spot.x*W, sy=L.spot.y*H;
   ctx.save(); ctx.translate(sx,sy); ctx.rotate(L.spot.a+1.5708);
@@ -302,7 +346,7 @@ function tap(el,fn){ if(fn)el._fn=fn;
   el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
 function buildLvlRow(){
   const row=document.getElementById('lvlRow'); row.innerHTML='';
-  for(let i=1;i<=LEVELS.length;i++){
+  for(let i=1;i<=TOTAL;i++){
     const b=document.createElement('button');
     b.className='lvl'+(i>prog.unlocked?' lock':'');
     b.textContent=i>prog.unlocked?'🔒':i;
