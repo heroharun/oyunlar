@@ -78,6 +78,11 @@
   <p>Gerçek rota, gerçek kilometreler! Haydarpaşa'dan Medine'ye 3.134 km: İzmit, Eskişehir, Konya, Adana, Halep, Şam... ve Hicaz Demiryolu. Her memleketin meşhur azığını topla, durakları geç, kutlu şehre ulaş. 🕌</p>
   <div class="hint">Yolcunu seç:</div>
   <div class="chars" id="chars"></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center">
+    <span style="font-weight:800;font-size:14px;background:rgba(255,255,255,.45);border-radius:12px;padding:9px 14px" id="bankEl">🧺 0 azık · 🐎 0 binek</span>
+    <button class="btn alt" id="buyBtn" style="padding:10px 16px;font-size:12px">🐎 Binek Al (100 azık)</button>
+  </div>
+  <div class="hint">koşarken çift dokun = bineğe bin · binek ×1.3 hız + bir çarpışma korur</div>
   <button class="btn" id="startBtn">🚉 Haydarpaşa'dan Yola Çık</button>
   <button class="btn alt" id="lbBtn">🏆 İlk 100</button>
   <span class="hint" id="bestIntro"></span>
@@ -209,12 +214,28 @@ function regionNow(){
 }
 
 let lane=1, laneX=1, jumpT=0, dist=0, azik=0, speed=6, objs=[], state='intro', tick=0, spawnT=0, stopI=0;
+let mounted=false, iFrames=0;
 let best=0; try{ best=+localStorage.getItem('hicaz_best')||0; }catch(e){}
+/* ── kalıcı kasa: azıklar birikir, 100 azık = 1 binek ── */
+let bank={azik:0,binek:0};
+try{ const b=JSON.parse(localStorage.getItem('hicaz_bank')); if(b) bank={azik:b.azik||0,binek:b.binek||0}; }catch(e){}
+function saveBank(){ try{ localStorage.setItem('hicaz_bank',JSON.stringify(bank)); }catch(e){} }
+function updBank(){ const el=document.getElementById('bankEl');
+  if(el) el.textContent='🧺 '+bank.azik.toLocaleString('tr-TR')+' azık · 🐎 '+bank.binek+' binek'; }
+function mountKind(){ return phaseNow().desert?'deve':'at'; }
+function activateMount(){
+  if(state!=='play'||mounted) return;
+  if(bank.binek<=0){ mtoast('Bineğin yok — menüden 100 azıkla al! 🧺'); blip(200,0.15,0.1); return; }
+  bank.binek--; saveBank(); mounted=true;
+  mtoast(mountKind()==='deve'?'🐪 Deveye bindin! ×1.3 hız':'🐎 Ata bindin! ×1.3 hız');
+  blip(523,0.2,0.16); blip(659,0.25,0.12); buzz([20,40,20]);
+}
 document.getElementById('bestIntro').textContent=best>0?'EN İYİ PUANIN: '+best.toLocaleString('tr-TR'):'';
 const laneW=()=>Math.min(W*0.26,150);
 const PLAYER_Y=()=>H*0.78;
 
-function reset(){ lane=1; laneX=1; jumpT=0; dist=0; azik=0; speed=6; objs=[]; spawnT=40; stopI=0; updHud(); }
+function reset(){ lane=1; laneX=1; jumpT=0; dist=0; azik=0; speed=6; objs=[]; spawnT=40; stopI=0;
+  mounted=false; iFrames=0; updHud(); }
 function updHud(){
   document.getElementById('distEl').textContent=Math.floor(dist/10)+' km';
   document.getElementById('coinEl').textContent=regionNow().item+' '+azik;
@@ -245,18 +266,25 @@ function spawn(){
 function physics(){
   tick++;
   speed=Math.min(12.5, 6+(dist/10)/500);
-  dist+=speed*0.14;   // tren hızında km sayacı: Medine ~3134 km ≈ 8-10 dk kusursuz koşu
-  laneX+=(lane-laneX)*0.25;
+  dist+=speed*0.14*(mounted?1.3:1);   // binekle ×1.3 mesafe
+  laneX+=(lane-laneX)*0.34;           // daha çevik şerit geçişi
   if(jumpT>0)jumpT--;
+  if(iFrames>0)iFrames--;
   spawnT-=speed;
   if(spawnT<=0){ spawn(); spawnT=155+Math.random()*130; }
-  for(const o of objs) o.y+=speed;
+  for(const o of objs) o.y+=speed*(mounted?1.15:1);
   const py=PLAYER_Y();
   for(const o of objs){
     if(o.hit)continue;
     if(Math.abs(o.y-py)<34&&Math.abs(o.lane-laneX)<0.45){
       if(o.type==='azik'){ o.hit=true; azik++; updHud(); blip(880,0.07,0.11); buzz(6); }
-      else if(o.type==='low'&&jumpT>0){ }
+      else if(jumpT>0){ /* zıplama HER engeli aşar */ }
+      else if(iFrames>0){ }
+      else if(mounted){ /* binek bir çarpışmayı karşılar */
+        mounted=false; o.hit=true; iFrames=50;
+        mtoast(mountKind()==='deve'?'🐪 Deve ürktü, kaçtı!':'🐎 At ürktü, kaçtı!');
+        blip(180,0.25,0.15,'sawtooth'); buzz(50);
+      }
       else { fall(); return; }
     }
   }
@@ -271,6 +299,7 @@ function physics(){
 function calcScore(){ return Math.floor(dist/10*10 + azik*5); }
 function fall(){
   state='over'; setPause(false); blip(140,0.4,0.18,'sawtooth'); buzz(80);
+  bank.azik+=azik; saveBank(); updBank();   // azıklar kasaya
   const km=Math.floor(dist/10), score=calcScore();
   const nb=score>best; if(nb){ best=score; try{localStorage.setItem('hicaz_best',best);}catch(e){} }
   const reachedMedine=stopI>=STOPS.length;
@@ -351,6 +380,43 @@ function drawLandmark(){
     ctx.fillRect(-22,-26,12,16); ctx.fillRect(6,-30,12,18); }
   if(T2==='kabe'){ ctx.fillStyle='#1a1a1a'; ctx.fillRect(-24,-40,48,40);
     ctx.fillStyle='#c9a24a'; ctx.fillRect(-24,-16,48,5); }
+  ctx.restore();
+}
+function drawMount(px,py){
+  /* yöreye uygun binek: yeşil/bozkırda at, çölde deve */
+  const kind=mountKind();
+  ctx.save(); ctx.translate(px,py);
+  const gallop=Math.sin(tick*0.4)*3;
+  if(kind==='at'){
+    ctx.fillStyle='#8a5a3a';
+    ctx.beginPath(); ctx.ellipse(0,2+gallop*0.3,30,15,0,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(22,-4); ctx.quadraticCurveTo(36,-16,34,-28);
+    ctx.quadraticCurveTo(44,-26,46,-16); ctx.quadraticCurveTo(46,-4,32,2); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#5a3a22';
+    ctx.beginPath(); ctx.moveTo(32,-28); ctx.lineTo(36,-36) ; ctx.lineTo(40,-27); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(24,-24); ctx.quadraticCurveTo(20,-10,26,-2); ctx.lineTo(30,-6);
+    ctx.quadraticCurveTo(27,-14,30,-24); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='#5a3a22'; ctx.lineWidth=5; ctx.lineCap='round';
+    const ph3=Math.sin(tick*0.4)*8;
+    ctx.beginPath(); ctx.moveTo(-16,12); ctx.lineTo(-18+ph3,26);
+    ctx.moveTo(14,12); ctx.lineTo(16-ph3,26); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-28,4); ctx.quadraticCurveTo(-40,10,-38,22); ctx.stroke();
+  } else {
+    ctx.fillStyle='#c9a26a';
+    ctx.beginPath(); ctx.ellipse(0,2+gallop*0.3,32,15,0,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.arc(-4,-14,12,0,6.28); ctx.fill();     // hörgüç
+    ctx.beginPath(); ctx.moveTo(24,-2); ctx.quadraticCurveTo(38,-10,38,-24);
+    ctx.quadraticCurveTo(46,-24,46,-14); ctx.quadraticCurveTo(46,-2,32,4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#a8824a';
+    ctx.beginPath(); ctx.ellipse(42,-22,6,5,0,0,6.28); ctx.fill(); // baş
+    ctx.strokeStyle='#a8824a'; ctx.lineWidth=5; ctx.lineCap='round';
+    const ph3=Math.sin(tick*0.35)*8;
+    ctx.beginPath(); ctx.moveTo(-16,12); ctx.lineTo(-18+ph3,26);
+    ctx.moveTo(14,12); ctx.lineTo(16-ph3,26); ctx.stroke();
+  }
+  /* semer */
+  ctx.fillStyle='#7a3a3a';
+  ctx.beginPath(); ctx.ellipse(-2,-12,13,6,0,0,6.28); ctx.fill();
   ctx.restore();
 }
 function drawChar(px,py,jump){
@@ -497,19 +563,17 @@ function draw(){
       ctx.font=(26*s)+'px system-ui';
       ctx.fillText(o.e, lx2, o.y+1);
     } else {
-      /* ENGEL: parlak kırmızı uyarı plakası + beyaz çerçeve + nabız — kaçırılmaz */
-      const pulse=1+Math.sin(tick*0.25+o.y*0.05)*0.06;
+      /* ENGEL: yumuşak toprak-kızılı plaka — belirgin ama göz yormaz */
+      const pulse=1+Math.sin(tick*0.18+o.y*0.05)*0.03;
       const pw=34*s*pulse;
-      ctx.fillStyle='#e8402e';
+      const rx=lx2-pw, ry=o.y-pw*0.9, rw=pw*2, rh=pw*1.8, rr2=11*s;
+      ctx.fillStyle='rgba(60,40,25,.25)';
+      ctx.beginPath(); ctx.ellipse(lx2,o.y+pw*0.95,pw*0.95,7*s,0,0,6.28); ctx.fill();
+      ctx.fillStyle='rgba(186,92,70,.92)';
       ctx.beginPath();
-      const rx=lx2-pw, ry=o.y-pw*0.9, rw=pw*2, rh=pw*1.8, rr2=10*s;
       ctx.moveTo(rx+rr2,ry); ctx.arcTo(rx+rw,ry,rx+rw,ry+rh,rr2); ctx.arcTo(rx+rw,ry+rh,rx,ry+rh,rr2);
       ctx.arcTo(rx,ry+rh,rx,ry,rr2); ctx.arcTo(rx,ry,rx+rw,ry,rr2); ctx.fill();
-      ctx.strokeStyle='#fff'; ctx.lineWidth=3.5*s; ctx.stroke();
-      ctx.strokeStyle='#ffd93d'; ctx.lineWidth=1.5*s;
-      ctx.beginPath();
-      ctx.moveTo(rx+rr2,ry+3*s); ctx.arcTo(rx+rw-3*s,ry+3*s,rx+rw-3*s,ry+rh-3*s,rr2);
-      ctx.stroke();
+      ctx.strokeStyle='rgba(255,248,238,.8)'; ctx.lineWidth=2.5*s; ctx.stroke();
       if(o.barikat){
         /* bedevi barikatı: çapraz ahşap bariyer + kum torbaları */
         ctx.save(); ctx.translate(lx2,o.y);
@@ -539,8 +603,11 @@ function draw(){
   const px=W/2+(laneX-1)*laneW(), py=PLAYER_Y();
   const jump=jumpT>0?Math.sin((28-jumpT)/28*Math.PI)*70:0;
   ctx.fillStyle='rgba(74,53,32,.3)';
-  ctx.beginPath(); ctx.ellipse(px,py+22,24-jump*0.15,7,0,0,6.28); ctx.fill();
-  drawChar(px,py,jump);
+  ctx.beginPath(); ctx.ellipse(px,py+22,(mounted?32:24)-jump*0.15,7,0,0,6.28); ctx.fill();
+  if(iFrames>0&&Math.floor(tick/4)%2===0) ctx.globalAlpha=0.45;   // korumada yanıp sönme
+  if(mounted){ drawMount(px,py-jump); drawChar(px,py-26,jump); }
+  else drawChar(px,py,jump);
+  ctx.globalAlpha=1;
   if(state==='play'){
     ctx.textAlign='center';
     ctx.fillStyle='rgba(201,134,46,.75)';
@@ -564,18 +631,33 @@ addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT') return;
   if(e.code==='ArrowLeft')goLane(-1); if(e.code==='ArrowRight')goLane(1);
   if(e.code==='ArrowUp'||e.code==='Space'){ jump(); e.preventDefault(); }
+  if(e.code==='KeyB') activateMount();
 });
-let tX=null,tY=null;
+/* ── AKICI KONTROL: kaydırma parmak hareket ederken ANINDA işlenir,
+   parmağı kaldırmadan zincirleme kaydırma yapılabilir ── */
+let tX=null,tY=null,tMoved=false,lastTap=0;
 addEventListener('touchstart',e=>{ if(e.target.closest('.card,#pauseBtn'))return;
-  const t=e.changedTouches[0]; tX=t.clientX; tY=t.clientY; audio(); },{passive:true});
-addEventListener('touchend',e=>{
+  const t=e.changedTouches[0]; tX=t.clientX; tY=t.clientY; tMoved=false; audio(); },{passive:true});
+addEventListener('touchmove',e=>{
   if(tX===null)return;
   const t=e.changedTouches[0], dx=t.clientX-tX, dy=t.clientY-tY;
+  if(Math.abs(dx)>32&&Math.abs(dx)>Math.abs(dy)){
+    goLane(dx>0?1:-1); tX=t.clientX; tY=t.clientY; tMoved=true;
+  } else if(dy<-40&&Math.abs(dy)>Math.abs(dx)){
+    jump(); tX=t.clientX; tY=t.clientY; tMoved=true;
+  }
+},{passive:true});
+addEventListener('touchend',e=>{
+  if(tX===null)return;
   tX=tY=null;
-  if(Math.abs(dx)<24&&Math.abs(dy)<24)return;
-  if(Math.abs(dx)>Math.abs(dy)) goLane(dx>0?1:-1);
-  else if(dy<0) jump();
+  if(!tMoved){
+    /* çift dokunuş → binek */
+    const now=performance.now();
+    if(now-lastTap<320){ activateMount(); lastTap=0; }
+    else lastTap=now;
+  }
 });
+addEventListener('dblclick',()=>activateMount());
 function tap(el,fn){ el._fn=fn;
   const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
   el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
@@ -647,9 +729,14 @@ tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
 tap(document.getElementById('retryBtn'),()=>{ reset(); state='play'; setPause(true);
   document.getElementById('endcard').classList.add('hidden');
   setTimeout(()=>mtoast('🚉 Haydarpaşa Garı — Bismillah!'),300); });
+tap(document.getElementById('buyBtn'),()=>{
+  if(bank.azik>=100){ bank.azik-=100; bank.binek++; saveBank(); updBank();
+    mtoast('🐎 Binek alındı!'); blip(659,0.2,0.15); buzz(20); }
+  else { mtoast('Yetmiyor — '+(100-bank.azik)+' azık daha lazım 🧺'); blip(200,0.15,0.1); }
+});
 tap(document.getElementById('saveBtn'),saveScore);
 tap(document.getElementById('lbBtn'),showLB);
 tap(document.getElementById('lbBtn2'),showLB);
 tap(document.getElementById('lbClose'),()=>document.getElementById('lbcard').classList.add('hidden'));
-buildChars(); reset(); loop();
+buildChars(); updBank(); reset(); loop();
 </script>
