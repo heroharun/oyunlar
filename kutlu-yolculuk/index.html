@@ -398,85 +398,175 @@ function drawLandmark(){
   ctx.restore();
 }
 function paintMount(c,m,t){
-  /* seçili bineği c bağlamına çiz (oyun içi ve önizleme ortak) */
-  const gallop=Math.sin(t*0.4)*3;
-  c.lineCap='round';
-  if(m.kind==='at'){
-    c.fillStyle=m.c1;
-    c.beginPath(); c.ellipse(0,2+gallop*0.3,30,15,0,0,6.28); c.fill();
-    c.beginPath(); c.moveTo(22,-4); c.quadraticCurveTo(36,-16,34,-28);
-    c.quadraticCurveTo(44,-26,46,-16); c.quadraticCurveTo(46,-4,32,2); c.closePath(); c.fill();
+  /* ARKADAN görünüm: sağrı, savrulan kuyruk, yukarı uzanan boyun, kulaklı baş */
+  const g=Math.sin(t*0.4), g2=Math.sin(t*0.4+3.14);
+  c.lineCap='round'; c.lineJoin='round';
+  const deve=m.kind==='deve';
+  /* arka bacaklar (dörtnala) */
+  c.strokeStyle=m.c2; c.lineWidth=8;
+  c.beginPath(); c.moveTo(-15,8); c.lineTo(-17+g*5,29);
+  c.moveTo(15,8); c.lineTo(17+g2*5,29); c.stroke();
+  c.fillStyle='#3a2a1a';
+  c.beginPath(); c.ellipse(-17+g*5,31,5.5,3.5,0,0,6.28); c.fill();
+  c.beginPath(); c.ellipse(17+g2*5,31,5.5,3.5,0,0,6.28); c.fill();
+  /* kuyruk */
+  if(deve){
+    c.strokeStyle=m.c2; c.lineWidth=4.5;
+    c.beginPath(); c.moveTo(0,10); c.quadraticCurveTo(4+g*5,22,2+g*7,32); c.stroke();
     c.fillStyle=m.c2;
-    c.beginPath(); c.moveTo(32,-28); c.lineTo(36,-36); c.lineTo(40,-27); c.closePath(); c.fill();
-    c.beginPath(); c.moveTo(24,-24); c.quadraticCurveTo(20,-10,26,-2); c.lineTo(30,-6);
-    c.quadraticCurveTo(27,-14,30,-24); c.closePath(); c.fill();
-    c.strokeStyle=m.c2; c.lineWidth=5;
-    const ph3=Math.sin(t*0.4)*8;
-    c.beginPath(); c.moveTo(-16,12); c.lineTo(-18+ph3,26);
-    c.moveTo(14,12); c.lineTo(16-ph3,26); c.stroke();
-    c.beginPath(); c.moveTo(-28,4); c.quadraticCurveTo(-40,10,-38,22); c.stroke();
+    c.beginPath(); c.arc(2+g*7,33,3.5,0,6.28); c.fill();
   } else {
-    c.fillStyle=m.c1;
-    c.beginPath(); c.ellipse(0,2+gallop*0.3,32,15,0,0,6.28); c.fill();
-    c.beginPath(); c.arc(-4,-14,12,0,6.28); c.fill();
-    c.beginPath(); c.moveTo(24,-2); c.quadraticCurveTo(38,-10,38,-24);
-    c.quadraticCurveTo(46,-24,46,-14); c.quadraticCurveTo(46,-2,32,4); c.closePath(); c.fill();
     c.fillStyle=m.c2;
-    c.beginPath(); c.ellipse(42,-22,6,5,0,0,6.28); c.fill();
-    c.strokeStyle=m.c2; c.lineWidth=5;
-    const ph3=Math.sin(t*0.35)*8;
-    c.beginPath(); c.moveTo(-16,12); c.lineTo(-18+ph3,26);
-    c.moveTo(14,12); c.lineTo(16-ph3,26); c.stroke();
+    c.beginPath();
+    c.moveTo(-3,8);
+    c.quadraticCurveTo(-6+g*7,22,-2+g*10,36);
+    c.quadraticCurveTo(4+g*10,30,5+g*6,20);
+    c.quadraticCurveTo(4,12,3,8); c.closePath(); c.fill();
   }
+  /* sağrı (gövde) — dikey gradyanlı */
+  const bg=c.createLinearGradient(0,-14,0,14);
+  bg.addColorStop(0,m.c1); bg.addColorStop(1,m.c2);
+  c.fillStyle=bg;
+  c.beginPath(); c.ellipse(0,-2,deve?25:23,16,0,0,6.28); c.fill();
+  /* sağrı parlaması */
+  c.fillStyle='rgba(255,255,255,.16)';
+  c.beginPath(); c.ellipse(-7,-8,10,5.5,-0.4,0,6.28); c.fill();
+  /* deve hörgücü (binicinin önünde küçük tepe) */
+  if(deve){
+    c.fillStyle=m.c1;
+    c.beginPath(); c.ellipse(0,-16,11,7,0,0,6.28); c.fill();
+    c.fillStyle='rgba(0,0,0,.12)';
+    c.beginPath(); c.ellipse(0,-13,9,3,0,0,6.28); c.fill();
+  }
+  /* boyun: öne-yukarı incelerek uzanır */
+  c.fillStyle=m.c1;
+  c.beginPath();
+  if(deve){
+    c.moveTo(-7,-18);
+    c.bezierCurveTo(-10,-42,-6,-64,-3,-80);
+    c.lineTo(5,-80);
+    c.bezierCurveTo(8,-62,9,-40,7,-18);
+    c.closePath(); c.fill();
+  } else {
+    c.moveTo(-8,-12);
+    c.bezierCurveTo(-11,-36,-7,-56,-3,-74);
+    c.lineTo(5,-74);
+    c.bezierCurveTo(9,-54,10,-34,8,-12);
+    c.closePath(); c.fill();
+  }
+  /* yele (at) / boyun gölgesi (deve) */
+  if(!deve){
+    c.strokeStyle=m.c2; c.lineWidth=3.5;
+    c.beginPath(); c.moveTo(1,-72); c.quadraticCurveTo(-1+g*2,-44,0,-14); c.stroke();
+  } else {
+    c.fillStyle='rgba(0,0,0,.1)';
+    c.beginPath(); c.ellipse(0,-48,3,22,0,0,6.28); c.fill();
+  }
+  /* baş (arkadan-üstten): dar, kulaklı */
+  const hy=deve?-84:-78;
+  c.fillStyle=m.c1;
+  c.beginPath(); c.ellipse(1,hy,6.5,9,0,0,6.28); c.fill();
+  /* burun ucu görünür */
+  c.fillStyle=m.c2;
+  c.beginPath(); c.ellipse(1,hy-6,4,3,0,0,6.28); c.fill();
+  /* kulaklar */
+  c.fillStyle=m.c1;
+  c.beginPath(); c.moveTo(-5,hy-3); c.lineTo(-9,hy-12); c.lineTo(-1,hy-6); c.closePath(); c.fill();
+  c.beginPath(); c.moveTo(7,hy-3); c.lineTo(11,hy-12); c.lineTo(3,hy-6); c.closePath(); c.fill();
+  /* dizgin */
+  c.strokeStyle='#6b4226'; c.lineWidth=1.8;
+  c.beginPath(); c.moveTo(-5,hy+2); c.quadraticCurveTo(-13,-34,-11,-10);
+  c.moveTo(7,hy+2); c.quadraticCurveTo(15,-34,13,-10); c.stroke();
+  /* semer + kolan */
   c.fillStyle='#7a3a3a';
-  c.beginPath(); c.ellipse(-2,-12,13,6,0,0,6.28); c.fill();
+  c.beginPath(); c.ellipse(0,-4,14,5.5,0,0,6.28); c.fill();
+  c.strokeStyle='#c9a24a'; c.lineWidth=2;
+  c.beginPath(); c.ellipse(0,-4,14,5.5,0,0,6.28); c.stroke();
 }
 function drawMount(px,py){
   ctx.save(); ctx.translate(px,py);
   paintMount(ctx,curMount(),tick);
   ctx.restore();
 }
+function paintChar(c,ch,t,running){
+  /* ARKADAN görünüm: savrulan etek, kollar, örtünün/saçın ensesi */
+  c.lineCap='round'; c.lineJoin='round';
+  const run=Math.sin(t*0.5), sway=Math.sin(t*0.25)*1.6;
+  /* bacaklar — etek altından koşu adımı */
+  if(running){
+    c.strokeStyle='#7a4a2e'; c.lineWidth=5;
+    c.beginPath(); c.moveTo(-5,12); c.lineTo(-6+run*7,26);
+    c.moveTo(5,12); c.lineTo(6-run*7,26); c.stroke();
+    c.fillStyle='#4a2c1a';
+    c.beginPath(); c.ellipse(-6+run*7,27,4.5,3,0,0,6.28); c.fill();
+    c.beginPath(); c.ellipse(6-run*7,27,4.5,3,0,0,6.28); c.fill();
+  }
+  /* kollar — omuzdan salınım */
+  c.strokeStyle=ch.d2; c.lineWidth=6;
+  c.beginPath(); c.moveTo(-9,-26); c.lineTo(-14,-12+(running?run*6:0));
+  c.moveTo(9,-26); c.lineTo(14,-12-(running?run*6:0)); c.stroke();
+  c.fillStyle='#f0c8a8';
+  c.beginPath(); c.arc(-14.5,-9+(running?run*6:0),3.4,0,6.28); c.fill();
+  c.beginPath(); c.arc(14.5,-9-(running?run*6:0),3.4,0,6.28); c.fill();
+  /* elbise — omuzdan etek ucuna doğal kloş, uçları salınımlı */
+  const dg=c.createLinearGradient(0,-32,0,18);
+  dg.addColorStop(0,ch.d1); dg.addColorStop(1,ch.d2);
+  c.fillStyle=dg;
+  c.beginPath();
+  c.moveTo(-9,-32);
+  c.bezierCurveTo(-13,-24,-16,-6,-15+sway,14);
+  c.quadraticCurveTo(-8,18+sway,0,17);
+  c.quadraticCurveTo(8,18-sway,15+sway,14);
+  c.bezierCurveTo(16,-6,13,-24,9,-32);
+  c.quadraticCurveTo(0,-36,-9,-32);
+  c.closePath(); c.fill();
+  /* etek ucu bandı + omuz vurgusu */
+  c.strokeStyle='rgba(0,0,0,.14)'; c.lineWidth=2.5;
+  c.beginPath(); c.moveTo(-14+sway,12); c.quadraticCurveTo(0,17,14+sway,12); c.stroke();
+  c.fillStyle='rgba(255,255,255,.12)';
+  c.beginPath(); c.ellipse(-4,-26,7,4,-0.5,0,6.28); c.fill();
+  /* baş — ARKADAN (yüz yok) */
+  if(ch.scarf){
+    /* başörtüsünün ensesi: örtü + omuza inen uç */
+    c.fillStyle=ch.scarf;
+    c.beginPath(); c.arc(0,-40,11.5,0,6.28); c.fill();
+    /* enseye inen örtü ucu */
+    c.beginPath();
+    c.moveTo(-8,-33);
+    c.quadraticCurveTo(-6+sway,-22,0,-18);
+    c.quadraticCurveTo(6+sway,-22,8,-33);
+    c.closePath(); c.fill();
+    /* örtü kıvrımları */
+    c.strokeStyle='rgba(0,0,0,.13)'; c.lineWidth=1.8;
+    c.beginPath(); c.arc(0,-40,8,0.6,2.5); c.stroke();
+    c.beginPath(); c.moveTo(-4,-30); c.quadraticCurveTo(0,-24,4,-30); c.stroke();
+    /* tepe parlaması */
+    c.fillStyle='rgba(255,255,255,.2)';
+    c.beginPath(); c.ellipse(-3,-45,5,3,-0.5,0,6.28); c.fill();
+  } else {
+    /* saçın arkası + takke */
+    c.fillStyle=ch.hair;
+    c.beginPath(); c.arc(0,-40,11,0,6.28); c.fill();
+    c.strokeStyle='rgba(0,0,0,.2)'; c.lineWidth=1.5;
+    c.beginPath(); c.moveTo(-4,-48); c.quadraticCurveTo(-3,-38,-4,-31); c.stroke();
+    c.beginPath(); c.moveTo(4,-48); c.quadraticCurveTo(3,-38,4,-31); c.stroke();
+    if(ch.cap){
+      c.fillStyle='#f5f0e0';
+      c.beginPath(); c.arc(0,-43,9.5,Math.PI,0); c.fill();
+      c.fillRect(-9.5,-43,19,3);
+      c.strokeStyle='rgba(0,0,0,.12)'; c.lineWidth=1.5;
+      c.beginPath(); c.arc(0,-45,6,Math.PI,0); c.stroke();
+    }
+    /* ense */
+    c.fillStyle='#f0c8a8';
+    c.beginPath(); c.ellipse(0,-30,4.5,3,0,0,6.28); c.fill();
+  }
+}
 function drawChar(px,py,jump){
   const ch=CHARS[charI];
   ctx.save(); ctx.translate(px,py-jump);
-  ctx.rotate((lane-laneX)*-0.15);
-  const dg=ctx.createLinearGradient(0,-30,0,20);
-  dg.addColorStop(0,ch.d1); dg.addColorStop(1,ch.d2);
-  ctx.fillStyle=dg;
-  ctx.beginPath(); ctx.moveTo(0,-34);
-  ctx.bezierCurveTo(22,-20,20,14,0,18);
-  ctx.bezierCurveTo(-20,14,-22,-20,0,-34); ctx.fill();
-  if(ch.scarf){
-    ctx.fillStyle=ch.scarf;
-    ctx.beginPath(); ctx.arc(0,-41,16,0,6.28); ctx.fill();
-    const sw=Math.sin(tick*0.3)*5;
-    ctx.beginPath(); ctx.moveTo(-13,-34);
-    ctx.quadraticCurveTo(-20,-24+sw,-15,-14);
-    ctx.quadraticCurveTo(-6,-18,-8,-30); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(13,-34);
-    ctx.quadraticCurveTo(20,-24-sw,15,-14);
-    ctx.quadraticCurveTo(6,-18,8,-30); ctx.closePath(); ctx.fill();
-    ctx.fillStyle=ch.scarfD;
-    ctx.beginPath(); ctx.arc(0,-48,10,Math.PI*1.1,Math.PI*1.9); ctx.fill();
-  } else {
-    ctx.fillStyle=ch.hair;
-    ctx.beginPath(); ctx.arc(0,-42,14,0,6.28); ctx.fill();
-  }
-  ctx.fillStyle='#ffd9bd';
-  ctx.beginPath(); ctx.arc(0,-39,10.5,0,6.28); ctx.fill();
-  if(ch.cap){ ctx.fillStyle='#f5f0e0';
-    ctx.beginPath(); ctx.arc(0,-46,10.8,Math.PI*1.05,Math.PI*1.95); ctx.fill();
-    ctx.fillRect(-10.8,-47.5,21.6,4); }
-  ctx.fillStyle='#4a3520';
-  ctx.beginPath(); ctx.arc(-3.6,-40,1.9,0,6.28); ctx.arc(3.6,-40,1.9,0,6.28); ctx.fill();
-  ctx.strokeStyle='#c96a5a'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.arc(0,-34.5,3.6,0.3,2.8); ctx.stroke();
-  if(jumpT<=0){
-    ctx.strokeStyle='#8f5a3a'; ctx.lineWidth=4.5; ctx.lineCap='round';
-    const ph2=Math.sin(tick*0.5)*7;
-    ctx.beginPath(); ctx.moveTo(-6,16); ctx.lineTo(-6+ph2,27);
-    ctx.moveTo(6,16); ctx.lineTo(6-ph2,27); ctx.stroke();
-  }
+  ctx.rotate((lane-laneX)*-0.12);
+  paintChar(ctx,ch,tick,jumpT<=0&&!mounted);
   ctx.restore();
 }
 function draw(){
@@ -699,30 +789,7 @@ function buildChars(){
     box.appendChild(b);
   });
 }
-function drawCharMini(mx,ch){
-  const dg=mx.createLinearGradient(0,-30,0,20);
-  dg.addColorStop(0,ch.d1); dg.addColorStop(1,ch.d2);
-  mx.fillStyle=dg;
-  mx.beginPath(); mx.moveTo(0,-34);
-  mx.bezierCurveTo(22,-20,20,14,0,18);
-  mx.bezierCurveTo(-20,14,-22,-20,0,-34); mx.fill();
-  if(ch.scarf){
-    mx.fillStyle=ch.scarf;
-    mx.beginPath(); mx.arc(0,-41,16,0,6.28); mx.fill();
-    mx.fillStyle=ch.scarfD;
-    mx.beginPath(); mx.arc(0,-48,10,Math.PI*1.1,Math.PI*1.9); mx.fill();
-  } else { mx.fillStyle=ch.hair;
-    mx.beginPath(); mx.arc(0,-42,14,0,6.28); mx.fill(); }
-  mx.fillStyle='#ffd9bd';
-  mx.beginPath(); mx.arc(0,-39,10.5,0,6.28); mx.fill();
-  if(ch.cap){ mx.fillStyle='#f5f0e0';
-    mx.beginPath(); mx.arc(0,-46,10.8,Math.PI*1.05,Math.PI*1.95); mx.fill();
-    mx.fillRect(-10.8,-47.5,21.6,4); }
-  mx.fillStyle='#4a3520';
-  mx.beginPath(); mx.arc(-3.6,-40,1.9,0,6.28); mx.arc(3.6,-40,1.9,0,6.28); mx.fill();
-  mx.strokeStyle='#c96a5a'; mx.lineWidth=2;
-  mx.beginPath(); mx.arc(0,-34.5,3.6,0.3,2.8); mx.stroke();
-}
+function drawCharMini(mx,ch){ paintChar(mx,ch,0,false); }
 /* ── binek seçici ── */
 function buildMounts(){
   const box=document.getElementById('mounts'); box.innerHTML='';
