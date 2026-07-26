@@ -105,6 +105,7 @@ h1,h2,h3,.serif{font-family:'Fraunces',Georgia,serif}
   </div>
   <div class="eylemler">
     <button class="btn btn-sifirla" data-act="sifirla">Sıfırla</button>
+    <button class="btn btn-sifirla" data-act="rastgele">🎲 Rastgele</button>
     <button class="btn btn-sifirla" data-act="indir">📥 İndir</button>
     <button class="btn btn-tamamla" data-act="tamamla">Kombini Tamamla ✨</button>
   </div>
@@ -316,6 +317,24 @@ function kapatSonuc(){
   sonucModu = false; cizKanvas();   // düzenlemeye dönünce takı yine görünür
 }
 
+/* ── 🎲 Rastgele kombin ── */
+function rastgeleKombin(){
+  const sec=kat=>{ const l=GARDIROP.filter(u=>u.kategori===kat);
+    return l.length?l[Math.floor(Math.random()*l.length)].id:null; };
+  giyilen={}; sonucModu=false;
+  const zar=Math.random();
+  if(zar<0.35){ const e=sec('elbise'); if(e) giyilen.elbise=e; }
+  else if(zar<0.45){ const p=sec('pijama'); if(p) giyilen.pijama=p; }
+  else { const u=sec('ust'), a=sec('alt');
+    if(u) giyilen.ust=u; if(a) giyilen.alt=a; }
+  const es=sec('esarp'); if(es) giyilen.esarp=es;          // eşarp hep olsun
+  for(const k of ['ayakkabi','canta','taki','dis','yelek','jile']){
+    if(Math.random()<0.4){ const v=sec(k); if(v&&!(k==='jile'&&(giyilen.elbise||giyilen.pijama))) giyilen[k]=v; }
+  }
+  cizKanvas(); cizSekmeler(); cizRaf();
+  uyar('🎲 Rastgele kombin hazır — beğenmezsen bir daha bas!');
+}
+
 /* ── 📥 Tasarımı PNG olarak indir — her resme benzersiz isim ── */
 function benzersizAd(){
   const A=['Gül','İnci','Yasemin','Zümrüt','Lila','Sedef','Mercan','Amber','Nazlı','Gökçe','Fulya','Mine'];
@@ -360,6 +379,7 @@ document.addEventListener('click', function(e){
   else if(a==='sifirla') sifirla();
   else if(a==='tamamla') tamamla();
   else if(a==='indir') indirResim();
+  else if(a==='rastgele') rastgeleKombin();
   else if(a==='kapat') kapatSonuc();
   else if(a==='yenibolum'){ kapatSonuc(); ekranGit('e-bolum'); }
 });
