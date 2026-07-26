@@ -131,36 +131,47 @@ const LVLCACHE={};
 function genLevel(n){
   if(LVLCACHE[n]) return LVLCACHE[n];
   const r=RNG(n*7919+13);
-  const d=Math.min(1,(n-5)/60);
-  const angles=[0,3.1416,-1.5708,1.5708];
-  for(let attempt=0;attempt<40;attempt++){
+  /* ZORLUK MÜFREDATI — bölüm numarasıyla tekdüze artar, rastgelelik sadece dizilişte:
+     araç: 6-19→2, 20-33→3, 34-47→4, 48-61→5, 62-75→6, 76-89→7, 90+→8
+     duvar: <20→0, <50→1, <80→2, sonra 3
+     açı: <25 hep dik · <50 dik/yatay · <75 dört yön · 75+ arada çapraz */
+  const nc=Math.min(8, 2+Math.floor((n-6)/14));
+  const nw=n<20?0 : n<50?1 : n<80?2 : 3;
+  const angPool=n<25?[-1.5708] : n<50?[-1.5708,0,3.1416] : [0,3.1416,-1.5708,1.5708];
+  const diag=n>=75&&n%4===3;
+  const mSpot=Math.max(0.13,0.19-(n/100)*0.06);   /* ileride araçlar park yerine daha yakın */
+  const mCar =Math.max(0.12,0.15-(n/100)*0.03);
+  for(let attempt=0;attempt<60;attempt++){
+    const relax=attempt>35?0.02:0;               /* çok sıkışırsa payı azıcık gevşet */
     const start={x:0.14+r()*0.72, y:0.88, a:-1.5708};
     const spot={x:0.15+r()*0.7, y:0.12+r()*0.48,
-      a:angles[Math.floor(r()*(n>40?4:3))]};
+      a:diag?-0.785:angPool[n%angPool.length]};
     if(Math.abs(spot.x-start.x)<0.18&&spot.y>0.55) continue;
-    const cars=[]; const nc=Math.min(8,2+Math.floor(d*5+r()*2));
-    let ok=true;
+    const cars=[]; let ok=true;
     for(let i=0;i<nc;i++){
       let placed=false;
       for(let t2=0;t2<30;t2++){
-        const c={x:0.1+r()*0.8, y:0.1+r()*0.66, a:angles[Math.floor(r()*4)]};
-        if(farFrom(c,spot,0.17,0.15)&&farFrom(c,start,0.19,0.17)&&
-           cars.every(o=>farFrom(c,o,0.15,0.13))){ cars.push(c); placed=true; break; }
+        const c={x:0.1+r()*0.8, y:0.1+r()*0.66, a:angPool[Math.floor(r()*angPool.length)]};
+        if(farFrom(c,spot,mSpot-relax+0.02,mSpot-relax)&&farFrom(c,start,0.19,0.17)&&
+           cars.every(o=>farFrom(c,o,mCar-relax+0.02,mCar-relax))){ cars.push(c); placed=true; break; }
       }
       if(!placed){ ok=false; break; }
     }
     if(!ok) continue;
-    const walls=[]; const nw=n>15?Math.floor(r()*3):Math.floor(r()*2);
+    const walls=[]; let wok=true;
     for(let i=0;i<nw;i++){
+      let placed=false;
       for(let t2=0;t2<25;t2++){
         const vert=r()<0.5;
         const w2=vert?{x:0.15+r()*0.7,y:0.3+r()*0.38,w:0.045,h:0.18+r()*0.18}
                      :{x:0.22+r()*0.56,y:0.26+r()*0.42,w:0.22+r()*0.22,h:0.045};
         if(farFrom(w2,spot,0.15+w2.w/2,0.13+w2.h/2)&&
            farFrom(w2,start,0.15+w2.w/2,0.15+w2.h/2)&&
-           cars.every(o=>farFrom(w2,o,0.11+w2.w/2,0.11+w2.h/2))){ walls.push(w2); break; }
+           cars.every(o=>farFrom(w2,o,0.11+w2.w/2-relax,0.11+w2.h/2-relax))){ walls.push(w2); placed=true; break; }
       }
+      if(!placed){ wok=false; break; }
     }
+    if(!wok) continue;
     return LVLCACHE[n]={start,spot,cars,walls};
   }
   return LVLCACHE[n]=LEVELS[(n-1)%LEVELS.length];
