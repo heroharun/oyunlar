@@ -105,6 +105,7 @@ h1,h2,h3,.serif{font-family:'Fraunces',Georgia,serif}
   </div>
   <div class="eylemler">
     <button class="btn btn-sifirla" data-act="sifirla">Sıfırla</button>
+    <button class="btn btn-sifirla" data-act="indir">📥 İndir</button>
     <button class="btn btn-tamamla" data-act="tamamla">Kombini Tamamla ✨</button>
   </div>
 </section>
@@ -120,6 +121,7 @@ h1,h2,h3,.serif{font-family:'Fraunces',Georgia,serif}
     <div class="detay" id="detay"></div>
     <div class="sonuc-eylem">
       <button class="btn btn-tekrar" data-act="kapat">Düzenle</button>
+      <button class="btn btn-tekrar" data-act="indir">📥 İndir</button>
       <button class="btn btn-devam" data-act="yenibolum">Yeni Bölüm</button>
     </div>
   </div>
@@ -314,12 +316,50 @@ function kapatSonuc(){
   sonucModu = false; cizKanvas();   // düzenlemeye dönünce takı yine görünür
 }
 
+/* ── 📥 Tasarımı PNG olarak indir — her resme benzersiz isim ── */
+function benzersizAd(){
+  const A=['Gül','İnci','Yasemin','Zümrüt','Lila','Sedef','Mercan','Amber','Nazlı','Gökçe','Fulya','Mine'];
+  const B=['Zarafet','Esinti','Işıltı','Şıklık','Ahenk','Letafet'];
+  let no=1;
+  try{ no=(+localStorage.getItem('tb_indir_no')||0)+1; localStorage.setItem('tb_indir_no',no); }catch(e){}
+  return A[Math.floor(Math.random()*A.length)]+' '+B[Math.floor(Math.random()*B.length)]+' No.'+no;
+}
+function indirResim(){
+  const imgs=[...document.querySelectorAll('#kanvas img')];
+  if(!imgs.length){ uyar('Önce bir şeyler giydir! 🧵'); return; }
+  const CW=750, CH=1000, c=document.createElement('canvas');
+  c.width=CW; c.height=CH+90;
+  const x=c.getContext('2d');
+  const bg=x.createLinearGradient(0,0,0,CH+90);
+  bg.addColorStop(0,'#fdf3f0'); bg.addColorStop(1,'#f5e2dc');
+  x.fillStyle=bg; x.fillRect(0,0,CW,CH+90);
+  /* katmanları kanvastaki sırayla, contain mantığıyla bindir */
+  for(const im of imgs){
+    const nw=im.naturalWidth||750, nh=im.naturalHeight||1000;
+    const s=Math.min(CW/nw, CH/nh);
+    const dw=nw*s, dh=nh*s;
+    x.drawImage(im,(CW-dw)/2,(CH-dh)/2,dw,dh);
+  }
+  const ad=benzersizAd();
+  x.fillStyle='#8a5a66'; x.textAlign='center';
+  x.font='700 34px Georgia, serif';
+  x.fillText('“'+ad+'”', CW/2, CH+42);
+  x.font='600 20px system-ui, sans-serif'; x.fillStyle='#b8909c';
+  x.fillText('✿ Tesettür Butiği ✿', CW/2, CH+74);
+  const a=document.createElement('a');
+  a.download='tesettur-'+ad.toLocaleLowerCase('tr')
+    .replace(/\s+/g,'-').replace(/[^a-z0-9ğüşıiöç.-]/g,'')+'.png';
+  a.href=c.toDataURL('image/png');
+  a.click();
+  uyar('📥 “'+ad+'” indirildi!');
+}
 document.addEventListener('click', function(e){
   const d = e.target.closest('[data-act]'); if(!d) return;
   const a = d.getAttribute('data-act');
   if(a==='bolumler') ekranGit('e-bolum');
   else if(a==='sifirla') sifirla();
   else if(a==='tamamla') tamamla();
+  else if(a==='indir') indirResim();
   else if(a==='kapat') kapatSonuc();
   else if(a==='yenibolum'){ kapatSonuc(); ekranGit('e-bolum'); }
 });
