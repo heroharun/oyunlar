@@ -23,7 +23,7 @@
   svg{width:100%;height:100%}
   svg .r{cursor:pointer;stroke:#5a4a3a;stroke-width:3;stroke-linejoin:round;transition:fill .15s}
   #palette{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;width:min(94vw,480px);padding:4px 0}
-  .swatch{width:40px;height:40px;border-radius:50%;border:3px solid #fff;cursor:pointer;
+  .swatch{width:32px;height:32px;border-radius:50%;border:2.5px solid #fff;cursor:pointer;
     box-shadow:0 2px 6px rgba(90,74,58,.25);transition:transform .1s}
   .swatch.on{transform:scale(1.22);border-color:#5a4a3a}
   #tools{display:flex;gap:8px}
@@ -103,8 +103,10 @@ const PICS={
     <circle class="r" id="f_kabar1" cx="45" cy="90" r="8"/>
     <circle class="r" id="f_kabar2" cx="30" cy="60" r="6"/>`},
 };
-const PALETTE=['#ff5f5f','#ff9f43','#ffd93d','#7bc47f','#4ab8ff','#8c5fff','#ff8fc0',
-  '#8a5a3a','#4a4a5a','#ffffff','#63e6be','#f78fb3'];
+const PALETTE=['#ff5f5f','#e84a5f','#ff8a5f','#ff9f43','#ffd93d','#ffe08a',
+  '#a8e05f','#7bc47f','#2e8f5a','#63e6be','#7fdbda','#4ab8ff',
+  '#2e6fb8','#1a2a5a','#8c5fff','#b28aff','#ff8fc0','#f78fb3',
+  '#ffb3c8','#d9c2a8','#8a5a3a','#5a4232','#4a4a5a','#ffffff'];
 
 /* ── SONSUZ RESİM ÜRETİCİ: 4 şablon × binlerce tohum ── */
 function RNG(s){ return ()=>{ s=(s*9301+49297)%233280; return s/233280; }; }
@@ -783,6 +785,198 @@ Object.assign(GEN,{
     <path class="r" id="Hkuy" d="M238,160 Q266,168 268,206 Q258,232 248,236 Q258,208 250,190 Q244,172 232,168Z"/>`;
   },
 });
+
+/* ── BEBELERİN ÖĞRENECEĞİ DÜNYA: hayvanlar, meyveler, ev eşyaları, araçlar, park ── */
+Object.assign(GEN,{
+  koyun(r){
+    const n=10; let d='';
+    for(let k=0;k<=n;k++){
+      const a=(k/n)*6.2832;
+      const px=(150+Math.cos(a)*62).toFixed(1), py=(150+Math.sin(a)*46).toFixed(1);
+      if(k===0)d='M'+px+','+py;
+      else{ const am=((k-0.5)/n)*6.2832;
+        d+=' Q'+(150+Math.cos(am)*84).toFixed(1)+','+(150+Math.sin(am)*64).toFixed(1)+' '+px+','+py; }
+    }
+    return `<path class="r" id="KyZ" d="M15,262 Q150,252 285,262 L285,300 L15,300Z"/>
+    <path class="r" id="Kyyun" d="${d}Z"/>
+    <circle class="r" id="Kybas" cx="70" cy="120" r="30"/>
+    <path class="r" id="Kytop" d="M52,98 Q70,84 88,98 Q80,88 70,88 Q60,88 52,98Z"/>
+    <ellipse class="r" id="Kyk1" cx="44" cy="112" rx="12" ry="7" transform="rotate(-30 44 112)"/>
+    <ellipse class="r" id="Kyk2" cx="96" cy="112" rx="12" ry="7" transform="rotate(30 96 112)"/>
+    <circle class="r" id="Kyg1" cx="60" cy="118" r="4.5"/><circle class="r" id="Kyg2" cx="80" cy="118" r="4.5"/>
+    <ellipse class="r" id="Kybur" cx="70" cy="134" rx="9" ry="6"/>
+    <rect class="r" id="Kyb1" x="106" y="188" width="14" height="42" rx="6"/>
+    <rect class="r" id="Kyb2" x="140" y="192" width="14" height="38" rx="6"/>
+    <rect class="r" id="Kyb3" x="174" y="192" width="14" height="38" rx="6"/>
+    <rect class="r" id="Kyb4" x="204" y="188" width="14" height="42" rx="6"/>`;
+  },
+  ordek(r){
+    return `<path class="r" id="OrSu" d="M0,220 Q40,208 75,220 Q110,232 150,220 Q190,208 225,220 Q260,232 300,220 L300,300 L0,300Z"/>
+    <path class="r" id="Orgov" d="M90,190 Q86,140 140,136 L190,140 Q230,148 226,186 Q222,214 180,216 L120,214 Q94,210 90,190Z"/>
+    <path class="r" id="Orkan" d="M130,160 Q168,150 186,170 Q170,192 140,188 Q124,178 130,160Z"/>
+    <circle class="r" id="Orbas" cx="98" cy="112" r="30"/>
+    <path class="r" id="Orgaga" d="M70,112 L44,118 Q42,124 48,126 L72,124Z"/>
+    <circle class="r" id="Org" cx="92" cy="104" r="5"/><circle class="r" id="Orgb" cx="93" cy="105" r="2"/>
+    <path class="r" id="Orkuy" d="M224,168 Q244,158 250,144 Q252,168 238,182Z"/>`;
+  },
+  civciv(r){
+    return `<path class="r" id="CvZ" d="M15,264 Q150,254 285,264 L285,300 L15,300Z"/>
+    <circle class="r" id="Cvgov" cx="110" cy="180" r="52"/>
+    <circle class="r" id="Cvbas" cx="110" cy="106" r="34"/>
+    <path class="r" id="Cvtep" d="M100,74 Q104,60 112,70 Q116,58 124,70 Q118,76 110,76Z"/>
+    <circle class="r" id="Cvg1" cx="100" cy="102" r="5"/><circle class="r" id="Cvg2" cx="122" cy="102" r="5"/>
+    <path class="r" id="Cvgaga" d="M104,116 L118,116 L111,128Z"/>
+    <path class="r" id="Cvkan" d="M70,170 Q54,184 62,202 Q78,198 84,184Z"/>
+    <path class="r" id="Cvay1" d="M96,232 L92,252 M96,246 L86,252 M96,246 L104,252" fill="none" stroke-width="3.5"/>
+    <path class="r" id="Cvay2" d="M126,232 L130,252 M126,246 L118,252 M126,246 L136,252" fill="none" stroke-width="3.5"/>
+    <path class="r" id="Cvkab1" d="M196,214 L212,182 L228,214 L222,214 L234,190 L244,214Z"/>
+    <path class="r" id="Cvkab2" d="M192,218 Q224,206 252,218 Q254,244 222,248 Q192,244 192,218Z"/>`;
+  },
+  balina(r){
+    return `<path class="r" id="BlSu" d="M0,232 Q40,220 75,232 Q110,244 150,232 Q190,220 225,232 Q260,244 300,232 L300,300 L0,300Z"/>
+    <path class="r" id="Blgov" d="M50,190 Q52,120 140,114 Q226,120 238,168 Q240,196 210,204 L84,206 Q56,204 50,190Z"/>
+    <path class="r" id="Blkar" d="M56,192 Q100,206 160,204 L120,204 Q80,204 56,192Z" stroke-width="2"/>
+    <path class="r" id="Blkuy" d="M236,176 Q262,160 272,140 Q276,164 264,176 Q278,180 284,196 Q258,196 240,188Z"/>
+    <circle class="r" id="Blg" cx="92" cy="156" r="7"/><circle class="r" id="Blgb" cx="94" cy="158" r="2.8"/>
+    <path class="r" id="Blagz" d="M64,178 Q90,190 122,186" fill="none"/>
+    <path class="r" id="Blfis" d="M140,112 Q136,92 124,84 M140,112 Q140,88 140,78 M140,112 Q146,92 158,86" fill="none" stroke-width="4"/>
+    <circle class="r" id="Bld1" cx="120" cy="70" r="6"/><circle class="r" id="Bld2" cx="142" cy="62" r="7"/><circle class="r" id="Bld3" cx="162" cy="72" r="5.5"/>`;
+  },
+  elma(r){
+    return `<path class="r" id="ElG" d="M150,96 Q88,92 74,150 Q64,214 118,244 Q140,256 150,246 Q160,256 182,244 Q236,214 226,150 Q212,92 150,96Z"/>
+    <path class="r" id="Elpar" d="M104,130 Q90,150 92,180 Q80,150 92,128 Q98,120 104,130Z"/>
+    <rect class="r" id="Elsap" x="145" y="62" width="10" height="38" rx="5"/>
+    <path class="r" id="Elyap" d="M155,80 Q180,52 210,58 Q202,90 172,94 Q158,92 155,80Z"/>
+    <path class="r" id="Elyapciz" d="M162,84 Q182,72 202,64" fill="none" stroke-width="2"/>`;
+  },
+  muz(r){
+    return `<path class="r" id="Mz1" d="M70,90 Q60,180 130,224 Q196,254 240,216 Q234,204 222,206 Q170,224 122,182 Q88,146 92,94 Q80,84 70,90Z"/>
+    <path class="r" id="Mz1u" d="M66,86 L92,90 L90,104 L64,100Z"/>
+    <path class="r" id="Mz1c" d="M96,110 Q104,168 150,200" fill="none" stroke-width="2.5"/>
+    <path class="r" id="Mz2" d="M108,70 Q112,160 178,196 Q232,218 262,180 Q254,170 244,174 Q198,192 156,150 Q128,116 128,72 Q118,64 108,70Z"/>
+    <path class="r" id="Mz2u" d="M104,64 L130,66 L130,80 L104,78Z"/>`;
+  },
+  cilek(r){
+    let ben='';
+    const bx=[120,150,180,108,192,135,165,150],by=[150,140,150,190,190,215,215,250];
+    for(let i=0;i<8;i++) ben+=`<ellipse class="r" id="Cb${i}" cx="${bx[i]}" cy="${by[i]}" rx="5" ry="7"/>`;
+    return `<path class="r" id="CGov" d="M150,110 Q84,108 76,160 Q70,214 128,258 Q150,274 172,258 Q230,214 224,160 Q216,108 150,110Z"/>${ben}
+    <path class="r" id="Cyap" d="M110,108 Q120,90 138,98 Q142,82 150,80 Q158,82 162,98 Q180,90 190,108 Q170,118 150,116 Q130,118 110,108Z"/>
+    <rect class="r" id="Csap" x="145" y="58" width="10" height="30" rx="5"/>`;
+  },
+  karpuz(r){
+    let cek='';
+    const kx=[120,150,180,135,165,150],ky=[180,166,180,210,210,240];
+    for(let i=0;i<6;i++) cek+=`<ellipse class="r" id="Kc${i}" cx="${kx[i]}" cy="${ky[i]}" rx="4.5" ry="7" transform="rotate(${(i*30)%60-30} ${kx[i]} ${ky[i]})"/>`;
+    return `<path class="r" id="Kab" d="M42,140 A108,108 0 0 0 258,140 L242,158 A92,92 0 0 1 58,158Z"/>
+    <path class="r" id="Kbeyaz" d="M58,140 A92,92 0 0 0 242,140 L232,150 A80,80 0 0 1 68,150Z"/>
+    <path class="r" id="Kic" d="M68,140 A82,82 0 0 0 232,140 Q150,132 68,140Z"/>
+    <path class="r" id="Kic2" d="M68,140 A82,82 0 0 0 232,140 L232,142 A82,82 0 0 1 68,142Z" opacity="0"/>${cek}`;
+  },
+  uzum(r){
+    let tane='';
+    const pos=[[150,120],[122,144],[178,144],[108,174],[150,168],[192,174],[122,204],[178,204],[150,234],[136,258],[164,258]];
+    pos.forEach((q,i)=>{ tane+=`<circle class="r" id="Uz${i}" cx="${q[0]}" cy="${q[1]}" r="20"/>`; });
+    return tane+`<rect class="r" id="Uzsap" x="145" y="56" width="10" height="46" rx="5"/>
+    <path class="r" id="Uzyap" d="M155,78 Q184,48 220,56 Q212,92 178,96 Q160,92 155,78Z"/>`;
+  },
+  armut(r){
+    return `<path class="r" id="ArG" d="M150,86 Q128,86 126,116 Q124,142 106,164 Q84,190 92,222 Q102,262 150,262 Q198,262 208,222 Q216,190 194,164 Q176,142 174,116 Q172,86 150,86Z"/>
+    <path class="r" id="Arpar" d="M116,190 Q104,214 112,238 Q98,218 104,192 Q110,180 116,190Z"/>
+    <rect class="r" id="Arsap" x="146" y="54" width="9" height="36" rx="4"/>
+    <path class="r" id="Aryap" d="M154,72 Q178,48 206,54 Q198,84 170,88 Q158,84 154,72Z"/>`;
+  },
+  meyvetabagi(r){
+    return `<ellipse class="r" id="Mtab" cx="150" cy="212" rx="128" ry="42"/>
+    <ellipse class="r" id="Mtabi" cx="150" cy="206" rx="108" ry="30"/>
+    <path class="r" id="Mtelma" d="M96,192 Q72,190 68,164 Q66,138 92,132 Q104,130 110,140 Q116,130 128,132 Q152,138 150,164 Q146,190 122,192 Q108,196 96,192Z"/>
+    <rect class="r" id="Mtelmas" x="104" y="118" width="7" height="20" rx="3"/>
+    <circle class="r" id="Mtport" cx="178" cy="164" r="34"/>
+    <path class="r" id="Mtmuz" d="M120,108 Q160,84 214,96 Q218,106 210,110 Q166,102 132,120 Q122,116 120,108Z"/>
+    <circle class="r" id="Mtuz1" cx="226" cy="182" r="12"/><circle class="r" id="Mtuz2" cx="244" cy="168" r="12"/>
+    <circle class="r" id="Mtuz3" cx="248" cy="192" r="12"/><circle class="r" id="Mtuz4" cx="230" cy="204" r="11"/>
+    <path class="r" id="Mtcilek" d="M62,206 Q48,206 46,192 Q46,180 62,178 Q78,180 78,192 Q76,206 62,206Z"/>
+    <path class="r" id="Mtcyap" d="M54,176 Q62,168 70,176 L62,180Z"/>`;
+  },
+  koltuk(r){
+    return `<rect class="r" id="Ksirt" x="60" y="80" width="180" height="110" rx="22"/>
+    <rect class="r" id="Kmind1" x="74" y="156" width="76" height="52" rx="12"/>
+    <rect class="r" id="Kmind2" x="150" y="156" width="76" height="52" rx="12"/>
+    <path class="r" id="Kkol1" d="M32,140 Q30,110 56,110 L64,110 L64,214 Q64,224 54,224 L44,224 Q32,224 32,210Z"/>
+    <path class="r" id="Kkol2" d="M268,140 Q270,110 244,110 L236,110 L236,214 Q236,224 246,224 L256,224 Q268,224 268,210Z"/>
+    <rect class="r" id="Ktaban" x="60" y="208" width="180" height="22" rx="8"/>
+    <rect class="r" id="Kay1" x="74" y="230" width="16" height="20" rx="5"/>
+    <rect class="r" id="Kay2" x="210" y="230" width="16" height="20" rx="5"/>
+    <rect class="r" id="Kyas" x="90" y="98" width="54" height="44" rx="12" transform="rotate(-8 117 120)"/>`;
+  },
+  caydanlik(r){
+    return `<path class="r" id="Cygov" d="M92,132 Q80,180 96,216 Q106,240 150,240 Q194,240 204,216 Q220,180 208,132 Q180,120 150,122 Q120,120 92,132Z"/>
+    <ellipse class="r" id="Cykapak" cx="150" cy="122" rx="52" ry="14"/>
+    <circle class="r" id="Cytop" cx="150" cy="100" r="11"/>
+    <path class="r" id="Cyemzik" d="M96,150 Q60,150 50,178 Q48,190 60,190 Q70,168 98,172Z"/>
+    <path class="r" id="Cykulp" d="M206,142 Q246,144 246,180 Q246,210 212,216 L208,202 Q232,198 232,180 Q232,158 202,156Z"/>
+    <path class="r" id="Cydesen" d="M116,180 q10,-14 20,0 q10,14 20,0 q10,-14 20,0 q10,14 20,0" fill="none" stroke-width="4"/>
+    <path class="r" id="Cybuhar" d="M56,132 q-8,-16 4,-26 M70,120 q-6,-14 4,-22" fill="none" stroke-width="3.5"/>`;
+  },
+  lamba(r){
+    return `<path class="r" id="Lmasa" d="M20,262 L280,262 L280,278 L20,278Z"/>
+    <path class="r" id="Labj" d="M96,132 L204,132 L182,60 L118,60Z"/>
+    <path class="r" id="Ldesen" d="M110,110 q10,-12 20,0 q10,12 20,0 q10,-12 20,0 q10,12 20,0" fill="none" stroke-width="3.5"/>
+    <rect class="r" id="Lgov" x="140" y="132" width="20" height="94" rx="8"/>
+    <ellipse class="r" id="Ltaban" cx="150" cy="240" rx="58" ry="18"/>
+    <path class="r" id="Lisik1" d="M84,140 L58,164" fill="none" stroke-width="4"/>
+    <path class="r" id="Lisik2" d="M216,140 L242,164" fill="none" stroke-width="4"/>
+    <path class="r" id="Lisik3" d="M150,44 L150,22" fill="none" stroke-width="4"/>`;
+  },
+  kamyon(r){
+    return `<rect class="r" id="KmYol" x="0" y="240" width="300" height="56"/>
+    <rect class="r" id="KmKasa" x="24" y="96" width="160" height="112" rx="8"/>
+    <path class="r" id="KmDesen" d="M40,120 L168,120 M40,150 L168,150 M40,180 L168,180" fill="none" stroke-width="3"/>
+    <path class="r" id="KmKabin" d="M184,132 L238,132 Q262,134 270,160 L276,196 L184,196Z"/>
+    <rect class="r" id="KmCam" x="196" y="142" width="42" height="30" rx="6"/>
+    <rect class="r" id="KmTampon" x="24" y="196" width="252" height="18" rx="6"/>
+    <circle class="r" id="KmT1" cx="72" cy="228" r="26"/><circle class="r" id="KmJ1" cx="72" cy="228" r="11"/>
+    <circle class="r" id="KmT2" cx="140" cy="228" r="26"/><circle class="r" id="KmJ2" cx="140" cy="228" r="11"/>
+    <circle class="r" id="KmT3" cx="230" cy="228" r="26"/><circle class="r" id="KmJ3" cx="230" cy="228" r="11"/>
+    <rect class="r" id="KmFar" x="266" y="176" width="12" height="14" rx="4"/>`;
+  },
+  itfaiye(r){
+    return `<rect class="r" id="ItYol" x="0" y="242" width="300" height="58"/>
+    <rect class="r" id="ItGov" x="30" y="120" width="176" height="92" rx="10"/>
+    <rect class="r" id="ItSerit" x="30" y="156" width="176" height="16"/>
+    <path class="r" id="ItKabin" d="M206,132 L252,132 Q272,136 278,164 L282,212 L206,212Z"/>
+    <rect class="r" id="ItCam" x="216" y="142" width="36" height="28" rx="6"/>
+    <rect class="r" id="ItMerd" x="44" y="96" width="150" height="12" rx="5"/>
+    <path class="r" id="ItMerdC" d="M56,96 L56,108 M80,96 L80,108 M104,96 L104,108 M128,96 L128,108 M152,96 L152,108 M176,96 L176,108" fill="none" stroke-width="3"/>
+    <rect class="r" id="ItSiren" x="222" y="112" width="24" height="14" rx="5"/>
+    <circle class="r" id="ItT1" cx="80" cy="230" r="26"/><circle class="r" id="ItJ1" cx="80" cy="230" r="11"/>
+    <circle class="r" id="ItT2" cx="168" cy="230" r="26"/><circle class="r" id="ItJ2" cx="168" cy="230" r="11"/>
+    <circle class="r" id="ItT3" cx="248" cy="230" r="22"/><circle class="r" id="ItJ3" cx="248" cy="230" r="9"/>`;
+  },
+  park(r){
+    return `<path class="r" id="PkCim" d="M0,240 Q150,228 300,240 L300,300 L0,300Z"/>
+    <circle class="r" id="PkGun" cx="262" cy="44" r="20"/>
+    <path class="r" id="PkKayMer" d="M52,244 L52,150 L72,150 L72,244Z"/>
+    <path class="r" id="PkKayBas" d="M64,90 L108,90 L108,150 L44,150 L44,142 L52,142 L52,98Z" fill-rule="evenodd"/>
+    <path class="r" id="PkKayCiz" d="M52,120 L64,120 M52,136 L64,136 M52,104 L64,104" fill="none" stroke-width="3"/>
+    <path class="r" id="PkKayak" d="M108,96 Q170,150 196,238 L172,244 Q150,168 96,120Z"/>
+    <path class="r" id="PkSalA" d="M212,244 L238,132 L246,132 L226,244 M290,244 L264,132 L256,132 L276,244" stroke-width="6" fill="none"/>
+    <path class="r" id="PkSalUst" d="M232,128 L272,128" fill="none" stroke-width="7"/>
+    <path class="r" id="PkSalIp" d="M242,132 L242,196 M262,132 L262,196" fill="none" stroke-width="3"/>
+    <rect class="r" id="PkSalOtur" x="234" y="196" width="36" height="9" rx="4"/>
+    <circle class="r" id="PkTop" cx="150" cy="262" r="18"/>
+    <path class="r" id="PkTopCiz" d="M132,262 Q150,250 168,262 Q150,274 132,262Z"/>
+    <ellipse class="r" id="PkBulut" cx="70" cy="48" rx="32" ry="13"/>`;
+  },
+});
+Object.assign(GEN_ICON,{koyun:'🐑',ordek:'🦆',civciv:'🐤',balina:'🐋',elma:'🍎',muz:'🍌',cilek:'🍓',
+  karpuz:'🍉',uzum:'🍇',armut:'🍐',meyvetabagi:'🍽️',koltuk:'🛋️',caydanlik:'🫖',lamba:'💡',
+  kamyon:'🚚',itfaiye:'🚒',park:'🛝'});
+Object.assign(GEN_NAME,{koyun:'Koyun',ordek:'Ördek',civciv:'Civciv',balina:'Balina',elma:'Elma',
+  muz:'Muz',cilek:'Çilek',karpuz:'Karpuz',uzum:'Üzüm',armut:'Armut',meyvetabagi:'Meyve Tabağı',
+  koltuk:'Koltuk',caydanlik:'Çaydanlık',lamba:'Masa Lambası',kamyon:'Kamyon',itfaiye:'İtfaiye Aracı',
+  park:'Çocuk Parkı'});
+
 function makeGen(tpl,seed){
   const id='gen_'+tpl+'_'+seed;
   PICS[id]={icon:GEN_ICON[tpl],vb:'0 0 300 300',parts:GEN[tpl](RNG(seed))};
@@ -805,7 +999,9 @@ const box=document.getElementById('svgbox');
 function loadPic(name){
   curPic=name;
   const p=PICS[name];
-  box.innerHTML=`<svg viewBox="${p.vb}" xmlns="http://www.w3.org/2000/svg">${p.parts}</svg>`;
+  box.innerHTML=`<svg viewBox="${p.vb}" xmlns="http://www.w3.org/2000/svg">
+    <rect class="r" id="__bg" x="1.5" y="1.5" width="297" height="297" rx="10" style="stroke:#d9cfc0;stroke-width:2"/>
+    ${p.parts}</svg>`;
   const colors=saved[name]||{};
   for(const el of box.querySelectorAll('.r')){
     const isLine=el.getAttribute('fill')==='none';
