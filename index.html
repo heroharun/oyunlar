@@ -5,6 +5,12 @@
 <title>Müslim TR — Reklamsız Çocuk Oyunları</title>
 <meta name="description" content="Müslüman ailelerin çocukları için reklamsız, üyeliksiz, ücretsiz oyunlar. Kurulum yok, internetsiz de çalışır.">
 <meta name="theme-color" content="#141220">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="ikon/icon-192.png">
+<link rel="apple-touch-icon" href="ikon/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Müslim TR">
 <meta property="og:title" content="Müslim TR — Reklamsız Çocuk Oyunları">
 <meta property="og:description" content="Reklamsız, üyeliksiz, ücretsiz oyunlar. İslami eğitici içerikler, bulmacalar, arcade ve 2 kişilik oyunlar.">
 <meta property="og:type" content="website">
@@ -147,7 +153,12 @@
   </section>
 
   <footer>
-    Hedef: 100 oyun 🚀 · Hepsi tek dosya, internetsiz de çalışır<br>
+    📲 <b>Ana ekranına ekle:</b> tarayıcı menüsünden "Ana ekrana ekle" de — uygulama gibi açılır, çevrimdışı da çalışır!<br>
+    Hedef: 100 oyun 🚀 · Reklamsız, ücretsiz<br>
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSclueEPs_2WAzwIwvlzK6xhkJrSmBswJy2PkaoJBq3tgpowEQ/viewform" target="_blank" rel="noopener">Görüş bildir</a> · <a href="https://github.com/heroharun/oyunlar">Kaynak kodu</a>
   </footer>
+<script>
+if('serviceWorker' in navigator)
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
 </main>
