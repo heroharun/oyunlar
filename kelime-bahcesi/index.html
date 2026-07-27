@@ -29,6 +29,15 @@
   #sesBtn{font:inherit;font-size:22px;background:#eef6e6;border:2px solid #cfe2bd;
     border-radius:50%;width:52px;height:52px;cursor:pointer}
   #sesBtn:active{background:#dcead0}
+  #sorubtns{display:flex;gap:12px}
+  #anlamBtn{font:inherit;font-size:22px;background:#fdf3e0;border:2px solid #f0d9a8;
+    border-radius:50%;width:52px;height:52px;cursor:pointer}
+  #anlamBtn:active{background:#f7e8c8}
+  #anlamKutu{display:none;background:#fdf8ec;border:2px solid #f0d9a8;border-radius:14px;
+    padding:10px 14px;font-size:15px;line-height:1.55;font-weight:600;text-align:left;max-width:100%}
+  #anlamKutu.acik{display:block}
+  #anlamKutu .mini{font:inherit;background:none;border:none;cursor:pointer;font-size:18px;
+    vertical-align:middle;padding:0 2px}
   #secenekler{width:min(94vw,440px);display:grid;grid-template-columns:1fr 1fr;gap:10px}
   #secenekler.tek{grid-template-columns:1fr}
   .sec{font:inherit;font-size:19px;font-weight:800;color:var(--ink);background:var(--card);
@@ -81,7 +90,11 @@
     <div id="buyuk"></div>
     <div id="metin"></div>
     <div id="altMetin"></div>
-    <button id="sesBtn" title="sesli oku">🔊</button>
+    <div id="sorubtns">
+      <button id="sesBtn" title="sesli oku">🔊</button>
+      <button id="anlamBtn" title="anlamını göster">❓</button>
+    </div>
+    <div id="anlamKutu"></div>
   </div>
   <div id="kurulan" style="display:none"></div>
   <div id="secenekler"></div>
@@ -91,7 +104,7 @@
 
 <div class="kart" id="giris">
   <h1>🌱 KELİME BAHÇESİ</h1>
-  <p>Kelimelerle oyna, dilin çiçek açsın! Dört bahçe var: <b>Hangi harfle başlar?</b> · <b>Kaç hece?</b> · <b>Zıt anlamlısı ne?</b> · <b>Cümleyi kur!</b> Kelimeleri 🔊 ile dinleyebilirsin. Yanlışta üzülmek yok — bahçıvan sabırlıdır. 🌷</p>
+  <p>Kelimelerle oyna, dilin çiçek açsın! Dört bahçe var: <b>Hangi harfle başlar?</b> · <b>Kaç hece?</b> · <b>Zıt anlamlısı ne?</b> · <b>Cümleyi kur!</b> Kelimeleri 🔊 ile dinleyebilir, anlamını ve eş anlamlısını ❓ ile öğrenebilirsin. Yanlışta üzülmek yok — bahçıvan sabırlıdır. 🌷</p>
   <button class="btn" id="baslaBtn">Bahçeye Gir</button>
   <span class="hint" id="kayitHint"></span>
 </div>
@@ -112,7 +125,12 @@ const HARF=[ // [emoji, kelime]
   ['🐑','koyun'],['🍇','üzüm'],['🥕','havuç'],['🍞','ekmek'],['💧','su'],['⭐','yıldız'],
   ['🌹','gül'],['🐝','arı'],['🦋','kelebek'],['🍓','çilek'],['🥚','yumurta'],['👟','ayakkabı'],
   ['🧤','eldiven'],['🪁','uçurtma'],['🚂','tren'],['⛵','gemi'],['🍯','bal'],['🧀','peynir'],
-  ['🐔','tavuk'],['🐢','kaplumbağa'],['🍉','karpuz'],['🌧️','yağmur'],['❄️','kar'],['🔑','anahtar']];
+  ['🐔','tavuk'],['🐢','kaplumbağa'],['🍉','karpuz'],['🌧️','yağmur'],['❄️','kar'],['🔑','anahtar'],
+  ['🍋','limon'],['🐸','kurbağa'],['🦆','ördek'],['🐴','at'],['🍐','armut'],['🍒','kiraz'],
+  ['🐜','karınca'],['🐻','ayı'],['🐰','tavşan'],['🦊','tilki'],['🐺','kurt'],['🍊','portakal'],
+  ['🍅','domates'],['🧦','çorap'],['👒','şapka'],['🪑','sandalye'],['🛏️','yatak'],['📚','kitap'],
+  ['✏️','kalem'],['🎈','balon'],['⚽','top'],['🪞','ayna'],['🕯️','mum'],['🌊','deniz'],
+  ['⛰️','dağ'],['🌈','gökkuşağı'],['🦉','baykuş'],['🕷️','örümcek'],['🥔','patates'],['🧅','soğan']];
 const HECE=[ // [emoji, kelime, heceli, sayı]
   ['🐱','kedi','ke-di',2],['🍎','elma','el-ma',2],['🐟','balık','ba-lık',2],
   ['🚗','araba','a-ra-ba',3],['🦋','kelebek','ke-le-bek',3],['🥕','havuç','ha-vuç',2],
@@ -120,20 +138,159 @@ const HECE=[ // [emoji, kelime, heceli, sayı]
   ['⭐','yıldız','yıl-dız',2],['🍓','çilek','çi-lek',2],['👟','ayakkabı','a-yak-ka-bı',4],
   ['🐢','kaplumbağa','kap-lum-ba-ğa',4],['🍉','karpuz','kar-puz',2],['🚂','tren','tren',1],
   ['🧤','eldiven','el-di-ven',3],['🪁','uçurtma','u-çurt-ma',3],['🔑','anahtar','a-nah-tar',3],
-  ['🐑','koyun','ko-yun',2],['🥚','yumurta','yu-mur-ta',3],['🐘','fil','fil',1]];
+  ['🐑','koyun','ko-yun',2],['🥚','yumurta','yu-mur-ta',3],['🐘','fil','fil',1],
+  ['🍋','limon','li-mon',2],['🐸','kurbağa','kur-ba-ğa',3],['🦆','ördek','ör-dek',2],
+  ['🍊','portakal','por-ta-kal',3],['🎈','balon','ba-lon',2],['📚','kitap','ki-tap',2],
+  ['✏️','kalem','ka-lem',2],['🪑','sandalye','san-dal-ye',3],['🌈','gökkuşağı','gök-ku-şa-ğı',4],
+  ['🍅','domates','do-ma-tes',3],['🐰','tavşan','tav-şan',2],['🦊','tilki','til-ki',2],
+  ['⚽','top','top',1],['🌊','deniz','de-niz',2],['⛰️','dağ','dağ',1],['🧦','çorap','ço-rap',2],
+  ['🕷️','örümcek','ö-rüm-cek',3],['🦉','baykuş','bay-kuş',2],['🥔','patates','pa-ta-tes',3],
+  ['🐜','karınca','ka-rın-ca',3]];
 const ZIT=[ // [kelime, zıt, emoji]
   ['büyük','küçük','🐘'],['sıcak','soğuk','🔥'],['uzun','kısa','🦒'],['hızlı','yavaş','🐇'],
   ['gündüz','gece','🌞'],['açık','kapalı','🚪'],['mutlu','üzgün','😊'],['temiz','kirli','🧼'],
   ['dolu','boş','🧺'],['yukarı','aşağı','⬆️'],['ağır','hafif','🪨'],['yaşlı','genç','👴'],
-  ['ıslak','kuru','💦'],['sert','yumuşak','🪵'],['aydınlık','karanlık','💡'],['ön','arka','🚗']];
+  ['ıslak','kuru','💦'],['sert','yumuşak','🪵'],['aydınlık','karanlık','💡'],['ön','arka','🚗'],
+  ['ileri','geri','🏃'],['az','çok','🔢'],['yeni','eski','👟'],['ince','kalın','📏'],
+  ['tatlı','ekşi','🍋'],['erken','geç','⏰'],['yakın','uzak','📍'],['güçlü','zayıf','💪'],
+  ['sessiz','gürültülü','🤫'],['pahalı','ucuz','💰'],['zor','kolay','🧗'],['iç','dış','📦']];
 const CUMLE=[ // kelime dizileri (doğru sıra)
   ['Kedi','süt','içer'],['Kuş','gökyüzünde','uçar'],['Anne','çorba','pişirir'],
   ['Bebek','tatlı','tatlı','güler'],['Balık','suda','yüzer'],['Ali','topu','attı'],
   ['Dede','gazete','okur'],['Arı','bal','yapar'],['Yağmur','yağıyor'],
   ['Kardeşim','resim','çizer'],['Tavşan','havuç','yer'],['Tren','hızlı','gider'],
   ['Çiçekler','baharda','açar'],['Babam','araba','kullanır'],['Ayşe','kitap','okuyor'],
-  ['Köpek','bahçede','koşar'],['Güneş','sabah','doğar'],['Çocuklar','parkta','oynar']];
+  ['Köpek','bahçede','koşar'],['Güneş','sabah','doğar'],['Çocuklar','parkta','oynar'],
+  ['Kedi','miyav','miyav','der'],['Köpek','hav','hav','der'],['Ördek','vak','vak','der'],
+  ['Kar','yavaş','yavaş','yağar'],['Yağmur','şıp','şıp','damlar'],['Ali','koşa','koşa','geldi'],
+  ['Öğretmen','ders','anlatır'],['Dedem','masal','anlatır'],['Annem','beni','çok','sever'],
+  ['Kuşlar','ağaçta','öter'],['Ayşe','okula','gider'],['Kediler','sütü','çok','sever'],
+  ['Yıldızlar','gece','parlar'],['Kışın','kar','yağar'],['Arılar','çiçeklere','konar'],
+  ['Bebek','mama','yer'],['Balıklar','denizde','yüzer'],['Rüzgar','yaprakları','uçurur']];
 const HARFLER='ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ';
+const SOZLUK={ // kelime: [anlam, eş anlam ('' = yok)]
+  'elma':['Kırmızı ya da yeşil renkli, tatlı bir meyve',''],
+  'kedi':['Miyav diye ses çıkaran, evcil hayvan','pisi'],
+  'köpek':['Hav hav diye havlayan, sadık evcil hayvan',''],
+  'güneş':['Gündüz gökyüzünde parlayan, bizi ısıtan yıldız',''],
+  'ay':['Geceleri gökyüzünde parlayan gök cismi',''],
+  'balık':['Suda yaşayan, yüzgeçleriyle yüzen hayvan',''],
+  'muz':['Sarı kabuklu, tatlı bir meyve',''],
+  'araba':['Tekerlekleriyle yolda giden taşıt','otomobil'],
+  'ev':['İçinde yaşadığımız yapı','konut'],
+  'ağaç':['Gövdesi ve dalları olan büyük bitki',''],
+  'fil':['Uzun hortumlu, çok büyük hayvan',''],
+  'aslan':['Ormanlar kralı denilen, yeleli hayvan',''],
+  'koyun':['Yününden yararlandığımız, meleyen hayvan',''],
+  'üzüm':['Salkım salkım büyüyen, tatlı bir meyve',''],
+  'havuç':['Turuncu renkli, toprakta yetişen sebze',''],
+  'ekmek':['Undan yapılan temel yiyecek',''],
+  'su':['İçtiğimiz, renksiz ve kokusuz sıvı',''],
+  'yıldız':['Gece gökyüzünde parlayan ışık kaynağı',''],
+  'gül':['Güzel kokulu, dikenli bir çiçek',''],
+  'arı':['Bal yapan, vızıldayan böcek',''],
+  'kelebek':['Rengarenk kanatlı, uçan böcek',''],
+  'çilek':['Kırmızı, tatlı ve güzel kokulu meyve',''],
+  'yumurta':['Tavukların yaptığı, kabuklu besin',''],
+  'ayakkabı':['Ayağımızı korumak için giydiğimiz şey','pabuç'],
+  'eldiven':['Ellerimizi sıcak tutan giysi',''],
+  'uçurtma':['İple gökyüzünde uçurduğumuz oyuncak',''],
+  'tren':['Rayların üzerinde giden uzun taşıt',''],
+  'gemi':['Denizde yüzen büyük taşıt',''],
+  'bal':['Arıların çiçeklerden yaptığı tatlı besin',''],
+  'peynir':['Sütten yapılan beyaz yiyecek',''],
+  'tavuk':['Gıt gıt diye ses çıkaran, yumurtlayan kuş',''],
+  'kaplumbağa':['Sırtında kabuğu olan, yavaş yürüyen hayvan',''],
+  'karpuz':['Dışı yeşil, içi kırmızı, büyük meyve',''],
+  'yağmur':['Bulutlardan düşen su damlaları',''],
+  'kar':['Kışın gökten yağan beyaz taneler',''],
+  'anahtar':['Kapıları açıp kilitleyen küçük alet',''],
+  'limon':['Sarı renkli, ekşi bir meyve',''],
+  'kurbağa':['Vırak vırak diye ses çıkaran, zıplayan hayvan',''],
+  'ördek':['Vak vak diye ses çıkaran, yüzen kuş',''],
+  'at':['Dört nala koşan, binilen hayvan','beygir'],
+  'armut':['Sarı-yeşil renkli, tatlı bir meyve',''],
+  'kiraz':['Kırmızı, küçük ve tatlı meyve',''],
+  'karınca':['Çok çalışkan, küçücük böcek',''],
+  'ayı':['Bal seven, iri ve tüylü hayvan',''],
+  'tavşan':['Uzun kulaklı, zıplayarak koşan hayvan',''],
+  'tilki':['Kurnazlığıyla bilinen, kızıl tüylü hayvan',''],
+  'kurt':['Ormanda yaşayan, uluyan yabani hayvan',''],
+  'portakal':['Turuncu renkli, sulu bir meyve',''],
+  'domates':['Kırmızı renkli, sulu sebze',''],
+  'çorap':['Ayağımıza giydiğimiz yumuşak giysi',''],
+  'şapka':['Başımıza taktığımız giysi',''],
+  'sandalye':['Üzerine oturduğumuz eşya','iskemle'],
+  'yatak':['Üzerinde uyuduğumuz eşya',''],
+  'kitap':['İçinde yazılar ve resimler olan sayfalar',''],
+  'kalem':['Yazı yazmaya yarayan araç',''],
+  'balon':['İçine hava üflenen, uçan oyuncak',''],
+  'top':['Yuvarlak, zıplayan oyuncak',''],
+  'ayna':['Kendimizi içinde gördüğümüz parlak yüzey',''],
+  'mum':['Yanınca ışık veren, eriyen çubuk',''],
+  'deniz':['Tuzlu ve çok büyük su',''],
+  'dağ':['Çok yüksek ve büyük tepe',''],
+  'gökkuşağı':['Yağmurdan sonra gökte oluşan renkli kemer',''],
+  'baykuş':['Geceleri uyanık olan, iri gözlü kuş',''],
+  'örümcek':['Ağ ören, sekiz bacaklı hayvan',''],
+  'patates':['Toprağın altında yetişen sebze',''],
+  'soğan':['Doğrarken gözlerimizi yaşartan sebze',''],
+  'büyük':['Boyu ve eni çok olan','kocaman'],
+  'küçük':['Boyu ve eni az olan','minik'],
+  'sıcak':['Isısı yüksek olan, ısıtan',''],
+  'soğuk':['Isısı düşük olan, üşüten',''],
+  'uzun':['Bir ucundan öbür ucuna mesafesi çok olan',''],
+  'kısa':['Bir ucundan öbür ucuna mesafesi az olan',''],
+  'hızlı':['Çok çabuk hareket eden','süratli'],
+  'yavaş':['Acele etmeden hareket eden','ağır'],
+  'gündüz':['Günün aydınlık bölümü',''],
+  'gece':['Günün karanlık bölümü',''],
+  'açık':['Kapalı olmayan, girilip çıkılabilen',''],
+  'kapalı':['Açık olmayan, örtülü',''],
+  'mutlu':['Sevinç duyan, keyifli','sevinçli'],
+  'üzgün':['İçi buruk, kederli olan','mutsuz'],
+  'temiz':['Kiri ve lekesi olmayan','pak'],
+  'kirli':['Üzerinde kir ve leke olan','pis'],
+  'dolu':['İçinde boş yer kalmamış olan',''],
+  'boş':['İçinde hiçbir şey olmayan',''],
+  'yukarı':['Üst taraf, yüksek olan yön',''],
+  'aşağı':['Alt taraf, alçak olan yön',''],
+  'ağır':['Tartıda çok gelen, zor taşınan',''],
+  'hafif':['Tartıda az gelen, kolay taşınan',''],
+  'yaşlı':['Yaşı ilerlemiş olan','ihtiyar'],
+  'genç':['Yaşı küçük, dinç olan','delikanlı'],
+  'ıslak':['Üzerinde su olan','yaş'],
+  'kuru':['Üzerinde hiç su olmayan',''],
+  'sert':['Bastırınca şekli değişmeyen','katı'],
+  'yumuşak':['Bastırınca kolayca şekli değişen',''],
+  'aydınlık':['Işığı bol olan',''],
+  'karanlık':['Işığı olmayan, göz gözü görmeyen',''],
+  'ön':['Bir şeyin baktığı yön, ilk taraf',''],
+  'arka':['Bir şeyin gerisi, son taraf',''],
+  'ileri':['Önde olan, öne doğru',''],
+  'geri':['Arkada olan, arkaya doğru',''],
+  'az':['Miktarı çok olmayan',''],
+  'çok':['Miktarı fazla olan','fazla'],
+  'yeni':['Kullanılmamış, henüz alınmış','taze'],
+  'eski':['Uzun zamandır kullanılan',''],
+  'ince':['Kalın olmayan',''],
+  'kalın':['İnce olmayan, eni geniş olan',''],
+  'tatlı':['Şeker tadında olan',''],
+  'ekşi':['Limon tadında olan',''],
+  'erken':['Zamanından önce olan',''],
+  'geç':['Zamanından sonra olan',''],
+  'yakın':['Uzak olmayan, az ötede',''],
+  'uzak':['Yakın olmayan, çok ötede','ırak'],
+  'güçlü':['Gücü çok olan','kuvvetli'],
+  'zayıf':['Gücü az olan','cılız'],
+  'sessiz':['Hiç ses çıkarmayan','sakin'],
+  'gürültülü':['Çok ses çıkaran',''],
+  'pahalı':['Fiyatı yüksek olan',''],
+  'ucuz':['Fiyatı düşük olan',''],
+  'zor':['Yapması kolay olmayan','güç'],
+  'kolay':['Yapması zor olmayan','basit'],
+  'iç':['Bir şeyin içindeki bölüm',''],
+  'dış':['Bir şeyin dışındaki bölüm','']};
 
 let lvl=1, yildizToplam=0, soruNo=0, hata=0, mod=0, aktif=null, kilit=false;
 try{ const s=JSON.parse(localStorage.getItem('kbahce_save'));
@@ -151,8 +308,7 @@ function nota(f,d=0.15,v=0.16){ try{ const a=audio(),t=a.currentTime,o=a.createO
 const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
 /* Türkçe sesli okuma */
 let sonSoylenecek='';
-function soyle(t){
-  sonSoylenecek=t;
+function konus(t){
   try{ speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(t);
     u.lang='tr-TR'; u.rate=0.85; u.pitch=1.1;
@@ -161,7 +317,31 @@ function soyle(t){
     speechSynthesis.speak(u);
   }catch(e){}
 }
-document.getElementById('sesBtn').addEventListener('click',()=>{ audio(); if(sonSoylenecek) soyle(sonSoylenecek); });
+function soyle(t){ sonSoylenecek=t; konus(t); }
+document.getElementById('sesBtn').addEventListener('click',()=>{ audio(); if(sonSoylenecek) konus(sonSoylenecek); });
+
+/* ── ANLAM / EŞ ANLAM (❓) ── */
+const anlamBtn=document.getElementById('anlamBtn'), anlamKutu=document.getElementById('anlamKutu');
+let aktifKelime=null;
+function anlamAyarla(k){
+  aktifKelime=k&&SOZLUK[k]?k:null;
+  anlamBtn.style.display=aktifKelime?'':'none';
+  anlamKutu.classList.remove('acik'); anlamKutu.innerHTML='';
+}
+anlamBtn.addEventListener('click',()=>{
+  audio();
+  const s=SOZLUK[aktifKelime]; if(!s) return;
+  if(anlamKutu.classList.contains('acik')){ anlamKutu.classList.remove('acik'); return; }
+  const [anlam,es]=s;
+  anlamKutu.innerHTML='📖 '+anlam
+    +(es?'<br>🟰 Eş anlamlısı: <b>'+es+'</b>':'')
+    +' <button class="mini" id="anlamSes" title="anlamı dinle">🔊</button>';
+  anlamKutu.classList.add('acik');
+  document.getElementById('anlamSes').addEventListener('click',()=>{
+    audio();
+    konus(aktifKelime+'. '+anlam+(es?'. Eş anlamlısı: '+es:''));
+  });
+});
 
 function karistir(a){ const r=[...a];
   for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; }
@@ -223,7 +403,7 @@ function soruHarf(){
   const [e,k]=cek('harf',HARF);
   const dogru=k[0].toLocaleUpperCase('tr');
   goster('HANGİ HARFLE BAŞLAR?',e,k.toLocaleUpperCase('tr'),'Resme bak, ilk sesi bul');
-  soyle(k);
+  soyle(k); anlamAyarla(k);
   const secs=new Set([dogru]);
   while(secs.size<4) secs.add(HARFLER[Math.floor(Math.random()*HARFLER.length)]);
   secenekKur(karistir([...secs]),dogru,ilerle);
@@ -231,7 +411,7 @@ function soruHarf(){
 function soruHece(){
   const [e,k,h,n]=cek('hece',HECE);
   goster('KAÇ HECE?',e,h.replaceAll('-',' · '),'Alkışlayarak say: '+k);
-  soyle(k);
+  soyle(k); anlamAyarla(k);
   const secs=new Set([n]);
   while(secs.size<4) secs.add(1+Math.floor(Math.random()*5));
   secenekKur(karistir([...secs].map(String)),String(n),ilerle);
@@ -241,7 +421,7 @@ function soruZit(){
   const ters=Math.random()<0.5;
   const soru=ters?b:a, dogru=ters?a:b;
   goster('ZIT ANLAMLISI NE?',e,'"'+soru+'"','Tersi hangisi?');
-  soyle(soru);
+  soyle(soru); anlamAyarla(soru);
   const yanlislar=ZIT.flatMap(z=>[z[0],z[1]]).filter(x=>x!==soru&&x!==dogru);
   const secs=karistir([dogru,...karistir(yanlislar).slice(0,3)]);
   secenekKur(secs,dogru,ilerle);
@@ -249,7 +429,7 @@ function soruZit(){
 function soruCumle(){
   const c=cek('cumle',CUMLE);
   goster('CÜMLEYİ KUR!','🧩','','Kelimelere sırayla dokun');
-  soyle(c.join(' '));
+  soyle(c.join(' ')); anlamAyarla(null);
   document.getElementById('secenekler').innerHTML='';
   const kur=document.getElementById('kurulan');
   kur.style.display='flex'; kur.textContent='';
@@ -262,7 +442,7 @@ function soruCumle(){
     b.addEventListener('click',()=>{
       if(kilit) return;
       audio();
-      if(kelime.i===sira){
+      if(kelime.w===c[sira]){ /* aynı kelimeden birden fazla varsa hangisi seçilirse seçilsin kabul */
         b.classList.add('kullanildi');
         kur.textContent=(kur.textContent+' '+kelime.w).trim();
         nota(440+sira*60,0.12); buzz(8);
