@@ -30,3 +30,12 @@ Sinyal Analizi → Uzman Seçimi → Rota Planlama → Kritik Karar → Operasyo
 ## Bilinen sınırlar
 - Phaser paketi 344 kB gzip (hedef 5 MB'ın çok altında, ancak code-split yapılmadı).
 - Seslendirme (gerçek insan sesi) yok; telsiz anonsu altyazı + sentez efektle veriliyor.
+
+## Genişletme Paketi (Bölüm 9, 11, 22 + Sezon Sistemleri) — 2026-07-27
+- ✔ Operasyon Dosyaları ekranı: zincir kilidi çalışıyor (kilitli bölüme dokununca uyarı, açığa geçiş).
+- ✔ Bölüm 9: kimlik ezberi → 3 sorgu (yanlış cevap şüphe ölçeri +25) → erişim noktası → sezon etkisi (güven/gizlilik riski).
+- ✔ Bölüm 11: çelişkili ifade → log sıralama → sızan bilgi; iki güçlü şüpheli oluşuyor (teknik %50, kaynak %35), hain kesinleşmiyor.
+- ✔ Bölüm 22: bilgi dağıtımında takas benzersizliği korunuyor; İHA raporu oyuncunun kendi dağıtımına göre dinamik; yanlış işaretleme sayılıyor; hain kaydediliyor.
+- ✔ Ortak bölüm raporu: derece damgası + sezon etkisi (kötü artışlar kırmızı) + şüphe tablosu barları + cliffhanger.
+- ✔ CampaignState localStorage'da; İlerlemeyi Sıfırla artık sezonu da sıfırlıyor.
+- Düzeltilen: uzun brifing metni başlıkla çakışıyordu (kısaltıldı); son bölümde "Sonraki Bölüm" etiketi sızıyordu (init sıfırlama).

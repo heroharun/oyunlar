@@ -69,6 +69,38 @@ export const TR = {
     kicker: 'KRİTİK KARAR',
     noneSelected: 'Bir yöntem seç.'
   },
+  episodes: {
+    kicker: 'OPERASYON DOSYALARI',
+    subtitle: 'Bölümler sırayla açılır. Kararların sezona işlenir.',
+    locked: 'KİLİTLİ',
+    play: 'OYNA',
+    done: 'TAMAM',
+    lockedToast: 'Önce önceki dosyayı tamamla.',
+    file1Title: 'DOSYA 1 · KAYIP SİNYAL',
+    file1Detail: 'Bölüm 1-8: kamera, çelişki, sinyal, rota, kritik karar.',
+    back: 'ANA MENÜ',
+    metrics: {
+      trust: 'GÜVEN',
+      stealth: 'GİZLİLİK RİSKİ',
+      evidence: 'KANIT'
+    },
+    campaignReset: 'SEZONU SIFIRLA',
+    campaignResetDone: 'Sezon ilerlemesi sıfırlandı.'
+  },
+  episodeResult: {
+    kicker: 'BÖLÜM RAPORU',
+    suspicionTitle: 'HAİNLİK ŞÜPHE TABLOSU',
+    suspects: {
+      amir: 'Operasyon Amiri',
+      teknik: 'Teknik Uzman',
+      saha: 'Saha Ajanı',
+      kaynak: 'Haber Kaynağı'
+    },
+    next: 'SONRAKİ BÖLÜM',
+    files: 'DOSYALAR',
+    campaignLabel: 'SEZON ETKİSİ'
+  },
+  suspicionMeter: 'ŞÜPHE',
   result: {
     kicker: 'OPERASYON RAPORU',
     grades: {

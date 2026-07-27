@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TR } from '../data/dialogues/tr';
 import { Audio } from '../systems/AudioManager';
+import { Campaign } from '../systems/Campaign';
 import { SaveManager } from '../systems/SaveManager';
 import { TransitionManager } from '../systems/TransitionManager';
 import { COLORS, FONTS, GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../utils/constants';
@@ -65,7 +66,7 @@ export class MainMenuScene extends Phaser.Scene {
       onTap: () => {
         Audio.unlock();
         Audio.play('confirm');
-        TransitionManager.fadeTo(this, SCENE_KEYS.briefing);
+        TransitionManager.fadeTo(this, SCENE_KEYS.episodes);
       }
     });
 
@@ -95,6 +96,7 @@ export class MainMenuScene extends Phaser.Scene {
       emphasis: false,
       onTap: () => {
         SaveManager.reset();
+        Campaign.reset();
         this.toast(TR.menu.resetDone);
       }
     });

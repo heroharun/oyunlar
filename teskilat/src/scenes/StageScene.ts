@@ -53,8 +53,8 @@ export abstract class StageScene extends Phaser.Scene {
   }
 
   /** Kademeli ipucu düğmesi (GDD §12.4: en fazla iki, ücretsiz). */
-  protected buildHintButton(hints: string[], x: number, y: number): void {
-    this.hintPool = hints;
+  protected buildHintButton(hints: readonly string[], x: number, y: number): void {
+    this.hintPool = [...hints];
     this.hintsUsedLocal = 0;
     this.hintButton = new PrimaryButton(this, {
       x,

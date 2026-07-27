@@ -36,7 +36,12 @@ export const SCENE_KEYS = {
   specialist: 'SpecialistScene',
   route: 'RouteScene',
   decision: 'DecisionScene',
-  result: 'ResultScene'
+  result: 'ResultScene',
+  episodes: 'EpisodeSelectScene',
+  ep09: 'Ep09Scene',
+  ep11: 'Ep11Scene',
+  ep22: 'Ep22Scene',
+  episodeResult: 'EpisodeResultScene'
 } as const;
 
 export type SceneKey = (typeof SCENE_KEYS)[keyof typeof SCENE_KEYS];
