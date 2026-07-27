@@ -74,8 +74,9 @@ export class ChoiceCard extends Phaser.GameObjects.Container {
     this.add(this.mark);
 
     this.setSize(cfg.width, cfg.height);
+    // Container hit alanı (0,0) başlangıçlı olmalı (Phaser displayOrigin ekler).
     this.setInteractive(
-      new Phaser.Geom.Rectangle(-cfg.width / 2, -cfg.height / 2, cfg.width, cfg.height),
+      new Phaser.Geom.Rectangle(0, 0, cfg.width, cfg.height),
       Phaser.Geom.Rectangle.Contains
     );
     this.on(Phaser.Input.Events.POINTER_UP, () => cfg.onTap());

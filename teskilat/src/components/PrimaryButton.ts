@@ -38,8 +38,10 @@ export class PrimaryButton extends Phaser.GameObjects.Container {
 
     const hitH = Math.max(HEIGHT, MIN_TOUCH);
     this.setSize(cfg.width, hitH);
+    // Container hit testinde Phaser yerel noktaya displayOrigin ekler;
+    // bu yüzden dikdörtgen (0,0) başlangıçlı tanımlanmalıdır.
     this.setInteractive(
-      new Phaser.Geom.Rectangle(-cfg.width / 2, -hitH / 2, cfg.width, hitH),
+      new Phaser.Geom.Rectangle(0, 0, cfg.width, hitH),
       Phaser.Geom.Rectangle.Contains
     );
     this.on(Phaser.Input.Events.POINTER_DOWN, () => this.paint(true));

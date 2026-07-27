@@ -123,8 +123,9 @@ export class CameraPuzzleScene extends StageScene {
     container.add(badge);
 
     container.setSize(CARD_W, CARD_H);
+    // Container hit alanı (0,0) başlangıçlı olmalı (Phaser displayOrigin ekler).
     container.setInteractive(
-      new Phaser.Geom.Rectangle(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H),
+      new Phaser.Geom.Rectangle(0, 0, CARD_W, CARD_H),
       Phaser.Geom.Rectangle.Contains
     );
 
