@@ -222,6 +222,7 @@ button,input{font-family:inherit}
   </div>
   <div class="alt-bar">
     <button class="btn btn-sifirla" data-act="sifirla">Sıfırla</button>
+    <button class="btn btn-sifirla" data-act="rastgele">🎲</button>
     <button class="btn btn-tamamla" data-act="tamamla">Kombini Onayla ✨</button>
   </div>
 </div>
@@ -707,6 +708,27 @@ function puanHesapla(){
 }
 
 /* ── Kombini Tamamla ── */
+
+function rastgeleKombin(){
+  giyilen = {};
+  const aciklar = GARDIROP.filter(u => OYUN.acik.includes(u.id));
+  const sec = kat => {
+    const l = aciklar.filter(u => u.kategori === kat);
+    return l.length ? l[Math.floor(Math.random()*l.length)].id : null;
+  };
+  // elbise mi üst+alt mı? yarı yarıya
+  if(Math.random() < 0.4){
+    const e = sec('elbise');
+    if(e) giyilen.elbise = e;
+    else { giyilen.ust = sec('ust'); giyilen.alt = sec('alt'); }
+  } else {
+    giyilen.ust = sec('ust');
+    giyilen.alt = sec('alt');
+  }
+  giyilen.esarp = sec('esarp');
+  cizKanvas(); cizSekmeler(); cizRaf();
+}
+
 function kombiniTamamla(){
   const tamam = giyilen.elbise || giyilen.pijama || (giyilen.ust && giyilen.alt);
   if(!tamam){ uyar('Önce bir kombin tamamla: elbise, pijama ya da üst + alt 🌸'); return; }
@@ -845,6 +867,7 @@ function baslat(){
     const a = d.getAttribute('data-act');
     if(a==='tamamla') kombiniTamamla();
     else if(a==='sifirla'){ giyilen = {}; cizKanvas(); cizSekmeler(); cizRaf(); }
+    else if(a==='rastgele') rastgeleKombin();
     else if(a==='kapat') kapatSonuc();
     else if(a==='ana') ekranGit('e-ana');
     else if(a==='geri-giydirme'){ ekranGit('e-ana'); }
