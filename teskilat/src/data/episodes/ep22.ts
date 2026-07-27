@@ -41,7 +41,8 @@ export const EP22 = {
   pickInstruction: '{code} kodlu bilgiyi kime vermiştin? Sızıntının kaynağını işaretle.',
   pickWrong: 'Dağıtımını hatırla: o bilgi bu kişiye verilmemişti.',
   pickExplanation:
-    'Düşman yalnızca tek plana tepki verdi — o bilgi tek kişiye verilmişti. Sızıntı kesinleşti.',
+    'Düşman yalnızca tek plana tepki verdi — o bilgi tek kişiye verilmişti. Sızıntı kesin. ' +
+    'Panodaki "klonlanmış plaka" izini de kendisi bırakmış: kendine komplo süsü vererek şüpheyi dağıtmayı denedi.',
   /** Gerçek hain (düşman bu kişiye verilen bilgiye tepki verir). */
   traitor: 'teknik' as SuspectId,
   cliffhanger:

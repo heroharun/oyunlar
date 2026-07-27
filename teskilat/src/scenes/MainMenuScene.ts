@@ -60,7 +60,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     this.startButton = new PrimaryButton(this, {
       x: cx,
-      y: 430,
+      y: 408,
       width: 260,
       label: TR.menu.start,
       onTap: () => {
@@ -72,7 +72,16 @@ export class MainMenuScene extends Phaser.Scene {
 
     new PrimaryButton(this, {
       x: cx,
-      y: 505,
+      y: 478,
+      width: 260,
+      label: TR.menu.howTo,
+      emphasis: false,
+      onTap: () => this.toggleHowTo()
+    });
+
+    new PrimaryButton(this, {
+      x: cx,
+      y: 548,
       width: 260,
       label: TR.menu.sound,
       emphasis: false,
@@ -81,7 +90,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     new PrimaryButton(this, {
       x: cx,
-      y: 580,
+      y: 618,
       width: 260,
       label: TR.menu.privacy,
       emphasis: false,
@@ -90,7 +99,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     new PrimaryButton(this, {
       x: cx,
-      y: 655,
+      y: 688,
       width: 260,
       label: TR.menu.resetProgress,
       emphasis: false,
@@ -192,6 +201,23 @@ export class MainMenuScene extends Phaser.Scene {
       }
     });
     panel.add(sfxBtn);
+    this.panel = panel;
+  }
+
+  /** Nasıl Oynanır: kısa, madde madde (GDD §12.2: uzun eğitim ekranı yok). */
+  private toggleHowTo(): void {
+    if (this.closePanel()) return;
+    const panel = this.buildPanel(430, TR.menu.howTo);
+    panel.add(
+      this.add
+        .text(0, -22, TR.menu.howToText, {
+          fontFamily: FONTS.body,
+          fontSize: '11.5px',
+          color: COLORS.text,
+          lineSpacing: 7
+        })
+        .setOrigin(0.5)
+    );
     this.panel = panel;
   }
 

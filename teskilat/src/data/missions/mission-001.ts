@@ -204,8 +204,8 @@ export const MISSION_001: Mission = {
         secrecyPenalty: 45,
         civilianPenalty: 0,
         ending:
-          'Araç durduruldu, cihaz ele geçirildi. Ancak karşı taraf haberleşmeyi ' +
-          'kesti: ağın geri kalanı karanlığa gömüldü.'
+          'Araç durduruldu, cihaz ele geçirildi. Karşı taraf haberleşmeyi kesti; ' +
+          'ama cihazın sevkiyat etiketi tek bir kapıya çıkıyor: KARYA LOJİSTİK.'
       },
       {
         id: 'karar-bastir',
@@ -215,7 +215,7 @@ export const MISSION_001: Mission = {
         civilianPenalty: 0,
         ending:
           'Cihaz uzaktan susturuldu. Araç, farkında olmadan ekibi bir üst ' +
-          'bağlantının kapısına götürdü.'
+          'bağlantının kapısına götürdü: KARYA LOJİSTİK deposu.'
       },
       {
         id: 'karar-ayir',
@@ -225,7 +225,7 @@ export const MISSION_001: Mission = {
         civilianPenalty: 0,
         ending:
           'Araç sahte yol çalışmasıyla tenha hatta alındı ve etkisizleştirildi. ' +
-          'Sürücü bir şeylerden şüphelendi ama kanıtı yok.'
+          'Sürücünün üstünden çıkan irsaliyede tek isim var: KARYA LOJİSTİK.'
       }
     ],
     bestId: 'karar-bastir'

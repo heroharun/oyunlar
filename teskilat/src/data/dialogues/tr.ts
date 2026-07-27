@@ -5,6 +5,19 @@ export const TR = {
     title: 'GÖLGE PROTOKOL',
     slogan: 'Operasyon sahada değil, zihinde başlar.',
     start: 'GÖREVE BAŞLA',
+    howTo: 'NASIL OYNANIR',
+    howToText:
+      '· Her bölüm 2-4 dakikalık bir istihbarat görevidir.\n' +
+      '· Kartlara DOKUNARAK seçim yaparsın; sürükleme yok.\n' +
+      '· Yanlış seçim oyunu bitirmez: neden yanlış olduğu\n' +
+      '  açıklanır, tekrar denersin.\n' +
+      '· İPUCU düğmesi görev başına 2 kez ücretsizdir.\n' +
+      '· Kararların sezona işlenir: Güven, Gizlilik Riski,\n' +
+      '  Kanıt ve Ekip Bağı.\n' +
+      '· Şüphe tablosunu izle: hain dört kişiden biri.\n' +
+      '· Bölümler sırayla açılır; istediğin an tekrar\n' +
+      '  oynayabilirsin.\n' +
+      '· Klavye: 1-4 seçim, Enter devam.',
     sound: 'SES',
     privacy: 'GİZLİLİK',
     resetProgress: 'İLERLEMEYİ SIFIRLA',

@@ -590,7 +590,7 @@ export const GENERIC_EPISODES: Record<string, EpisodeDef> = {
     id: 'ep23',
     title: 'BÖLÜM 23 · SESSİZ BASKIN',
     kicker: P4,
-    briefing: 'Hain gözaltında; şimdi sıra depoda. Baskını sen planla.',
+    briefing: 'Hain sorguda ama ORTAĞINI vermiyor. Ortağa giden tek iz: bu depo.',
     steps: [
       {
         kind: 'quiz',
@@ -805,7 +805,8 @@ export const GENERIC_EPISODES: Record<string, EpisodeDef> = {
       }
     ],
     cliffhanger:
-      'Üç kriz de aynı elden çıkmıştı: OYALAMA. Gerçek hedef, boşalan operasyon merkeziydi.',
+      'Üç kriz de aynı elden çıkmıştı: OYALAMA. Hain içeride — demek ki bunu kuran ORTAĞI. ' +
+      'Ve gerçek hedef, boşalan operasyon merkeziydi.',
     reward: { trust: 8, teamBond: 8 },
     stealthPerMistake: 7
   },
@@ -814,8 +815,12 @@ export const GENERIC_EPISODES: Record<string, EpisodeDef> = {
     id: 'ep28',
     title: 'BÖLÜM 28 · GÖLGE PROTOKOL',
     kicker: P4,
-    briefing: 'Sezon finali. Sızma, kanıt, İHA, keskin nişancı, karar: hepsi bu gece.',
+    briefing: 'Sezon finali. Hainin ortağı — içerideki İKİNCİ GÖLGE — bu gece düşecek.',
     steps: [
+      {
+        kind: 'info',
+        text: 'Son istihbarat:\n· Amirin "yalanı" çözüldü — o gece gizlice hastanedeydi; dosyayla ilgisi yok.\n· Geriye tek isim kalıyor: sorguda susan HABER KAYNAĞI.\n· Kaynak şu an depo kompleksinde. Gölge Protokol listesi de orada.'
+      },
       {
         kind: 'quiz',
         prompt: '1/5 · SIZMA — Kompleks girişi?',
@@ -865,7 +870,7 @@ export const GENERIC_EPISODES: Record<string, EpisodeDef> = {
       },
       {
         kind: 'pick',
-        prompt: '5/5 · SON KARAR — Hain karşında. Gölge Protokol elinde.',
+        prompt: '5/5 · SON KARAR — İkinci gölge karşında: HABER KAYNAĞI. Bölüm 21\'de sakladığı şey buymuş. Liste elinde.',
         options: [
           {
             label: 'HAİNİ YAKALA, OPERASYONU BİTİR',
