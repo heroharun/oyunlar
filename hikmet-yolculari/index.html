@@ -188,6 +188,16 @@ body.gece .istat b{color:var(--altin);}
 details{background:var(--kagit);border:2px solid var(--zemin2);border-radius:14px;padding:10px 13px;margin-bottom:9px;}
 summary{font-weight:800;cursor:pointer;color:var(--zeytin-koyu);}
 body.gece summary{color:var(--altin-acik);}
+/* Toplama oyunları sahnesi */
+.oyun-sahne{position:relative;height:250px;border-radius:var(--radius);overflow:hidden;margin:10px 0;border:2px solid var(--zemin2);}
+.oyun-oge{position:absolute;background:none;border:none;font-size:1.75rem;cursor:pointer;padding:7px;line-height:1;transition:transform .15s;}
+.oyun-oge:active{transform:scale(1.25);}
+.oyun-oge:focus-visible{outline:3px solid var(--altin);border-radius:10px;}
+.oyun-dekor{position:absolute;pointer-events:none;opacity:.9;}
+/* Kuyu oyunu */
+.kuyu{display:flex;flex-direction:column;width:120px;margin:10px auto;background:linear-gradient(180deg,#6E6252,#3E3628);border-radius:0 0 16px 16px;border:3px solid var(--toprak);border-top:none;}
+.kuyu-hucre{height:26px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;border-bottom:1px dashed rgba(255,255,255,.14);}
+.kuyu-agiz{width:170px;margin:0 auto;text-align:center;font-size:1.5rem;}
 @media(min-width:640px){ .gorunum{padding-top:24px;} h1{font-size:1.95rem;} }
 </style>
 </head>
@@ -204,7 +214,7 @@ body.gece summary{color:var(--altin-acik);}
   <div class="acilis-kutu">
     <div class="pusula-buyuk">🧭</div>
     <h1 style="font-size:2.1rem;margin:6px 0 2px;">Hikmet Yolcuları</h1>
-    <p class="anlati" style="margin-bottom:18px;">İlk insanın hikâyesinden hangi hikmetleri keşfedeceksin?</p>
+    <p class="anlati" style="margin-bottom:18px;">Peygamber kıssalarından hangi hikmetleri keşfedeceksin?</p>
 
     <div id="acilisAna">
       <button class="btn altin tam" style="margin-bottom:10px;" data-act="yolculuga-basla">🗺️ Yolculuğa Başla</button>
@@ -492,7 +502,7 @@ const stories = {
                "Hz. Nuh ise Rabbine güvenerek işine özenle devam etti. Sağlam tahtalar, su geçirmez zift, halatlar… Gemi parça parça yükseldi.",
                "Bir işi güzel yapmak, onu aceleyle bitirmek değildir; özenle, sabırla ve güvenle yapmaktır." ],
         derin:[ "Düşünelim: Alay edilse bile doğru bildiğin güzel işe devam edebilmek bir olgunluktur. Hz. Nuh bunun en güzel örneğidir." ],
-        oyun:"nuhMalzeme" },
+        oyun:"nuhOdun" },
       { id:"nuh-dostlar", ad:"Canlı Dostlar Gemide", ikon:"🐘",
         hatira:{ id:"nuh-merhamet-yuvasi", ad:"Merhamet Yuvası", ikon:"🪺" },
         sahne:["🕊️","🐘","🐢"],
@@ -534,6 +544,129 @@ const stories = {
       { b:"Gemi nereye oturdu?", m:"Kur'an'a göre sular çekilince gemi Cûdî'ye oturdu. (Hûd 11/44)" },
       { b:"Kıssanın ana mesajı nedir?", m:"Sabır, görevi özenle yapmak, canlılara merhamet ve tevekkül: elinden geleni yap, sonrasını Allah'a bırak." }
     ]
+  },
+  yusuf: {
+    title: "Hz. Yusuf ve Affetme Yolculuğu",
+    desc: "Rüyanın, yardımlaşmanın, tedbirin ve affetmenin hikâyesi.",
+    sources: "Yûsuf 12/4-6, 10-19, 47-49, 55, 90-100",
+    anaMesaj: "Zor günler bitebilir, kırgınlıklar onarılabilir. Affetmek, kalbi kırgınlık yükünden kurtarıp yeni bir sayfa açmaktır.",
+    chapters: [
+      { id:"yusuf-ruya", ad:"Bir Rüya", ikon:"🌟",
+        hatira:{ id:"yusuf-ruya-yildizi", ad:"Rüya Yıldızı", ikon:"🌟" },
+        sahne:["🌟","🌙","☀️"],
+        kaynak:"Yûsuf 12/4-6",
+        kisa:[ "Hz. Yusuf küçükken bir rüya gördü.",
+               "Rüyasında on bir yıldız, güneş ve ay ona secde ediyordu.",
+               "Babası bu rüyayı kardeşlerine anlatmamasını söyledi." ],
+        orta:[ "Hz. Yusuf, Hz. Yakub'un oğluydu. Küçük bir çocukken bir rüya gördü: On bir yıldız, güneş ve ay ona secde ediyordu.",
+               "Rüyasını babasına anlattı. Babası bu güzel rüyanın bir işaret olduğunu anladı; fakat kardeşlerinin kıskanabileceğini bildiği için rüyayı onlara anlatmamasını söyledi.",
+               "Her güzel şeyi hemen herkese anlatmak gerekmez; bazen beklemek ve sabretmek daha hikmetlidir." ],
+        derin:[ "Düşünelim: Kıskançlık kalbi yoran bir duygudur. Bir kardeşimizin sevincine ortak olmak ise kalbi büyütür." ],
+        oyun:"yusufYildiz" },
+      { id:"yusuf-kuyu", ad:"Kuyu ve Yardım Eli", ikon:"🪣",
+        hatira:{ id:"yusuf-yardim-kovasi", ad:"Yardım Kovası", ikon:"🪣" },
+        sahne:["🏜️","🐪","⭐"],
+        kaynak:"Yûsuf 12/10, 15, 19",
+        kisa:[ "Kardeşleri Hz. Yusuf'u kıskandı ve onu bir kuyuya bıraktı.",
+               "Ama Allah onu yalnız bırakmadı.",
+               "Bir kervan kuyuya kova sarkıttı ve onu çıkardı." ],
+        orta:[ "Kardeşleri Hz. Yusuf'u kıskandılar ve bir gün onu kırda derin bir kuyuya bıraktılar. Bu, çok üzücü bir davranıştı.",
+               "Ama Hz. Yusuf kuyuda yalnız değildi; Allah onunlaydı ve kalbine güven verdi.",
+               "Derken yoldan bir kervan geçti. Su almak için kuyuya kovalarını sarkıttılar ve Hz. Yusuf'u bulup çıkardılar. Karanlık kuyu, yepyeni bir yolculuğun kapısı oldu." ],
+        derin:[ "Düşünelim: En zor anlarda bile bir yardım eli uzanabilir. Biz de birinin 'kervanı' olabiliriz: zorda kalana yardım eden kişi." ],
+        oyun:"yusufKuyu" },
+      { id:"yusuf-sabir", ad:"Bolluk ve Tedbir", ikon:"🌾",
+        hatira:{ id:"yusuf-bereket", ad:"Bereket Başağı", ikon:"🌾" },
+        sahne:["🌾","🏺","🌞"],
+        kaynak:"Yûsuf 12/47-49, 55",
+        kisa:[ "Hz. Yusuf Mısır'da büyüdü; dürüst ve güvenilir biri oldu.",
+               "Yedi bolluk yılında buğday depolanmasını söyledi.",
+               "Tedbir sayesinde kıtlıkta kimse aç kalmadı." ],
+        orta:[ "Hz. Yusuf Mısır'da büyüdü. Başına üzücü işler de geldi; fakat o hep dürüst, sabırlı ve güvenilir kaldı.",
+               "Bir gün hükümdarın rüyasını yorumladı: Yedi bolluk yılını yedi kıtlık yılı izleyecekti. 'Bolluk yıllarında buğdayı özenle depolayın' dedi.",
+               "Bu tedbir sayesinde kıtlık yıllarında insanlar aç kalmadı. Hz. Yusuf kaynakları adaletle yönetti ve paylaştırdı." ],
+        derin:[ "Düşünelim: Tedbir, geleceği düşünerek bugünden hazırlık yapmaktır. Harçlığından birazını biriktirmek de küçük bir tedbirdir." ],
+        oyun:"yusufBugday" },
+      { id:"yusuf-af", ad:"Affetmenin Gücü", ikon:"💚",
+        hatira:{ id:"yusuf-af-kalbi", ad:"Affetme Kalbi", ikon:"💚" },
+        sahne:["💚","🤝","🌅"],
+        kaynak:"Yûsuf 12/90-92, 100",
+        kisa:[ "Kıtlıkta kardeşleri Mısır'a geldi.",
+               "Hz. Yusuf kendini tanıttı ve onları affetti.",
+               "'Bugün size kınama yok' dedi; aile yeniden kavuştu." ],
+        orta:[ "Kıtlık yıllarında Hz. Yusuf'un kardeşleri buğday almak için Mısır'a geldiler; karşılarındaki yöneticinin kardeşleri olduğunu bilmiyorlardı.",
+               "Hz. Yusuf kendini tanıttığında kardeşleri çok utandı ve pişman oldu. Hz. Yusuf ise onları ayıplamadı; 'Bugün size kınama yok' dedi ve onları affetti. (Yûsuf 12/92 mealinin özeti)",
+               "Aile yeniden bir araya geldi ve küçükken görülen rüyanın anlamı ortaya çıktı. Affetmek, kırgın kalpleri onaran en güzel köprüdür." ],
+        derin:[ "Düşünelim: Affetmek, yapılan yanlışı onaylamak değildir; kalbimizi kırgınlığın yükünden kurtarmak ve yeni bir sayfa açmaktır." ],
+        oyun:"yusufAf" }
+    ],
+    bilgiKartlari: [
+      { b:"Hz. Yusuf'un rüyası neydi?", m:"On bir yıldız ile güneş ve ayın kendisine secde ettiğini gördü. (Yûsuf 12/4)" },
+      { b:"Kuyudan nasıl çıktı?", m:"Yoldan geçen bir kervan su için kova sarkıttı ve onu bulup çıkardı. (Yûsuf 12/19)" },
+      { b:"Kıtlığa nasıl hazırlanıldı?", m:"Hz. Yusuf'un önerisiyle yedi bolluk yılında buğday depolandı. (Yûsuf 12/47-48)" },
+      { b:"Kardeşlerini affetti mi?", m:"Evet. 'Bugün size kınama yok' diyerek onları bağışladı. (Yûsuf 12/92)" }
+    ]
+  },
+  yunus: {
+    title: "Hz. Yunus ve Denizin Duası",
+    desc: "Sabrın, duanın ve ikinci şansların hikâyesi.",
+    sources: "Saffât 37/139-148 · Enbiyâ 21/87-88",
+    anaMesaj: "Dua, en karanlık anın içine bir kandil asmaktır. Hatanı kabul et, Allah'a sığın ve yarım kalan güzel işine geri dön.",
+    chapters: [
+      { id:"yunus-gorev", ad:"Zor Görev", ikon:"⛵",
+        hatira:{ id:"yunus-yelken", ad:"Sabır Yelkeni", ikon:"⛵" },
+        sahne:["🏘️","⛵","🌊"],
+        kaynak:"Saffât 37/139-141",
+        kisa:[ "Hz. Yunus, halkını Allah'a inanmaya çağırdı.",
+               "İnsanlar dinlemeyince çok üzüldü ve bir gemiye binip ayrıldı.",
+               "Zor görevler sabır ister." ],
+        orta:[ "Hz. Yunus, halkını yalnız Allah'a inanmaya ve güzel davranmaya çağırdı. Fakat insanlar uzun süre onu dinlemedi.",
+               "Hz. Yunus buna çok üzüldü ve Allah'ın izni gelmeden şehirden ayrılıp yüklü bir gemiye bindi.",
+               "Denizde gemi zorlandı. Yük hafiflesin diye kura çekildi; kura Hz. Yunus'a çıktı ve o da denize indi." ],
+        derin:[ "Düşünelim: Üzüntü bizi bazen aceleci kararlara götürebilir. Zor görevlerde sabretmek ve beklemek de bir olgunluktur." ],
+        oyun:"yunusSoru" },
+      { id:"yunus-balik", ad:"Deniz ve Büyük Balık", ikon:"🐋",
+        hatira:{ id:"yunus-inci", ad:"Deniz İncisi", ikon:"💠" },
+        sahne:["🐋","🐟","🌊"],
+        kaynak:"Saffât 37/142",
+        kisa:[ "Büyük bir balık, Allah'ın takdiriyle Hz. Yunus'u yuttu.",
+               "Balığın karnı ona zarar vermedi; koruyan bir sığınak oldu.",
+               "Deniz, canlılarla dolu büyük bir nimettir." ],
+        orta:[ "Denizde büyük bir balık, Allah'ın takdiriyle Hz. Yunus'u yuttu. Bu korkunç bir son değildi; balığın karnı, Allah'ın korumasında sessiz bir sığınak oldu.",
+               "Deniz, büyüklü küçüklü canlılarla dolu muhteşem bir dünyadır. Büyük balıklar küçük balıklarla beslenir; her canlı bu düzenin bir parçasıdır.",
+               "Şimdi denizin bu düzenini yakından izleyelim: Büyük balığa yardım et, beslenmesi için küçük parlak balıkları yakala!" ],
+        derin:[ "Düşünelim: Doğadaki düzen, yaratılıştaki ölçüyü gösterir. Her canlının bir görevi ve bir yeri vardır." ],
+        oyun:"yunusBalik" },
+      { id:"yunus-dua", ad:"Karanlıkta Bir Dua", ikon:"🪔",
+        hatira:{ id:"yunus-kandil", ad:"Dua Kandili", ikon:"🪔" },
+        sahne:["🪔","🫧","💠"],
+        kaynak:"Enbiyâ 21/87-88",
+        kisa:[ "Balığın karnı karanlıktı ama korkutucu değildi.",
+               "Hz. Yunus orada dua etti ve hatasını kabul etti.",
+               "Allah duasını kabul etti." ],
+        orta:[ "Balığın karnı karanlık ve sessizdi; korkutucu bir yer değil, düşünmek için bir alan gibiydi.",
+               "Hz. Yunus orada Rabbine şöyle dua etti: 'Senden başka ilah yoktur; seni tenzih ederim. Gerçekten ben haksızlık edenlerden oldum.' (Enbiyâ 21/87 mealinin özeti)",
+               "Hatasını kabul etti, pişman oldu ve Allah'a sığındı. Allah da duasını kabul etti ve onu kurtardı." ],
+        derin:[ "Düşünelim: Dua, en karanlık anın bile içine bir kandil asmaktır. Hatayı kabul etmek duayı güzelleştirir." ],
+        oyun:"yunusDua" },
+      { id:"yunus-sahil", ad:"Sahilde Yeni Başlangıç", ikon:"🌱",
+        hatira:{ id:"yunus-filiz", ad:"İkinci Şans Filizi", ikon:"🌱" },
+        sahne:["🏖️","🌱","🌤️"],
+        kaynak:"Saffât 37/145-148",
+        kisa:[ "Balık, Hz. Yunus'u sağ salim sahile bıraktı.",
+               "Üzerine gölge yapan bir bitki bitirildi.",
+               "Görevine döndü; bu kez halkı iman etti." ],
+        orta:[ "Allah'ın izniyle balık, Hz. Yunus'u sağ salim sahile bıraktı. Yorgun bedenine gölge olsun diye üzerine geniş yapraklı bir bitki bitirildi.",
+               "Hz. Yunus güçlenince görevine geri döndü. Bu kez halkı onu dinledi ve iman etti.",
+               "Hz. Yunus'un kıssası bize duayı, hatayı kabul etmeyi ve yarım kalan güzel işlere geri dönmeyi öğretir." ],
+        derin:[ "Düşünelim: Yarım bıraktığımız güzel bir işe geri dönmek cesarettir. İkinci şanslar, ilk denemelerden daha güçlü olabilir." ],
+        oyun:"yunusSon" }
+    ],
+    bilgiKartlari: [
+      { b:"Balık Hz. Yunus'a zarar verdi mi?", m:"Hayır. Allah'ın korumasında, balığın karnı ona bir sığınak oldu. (Saffât 37/142-144)" },
+      { b:"Hz. Yunus balığın karnında ne yaptı?", m:"Dua etti ve hatasını kabul etti. Allah duasını kabul buyurdu. (Enbiyâ 21/87-88)" },
+      { b:"Sonra ne oldu?", m:"Sahile bırakıldı, üzerine gölge yapan bir bitki bitirildi, görevine döndü ve halkı iman etti. (Saffât 37/145-148)" }
+    ]
   }
 };
 function aktifKissa(){ return stories[S.aktifKissa] || stories.adem; }
@@ -559,7 +692,15 @@ const hikmetKartlari = [
   { id:"nuh-usta-cekici", kavram:"Özenli İş", ikon:"🔨", aciklama:"Bir işi güzel yapmak; özen, sabır ve güvenle yapmaktır.", yer:"Geminin alaylara rağmen özenle yapılması", ornek:"Ödevini aceleyle değil, özenle bitirmek." },
   { id:"nuh-merhamet-yuvasi", kavram:"Merhamet", ikon:"🪺", aciklama:"Bütün canlılar korunmaya ve şefkate değerdir.", yer:"Her canlıdan birer çiftin gemiye alınması", ornek:"Sıcak günlerde kuşlar için su bırakmak." },
   { id:"nuh-tevekkul-capasi", kavram:"Tevekkül", ikon:"⚓", aciklama:"Elinden geleni yap, sonrasını Allah'a bırak.", yer:"Geminin dalgalar arasında güvenle ilerlemesi", ornek:"Sınava iyice çalışıp sonrası için kaygılanmamak." },
-  { id:"nuh-gokkusagi", kavram:"Yeniden Başlamak", ikon:"🌈", aciklama:"Zor günlerin ardından yeni başlangıçlar gelir.", yer:"Suların çekilmesi ve yeni hayat", ornek:"Taşındığın yeni okulda yeni dostluklar kurmak." }
+  { id:"nuh-gokkusagi", kavram:"Yeniden Başlamak", ikon:"🌈", aciklama:"Zor günlerin ardından yeni başlangıçlar gelir.", yer:"Suların çekilmesi ve yeni hayat", ornek:"Taşındığın yeni okulda yeni dostluklar kurmak." },
+  { id:"yusuf-ruya-yildizi", kavram:"Bekleyebilmek", ikon:"🌟", aciklama:"Her güzel şeyi hemen herkese anlatmak gerekmez; bazen beklemek hikmettir.", yer:"Rüyanın kardeşlerden saklanması", ornek:"Bir sürprizi zamanı gelene kadar saklamak." },
+  { id:"yusuf-yardim-kovasi", kavram:"Yardımlaşma", ikon:"🪣", aciklama:"Zorda kalana uzanan el, karanlık kuyuları aydınlatır.", yer:"Kervanın kuyuya kova sarkıtması", ornek:"Düşen arkadaşını kaldırmak, yeni öğrenciye yol göstermek." },
+  { id:"yusuf-bereket", kavram:"Tedbir", ikon:"🌾", aciklama:"Geleceği düşünerek bugünden hazırlık yapmak akıllılıktır.", yer:"Bolluk yıllarında buğdayın depolanması", ornek:"Harçlığından birazını biriktirmek." },
+  { id:"yusuf-af-kalbi", kavram:"Affetmek", ikon:"💚", aciklama:"Affetmek, kalbi kırgınlık yükünden kurtarıp yeni bir sayfa açmaktır.", yer:"'Bugün size kınama yok' sözü", ornek:"Özür dileyen arkadaşını dinleyip bağışlamak." },
+  { id:"yunus-yelken", kavram:"Görevde Sabır", ikon:"⛵", aciklama:"Zor görevlerde sabretmek ve beklemek de bir olgunluktur.", yer:"Hz. Yunus'un zorlu daveti", ornek:"Zor bir ödevi yarım bırakmadan mola verip sürdürmek." },
+  { id:"yunus-inci", kavram:"Doğanın Düzeni", ikon:"💠", aciklama:"Her canlının yaratılışta bir görevi ve yeri vardır.", yer:"Denizin canlılarla dolu dünyası", ornek:"Deniz canlılarını ve yaşam alanlarını korumak." },
+  { id:"yunus-kandil", kavram:"Dua", ikon:"🪔", aciklama:"Dua, en karanlık anın içine bir kandil asmaktır.", yer:"Balığın karnındaki dua", ornek:"Zorlandığında içtenlikle dua etmek ve sakinleşmek." },
+  { id:"yunus-filiz", kavram:"İkinci Şans", ikon:"🌱", aciklama:"Yarım kalan güzel bir işe geri dönmek cesarettir.", yer:"Sahildeki yeni başlangıç", ornek:"Bıraktığın bir hobiye yeniden başlamak." }
 ];
 /* Çanta yansıma soruları */
 const yansimaSorulari = [
@@ -779,6 +920,7 @@ function kurulumBitir(){
 /* Gezinme */
 function gorunumGec(id){
   seslendirmeDurdurTamamen();
+  zamanlayiciTemizle();
   document.querySelectorAll(".gorunum").forEach(g=>g.classList.remove("aktif"));
   $(id).classList.add("aktif");
   document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("aktif", b.dataset.nav===id || (id==="g-hikaye" && b.dataset.nav==="g-yolculuk")));
@@ -940,19 +1082,30 @@ const bolumSonuMesaji = {
   "nuh-gemi":"Usta Çekicini buldun. Özenle yapılan iş, alayları bile susturur.",
   "nuh-dostlar":"Merhamet Yuvasını buldun. Bütün canlılar şefkate değerdir.",
   "nuh-tufan":"Tevekkül Çapasını buldun. Önce çalış, sonra güven.",
-  "nuh-son":"Yeni Başlangıç Gökkuşağını buldun. Hz. Nuh'un yolculuğu tamamlandı!"
+  "nuh-son":"Yeni Başlangıç Gökkuşağını buldun. Hz. Nuh'un yolculuğu tamamlandı!",
+  "yusuf-ruya":"Rüya Yıldızını buldun. Bazı güzellikler, zamanı gelene kadar kalpte saklanır.",
+  "yusuf-kuyu":"Yardım Kovasını buldun. Zorda kalana uzanan el, kuyuları aydınlatır.",
+  "yusuf-sabir":"Bereket Başağını buldun. Bugünün tedbiri, yarının bereketidir.",
+  "yusuf-af":"Affetme Kalbini buldun. Hz. Yusuf'un yolculuğu tamamlandı!",
+  "yunus-gorev":"Sabır Yelkenini buldun. Zor görevlerde sabır, en sağlam yelkendir.",
+  "yunus-balik":"Deniz İncisini buldun. Denizin düzeni, yaratılışın ölçüsünü fısıldar.",
+  "yunus-dua":"Dua Kandilini buldun. Karanlıkta bile bir kandil yakabilirsin.",
+  "yunus-sahil":"İkinci Şans Filizini buldun. Hz. Yunus'un yolculuğu tamamlandı!"
 };
 function bolumOyunuCiz(k){
   ({ nimetSoru:oyunNimet, isimler:oyunIsimler, kibirTevazu:oyunKibir, sinirlar:oyunSinirlar,
      fisilti:oyunFisilti, tevbeBasamak:oyunTevbe, emanetciler:oyunEmanet, final:oyunFinal,
-     nuhSoru:oyunNuhSoru, nuhMalzeme:oyunNuhMalzeme, nuhHayvan:oyunNuhHayvan, nuhSira:oyunNuhSira, nuhQuiz:oyunNuhQuiz })[hk.bolum.oyun](k);
+     nuhSoru:oyunNuhSoru, nuhOdun:oyunNuhOdun, nuhMalzeme:oyunNuhMalzeme, nuhHayvan:oyunNuhHayvan, nuhSira:oyunNuhSira, nuhQuiz:oyunNuhQuiz,
+     yusufYildiz:oyunYusufYildiz, yusufKuyu:oyunYusufKuyu, yusufBugday:oyunYusufBugday, yusufAf:oyunYusufAf,
+     yunusSoru:oyunYunusSoru, yunusBalik:oyunYunusBalik, yunusDua:oyunYunusDua, yunusSon:oyunYunusSon })[hk.bolum.oyun](k);
 }
 function bolumBitir(){
+  zamanlayiciTemizle();
   const c = hk.bolum;
   if(!S.tamamBolumler.includes(c.id)) S.tamamBolumler.push(c.id);
   if(!S.hatiralar.includes(c.hatira.id)) S.hatiralar.push(c.hatira.id);
   kaydet();
-  const sonBolum = c.id==="canta" || c.id==="nuh-son";
+  const sonBolum = ["canta","nuh-son","yusuf-af","yunus-sahil"].includes(c.id);
   const k = $("hikayeIcerik");
   k.innerHTML = `
     <div class="merkez">
@@ -963,7 +1116,7 @@ function bolumBitir(){
       <div style="height:14px;"></div>
       ${sonBolum ? "" : `<button class="btn altin tam" style="margin-bottom:9px;" data-act="hikaye-cik">🗺️ Haritaya dön</button>
       <button class="btn cizgi tam" data-act="cantaya-git">🎒 Hikmet Çantama bak</button>`}
-      ${c.id==="canta" ? sonEkranHTML() : ""}${c.id==="nuh-son" ? nuhSonHTML() : ""}
+      ${c.id==="canta" ? sonEkranHTML() : ""}${["nuh-son","yusuf-af","yunus-sahil"].includes(c.id) ? kissaSonHTML(S.aktifKissa) : ""}
     </div>`;
 }
 function sonEkranHTML(){
@@ -1216,6 +1369,216 @@ function dogruSecimTuru(k){
   durum();
 }
 
+/* --- ORTAK OYUN MOTORLARI (toplama, tek soru, quiz+senaryo) --- */
+let oyunZamanlayici = null;
+function zamanlayiciTemizle(){ if(oyunZamanlayici){ clearInterval(oyunZamanlayici); oyunZamanlayici = null; } }
+const oyunArkalari = {
+  orman:"linear-gradient(180deg,#BFE0C8 0%,#8FBF9A 55%,#6B8F5A 100%)",
+  gokyuzu:"linear-gradient(180deg,#1B2A4A 0%,#22385C 60%,#3A5480 100%)",
+  tarla:"linear-gradient(180deg,#F2E3B6 0%,#E3C97F 55%,#C9A24B 100%)",
+  deniz:"linear-gradient(180deg,#9CCFE0 0%,#5E97B8 45%,#2E5F7E 100%)",
+  derin:"linear-gradient(180deg,#1E3A50 0%,#132A3E 55%,#0B1A28 100%)"
+};
+function toplamaOyunu(k, a){
+  zamanlayiciTemizle();
+  let toplanan = 0;
+  k.innerHTML = `<h2>${a.baslik}</h2><p class="kucuk">${a.yonerge}</p>
+    <div class="oyun-sahne" id="oyunSahne" style="background:${oyunArkalari[a.arka]};" role="group" aria-label="${a.baslik}"></div>
+    <p class="rozet" style="margin-bottom:8px;">${a.hedefIkon} <span id="topSayac">0</span> / ${a.adet}</p>
+    <p class="ipucu gizli" id="oyunMesaj"></p>`;
+  const sahne = $("oyunSahne");
+  (a.dekor||[]).forEach(dk=>{
+    const s=document.createElement("span"); s.className="oyun-dekor"; s.textContent=dk.i;
+    s.style.cssText = `left:${dk.x}%;top:${dk.y}%;font-size:${dk.b||2}rem;`;
+    sahne.appendChild(s);
+  });
+  const rasgeleKonum = el=>{ el.style.left = (4+Math.random()*82)+"%"; el.style.top = (6+Math.random()*74)+"%"; };
+  const ekle = (ikon, hedefMi)=>{
+    const b=document.createElement("button"); b.className="oyun-oge"; b.textContent=ikon;
+    b.setAttribute("aria-label", hedefMi ? a.hedefAd : "Bu aradığımız değil");
+    rasgeleKonum(b);
+    b.onclick=()=>{
+      if(hedefMi){
+        toplanan++; $("topSayac").textContent=toplanan; b.remove();
+        if(toplanan>=a.adet){
+          zamanlayiciTemizle();
+          ipucuGoster($("oyunMesaj"),"🌟 " + a.bitisMesaj);
+          setTimeout(a.sonra || bolumBitir, 1500);
+        } else ipucuGoster($("oyunMesaj"),"⭐ " + a.hedefAd + " topladın!");
+      } else ipucuGoster($("oyunMesaj"),"💛 " + a.sahteMesaj);
+    };
+    sahne.appendChild(b);
+    return b;
+  };
+  for(let i=0;i<a.adet;i++) ekle(a.hedefIkon, true);
+  (a.sahte||[]).forEach(s=>{ ekle(s,false); ekle(s,false); });
+  if(a.hareketli && !S.ayarlar.azAnim){
+    oyunZamanlayici = setInterval(()=>{ sahne.querySelectorAll(".oyun-oge").forEach(rasgeleKonum); }, 1400);
+  }
+}
+function tekSoruOyunu(k, q, baslik){
+  k.innerHTML = `<h2>${baslik}</h2><div class="kart anlati"><p>${q.s}</p></div><div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+  karistir(q.c.map((m,i)=>({m,i}))).forEach(o=>{
+    const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${o.m}</span>`;
+    b.onclick=()=>{
+      if(o.i===q.d){ b.classList.add("secili"); document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true);
+        ipucuGoster($("oyunMesaj"),"⭐ " + q.ac); setTimeout(bolumBitir,1500); }
+      else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+        ipucuGoster($("oyunMesaj"),"💛 " + (q.nazik||"Bir kez daha düşünelim!")); }
+    };
+    $("oyunListe").appendChild(b);
+  });
+}
+function quizSenaryoOyunu(k, sorular, senaryo, bitisEtiketi){
+  let i=0;
+  const soru=()=>{
+    if(i===sorular.length){ sahneSenaryo(); return; }
+    const q=sorular[i];
+    k.innerHTML = `<h2>💡 Bilgi Yolculuğu · ${i+1}/${sorular.length}</h2>
+      <div class="kart anlati"><p>${q.s}</p></div><div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>`;
+    q.c.forEach((m,j)=>{
+      const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${m}</span>`;
+      b.onclick=()=>{
+        if(j===q.d){ b.classList.add("secili"); document.querySelectorAll("#oyunListe .sec").forEach(x=>x.disabled=true);
+          ipucuGoster($("oyunMesaj"),"⭐ " + q.ac); i++; setTimeout(soru,1500); }
+        else { b.classList.add("nazik"); setTimeout(()=>b.classList.remove("nazik"),1100);
+          ipucuGoster($("oyunMesaj"),"💛 Bir kez daha düşünelim; kıssadaki ipucunu hatırlıyor musun?"); }
+      };
+      $("oyunListe").appendChild(b);
+    });
+  };
+  const sahneSenaryo=()=>{
+    k.innerHTML = `<h2>🎒 Hayatıma Taşıyorum</h2>
+      <div class="kart anlati"><p>${senaryo.s}</p></div>
+      <p class="kucuk" style="margin-bottom:8px;">Tek doğru yok — her seçeneğin sonucunu keşfedebilirsin!</p>
+      <div id="oyunListe"></div><p class="ipucu gizli" id="oyunMesaj"></p>
+      <button class="btn altin tam gizli" id="senaryoBitir">${bitisEtiketi}</button>`;
+    senaryo.c.forEach(sc=>{
+      const b=document.createElement("button"); b.className="sec"; b.innerHTML=`<span>${sc.m}</span>`;
+      b.onclick=()=>{ document.querySelectorAll("#oyunListe .sec").forEach(x=>x.classList.remove("secili")); b.classList.add("secili");
+        ipucuGoster($("oyunMesaj"), sc.g); $("senaryoBitir").classList.remove("gizli"); };
+      $("oyunListe").appendChild(b);
+    });
+    $("senaryoBitir").onclick=bolumBitir;
+  };
+  soru();
+}
+
+/* --- YENİ MİNİ OYUNLAR --- */
+function oyunNuhOdun(k){
+  toplamaOyunu(k, { baslik:"🪵 Odun Toplama", yonerge:"Gemi için ormandan sağlam odunları topla! Odunlara dokun.",
+    arka:"orman", hedefIkon:"🪵", hedefAd:"Bir odun", adet:(S.yasModu==="5-7"?6:10),
+    sahte:["🍄","🌸"], sahteMesaj:"Bunlar ormanda kalsın; bize sağlam odun lazım!",
+    dekor:[{i:"🌲",x:4,y:6,b:2.2},{i:"🌳",x:82,y:8,b:2.2},{i:"🌲",x:45,y:2,b:1.8}],
+    bitisMesaj:"Bütün odunlar toplandı! Şimdi diğer malzemeleri seçelim.",
+    sonra:()=> oyunNuhMalzeme($("hikayeIcerik")) });
+}
+function oyunYusufYildiz(k){
+  toplamaOyunu(k, { baslik:"🌟 Rüyadaki Yıldızlar", yonerge:"Hz. Yusuf'un rüyasındaki on bir yıldızı gökyüzünde bul ve topla!",
+    arka:"gokyuzu", hedefIkon:"⭐", hedefAd:"Bir yıldız", adet:11,
+    sahte:["☁️"], sahteMesaj:"Bu bir bulut; yıldızları arıyoruz!",
+    dekor:[{i:"🌙",x:8,y:8,b:2},{i:"☀️",x:82,y:10,b:2}],
+    bitisMesaj:"On bir yıldızın hepsini buldun! Güneş ve ay da rüyadaydı. ☀️🌙" });
+}
+function oyunYusufBugday(k){
+  toplamaOyunu(k, { baslik:"🌾 Bolluk Yılı Hasadı", yonerge:"Bolluk yıllarındayız! Kıtlığa hazırlık için başakları depoya topla.",
+    arka:"tarla", hedefIkon:"🌾", hedefAd:"Bir başak", adet:(S.yasModu==="5-7"?6:10),
+    sahte:["🌵","🪨"], sahteMesaj:"Bu depoya girmez; altın başakları arıyoruz!",
+    dekor:[{i:"🏺",x:84,y:64,b:2.4},{i:"🌞",x:6,y:6,b:2}],
+    bitisMesaj:"Depo doldu! Tedbir sayesinde kıtlık yıllarında kimse aç kalmayacak." });
+}
+function oyunYunusBalik(k){
+  toplamaOyunu(k, { baslik:"🐋 Büyük Balığı Besle", yonerge:"Küçük parlak balıklar hızlı yüzüyor! Büyük balığın beslenmesi için onlara dokunup yakala.",
+    arka:"deniz", hedefIkon:"🐟", hedefAd:"Bir balık", adet:(S.yasModu==="5-7"?5:8), hareketli:true,
+    sahte:["🐚","🪸"], sahteMesaj:"Bu bir deniz süsü; parlak balıkları arıyoruz!",
+    dekor:[{i:"🐋",x:6,y:60,b:3},{i:"🫧",x:70,y:12,b:1.4}],
+    bitisMesaj:"Büyük balık doydu! Denizin düzeninde her canlının bir yeri var." });
+}
+function oyunYunusDua(k){
+  toplamaOyunu(k, { baslik:"🪔 Dua Işıkları", yonerge:"Karanlık ama huzurlu bir yerdeyiz. Denizin derinliklerindeki dua ışıklarını topla.",
+    arka:"derin", hedefIkon:"✨", hedefAd:"Bir dua ışığı", adet:7,
+    sahte:["🫧"], sahteMesaj:"Bu bir su kabarcığı; parlayan ışıkları arıyoruz.",
+    dekor:[{i:"🪔",x:82,y:70,b:2}],
+    bitisMesaj:"Işıklar toplandı: 'Senden başka ilah yoktur; seni tenzih ederim…' Dua, karanlığı aydınlattı." });
+}
+function oyunYusufKuyu(k){
+  const DERINLIK = 9;
+  const hedef = 6 + Math.floor(Math.random()*3); // 6-8
+  let konum = 0, asama = "in"; // in | cek
+  k.innerHTML = `<h2>🪣 Kuyuya İp Sarkıt</h2>
+    <p class="kucuk">Kervan su almak için kovayı sarkıtıyor. Kovayı ✨ ışığın olduğu basamağa indir, doldur ve yukarı çek!</p>
+    <div class="kuyu-agiz">🐪 🧺 🐪</div>
+    <div class="kuyu" id="kuyuGovde" aria-label="Kuyu"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+      <button class="btn" id="ipIndir">⬇️ İpi İndir</button>
+      <button class="btn toprak" id="ipCek">⬆️ İpi Çek</button>
+    </div>
+    <button class="btn altin tam" style="margin-top:8px;" id="kovaDoldur">🌟 Kovayı Doldur</button>
+    <p class="ipucu gizli" id="oyunMesaj"></p>`;
+  const ciz = ()=>{
+    const g = $("kuyuGovde"); g.innerHTML="";
+    for(let i=1;i<=DERINLIK;i++){
+      const s=document.createElement("div"); s.className="kuyu-hucre";
+      s.textContent = (i===konum ? "🪣" : "") + (i===hedef ? " ✨" : "");
+      g.appendChild(s);
+    }
+  };
+  ciz();
+  $("ipIndir").onclick=()=>{
+    if(asama!=="in") return;
+    if(konum<DERINLIK){ konum++; ciz(); }
+    if(konum>hedef) ipucuGoster($("oyunMesaj"),"💛 Sanırım ışığı geçtik; ⬆️ ile biraz yukarı alabilirsin.");
+  };
+  $("ipCek").onclick=()=>{
+    if(konum===0) return;
+    konum--; ciz();
+    if(asama==="cek"){
+      if(konum===0){
+        $("kuyuGovde").insertAdjacentHTML("beforebegin",'<div class="kuyu-agiz hatira-anim">🌟</div>');
+        ipucuGoster($("oyunMesaj"),"🌟 Kova gün ışığına çıktı! Karanlık kuyu, yeni bir yolculuğun kapısı oldu.");
+        setTimeout(bolumBitir,1600);
+      } else ipucuGoster($("oyunMesaj"),"⬆️ Çekmeye devam! Kova yukarı geliyor…");
+    }
+  };
+  $("kovaDoldur").onclick=()=>{
+    if(asama!=="in") return;
+    if(konum===hedef){ asama="cek";
+      ipucuGoster($("oyunMesaj"),"⭐ Kova doldu! Şimdi ⬆️ İpi Çek düğmesiyle onu gün ışığına çıkar.");
+      $("ipIndir").disabled=true; $("kovaDoldur").disabled=true;
+    } else if(konum<hedef) ipucuGoster($("oyunMesaj"),"💛 İp daha uzun sarkmalı; ✨ ışığa henüz ulaşmadık. ⬇️ ile inmeye devam!");
+    else ipucuGoster($("oyunMesaj"),"💛 Biraz fazla indik; ⬆️ ile bir basamak yukarı al.");
+  };
+}
+function oyunYunusSoru(k){
+  tekSoruOyunu(k, { s:"Hz. Yunus, halkını neye çağırdı?",
+    c:["Yalnız Allah'a inanmaya ve güzel davranmaya","Büyük bir gemi yarışına","Denizde balık tutmaya"], d:0,
+    ac:"Evet! Uzun süre dinlenmese de görevi buydu.", nazik:"Hz. Yunus'un daveti kalplere yönelikti." }, "⛵ Küçük Soru");
+}
+function oyunYusufAf(k){
+  quizSenaryoOyunu(k, [
+    { s:"Kardeşleri pişman olunca Hz. Yusuf ne yaptı?", c:["Onları cezalandırdı","'Bugün size kınama yok' diyerek affetti","Onlarla bir daha konuşmadı"], d:1, ac:"Affetmek, kırgın kalpleri onaran köprüdür. (Yûsuf 12/92)" },
+    { s:"Kıtlığa karşı ne yapıldı?", c:["Hiçbir şey yapılmadı","Herkes şehirden ayrıldı","Bolluk yıllarında buğday depolandı"], d:2, ac:"Tedbir sayesinde kimse aç kalmadı. (Yûsuf 12/47-48)" },
+    { s:"Affetmek nedir?", c:["Yapılan yanlışı onaylamak","Kalbi kırgınlık yükünden kurtarıp yeni sayfa açmak","Hiç unutmamak ve hatırlatmak"], d:1, ac:"Affetmek kalbi hafifletir; yanlışı onaylamak değildir." }
+  ], { s:"Arkadaşın sana kırıcı bir söz söyledi; sonra pişman olup özür diledi. Ne yaparsın?",
+    c:[ { m:"Onu dinler ve affederim.", g:"🌟 Tıpkı Hz. Yusuf gibi! Affetmek büyük bir yüreklilik ister." },
+        { m:"Biraz zaman isterim, sonra konuşuruz.", g:"🌟 Bu da çok sağlıklı! Kalbin hazır olunca konuşmak affetmeyi kolaylaştırır." },
+        { m:"Bir büyüğümle konuşup ne hissettiğimi anlatırım.", g:"🌟 Duyguları paylaşmak, kırgınlığı hafifletir." },
+        { m:"Onunla bir daha asla konuşmam.", g:"💛 Kırılmak çok doğal. Ama 'Bugün size kınama yok' sözünü hatırla: affetmek, en çok bizim kalbimizi hafifletir." } ]
+  }, "Hatıramı al! 💚");
+}
+function oyunYunusSon(k){
+  quizSenaryoOyunu(k, [
+    { s:"Hz. Yunus balığın karnında ne yaptı?", c:["Uyudu","Dua etti ve hatasını kabul etti","Kızıp bağırdı"], d:1, ac:"Duası kabul edildi. (Enbiyâ 21/87-88)" },
+    { s:"Balığın karnı nasıl bir yerdi?", c:["Korkunç bir ceza yeri","Allah'ın korumasında sessiz bir sığınak"], d:1, ac:"Korkutucu değil; düşünmek için bir alandı." },
+    { s:"Sahile çıkınca Hz. Yunus ne yaptı?", c:["Görevine geri döndü","Bir daha hiç çalışmadı","Denize geri döndü"], d:0, ac:"Bu kez halkı onu dinledi ve iman etti. (Saffât 37/147-148)" }
+  ], { s:"Başladığın güzel bir işte zorlandın ve bıraktın; şimdi pişmansın. Ne yaparsın?",
+    c:[ { m:"Derin bir nefes alır, yeniden başlarım.", g:"🌟 İkinci şanslar, ilk denemelerden güçlü olabilir!" },
+        { m:"Nerede zorlandığımı düşünür, plan yaparım.", g:"🌟 Hatayı anlamak, yeniden başlamanın pusulasıdır." },
+        { m:"Bir büyüğümden yardım isterim.", g:"🌟 Yardım istemek akıllılıktır." },
+        { m:"Artık hiç denemem.", g:"💛 Yorulmak normal. Ama sahildeki filizi hatırla: yarım kalan güzel işlere dönülebilir. Küçük bir adımla başlayabilirsin." } ]
+  }, "Hatıramı al! 🌱");
+}
+
 /* --- HZ. NUH OYUNLARI --- */
 function oyunNuhSoru(k){
   const q = { s:"Hz. Nuh, insanları neye davet etti?",
@@ -1268,38 +1631,61 @@ function oyunNuhMalzeme(k){
 }
 const nuhHayvanlar = [
   { ad:"Güvercin", ikon:"🕊️", b:"kus" }, { ad:"Baykuş", ikon:"🦉", b:"kus" },
-  { ad:"Fil", ikon:"🐘", b:"buyuk" }, { ad:"At", ikon:"🐴", b:"buyuk" },
+  { ad:"At", ikon:"🐴", b:"buyuk" }, { ad:"İnek", ikon:"🐄", b:"buyuk" },
   { ad:"Tavşan", ikon:"🐇", b:"kucuk" }, { ad:"Kaplumbağa", ikon:"🐢", b:"kucuk" }
 ];
 function oyunNuhHayvan(k){
-  let secili=null, kalan=nuhHayvanlar.length;
-  k.innerHTML = `<h2>🐾 Hayvanları Yerleştir</h2><p class="kucuk">Her canlıdan birer çift gemiye alınıyor. Önce hayvana, sonra uygun bölüme dokun!</p>
+  // Çifter çifter: önce aynı türden İKİ hayvana dokunup çifti oluştur, sonra bölümüne yerleştir.
+  const turler = S.yasModu==="5-7" ? [nuhHayvanlar[0],nuhHayvanlar[2],nuhHayvanlar[3],nuhHayvanlar[4]] : nuhHayvanlar;
+  let kalan = turler.length;
+  let secim = [];        // seçili kartlar [{tur, dugme}]
+  let hazirCift = null;  // yerleştirilmeye hazır tür
+  k.innerHTML = `<h2>🐾 Çifter Çifter Gemiye!</h2>
+    <p class="kucuk">Her canlıdan <b>birer çift</b> alınıyor: önce aynı türden <b>iki</b> hayvana dokun, çift olunca uygun bölüme yerleştir!</p>
     <div id="ogeler" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;"></div>
     <div class="hedefler">
       <button class="hedef" data-b="kus">🪶 Kuşlar Bölümü<div class="icerik"></div></button>
       <button class="hedef" data-b="buyuk">🌾 Büyük Dostlar<div class="icerik"></div></button>
       <button class="hedef" data-b="kucuk" style="grid-column:1/-1;">🌿 Minik Dostlar<div class="icerik"></div></button>
     </div><p class="ipucu gizli" id="oyunMesaj"></p>`;
-  nuhHayvanlar.forEach(hy=>{
-    const b=document.createElement("button"); b.className="sec"; b.style.width="auto"; b.style.flex="1 1 45%";
-    b.innerHTML=`<span class="ikon">${hy.ikon}</span><span>${hy.ad} çifti</span>`;
-    b.onclick=()=>{ document.querySelectorAll("#ogeler .sec").forEach(x=>x.classList.remove("secili")); b.classList.add("secili");
-      secili={hy,b}; document.querySelectorAll(".hedef").forEach(x=>x.classList.add("canli"));
-      ipucuGoster($("oyunMesaj"),`${hy.ikon} ${hy.ad} çiftini seçtin. Şimdi uygun bölüme dokun!`); };
+  const kartlar = karistir(turler.flatMap(t=>[{...t, no:1},{...t, no:2}]));
+  kartlar.forEach(t=>{
+    const b=document.createElement("button"); b.className="sec"; b.style.width="auto"; b.style.flex="1 1 21%";
+    b.style.justifyContent="center"; b.style.fontSize="1.5rem"; b.innerHTML=`<span>${t.ikon}</span>`;
+    b.setAttribute("aria-label", t.ad);
+    b.onclick=()=>{
+      if(b.disabled) return;
+      if(hazirCift){ ipucuGoster($("oyunMesaj"),"Önce hazırdaki çifti bir bölüme yerleştir. 😊"); return; }
+      if(secim.length===1 && secim[0].dugme===b){ b.classList.remove("secili"); secim=[]; return; }
+      b.classList.add("secili"); secim.push({tur:t, dugme:b});
+      if(secim.length===2){
+        if(secim[0].tur.ad===secim[1].tur.ad){
+          hazirCift = { tur:t, dugmeler:secim.map(x=>x.dugme) };
+          document.querySelectorAll(".hedef").forEach(x=>x.classList.add("canli"));
+          ipucuGoster($("oyunMesaj"),`⭐ ${t.ikon}${t.ikon} ${t.ad} çifti hazır! Şimdi uygun bölüme dokun.`);
+        } else {
+          ipucuGoster($("oyunMesaj"),`💛 ${secim[0].tur.ad} ile ${secim[1].tur.ad} bir çift olamaz; aynı türden iki hayvan bulalım!`);
+          secim.forEach(x=>x.dugme.classList.remove("secili"));
+        }
+        secim=[];
+      }
+    };
     $("ogeler").appendChild(b);
   });
   document.querySelectorAll(".hedef").forEach(hd=>{
     hd.onclick=()=>{
-      if(!secili){ ipucuGoster($("oyunMesaj"),"Önce bir hayvan çiftine dokun. 😊"); return; }
-      if(secili.hy.b===hd.dataset.b){
-        hd.querySelector(".icerik").innerHTML += `<span class="cip">${secili.hy.ikon}</span>`;
-        secili.b.disabled=true; secili.b.classList.remove("secili"); secili.b.style.opacity=".45"; secili=null; kalan--;
+      if(!hazirCift){ ipucuGoster($("oyunMesaj"),"Önce aynı türden iki hayvana dokunup çifti hazırla. 😊"); return; }
+      const t = hazirCift.tur;
+      if(t.b===hd.dataset.b){
+        hd.querySelector(".icerik").innerHTML += `<span class="cip">${t.ikon}${t.ikon}</span>`;
+        hazirCift.dugmeler.forEach(d=>{ d.disabled=true; d.classList.remove("secili"); d.style.opacity=".35"; });
+        hazirCift=null; kalan--;
         document.querySelectorAll(".hedef").forEach(x=>x.classList.remove("canli"));
-        ipucuGoster($("oyunMesaj"), kalan? "⭐ Yerleşti! Sırada kim var?" : "🌟 Bütün dostlar güvenle yerleşti! Gemi yola hazır.");
+        ipucuGoster($("oyunMesaj"), kalan? `⭐ ${t.ad} çifti yerleşti! Sırada kim var?` : "🌟 Bütün çiftler güvenle yerleşti! Gemi yola hazır.");
         if(!kalan) setTimeout(bolumBitir,1400);
       } else {
-        const ip = secili.hy.b==="kus" ? "kanatlı dostlar yukarıyı sever" : secili.hy.b==="buyuk" ? "iri dostlara geniş yer gerek" : "minik dostlar sıcak köşeleri sever";
-        ipucuGoster($("oyunMesaj"),`💛 Hmm, ${secili.hy.ad} için burası pek uygun değil gibi. İpucu: ${ip}. Bir daha deneyelim!`);
+        const ip = t.b==="kus" ? "kanatlı dostlar yukarıyı sever" : t.b==="buyuk" ? "iri dostlara geniş yer gerek" : "minik dostlar sıcak köşeleri sever";
+        ipucuGoster($("oyunMesaj"),`💛 Hmm, ${t.ad} çifti için burası pek uygun değil. İpucu: ${ip}. Bir daha deneyelim!`);
       }
     };
   });
@@ -1361,13 +1747,15 @@ function oyunNuhQuiz(k){
   };
   soru();
 }
-function nuhSonHTML(){
+function kissaSonHTML(anah){
+  const st = stories[anah];
+  const ids = st.chapters.map(c=>c.hatira.id);
   return `
     <div class="kart" style="text-align:left;margin-top:6px;">
-      <h2>🌈 Hz. Nuh'un Yolculuğu Tamamlandı</h2>
-      <p style="margin:8px 0;">${hikmetKartlari.slice(8).map(x=>`<span class="cip">${x.ikon} ${x.kavram}</span>`).join("")}</p>
-      <p class="anlati">${stories.nuh.anaMesaj}</p>
-      <span class="kaynak-etiket">📖 Kaynaklar: ${stories.nuh.sources}</span>
+      <h2>${st.chapters[st.chapters.length-1].hatira.ikon} ${st.title.split(" ve ")[0]}'un Yolculuğu Tamamlandı</h2>
+      <p style="margin:8px 0;">${hikmetKartlari.filter(x=>ids.includes(x.id)).map(x=>`<span class="cip">${x.ikon} ${x.kavram}</span>`).join("")}</p>
+      <p class="anlati">${st.anaMesaj}</p>
+      <span class="kaynak-etiket">📖 Kaynaklar: ${st.sources}</span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
       <button class="btn" data-act="cantaya-git">🎒 Hikmet Çantam</button>
@@ -1710,7 +2098,7 @@ function aileCiz(){
     <div class="kart"><h2>⚠️ Yetişkinlere önemli notlar</h2>${aileIcerik.uyarilar.map(x=>`<p style="margin-bottom:6px;">• ${x}</p>`).join("")}</div>
     <div class="kart"><h2>🏡 Aile etkinlikleri</h2>${aileIcerik.etkinlikler.map(x=>`<p style="margin-bottom:6px;">• ${x}</p>`).join("")}</div>
     <div class="kart"><h2>📖 Kaynaklar ve içerik güvenliği</h2>
-      <p class="kucuk">Anlatım yalnızca şu ayet aralıklarına dayanır — Hz. Âdem: ${stories.adem.sources} · Hz. Nuh: ${stories.nuh.sources}. İsrailiyat türü rivayetlere, uydurma hadislere ve kaynağı belirsiz ayrıntılara (elma, yılan, belirli iniş yerleri vb.) yer verilmemiştir. Ayet mealleri kısa özet niteliğindedir; <b>yayın öncesinde bir din eğitimi uzmanının kontrolü gereklidir.</b></p></div>`;
+      <p class="kucuk">Anlatım yalnızca şu ayet aralıklarına dayanır — ${Object.values(stories).map(st=>st.title.split(" ve ")[0]+": "+st.sources).join(" · ")}. İsrailiyat türü rivayetlere, uydurma hadislere ve kaynağı belirsiz ayrıntılara (elma, yılan, belirli iniş yerleri vb.) yer verilmemiştir. Ayet mealleri kısa özet niteliğindedir; <b>yayın öncesinde bir din eğitimi uzmanının kontrolü gereklidir.</b></p></div>`;
 }
 
 /* ================================================================
