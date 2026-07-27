@@ -163,8 +163,25 @@ function soyle(t){
 }
 document.getElementById('sesBtn').addEventListener('click',()=>{ audio(); if(sonSoylenecek) soyle(sonSoylenecek); });
 
-const rnd=a=>a[Math.floor(Math.random()*a.length)];
-const karistir=a=>[...a].sort(()=>Math.random()-0.5);
+function karistir(a){ const r=[...a];
+  for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; }
+  return r; }
+/* torba sistemi: deste bitmeden aynı öğe tekrar gelmez */
+const torba={}, torbaSon={};
+function cek(ad,dizi){
+  let t=torba[ad];
+  if(!t||!t.length){
+    t=karistir(dizi.map((_,i)=>i));
+    /* yeni destenin ilk çekilecek öğesi, son çekilenle aynı olmasın */
+    if(t.length>1&&t[t.length-1]===torbaSon[ad]){
+      const j=Math.floor(Math.random()*(t.length-1));
+      [t[t.length-1],t[j]]=[t[j],t[t.length-1]];
+    }
+    torba[ad]=t;
+  }
+  const i=t.pop(); torbaSon[ad]=i;
+  return dizi[i];
+}
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
 function updHud(){
@@ -203,7 +220,7 @@ function secenekKur(items,dogru,cb){
 }
 /* ── SORU ÜRETİCİLER ── */
 function soruHarf(){
-  const [e,k]=rnd(HARF);
+  const [e,k]=cek('harf',HARF);
   const dogru=k[0].toLocaleUpperCase('tr');
   goster('HANGİ HARFLE BAŞLAR?',e,k.toLocaleUpperCase('tr'),'Resme bak, ilk sesi bul');
   soyle(k);
@@ -212,7 +229,7 @@ function soruHarf(){
   secenekKur(karistir([...secs]),dogru,ilerle);
 }
 function soruHece(){
-  const [e,k,h,n]=rnd(HECE);
+  const [e,k,h,n]=cek('hece',HECE);
   goster('KAÇ HECE?',e,h.replaceAll('-',' · '),'Alkışlayarak say: '+k);
   soyle(k);
   const secs=new Set([n]);
@@ -220,7 +237,7 @@ function soruHece(){
   secenekKur(karistir([...secs].map(String)),String(n),ilerle);
 }
 function soruZit(){
-  const [a,b,e]=rnd(ZIT);
+  const [a,b,e]=cek('zit',ZIT);
   const ters=Math.random()<0.5;
   const soru=ters?b:a, dogru=ters?a:b;
   goster('ZIT ANLAMLISI NE?',e,'"'+soru+'"','Tersi hangisi?');
@@ -230,7 +247,7 @@ function soruZit(){
   secenekKur(secs,dogru,ilerle);
 }
 function soruCumle(){
-  const c=rnd(CUMLE);
+  const c=cek('cumle',CUMLE);
   goster('CÜMLEYİ KUR!','🧩','','Kelimelere sırayla dokun');
   soyle(c.join(' '));
   document.getElementById('secenekler').innerHTML='';
@@ -273,9 +290,7 @@ function yeniSoru(){
   document.getElementById('cumleKur').innerHTML='';
   updHud();
   /* ilk seviyelerde cümle az, sonra artar */
-  let m;
-  if(lvl<2) m=rnd([0,1,0,2]);
-  else m=rnd([0,1,2,3,3]);
+  const m = lvl<2 ? cek('modKolay',[0,1,0,2]) : cek('mod',[0,1,2,3,3]);
   MODLAR[m]();
 }
 function ilerle(){
