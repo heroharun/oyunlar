@@ -76,8 +76,9 @@ export const TR = {
     play: 'OYNA',
     done: 'TAMAM',
     lockedToast: 'Önce önceki dosyayı tamamla.',
-    file1Title: 'DOSYA 1 · KAYIP SİNYAL',
-    file1Detail: 'Bölüm 1-8: kamera, çelişki, sinyal, rota, kritik karar.',
+    file1Title: 'BÖLÜM 1-8 · KAYIP SİNYAL',
+    file1Detail: 'Kamera, çelişki, sinyal, rota, kritik karar.',
+    actLabel: 'PERDE',
     back: 'ANA MENÜ',
     metrics: {
       trust: 'GÜVEN',

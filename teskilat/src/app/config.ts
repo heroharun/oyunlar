@@ -9,6 +9,7 @@ import { Ep11Scene } from '../scenes/Ep11Scene';
 import { Ep22Scene } from '../scenes/Ep22Scene';
 import { EpisodeResultScene } from '../scenes/EpisodeResultScene';
 import { EpisodeSelectScene } from '../scenes/EpisodeSelectScene';
+import { GenericEpisodeScene } from '../scenes/GenericEpisodeScene';
 import { MainMenuScene } from '../scenes/MainMenuScene';
 import { PreloadScene } from '../scenes/PreloadScene';
 import { ResultScene } from '../scenes/ResultScene';
@@ -49,6 +50,7 @@ export function createGameConfig(): Phaser.Types.Core.GameConfig {
       Ep09Scene,
       Ep11Scene,
       Ep22Scene,
+      GenericEpisodeScene,
       EpisodeResultScene
     ]
   };

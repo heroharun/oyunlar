@@ -138,9 +138,9 @@ export class ResultScene extends Phaser.Scene {
       x: cx,
       y: GAME_HEIGHT - 90,
       width: 260,
-      label: TR.result.menu,
+      label: TR.episodeResult.files,
       emphasis: false,
-      onTap: () => TransitionManager.fadeTo(this, SCENE_KEYS.menu)
+      onTap: () => TransitionManager.fadeTo(this, SCENE_KEYS.episodes)
     });
 
     this.input.keyboard?.on('keydown-ENTER', () => replay.trigger());

@@ -39,3 +39,11 @@ Sinyal Analizi → Uzman Seçimi → Rota Planlama → Kritik Karar → Operasyo
 - ✔ Ortak bölüm raporu: derece damgası + sezon etkisi (kötü artışlar kırmızı) + şüphe tablosu barları + cliffhanger.
 - ✔ CampaignState localStorage'da; İlerlemeyi Sıfırla artık sezonu da sıfırlıyor.
 - Düzeltilen: uzun brifing metni başlıkla çakışıyordu (kısaltıldı); son bölümde "Sonraki Bölüm" etiketi sızıyordu (init sıfırlama).
+
+## Sezon Tamamlama (21 bölüm) — 2026-07-27
+- ✔ 17 ara bölüm (10, 12-21, 23-28) veri odaklı bölüm motoruyla eklendi (info/quiz/order/pick adımları).
+- ✔ Bölüm zinciri uçtan uca bot ile koşuldu: ep10 → ep28, aradaki özel sahneler (11, 22) dahil, 21/21 tamamlandı.
+- ✔ Perde sekmeli dosya ekranı; açılışta kaldığın perdeye gider; kilit zinciri EPISODE_ORDER üzerinden.
+- ✔ Bölüm 28 finali: 4 farklı son (Bedeli Ağır / Derin Gölge / Kusursuz / Sessiz Hesap), seçime göre son metni.
+- ✔ Beyaz metinler parlatıldı (#dfe8f2 → #f4f8fd, soluk metin #a9bdd1).
+- Düzeltilen: dosya satırlarında uzun başlık-durum çakışması (durum ikinci satıra alındı).

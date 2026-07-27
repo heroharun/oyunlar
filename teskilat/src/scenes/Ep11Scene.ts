@@ -193,7 +193,7 @@ export class Ep11Scene extends StageScene {
         { label: TR.episodes.metrics.trust, value: trustDelta }
       ],
       cliffhanger: EP11.cliffhanger,
-      nextScene: SCENE_KEYS.ep22
+      nextEpisodeId: 'ep12'
     };
     TransitionManager.fadeTo(this, SCENE_KEYS.episodeResult, outcome);
   }

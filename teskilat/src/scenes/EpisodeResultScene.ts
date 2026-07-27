@@ -4,9 +4,10 @@ import { TR } from '../data/dialogues/tr';
 import { Audio } from '../systems/AudioManager';
 import { Campaign, type SuspectId } from '../systems/Campaign';
 import { SaveManager } from '../systems/SaveManager';
+import { sceneForEpisode } from '../systems/episodeRouter';
 import { TransitionManager } from '../systems/TransitionManager';
 import type { ReportGrade } from '../types/mission';
-import { COLORS, FONTS, GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS, type SceneKey } from '../utils/constants';
+import { COLORS, FONTS, GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../utils/constants';
 
 export interface EpisodeOutcome {
   episodeId: string;
@@ -15,7 +16,7 @@ export interface EpisodeOutcome {
   /** Sezon metriklerine işlenen değişimler; inverted=true ise artış KÖTÜdür. */
   deltas: { label: string; value: number; inverted?: boolean }[];
   cliffhanger: string;
-  nextScene?: SceneKey;
+  nextEpisodeId?: string;
 }
 
 /** Tüm yeni bölümlerin ortak sonuç ekranı (Genişletme GDD Core D). */
@@ -40,7 +41,7 @@ export class EpisodeResultScene extends Phaser.Scene {
       grade: 'kontrollu',
       deltas: [],
       cliffhanger: '',
-      nextScene: undefined,
+      nextEpisodeId: undefined,
       ...data
     };
   }
@@ -166,22 +167,25 @@ export class EpisodeResultScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    const next = o.nextEpisodeId ? sceneForEpisode(o.nextEpisodeId) : null;
     const nextBtn = new PrimaryButton(this, {
       x: cx,
       y: GAME_HEIGHT - 150,
       width: 260,
-      label: o.nextScene ? TR.episodeResult.next : TR.episodeResult.files,
-      onTap: () =>
-        TransitionManager.fadeTo(this, o.nextScene ?? SCENE_KEYS.episodes)
+      label: next ? TR.episodeResult.next : TR.episodeResult.files,
+      onTap: () => {
+        if (next) TransitionManager.fadeTo(this, next.key, next.data);
+        else TransitionManager.fadeTo(this, SCENE_KEYS.episodes);
+      }
     });
     new PrimaryButton(this, {
       x: cx,
       y: GAME_HEIGHT - 84,
       width: 260,
-      label: o.nextScene ? TR.episodeResult.files : TR.result.menu,
+      label: next ? TR.episodeResult.files : TR.result.menu,
       emphasis: false,
       onTap: () =>
-        TransitionManager.fadeTo(this, o.nextScene ? SCENE_KEYS.episodes : SCENE_KEYS.menu)
+        TransitionManager.fadeTo(this, next ? SCENE_KEYS.episodes : SCENE_KEYS.menu)
     });
     this.input.keyboard?.on('keydown-ENTER', () => nextBtn.trigger());
   }

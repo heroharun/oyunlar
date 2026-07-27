@@ -235,7 +235,7 @@ export class Ep09Scene extends StageScene {
         { label: TR.episodes.metrics.stealth, value: stealthDelta, inverted: true }
       ],
       cliffhanger: EP09.cliffhanger,
-      nextScene: SCENE_KEYS.ep11
+      nextEpisodeId: 'ep10'
     };
     TransitionManager.fadeTo(this, SCENE_KEYS.episodeResult, outcome);
   }

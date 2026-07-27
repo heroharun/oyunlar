@@ -8,8 +8,8 @@ export const COLORS = {
   panel: 0x141c26,
   panelLight: 0x1d2836,
   line: 0x2c3b4e,
-  text: '#dfe8f2',
-  textDim: '#8ba0b6',
+  text: '#f4f8fd',
+  textDim: '#a9bdd1',
   accent: 0xc22f2f,
   accentText: '#e5484d',
   ok: 0x3f9d63,
@@ -41,6 +41,7 @@ export const SCENE_KEYS = {
   ep09: 'Ep09Scene',
   ep11: 'Ep11Scene',
   ep22: 'Ep22Scene',
+  generic: 'GenericEpisodeScene',
   episodeResult: 'EpisodeResultScene'
 } as const;
 
