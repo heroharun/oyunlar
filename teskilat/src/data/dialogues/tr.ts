@@ -5,6 +5,7 @@ export const TR = {
     title: 'GÖLGE PROTOKOL',
     slogan: 'Operasyon sahada değil, zihinde başlar.',
     start: 'GÖREVE BAŞLA',
+    sound: 'SES',
     privacy: 'GİZLİLİK',
     resetProgress: 'İLERLEMEYİ SIFIRLA',
     resetDone: 'Yerel kayıt silindi.',
@@ -14,6 +15,10 @@ export const TR = {
       'İlerleme yalnızca bu cihazda saklanır\n' +
       've istediğiniz an silinebilir.',
     close: 'KAPAT',
+    musicLabel: 'MÜZİK',
+    sfxLabel: 'EFEKT',
+    on: 'AÇIK',
+    off: 'KAPALI',
     keyboardHint: 'Enter: başlat'
   },
   briefing: {
@@ -25,27 +30,52 @@ export const TR = {
     proceed: 'OPERASYONA BAŞLA',
     back: 'GERİ'
   },
+  common: {
+    continue: 'DEVAM',
+    confirm: 'ONAYLA',
+    hintButton: 'İPUCU',
+    hintExhausted: 'İpucu hakkı doldu.',
+    resetButton: 'SIFIRLA',
+    keyboardPick: '1-4: seç · Enter: devam'
+  },
   cameraPuzzle: {
     kicker: 'KAMERA ANALİZİ',
     wrongPick: 'Zaman çizelgesi bu seçimle uyuşmuyor.',
-    hintButton: 'İPUCU',
-    hintExhausted: 'İpucu hakkı doldu. Saatleri karşılaştır.',
-    resetButton: 'SIFIRLA',
     doneToast: 'Zaman çizelgesi doğrulandı.',
-    keyboardHint: '1-4: kart seç',
     progressLabel: 'SIRALANAN'
+  },
+  contradiction: {
+    kicker: 'ÇELİŞKİ TESPİTİ',
+    wrongPick: 'Bu ifade diğer kayıtlarla tutarlı görünüyor.',
+    doneToast: 'Çelişki dosyaya işlendi.'
+  },
+  signal: {
+    kicker: 'SİNYAL ANALİZİ',
+    doneToast: 'Kaynak kilitlendi.'
+  },
+  specialist: {
+    kicker: 'UZMAN GÖREVLENDİRME',
+    countLabel: 'SEÇİLEN',
+    needTwo: 'Bu operasyon için iki uzman seçmelisin.'
+  },
+  route: {
+    kicker: 'ROTA PLANLAMA',
+    mapStart: 'EKİP',
+    mapTarget: 'ARAÇ B',
+    selectedLabel: 'SEÇİLİ ROTA',
+    noneSelected: 'Bir rota seç.'
+  },
+  decision: {
+    kicker: 'KRİTİK KARAR',
+    noneSelected: 'Bir yöntem seç.'
   },
   result: {
     kicker: 'OPERASYON RAPORU',
     grades: {
       sessiz: 'SESSİZ BAŞARI',
       kontrollu: 'KONTROLLÜ BAŞARI',
-      riskli: 'RİSKLİ BAŞARI'
-    },
-    gradeDesc: {
-      sessiz: 'Tek hatasız analiz. Karşı taraf hiçbir şey fark etmedi.',
-      kontrollu: 'Hedefe ulaşıldı; küçük izler kaldı, temizlendi.',
-      riskli: 'Analiz tamamlandı ancak dikkat çekme riski oluştu.'
+      riskli: 'RİSKLİ BAŞARI',
+      desifre: 'OPERASYON DEŞİFRE OLDU'
     },
     metrics: {
       secrecy: 'GİZLİLİK',
@@ -53,11 +83,17 @@ export const TR = {
       civilian: 'SİVİL GÜVENLİĞİ'
     },
     statsMistakes: 'Hatalı seçim',
-    statsHints: 'Kullanılan ipucu',
+    statsHints: 'İpucu',
     statsTime: 'Süre',
     seconds: 'sn',
-    nextTeaser:
-      'Araç B işaretlendi. Ancak plakayı kapatan gölge,\nbir sonraki dosyanın ilk sayfası olacak.',
+    badgeLabel: 'YENİ ROZET',
+    badges: {
+      'sessiz-operator': 'Sessiz Operatör',
+      'keskin-analist': 'Keskin Analist',
+      'sifir-sivil-risk': 'Sıfır Sivil Risk',
+      'tek-seferde-cozum': 'Tek Seferde Çözüm',
+      'golge-protokol': 'Gölge Protokol'
+    },
     replay: 'TEKRAR OYNA',
     menu: 'ANA MENÜ'
   }

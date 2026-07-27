@@ -1,14 +1,20 @@
-import type { ReportGrade } from '../types/mission';
+import type { BadgeId, ReportGrade } from '../types/mission';
 
 interface SaveData {
   completedMissions: string[];
   bestGrade: Partial<Record<string, ReportGrade>>;
+  badges: BadgeId[];
 }
 
 const STORAGE_KEY = 'teskilat_golge_save_v1';
-const EMPTY: SaveData = { completedMissions: [], bestGrade: {} };
+const EMPTY: SaveData = { completedMissions: [], bestGrade: {}, badges: [] };
 
-const GRADE_RANK: Record<ReportGrade, number> = { riskli: 0, kontrollu: 1, sessiz: 2 };
+const GRADE_RANK: Record<ReportGrade, number> = {
+  desifre: 0,
+  riskli: 1,
+  kontrollu: 2,
+  sessiz: 3
+};
 
 /**
  * localStorage tabanlı yerel kayıt (GDD §14.3).
@@ -28,7 +34,9 @@ export class SaveManager {
         parsed !== null &&
         Array.isArray((parsed as SaveData).completedMissions)
       ) {
-        return parsed as SaveData;
+        const data = parsed as SaveData;
+        if (!Array.isArray(data.badges)) data.badges = [];
+        return data;
       }
       return structuredClone(EMPTY);
     } catch {
@@ -48,8 +56,15 @@ export class SaveManager {
     this.persist(data);
   }
 
-  static bestGradeFor(missionId: string): ReportGrade | undefined {
-    return this.load().bestGrade[missionId];
+  /** Yeni kazanılan rozetleri kaydeder; ilk kez kazanılanları döndürür. */
+  static recordBadges(earned: BadgeId[]): BadgeId[] {
+    const data = this.load();
+    const fresh = earned.filter(b => !data.badges.includes(b));
+    if (fresh.length > 0) {
+      data.badges.push(...fresh);
+      this.persist(data);
+    }
+    return fresh;
   }
 
   static reset(): void {

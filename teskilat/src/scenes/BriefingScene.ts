@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TR } from '../data/dialogues/tr';
 import { MISSION_001 } from '../data/missions/mission-001';
+import { Audio } from '../systems/AudioManager';
+import { MissionRun } from '../systems/MissionRun';
 import { TransitionManager } from '../systems/TransitionManager';
 import { COLORS, FONTS, GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../utils/constants';
 
@@ -15,6 +17,8 @@ export class BriefingScene extends Phaser.Scene {
     const cx = GAME_WIDTH / 2;
     this.cameras.main.setBackgroundColor(COLORS.bg);
     TransitionManager.fadeIn(this);
+    MissionRun.reset(this.game.getTime());
+    Audio.setState('investigation');
 
     this.add
       .text(cx, 76, TR.briefing.kicker, {

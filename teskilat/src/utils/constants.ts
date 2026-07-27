@@ -31,6 +31,11 @@ export const SCENE_KEYS = {
   menu: 'MainMenuScene',
   briefing: 'BriefingScene',
   cameraPuzzle: 'CameraPuzzleScene',
+  contradiction: 'ContradictionScene',
+  signal: 'SignalScene',
+  specialist: 'SpecialistScene',
+  route: 'RouteScene',
+  decision: 'DecisionScene',
   result: 'ResultScene'
 } as const;
 
