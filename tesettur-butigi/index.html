@@ -161,6 +161,22 @@ button,input{font-family:inherit}
   .yan-raf{width:76px} .urun img{height:68px}
   .sekme{min-width:38px;font-size:8px;padding:6px 2px}
 }
+
+.rehber-modal{display:none;position:fixed;inset:0;background:rgba(94,61,46,.5);z-index:150;
+  justify-content:center;align-items:center;padding:20px}
+.rehber-modal.aktif{display:flex}
+.rehber-kart{background:var(--beyaz);border-radius:24px;padding:24px 20px;max-width:380px;width:100%;
+  box-shadow:0 10px 40px rgba(94,61,46,.2);max-height:85vh;overflow-y:auto}
+.rehber-baslik{font-size:18px;font-weight:900;color:var(--gul);text-align:center;margin-bottom:14px}
+.rehber-icerik{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.rehber-adim{font-size:13px;line-height:1.5;color:var(--kahve);padding:8px 12px;
+  background:var(--keten);border-radius:12px}
+.rehber-adim b{color:var(--gul)}
+.btn-rehber-giris{background:none;border:2px solid #e8d8d0;padding:10px 24px;border-radius:14px;
+  font-weight:700;font-size:13px;color:var(--kahve);cursor:pointer;margin-top:4px}
+.yardim-btn{width:36px;height:36px;border-radius:50%;border:2px solid #e8d8d0;background:var(--beyaz);
+  font-size:16px;font-weight:900;color:var(--gul);cursor:pointer;flex-shrink:0}
+.yardim-kucuk{width:28px;height:28px;font-size:13px}
 </style>
 
 <!-- ═══ Profil Oluştur ═══ -->
@@ -176,6 +192,7 @@ button,input{font-family:inherit}
     <div class="ten-sec" data-ten="ten4"></div>
   </div>
   <button id="profil-basla">Butik Aç 🌸</button>
+  <button class="btn-rehber-giris" data-act="rehber-ac">Nasıl Oynanır?</button>
 </div>
 
 <!-- ═══ Ana Ekran ═══ -->
@@ -188,6 +205,7 @@ button,input{font-family:inherit}
     </div>
     <div class="ust-bar-sag">
       <div class="para-kutu" id="ana-para">0 TL</div>
+      <button class="yardim-btn" data-act="rehber-ac">?</button>
     </div>
   </div>
 
@@ -210,6 +228,7 @@ button,input{font-family:inherit}
 <div class="ekran" id="giydirme">
   <div class="giydirme-ust">
     <button class="geri" data-act="geri-giydirme">←</button>
+    <button class="yardim-btn yardim-kucuk" data-act="rehber-ac">?</button>
     <div>
       <div class="giydirme-baslik" id="giydirme-baslik"></div>
       <div class="giydirme-not" id="giydirme-not"></div>
@@ -251,6 +270,24 @@ button,input{font-family:inherit}
   </div>
 </div>
 
+<div id="rehber-modal" class="rehber-modal">
+  <div class="rehber-kart">
+    <div class="rehber-baslik">Nasıl Oynanır? 🌸</div>
+    <div class="rehber-icerik">
+      <div class="rehber-adim"><b>1.</b> Haftalık görevlerden birini seç (okul, kafe, davet...)</div>
+      <div class="rehber-adim"><b>2.</b> Modele kıyafet giydir: üst + etek veya elbise seç</div>
+      <div class="rehber-adim"><b>3.</b> Eşarp seçmeyi unutma — eşarpsız kombin olmaz!</div>
+      <div class="rehber-adim"><b>4.</b> "Kombini Onayla" butonuna bas, puanını gör</div>
+      <div class="rehber-adim"><b>5.</b> Puan ne kadar yüksekse o kadar çok TL kazanırsın</div>
+      <div class="rehber-adim"><b>6.</b> Kazandığın parayla 🛍️ Mağaza'dan yeni kıyafetler aç</div>
+      <div class="rehber-adim"><b>7.</b> ⭐ VIP müşterilere özel kombinler hazırla, ekstra kazan</div>
+      <div class="rehber-adim"><b>8.</b> 👗 Müşteri Al ile gelen kişilere kombin öner, beğenirlerse satış yap</div>
+      <div class="rehber-adim"><b>9.</b> Tüm görevleri bitirince "Yeni Haftaya Geç" ile devam et</div>
+      <div class="rehber-adim"><b>🎲</b> Rastgele kombin butonu fikirler sunar!</div>
+    </div>
+    <button class="btn btn-devam" data-act="rehber-kapat">Anladım ✨</button>
+  </div>
+</div>
 <div class="uyari" id="uyari"></div>
 
 <script>
@@ -331,28 +368,28 @@ function rastgeleGunler(max, n, haric=[]){
 const VIP_HAVUZ = [
   { ad:"Zeynep Hanım", unvan:"Moda Influencer'ı", avatar:"🌟",
     istek:"Dergi çekimim var. Zarif ama çok gösterişli olmayan bir kombin istiyorum.",
-    tema:"davet", odul:350 },
+    tema:"davet", odul:250 },
   { ad:"Sümeyye Hanım", unvan:"TV Sunucusu", avatar:"📺",
     istek:"Sabah programına çıkacağım. Renkli ama abartısız, kamera önü şıklığı lazım.",
-    tema:"kafe", odul:320 },
+    tema:"kafe", odul:200 },
   { ad:"Hatice Hanım", unvan:"Yazar", avatar:"📖",
     istek:"Kitap imza günüm var. Entelektüel ve sade bir görünüm arıyorum.",
-    tema:"okul", odul:280 },
+    tema:"okul", odul:230 },
   { ad:"Fatma Hanım", unvan:"İş Kadını", avatar:"💼",
     istek:"Önemli bir toplantım var. Ciddi ama feminen görünmek istiyorum.",
-    tema:"bulusma", odul:320 },
+    tema:"bulusma", odul:200 },
   { ad:"Merve Hanım", unvan:"Sosyal Medya Fenomeni", avatar:"📱",
     istek:"Açılış davetine gideceğim. Trend ve göz alıcı bir kombin lazım!",
-    tema:"davet", odul:350 },
+    tema:"davet", odul:250 },
   { ad:"Ayşe Hanım", unvan:"Doktor", avatar:"🩺",
     istek:"Konferansa katılacağım. Profesyonel ama yumuşak renkler olsun.",
-    tema:"okul", odul:280 },
+    tema:"okul", odul:230 },
   { ad:"Elif Hanım", unvan:"Sanatçı", avatar:"🎨",
     istek:"Sergimin açılışı var. Yaratıcı ve özgün bir kombin düşünüyorum.",
-    tema:"kafe", odul:350 },
+    tema:"kafe", odul:250 },
   { ad:"Büşra Hanım", unvan:"Tasarımcı", avatar:"✂️",
     istek:"Moda haftasına katılacağım. Cesur ama şık olmalı.",
-    tema:"davet", odul:380 }
+    tema:"davet", odul:250 }
 ];
 
 /* ── Normal Müşteriler ── */
@@ -868,6 +905,8 @@ function baslat(){
     if(a==='tamamla') kombiniTamamla();
     else if(a==='sifirla'){ giyilen = {}; cizKanvas(); cizSekmeler(); cizRaf(); }
     else if(a==='rastgele') rastgeleKombin();
+    else if(a==='rehber-ac'){ const m=$('#rehber-modal'); if(m) m.classList.add('aktif'); }
+    else if(a==='rehber-kapat'){ const m=$('#rehber-modal'); if(m) m.classList.remove('aktif'); }
     else if(a==='kapat') kapatSonuc();
     else if(a==='ana') ekranGit('e-ana');
     else if(a==='geri-giydirme'){ ekranGit('e-ana'); }
