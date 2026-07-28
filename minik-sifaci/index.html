@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="Minik Şifacı Kliniği - çocuklar için eğlenceli ve eğitici doktorculuk oyunu. Reklamsız, kayıtsız, çevrimdışı çalışır.">
+<meta name="theme-color" content="#ffd9e6">
+<title>Minik Şifacı Kliniği</title>
+<style>
+/* ============================================================
+   TEMA DEĞİŞKENLERİ (pastel, çocuk dostu klinik)
+   ============================================================ */
+:root{
+  --bg1:#fff3f8; --bg2:#eefaff; --bg3:#fff8e8;
+  --card:#ffffff;
+  --ink:#4b3357; --ink2:#7b6689; --muted:#9c8daa;
+  --pink:#ffc2d6; --pink-d:#ff8fb1;
+  --mint:#a9e7d0; --mint-d:#54c69b;
+  --sky:#aeddf9; --sky-d:#5cb4e6;
+  --lemon:#ffe7a8; --lemon-d:#f5c451;
+  --lav:#dcc9fb; --lav-d:#a683ea;
+  --line:#f0e4f2;
+  --ok:#3fb98a; --warn:#f0994d;
+  --r:26px; --r-sm:18px;
+  --sh:0 4px 0 rgba(75,51,87,.07), 0 12px 26px rgba(140,90,160,.14);
+  --sh-sm:0 3px 0 rgba(75,51,87,.07), 0 6px 14px rgba(140,90,160,.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%;overflow-x:hidden}
+body{
+  font-family:ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic ProN","Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,"Trebuchet MS",sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 700px at 15% -10%, var(--bg2) 0%, transparent 55%),
+    radial-gradient(900px 600px at 100% 0%, var(--bg3) 0%, transparent 50%),
+    var(--bg1);
+  background-attachment:fixed;
+  font-size:17px; line-height:1.45;
+  -webkit-user-select:none; user-select:none;
+  touch-action:manipulation;
+}
+h1,h2,h3{margin:0;line-height:1.15;letter-spacing:-.01em}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+:focus-visible{outline:4px solid var(--lav-d);outline-offset:3px;border-radius:12px}
+
+/* ============================ EKRAN YÖNETİMİ ============================ */
+.screen{display:none;min-height:100dvh;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+.wrap{width:100%;max-width:760px;margin:0 auto;padding:16px 16px 30px}
+
+/* ============================ ORTAK BİLEŞENLER ============================ */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px;border:3px solid #fff}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:60px;padding:12px 22px;border-radius:999px;
+  background:var(--card);box-shadow:var(--sh-sm);font-weight:800;font-size:18px;
+  border:3px solid #fff;transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 8px rgba(140,90,160,.16)}
+.btn-big{min-height:72px;font-size:22px;width:100%}
+.btn-primary{background:linear-gradient(180deg,#ffd0e0,var(--pink-d));color:#fff;text-shadow:0 1px 0 rgba(160,60,100,.25)}
+.btn-mint{background:linear-gradient(180deg,#c9f2e2,var(--mint-d));color:#fff}
+.btn-sky{background:linear-gradient(180deg,#cfeeff,var(--sky-d));color:#fff}
+.btn-lav{background:linear-gradient(180deg,#eadffe,var(--lav-d));color:#fff}
+.btn-ghost{background:#fff;color:var(--ink2)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.center{text-align:center}
+.muted{color:var(--muted);font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border-radius:999px;padding:6px 14px;font-weight:800;font-size:15px;box-shadow:var(--sh-sm)}
+
+/* ============================ ANA MENÜ ============================ */
+.logo{
+  text-align:center;padding:14px 0 4px;
+}
+.logo .badge-emoji{font-size:64px;line-height:1;display:block;animation:bob 3s ease-in-out infinite}
+.logo h1{font-size:clamp(30px,8vw,44px);margin-top:6px;color:var(--ink)}
+.logo p{margin:6px 0 0;color:var(--ink2);font-weight:700}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-9px) rotate(3deg)}}
+
+.doctor-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.doc{
+  background:#fff;border-radius:var(--r-sm);padding:10px 6px;text-align:center;
+  box-shadow:var(--sh-sm);border:4px solid transparent;font-weight:800;font-size:13px;
+  transition:transform .12s ease;
+}
+.doc svg{width:100%;height:auto;max-width:92px;display:block;margin:0 auto 4px}
+.doc[aria-pressed="true"]{border-color:var(--pink-d);background:#fff6fa;transform:translateY(-3px)}
+
+.notice{
+  background:#fff;border-radius:var(--r-sm);padding:12px 14px;margin-top:14px;
+  font-size:14px;color:var(--ink2);border:3px dashed var(--sky);line-height:1.5;
+}
+.progress-mini{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+
+/* ============================ OYUN EKRANI ============================ */
+#screen-game{padding:0}
+.topbar{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:rgba(255,255,255,.86);backdrop-filter:blur(8px);
+  border-bottom:3px solid var(--line);position:sticky;top:0;z-index:20;flex-wrap:wrap;
+}
+.topbar .stat{display:flex;align-items:center;gap:5px;font-weight:900;font-size:15px;background:#fff;border-radius:999px;padding:5px 11px;box-shadow:var(--sh-sm)}
+.icon-btn{width:46px;height:46px;border-radius:50%;background:#fff;box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto}
+.spacer{flex:1}
+.progress-bar{height:12px;background:#f3e7f5;border-radius:999px;overflow:hidden;flex:1 0 100%;margin-top:2px}
+.progress-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--mint-d),var(--sky-d));border-radius:999px;transition:width .4s ease;width:0}
+
+.board{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px;max-width:1100px;margin:0 auto;width:100%}
+@media(min-width:920px){
+  .board{flex-direction:row;align-items:flex-start;gap:16px}
+  .board .left{flex:1;min-width:0}
+  .board .bagwrap{width:310px;flex:0 0 310px;position:sticky;top:78px}
+}
+
+/* Klinik odası */
+.room{
+  position:relative;border-radius:var(--r);padding:14px 14px 10px;
+  background:linear-gradient(180deg,var(--roomTop,#e8f6ff) 0%, var(--roomTop,#e8f6ff) 58%, var(--roomFloor,#ffeede) 58%, var(--roomFloor,#ffeede) 100%);
+  box-shadow:var(--sh);border:3px solid #fff;overflow:hidden;min-height:210px;
+}
+.room .decor{position:absolute;font-size:26px;opacity:.95}
+.room .roomname{position:absolute;top:8px;left:12px;font-size:12px;font-weight:900;color:var(--ink2);background:rgba(255,255,255,.75);padding:3px 10px;border-radius:999px}
+.scene{display:flex;align-items:flex-end;justify-content:center;gap:6px;position:relative;z-index:2;padding-top:22px}
+.scene .doctor-fig{width:88px;flex:0 0 auto}
+.scene .patient-fig{width:132px;flex:0 0 auto;animation:enter .55s cubic-bezier(.2,1.3,.5,1)}
+@keyframes enter{from{transform:translateX(70px) scale(.85);opacity:0}to{transform:none;opacity:1}}
+.bed{position:absolute;left:50%;transform:translateX(-50%);bottom:6px;width:230px;height:34px;border-radius:16px;background:#fff;box-shadow:var(--sh-sm);z-index:1}
+.bed:after{content:"";position:absolute;left:8px;top:-12px;width:56px;height:22px;border-radius:12px;background:var(--pink)}
+
+/* Konuşma balonu */
+.bubble{
+  position:relative;background:#fff;border-radius:20px;padding:14px 16px;margin-top:12px;
+  box-shadow:var(--sh);border:3px solid #fff;font-weight:800;font-size:18px;min-height:64px;display:flex;align-items:center;gap:10px;
+}
+.bubble:before{content:"";position:absolute;top:-13px;left:38px;border:11px solid transparent;border-bottom-color:#fff;border-top:0}
+.bubble .who{font-size:13px;color:var(--muted);font-weight:900;display:block;margin-bottom:2px}
+.bubble.tip{background:linear-gradient(180deg,#fffdf3,#fff6dc);border-color:#fff}
+.bubble.hint{background:linear-gradient(180deg,#f4fbff,#e7f5ff)}
+.bubble.pop{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.94)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+/* Sahne (mini oyun alanı) */
+.stage{
+  margin-top:12px;background:#fff;border-radius:var(--r);box-shadow:var(--sh);border:3px solid #fff;padding:12px;
+}
+.stage h3{font-size:16px;color:var(--ink2);margin-bottom:8px;text-align:center}
+.stage svg.play{width:100%;height:auto;aspect-ratio:320/240;display:block;background:linear-gradient(180deg,#f7fbff,#fff);border-radius:var(--r-sm);touch-action:none}
+.stage .stage-foot{display:flex;gap:10px;justify-content:center;align-items:center;margin-top:10px;flex-wrap:wrap}
+.hitzone{cursor:pointer}
+.tool-sprite{cursor:grab}
+.tool-sprite:active{cursor:grabbing}
+
+/* Araç çantası */
+.bag{background:#fff;border-radius:var(--r);box-shadow:var(--sh);border:3px solid #fff;padding:12px}
+.bag h3{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:4px 2px 8px}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:520px){.tools{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:920px){.tools{grid-template-columns:repeat(3,1fr)}}
+.tool{
+  background:linear-gradient(180deg,#ffffff,#fbf5ff);border-radius:var(--r-sm);padding:8px 4px 6px;text-align:center;
+  box-shadow:var(--sh-sm);border:3px solid #fff;font-size:11px;font-weight:800;color:var(--ink2);
+  min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:transform .12s;
+  line-height:1.15;
+}
+.tool .ico{font-size:26px;line-height:1}
+.tool .ico svg{width:28px;height:28px;display:block}
+.tool:active{transform:translateY(3px) scale(.97)}
+.tool.done{opacity:.45;background:#f4f8f4}
+.tool.bounce{animation:bounce .45s ease}
+@keyframes bounce{0%{transform:translateY(0)}35%{transform:translateY(-12px) scale(1.08)}70%{transform:translateY(0)}100%{transform:translateY(0)}}
+
+/* Bakım seçenekleri */
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:620px){.options{grid-template-columns:repeat(3,1fr)}}
+.option{
+  background:linear-gradient(180deg,#fff,#f4fbff);border-radius:var(--r-sm);padding:12px 8px;text-align:center;
+  box-shadow:var(--sh-sm);border:3px solid #fff;font-weight:800;font-size:14px;min-height:96px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;line-height:1.2;
+}
+.option .ico{font-size:30px}
+.option.chosen{background:linear-gradient(180deg,#e9fff6,#cdf3e5);border-color:var(--mint-d);opacity:.75}
+.option:active{transform:translateY(3px)}
+
+/* Rozet ekranı */
+.badges{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+@media(min-width:560px){.badges{grid-template-columns:repeat(3,1fr)}}
+.bdg{background:#fff;border-radius:var(--r-sm);padding:12px 8px;text-align:center;box-shadow:var(--sh-sm);font-weight:800;font-size:13px;border:3px solid #fff}
+.bdg .ico{font-size:32px;display:block;filter:grayscale(1);opacity:.35}
+.bdg.on{background:linear-gradient(180deg,#fffdf1,#fff2cf);border-color:var(--lemon-d)}
+.bdg.on .ico{filter:none;opacity:1}
+
+/* Kutlama & bildirim */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.confetti{position:absolute;width:12px;height:16px;border-radius:3px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.1}}
+#toast{
+  position:fixed;left:50%;top:18%;transform:translate(-50%,-16px) scale(.9);z-index:70;
+  background:#fff;border-radius:26px;padding:18px 24px;box-shadow:0 18px 40px rgba(120,60,140,.28);
+  text-align:center;font-weight:900;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.2,1.4,.5,1);max-width:88vw;border:4px solid var(--lemon)
+}
+#toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+#toast .ico{font-size:44px;display:block}
+
+.starline{font-size:34px;letter-spacing:4px}
+.result-card{background:linear-gradient(180deg,#f6fffb,#e6f8f1);border:3px solid var(--mint);border-radius:var(--r);padding:16px;margin-top:12px;box-shadow:var(--sh-sm)}
+.result-card h3{font-size:19px;margin-bottom:6px}
+
+dialog.ask{border:0;border-radius:var(--r);padding:22px;box-shadow:0 20px 50px rgba(80,40,100,.35);max-width:340px;background:#fff}
+dialog.ask::backdrop{background:rgba(75,51,87,.45)}
+
+.howto li{margin-bottom:8px}
+.list-clean{list-style:none;padding:0;margin:8px 0 0}
+.list-clean li{background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:8px;box-shadow:var(--sh-sm);font-size:15px;font-weight:700}
+
+
+@keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+.pulse{animation:pulse 1.7s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.stage-foot .btn{min-height:54px;font-size:17px}
+.stage-foot .pill{font-size:14px}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.05s !important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ ANA MENÜ ============================ -->
+<section class="screen active" id="screen-menu">
+  <div class="wrap">
+    <div class="logo">
+      <span class="badge-emoji" aria-hidden="true">🩺</span>
+      <h1>Minik Şifacı Kliniği</h1>
+      <p>Dinle · Muayene et · Nazik ol</p>
+    </div>
+
+    <div class="progress-mini" id="menuProgress"></div>
+
+    <div style="margin-top:16px" class="row">
+      <button class="btn btn-big btn-primary" id="btnStart">🏥 Kliniği Aç</button>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3 style="font-size:16px;color:var(--ink2)">Doktorunu seç</h3>
+      <div class="doctor-pick" id="doctorPick"></div>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <button class="btn btn-sky" id="btnHowto" style="flex:1">❓ Nasıl Oynanır?</button>
+      <button class="btn btn-lav" id="btnBadges" style="flex:1">🏅 Rozetlerim</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn btn-ghost" id="btnSound" style="flex:1" aria-pressed="true">🔊 Ses Açık</button>
+      <button class="btn btn-ghost" id="btnReset" style="flex:1">🔄 İlerlemeyi Sıfırla</button>
+    </div>
+
+    <div class="notice">
+      ⚠️ Bu oyun eğlence ve temel sağlık farkındalığı amacıyla hazırlanmıştır. Gerçek bir sağlık sorunu olduğunda bir yetişkine ve sağlık çalışanına başvurulmalıdır.
+    </div>
+  </div>
+</section>
+
+<!-- ============================ NASIL OYNANIR ============================ -->
+<section class="screen" id="screen-howto">
+  <div class="wrap">
+    <div class="row" style="align-items:center">
+      <button class="icon-btn" data-back aria-label="Geri dön">⬅️</button>
+      <h2 style="font-size:24px">Nasıl Oynanır?</h2>
+    </div>
+    <div class="card howto" style="margin-top:14px">
+      <ol style="padding-left:20px;margin:0">
+        <li>Kliniğe bir hasta gelir ve nesi olduğunu söyler.</li>
+        <li>Onu dikkatle dinle. 👂</li>
+        <li>Çantandan <b>doğru muayene aracını</b> seç.</li>
+        <li>Küçük bir oyunla muayeneni yap.</li>
+        <li>Sonucu oku ve <b>doğru bakımı</b> seç.</li>
+        <li>Hasta iyileşsin, yıldızları topla! ⭐</li>
+      </ol>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h3 style="font-size:17px">Küçük ipuçları</h3>
+      <ul class="list-clean">
+        <li>🖐️ Araçları parmağınla sürükleyebilirsin. İstersen hedefe dokunman da yeter.</li>
+        <li>💡 Takılırsan sağ alttaki ipucu butonuna bas.</li>
+        <li>😊 Yanlış seçimde puan kaybetmezsin. Birlikte tekrar deneriz.</li>
+        <li>⌨️ Klavyeyle de oynayabilirsin: Tab ile dolaş, Enter ile seç.</li>
+      </ul>
+    </div>
+    <div class="notice">
+      ⚠️ Bu oyun eğlence ve temel sağlık farkındalığı amacıyla hazırlanmıştır. Gerçek bir sağlık sorunu olduğunda bir yetişkine ve sağlık çalışanına başvurulmalıdır. Oyunda ilaç, doz, iğne veya ameliyat öğretilmez.
+    </div>
+    <div class="row" style="margin-top:12px"><button class="btn btn-big btn-primary" data-back>Tamam</button></div>
+  </div>
+</section>
+
+<!-- ============================ ROZETLER ============================ -->
+<section class="screen" id="screen-badges">
+  <div class="wrap">
+    <div class="row" style="align-items:center">
+      <button class="icon-btn" data-back aria-label="Geri dön">⬅️</button>
+      <h2 style="font-size:24px">Rozetlerim</h2>
+    </div>
+    <div class="badges" id="badgeGrid"></div>
+    <div class="row" style="margin-top:14px"><button class="btn btn-big btn-primary" data-back>Geri Dön</button></div>
+  </div>
+</section>
+
+<!-- ============================ OYUN ============================ -->
+<section class="screen" id="screen-game">
+  <div class="topbar">
+    <button class="icon-btn" id="btnBackHome" aria-label="Ana menüye dön">🏠</button>
+    <span class="stat" id="statStars">⭐ 0</span>
+    <span class="stat" id="statLevel">🏥 1</span>
+    <span class="stat" id="statPatients">💚 0</span>
+    <span class="spacer"></span>
+    <button class="icon-btn" id="btnHint" aria-label="İpucu al">💡</button>
+    <button class="icon-btn" id="btnSound2" aria-label="Sesi aç veya kapat" aria-pressed="true">🔊</button>
+    <div class="progress-bar" aria-hidden="true"><i id="stepBar"></i></div>
+  </div>
+  <div class="board">
+    <div class="left">
+      <div class="room" id="room">
+        <span class="roomname" id="roomName">Başlangıç Kliniği</span>
+        <div class="bed" aria-hidden="true"></div>
+        <div class="scene">
+          <div class="doctor-fig" id="doctorFig" aria-hidden="true"></div>
+          <div class="patient-fig" id="patientFig" role="img" aria-label="Hasta"></div>
+        </div>
+      </div>
+      <div class="bubble" id="bubble"><div><span class="who" id="bubbleWho">Hasta</span><span id="bubbleText">…</span></div></div>
+      <div id="stageHost"></div>
+    </div>
+    <div class="bagwrap">
+      <div class="bag" id="bagHost"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ GÜNLÜK ÖZET ============================ -->
+<section class="screen" id="screen-summary">
+  <div class="wrap" id="summaryBody"></div>
+</section>
+
+<div id="fx" aria-hidden="true"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<dialog class="ask" id="confirmDialog">
+  <h3 style="font-size:20px">Emin misin?</h3>
+  <p style="color:var(--ink2);font-weight:700" id="confirmText">Tüm yıldızların ve rozetlerin silinecek.</p>
+  <div class="row" style="margin-top:12px">
+    <button class="btn btn-ghost" id="confirmNo" style="flex:1">Vazgeç</button>
+    <button class="btn btn-primary" id="confirmYes" style="flex:1">Evet</button>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+/* ============================================================
+   MİNİK ŞİFACI KLİNİĞİ
+   Tek dosya, bağımlılıksız, çevrimdışı çalışan çocuk oyunu.
+   Bölüm 1: Durum, kayıt, ses, yardımcılar, karakter çizimleri
+   ============================================================ */
+
+const $  = (sel, root) => (root || document).querySelector(sel);
+const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ------------------------- OYUN DURUMU ------------------------- */
+const state = {
+  screen: 'menu',
+  currentPatient: null,
+  currentPatientIndex: 0,
+  currentStep: 'complaint',   // complaint | exam | result | treat | done
+  selectedTool: null,
+  stars: 0,
+  level: 1,
+  completedPatients: 0,
+  unlockedBadges: [],
+  soundEnabled: true,
+  selectedDoctor: 'dr1',
+  mistakes: 0,
+  currentPatientStars: 0,
+  // yardımcı alanlar
+  healedTypes: [],
+  examMistakes: 0,
+  treatMistakes: 0,
+  examsDone: [],
+  treatsDone: [],
+  hintIndex: 0,
+  seriousCase: false,
+  session: { patients: 0, stars: 0, badges: [], tips: [], best: '' }
+};
+
+/* ------------------------- KAYIT (localStorage) ------------------------- */
+const SAVE_KEY = 'minikSifaci.v1';
+
+function saveGame() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      stars: state.stars,
+      level: state.level,
+      completedPatients: state.completedPatients,
+      unlockedBadges: state.unlockedBadges,
+      unlockedRooms: state.level,
+      selectedDoctor: state.selectedDoctor,
+      soundEnabled: state.soundEnabled,
+      healedTypes: state.healedTypes,
+      currentPatientIndex: state.currentPatientIndex
+    }));
+  } catch (e) { /* özel mod: kayıt yoksa oyun yine çalışır */ }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    state.stars = d.stars || 0;
+    state.level = d.level || 1;
+    state.completedPatients = d.completedPatients || 0;
+    state.unlockedBadges = Array.isArray(d.unlockedBadges) ? d.unlockedBadges : [];
+    state.selectedDoctor = d.selectedDoctor || 'dr1';
+    state.soundEnabled = d.soundEnabled !== false;
+    state.healedTypes = Array.isArray(d.healedTypes) ? d.healedTypes : [];
+    state.currentPatientIndex = d.currentPatientIndex || 0;
+  } catch (e) { /* bozuk kayıt: sıfırdan başla */ }
+}
+
+function resetProgress() {
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  state.stars = 0; state.level = 1; state.completedPatients = 0;
+  state.unlockedBadges = []; state.healedTypes = []; state.currentPatientIndex = 0;
+  saveGame(); renderMenu(); renderBadgeGrid();
+}
+
+/* ------------------------- SES (Web Audio API) ------------------------- */
+let audioCtx = null;
+function ac() {
+  if (!state.soundEnabled) return null;
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    audioCtx = new AC();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+/** Tek bir yumuşak nota çalar. */
+function tone(freq, dur, type, vol, delay) {
+  const ctx = ac(); if (!ctx) return;
+  const t0 = ctx.currentTime + (delay || 0);
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.setValueAtTime(freq, t0);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(vol || 0.09, t0 + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(t0); osc.stop(t0 + dur + 0.05);
+}
+const SFX = {
+  tap:    () => tone(560, 0.08, 'sine', 0.05),
+  good:   () => { tone(660, 0.12, 'triangle', 0.07); tone(880, 0.16, 'triangle', 0.06, 0.09); },
+  soft:   () => { tone(392, 0.16, 'sine', 0.05); tone(330, 0.2, 'sine', 0.04, 0.1); },
+  star:   () => { [784, 988, 1175].forEach((f, i) => tone(f, 0.18, 'triangle', 0.07, i * 0.09)); },
+  badge:  () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, 'sine', 0.08, i * 0.11)); },
+  heal:   () => { [523, 587, 659, 784, 1047].forEach((f, i) => tone(f, 0.25, 'triangle', 0.07, i * 0.12)); },
+  wave:   () => tone(220, 0.22, 'sine', 0.05)
+};
+
+/** Tarayıcı destekliyorsa hastanın cümlesini Türkçe seslendirir (isteğe bağlı). */
+function speak(text) {
+  if (!state.soundEnabled) return;
+  try {
+    if (!('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'tr-TR'; u.rate = 0.95; u.pitch = 1.25; u.volume = 0.9;
+    const v = window.speechSynthesis.getVoices().find(x => /tr/i.test(x.lang));
+    if (v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  } catch (e) { /* konuşma sentezi yoksa oyun aynen devam eder */ }
+}
+
+/* ------------------------- BİLDİRİM & KONFETİ ------------------------- */
+let toastTimer = null;
+function toast(icon, text, ms) {
+  const el = $('#toast');
+  el.innerHTML = '<span class="ico">' + icon + '</span>' + text;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), ms || 1900);
+}
+function confetti(count) {
+  if (REDUCED) return;
+  const host = $('#fx');
+  const colors = ['#ff8fb1', '#54c69b', '#5cb4e6', '#f5c451', '#a683ea'];
+  const n = count || 34;
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('i');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.top = '-20px';
+    c.style.background = rnd(colors);
+    c.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
+    c.style.animationDelay = (Math.random() * 0.4) + 's';
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    host.appendChild(c);
+    setTimeout(() => c.remove(), 3200);
+  }
+}
+
+/* ------------------------- KARAKTER ÇİZİMLERİ (inline SVG) ------------------------- */
+const SKINS  = ['#f6d3b6', '#e8b58c', '#c98a5e', '#8d5a3b', '#ffe0c4'];
+const HAIRS  = ['#3b2b2b', '#6b4423', '#1f1a1a', '#a05a2c', '#4d3b63'];
+const CLOTHS = ['#ffc2d6', '#aeddf9', '#a9e7d0', '#ffe7a8', '#dcc9fb', '#ffb59e'];
+
+/** Yüz ifadesi: 0 üzgün · 1 endişeli · 2 daha iyi · 3 mutlu */
+function faceParts(mood) {
+  if (mood >= 3) return { brow: 'M32 40 q7 -6 14 -1 M74 39 q7 -5 14 1', mouth: 'M46 66 q14 14 28 0', mouthFill: 'none', eye: 5.2 };
+  if (mood === 2) return { brow: 'M32 40 q7 -3 14 0 M74 40 q7 -3 14 0', mouth: 'M48 66 q12 7 24 0', mouthFill: 'none', eye: 5 };
+  if (mood === 1) return { brow: 'M32 42 q7 -2 14 1 M74 43 q7 -3 14 -1', mouth: 'M48 68 h24', mouthFill: 'none', eye: 4.6 };
+  return { brow: 'M32 38 q7 5 14 7 M74 45 q7 -2 14 -7', mouth: 'M46 72 q14 -13 28 0', mouthFill: 'none', eye: 4.4 };
+}
+
+/**
+ * Hasta / doktor figürü çizer.
+ * cfg: {skin, hair, cloth, scarf, mood, doctor, coat, stetho}
+ */
+function figureSVG(cfg) {
+  const f = faceParts(cfg.mood === undefined ? 1 : cfg.mood);
+  const skin = cfg.skin, hair = cfg.hair, cloth = cfg.cloth;
+  let head = '';
+  if (cfg.scarf) {
+    // başörtülü karakter
+    head = '<path d="M60 8 C24 8 16 40 20 66 C22 84 34 96 34 96 L86 96 C86 96 98 84 100 66 C104 40 96 8 60 8 Z" fill="' + cfg.scarf + '"/>' +
+           '<path d="M30 58 C30 30 44 18 60 18 C76 18 90 30 90 58 C90 82 76 92 60 92 C44 92 30 82 30 58 Z" fill="' + skin + '"/>' +
+           '<path d="M30 52 C30 24 44 12 60 12 C76 12 90 24 90 52 C90 52 78 40 60 40 C42 40 30 52 30 52 Z" fill="' + cfg.scarf + '"/>' +
+           '<path d="M22 74 q-10 22 6 30 q14 -8 16 -22 Z" fill="' + cfg.scarf + '" opacity=".92"/>';
+  } else {
+    head = '<path d="M26 50 C26 20 42 10 60 10 C78 10 94 20 94 50 C94 80 78 92 60 92 C42 92 26 80 26 50 Z" fill="' + skin + '"/>' +
+           (cfg.hairStyle === 'long'
+             ? '<path d="M24 56 C18 24 40 6 60 6 C80 6 102 24 96 56 C96 40 82 32 60 32 C38 32 24 40 24 56 Z" fill="' + hair + '"/><path d="M24 52 q-6 34 4 46 q8 -12 6 -30 Z M96 52 q6 34 -4 46 q-8 -12 -6 -30 Z" fill="' + hair + '"/>'
+             : '<path d="M24 54 C20 22 40 6 60 6 C80 6 100 22 96 54 C94 38 82 30 60 30 C38 30 26 38 24 54 Z" fill="' + hair + '"/>');
+  }
+  const cheeks = '<circle cx="36" cy="62" r="7" fill="#ff9ab5" opacity=".35"/><circle cx="84" cy="62" r="7" fill="#ff9ab5" opacity=".35"/>';
+  const eyes = '<circle cx="46" cy="54" r="' + f.eye + '" fill="#3a2b46"/><circle cx="74" cy="54" r="' + f.eye + '" fill="#3a2b46"/>' +
+               '<circle cx="47.6" cy="52.4" r="1.6" fill="#fff"/><circle cx="75.6" cy="52.4" r="1.6" fill="#fff"/>';
+  const brows = '<path d="' + f.brow + '" stroke="#4a3346" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
+  const mouth = '<path d="' + f.mouth + '" stroke="#4a3346" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
+  const body = cfg.doctor
+    ? '<path d="M28 148 C28 118 44 106 60 106 C76 106 92 118 92 148 L92 160 L28 160 Z" fill="#ffffff"/>' +
+      '<path d="M60 106 L48 130 L60 140 L72 130 Z" fill="' + (cfg.coat || '#aeddf9') + '"/>' +
+      '<path d="M44 122 q16 26 32 0" stroke="' + (cfg.stetho || '#5cb4e6') + '" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="76" cy="126" r="6" fill="' + (cfg.stetho || '#5cb4e6') + '"/>'
+    : '<path d="M28 150 C28 120 44 108 60 108 C76 108 92 120 92 150 L92 160 L28 160 Z" fill="' + cloth + '"/>';
+  return '<svg viewBox="0 0 120 162" xmlns="http://www.w3.org/2000/svg" role="img">' +
+         body + head + cheeks + eyes + brows + mouth + '</svg>';
+}
+
+/* Ana menüde seçilebilen doktor karakterleri */
+const DOCTORS = [
+  { id: 'dr1', name: 'Zehra',  build: { skin: SKINS[0], scarf: '#ffc2d6', doctor: true, mood: 3 } },
+  { id: 'dr2', name: 'Elif',   build: { skin: SKINS[2], hair: HAIRS[1], hairStyle: 'long', doctor: true, mood: 3 } },
+  { id: 'dr3', name: 'Yusuf',  build: { skin: SKINS[1], hair: HAIRS[0], doctor: true, mood: 3 } }
+];
+/** Seviyeye göre açılan önlük ve stetoskop renkleri (kozmetik ödül) */
+const COAT_COLORS   = ['#aeddf9', '#a9e7d0', '#ffe7a8', '#dcc9fb', '#ffc2d6'];
+const STETHO_COLORS = ['#5cb4e6', '#54c69b', '#f5c451', '#a683ea', '#ff8fb1'];
+
+function doctorSVG(id, level) {
+  const d = DOCTORS.find(x => x.id === id) || DOCTORS[0];
+  const build = Object.assign({}, d.build, {
+    coat: COAT_COLORS[clamp((level || 1) - 1, 0, COAT_COLORS.length - 1)],
+    stetho: STETHO_COLORS[clamp((level || 1) - 1, 0, STETHO_COLORS.length - 1)]
+  });
+  return figureSVG(build);
+}
+
+
+/* ============================================================
+   Bölüm 2: Araçlar, odalar, rozetler ve hasta senaryoları (veri odaklı)
+   ============================================================ */
+
+/* ------------------------- MUAYENE ARAÇ ÇANTASI ------------------------- */
+const OTOSCOPE_ICON = '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="13" y="4" width="7" height="14" rx="3" fill="#7b6689"/><path d="M12 17 h9 l-3 9 h-3 Z" fill="#f5c451"/><circle cx="16.5" cy="27" r="3" fill="#fff3b0"/></svg>';
+const BANDAGE_ICON  = '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="10" width="24" height="12" rx="6" fill="#fff" stroke="#e6d6ee" stroke-width="2"/><path d="M11 10 v12 M17 10 v12 M23 10 v12" stroke="#dcc9fb" stroke-width="2.4"/></svg>';
+
+const TOOLS = [
+  // muayene araçları
+  { id: 'muayene',    label: 'Gözle Bak',     icon: '👀', group: 'exam' },
+  { id: 'termometre', label: 'Termometre',    icon: '🌡️', group: 'exam' },
+  { id: 'stetoskop',  label: 'Stetoskop',     icon: '🩺', group: 'exam' },
+  { id: 'otoskop',    label: 'Otoskop',       icon: OTOSCOPE_ICON, group: 'exam' },
+  { id: 'fener',      label: 'Fener',         icon: '🔦', group: 'exam' },
+  { id: 'ayna',       label: 'Ağız Aynası',   icon: '🪞', group: 'exam' },
+  { id: 'rontgen',    label: 'Röntgen',       icon: '🩻', group: 'exam' },
+  { id: 'soru',       label: 'Soru Sor',      icon: '💬', group: 'exam' },
+  // bakım araçları
+  { id: 'sabun',      label: 'Sabun',         icon: '🧼', group: 'care' },
+  { id: 'su',         label: 'Temiz Su',      icon: '💧', group: 'care' },
+  { id: 'bez',        label: 'Temiz Bez',     icon: '🧽', group: 'care' },
+  { id: 'antiseptik', label: 'Antiseptik',    icon: '🧴', group: 'care' },
+  { id: 'yaraBandi',  label: 'Yara Bandı',    icon: '🩹', group: 'care' },
+  { id: 'bandaj',     label: 'Bandaj',        icon: BANDAGE_ICON, group: 'care' },
+  { id: 'buz',        label: 'Buz Torbası',   icon: '🧊', group: 'care' },
+  { id: 'mendil',     label: 'Mendil',        icon: '🧻', group: 'care' },
+  { id: 'cop',        label: 'Çöp Kutusu',    icon: '🗑️', group: 'care' },
+  { id: 'suIc',       label: 'Su İçsin',      icon: '🥤', group: 'care' },
+  { id: 'dinlen',     label: 'Dinlensin',     icon: '🛏️', group: 'care' },
+  { id: 'disHekimi',  label: 'Diş Hekimi',    icon: '🦷', group: 'care' },
+  { id: 'firca',      label: 'Diş Fırçala',   icon: '🪥', group: 'care' },
+  { id: 'buyuk',      label: 'Büyüğe Haber',  icon: '🧑‍🤝‍🧑', group: 'care' },
+  { id: 'doktor',     label: 'Doktora Git',   icon: '👩‍⚕️', group: 'care' },
+  { id: 'hastane',    label: 'Hastane',       icon: '🏥', group: 'care' }
+];
+const toolById = (id) => TOOLS.find(t => t.id === id) || { id: id, label: id, icon: '❓' };
+
+/* ------------------------- KLİNİK ODALARI ------------------------- */
+const ROOMS = [
+  { name: 'Başlangıç Kliniği',   top: '#e8f6ff', floor: '#ffeede', need: 0 },
+  { name: 'Çocuk Muayene Odası', top: '#eafaf1', floor: '#fff3d9', need: 3 },
+  { name: 'Röntgen Odası',       top: '#eef0ff', floor: '#e9eefc', need: 6 },
+  { name: 'Yara Bakım Odası',    top: '#fff0f5', floor: '#ffe8ee', need: 9 },
+  { name: 'Büyük Şifacı Kliniği',top: '#f3ecff', floor: '#fff0e2', need: 12 }
+];
+
+/* Kozmetik süsler: yardım edilen hasta sayısına göre açılır */
+const DECOR = [
+  { need: 1,  emoji: '🖼️', style: 'top:16px;left:16px',   name: 'Klinik duvar süsü' },
+  { need: 2,  emoji: '🌼', style: 'bottom:12px;left:14px', name: 'Çiçek' },
+  { need: 4,  emoji: '🧸', style: 'bottom:10px;right:16px', name: 'Oyuncak ayı' },
+  { need: 5,  emoji: '🪴', style: 'top:56px;right:14px',   name: 'Saksı' },
+  { need: 7,  emoji: '🪑', style: 'bottom:12px;left:70px', name: 'Yeni sandalye' },
+  { need: 8,  emoji: '🗄️', style: 'top:16px;right:52px',   name: 'Yeni masa' },
+  { need: 10, emoji: '🎈', style: 'top:52px;left:20px',    name: 'Balon' },
+  { need: 12, emoji: '🏅', style: 'top:16px;right:14px',   name: 'Rozet rafı' }
+];
+
+/* ------------------------- ROZETLER ------------------------- */
+const BADGES = [
+  { id: 'ilk',      name: 'İlk Hastam',                 icon: '🎉' },
+  { id: 'ates',     name: 'Ateş Uzmanı',                icon: '🌡️' },
+  { id: 'akciger',  name: 'Minik Akciğer Dinleyicisi',  icon: '🫁' },
+  { id: 'kulak',    name: 'Kulak Dedektifi',            icon: '👂' },
+  { id: 'rontgen',  name: 'Röntgen Kâşifi',             icon: '🩻' },
+  { id: 'yara',     name: 'Yara Bakım Ustası',          icon: '🩹' },
+  { id: 'dis',      name: 'Diş Dostu',                  icon: '🦷' },
+  { id: 'temizlik', name: 'Temizlik Kahramanı',         icon: '🧼' },
+  { id: 'nazik',    name: 'Nazik Şifacı',               icon: '💗' },
+  { id: 'bes',      name: 'Beş Hastaya Yardım Ettim',   icon: '🖐️' },
+  { id: 'on',       name: 'On Hastaya Yardım Ettim',    icon: '🔟' },
+  { id: 'hepsi',    name: 'Tüm Hastaları İyileştirdim', icon: '👑' }
+];
+
+/* ------------------------- HASTA İSİMLERİ ------------------------- */
+const PATIENT_NAMES = ['Elif', 'Zeynep', 'Meryem', 'Ayşe', 'Yusuf', 'Ömer', 'Ali', 'Kerem', 'Ecrin', 'Lina'];
+const GIRL_NAMES = ['Elif', 'Zeynep', 'Meryem', 'Ayşe', 'Ecrin', 'Lina'];
+
+/* ------------------------- HASTA SENARYOLARI -------------------------
+   Her hasta nesnesi veri odaklıdır; yeni senaryo eklemek için
+   bu diziye aynı şemada bir nesne eklemek yeterlidir.
+   ------------------------------------------------------------------- */
+const PATIENTS = [
+  /* 1 — ÖKSÜREN HASTA */
+  {
+    id: 'oksuruk', type: 'solunum', name: 'Öksüren hasta', expression: 0,
+    complaint: 'Çok öksürüyorum ve biraz halsizim.',
+    requiredExaminations: ['termometre', 'stetoskop'],
+    examinationSteps: {
+      termometre: { type: 'hold', focus: 'armpit', tool: 'termometre', seconds: 3,
+        title: 'Termometreyi koltuk altına götür ve biraz beklet.',
+        target: { x: 96, y: 132, r: 40 }, badge: 'ates' },
+      stetoskop: { type: 'points', focus: 'chest', tool: 'stetoskop',
+        title: 'Stetoskopu göğsün üç noktasına sırayla dokundur.',
+        points: [ { x: 118, y: 104, say: 'Nefes sesi duyuluyor.' },
+                  { x: 202, y: 104, say: 'Burada da dinliyoruz.' },
+                  { x: 160, y: 158, say: 'Küçük bir hırıltı var.' } ],
+        badge: 'akciger' }
+    },
+    examinationResult: 'Biraz ateşi var. Dinlenmeye ve bir büyüğünün gözetimine ihtiyacı var.',
+    treatmentOptions: [
+      { id: 'dinlen', correct: true },
+      { id: 'suIc', correct: true },
+      { id: 'buyuk', correct: true },
+      { id: 'ilac', label: 'Kendi başına ilaç alsın', icon: '💊', correct: false,
+        msg: 'İlaçları kendi başımıza almayız. Bunu yalnızca bir yetişkin ve doktor söyleyebilir.' }
+    ],
+    requiredTreatment: ['dinlen', 'suIc', 'buyuk'],
+    treatmentSteps: {},
+    healthTip: 'İlaçları yalnızca bir yetişkin ve doktor önerisiyle kullanmalıyız.',
+    reward: 'ates',
+    hints: ['Sanırım önce ateşime bakabilirsin.', 'Göğsümü dinleyebileceğin bir araç var mı?'],
+    seriousCaseProbability: 0
+  },
+
+  /* 2 — KULAĞI AĞRIYAN HASTA */
+  {
+    id: 'kulak', type: 'kbb', name: 'Kulağı ağrıyan hasta', expression: 0,
+    complaint: 'Kulağım ağrıyor.',
+    requiredExaminations: ['otoskop'],
+    examinationSteps: {
+      otoskop: { type: 'align', focus: 'ear', tool: 'otoskop',
+        title: 'Otoskopu kulağın önüne getir, sonra ışığı yak.',
+        target: { x: 214, y: 126, r: 34 }, button: '🔦 Işığı Yak',
+        reveal: 'zoom', badge: 'kulak' }
+    },
+    examinationResult: 'Kulağı hassas görünüyor. Bir büyüğüne ve doktora söylemeliyiz.',
+    treatmentOptions: [
+      { id: 'buyuk', correct: true },
+      { id: 'doktor', correct: true },
+      { id: 'cubuk', label: 'Kulağa pamuklu çubuk sok', icon: '🧷', correct: false,
+        msg: 'Kulağımıza bir şey sokmamalıyız. Bir büyüğe haber verelim.' },
+      { id: 'damla', label: 'Kulağa su dök', icon: '💦', correct: false,
+        msg: 'Kulağımıza bir şey sokmamalıyız. Bir büyüğe haber verelim.' }
+    ],
+    requiredTreatment: ['buyuk', 'doktor'],
+    treatmentSteps: {},
+    healthTip: 'Kulağımıza yabancı bir cisim sokmamalıyız.',
+    reward: 'kulak',
+    hints: ['Kulağıma ışıklı bir araçla bakabilir misin?', 'Otoskop kulağın içini görmemizi sağlar.'],
+    seriousCaseProbability: 0
+  },
+
+  /* 3 — AYAĞI AĞRIYAN HASTA */
+  {
+    id: 'ayak', type: 'travma', name: 'Ayağı ağrıyan hasta', expression: 0,
+    complaint: 'Oynarken düştüm, ayağım çok ağrıyor.',
+    requiredExaminations: ['muayene', 'rontgen'],
+    examinationSteps: {
+      muayene: { type: 'points', focus: 'foot', tool: 'muayene', findPainful: true,
+        title: 'Ayağa nazikçe dokun ve ağrıyan yeri bul.',
+        points: [ { x: 92, y: 168 }, { x: 148, y: 140 }, { x: 206, y: 118, painful: true }, { x: 244, y: 168 } ] },
+      rontgen: { type: 'align', focus: 'foot', tool: 'rontgen',
+        title: 'Röntgen cihazını ayağın üzerine hizala, sonra çek.',
+        target: { x: 196, y: 130, r: 40 }, button: '🩻 Röntgeni Çek',
+        reveal: 'bone', badge: 'rontgen' }
+    },
+    examinationResult: {
+      simple:  'Kemikte belirgin bir sorun görünmüyor. Ayağını dinlendirmeli ve bir büyüğüne haber vermeli.',
+      serious: 'Kemikte küçük bir çatlak olabilir. Ayağının üzerine basmadan hastaneye gitmeli.'
+    },
+    treatmentOptions: [
+      { id: 'buz', correct: true, game: true },
+      { id: 'dinlen', correct: true },
+      { id: 'buyuk', correct: true },
+      { id: 'hastane', correct: true },
+      { id: 'cek', label: 'Ayağı çekip düzelt', icon: '🚫', correct: false,
+        msg: 'Ağrıyan ayağı asla kendimiz çekmeyiz. Bir büyüğe haber verelim.' }
+    ],
+    requiredTreatment: ['buz', 'dinlen', 'buyuk'],
+    requiredTreatmentSerious: ['buyuk', 'hastane'],
+    treatmentSteps: {
+      buz: { type: 'drop', focus: 'foot', tool: 'buz', count: 1,
+        title: 'Beze sarılı buzu şişen bölgeye kısa süre koy.',
+        target: { x: 206, y: 118, r: 40 } }
+    },
+    healthTip: 'Çok ağrıyan veya şişen bir ayağı mutlaka bir büyüğe göstermeliyiz.',
+    reward: 'rontgen',
+    hints: ['Ayağımın neresi acıyor, dokunarak bulabilirsin.', 'Ayağımın içini görebileceğimiz bir cihaz var mı?'],
+    seriousCaseProbability: 0.4
+  },
+
+  /* 4 — DİZİ SIYRILAN HASTA */
+  {
+    id: 'diz', type: 'yara', name: 'Dizi sıyrılan hasta', expression: 0,
+    complaint: 'Düştüm, dizim acıyor.',
+    requiredExaminations: ['muayene'],
+    examinationSteps: {
+      muayene: { type: 'points', focus: 'knee', tool: 'muayene',
+        title: 'Dize nazikçe bak ve sıyrığı bul.',
+        points: [ { x: 120, y: 96, say: 'Burası iyi görünüyor.' },
+                  { x: 165, y: 128, say: 'İşte sıyrık burada.' },
+                  { x: 210, y: 96, say: 'Burada bir şey yok.' } ] }
+    },
+    examinationResult: 'Dizinde küçük bir sıyrık var. Önce ellerimizi, sonra yarayı nazikçe temizlemeliyiz.',
+    treatmentOptions: [
+      { id: 'sabun', label: 'Elleri temizle', icon: '🧼', correct: true, game: true },
+      { id: 'bez', label: 'Yarayı temizle', icon: '🧽', correct: true, game: true },
+      { id: 'antiseptik', correct: true, game: true },
+      { id: 'yaraBandi', correct: true, game: true },
+      { id: 'ustunuKapat', label: 'Kirli elle dokun', icon: '🚫', correct: false,
+        msg: 'Yaraya kirli elle dokunmayız. Önce ellerimizi temizleyelim.' }
+    ],
+    requiredTreatment: ['sabun', 'bez', 'antiseptik', 'yaraBandi'],
+    orderedTreatment: true,
+    orderMessages: {
+      sabun: 'Önce ellerimizi temizleyelim.',
+      bez: 'Yarayı kapatmadan önce nazikçe temizlemeliyiz.',
+      antiseptik: 'Yarayı kapatmadan önce nazikçe temizlemeliyiz.',
+      yaraBandi: 'Yarayı kapatmadan önce nazikçe temizlemeliyiz.'
+    },
+    treatmentSteps: {
+      sabun: { type: 'scrub', focus: 'hands', tool: 'sabun',
+        title: 'Sabunu ellerin üzerinde gezdir, köpük oluşsun.',
+        spots: [ { x: 108, y: 118 }, { x: 132, y: 96 }, { x: 152, y: 132 },
+                 { x: 190, y: 100 }, { x: 210, y: 128 }, { x: 232, y: 112 } ],
+        foam: true, badge: 'temizlik' },
+      bez: { type: 'scrub', focus: 'knee', tool: 'bez',
+        title: 'Temiz bezi kirli noktaların üzerinde gezdir.',
+        spots: [ { x: 150, y: 118 }, { x: 168, y: 132 }, { x: 182, y: 120 }, { x: 162, y: 146 } ] },
+      antiseptik: { type: 'drop', focus: 'knee', tool: 'antiseptik', count: 2,
+        title: 'Antiseptiği yaranın üzerine damlat.',
+        target: { x: 166, y: 130, r: 34 } },
+      yaraBandi: { type: 'drop', focus: 'knee', tool: 'yaraBandi', count: 1,
+        title: 'Yara bandını işaretli yere yerleştir.',
+        target: { x: 166, y: 130, r: 34 }, stick: true, badge: 'yara' }
+    },
+    healthTip: 'Yaraya dokunmadan önce ellerimizi temizlemeliyiz.',
+    reward: 'yara',
+    hints: ['Yarama dokunmadan önce ellerimizi temizlemeliyiz.', 'Sonra temiz bezle nazikçe silebilirsin.'],
+    seriousCaseProbability: 0
+  },
+
+  /* 5 — BOĞAZI AĞRIYAN HASTA */
+  {
+    id: 'bogaz', type: 'kbb', name: 'Boğazı ağrıyan hasta', expression: 0,
+    complaint: 'Yutkunurken boğazım acıyor.',
+    requiredExaminations: ['termometre', 'fener'],
+    examinationSteps: {
+      termometre: { type: 'hold', focus: 'armpit', tool: 'termometre', seconds: 3,
+        title: 'Termometreyi koltuk altına götür ve biraz beklet.',
+        target: { x: 96, y: 132, r: 40 }, badge: 'ates' },
+      fener: { type: 'align', focus: 'mouth', tool: 'fener',
+        title: 'Feneri ağza doğru hizala.',
+        target: { x: 160, y: 126, r: 38 }, button: '💡 Işığı Tut',
+        next: { type: 'points', focus: 'throat', tool: 'fener',
+          title: 'Boğazdaki üç kontrol noktasına dokun.',
+          points: [ { x: 130, y: 120, say: 'Burası biraz kızarmış.' },
+                    { x: 160, y: 150, say: 'Burası hassas.' },
+                    { x: 192, y: 120, say: 'Burada da hafif kızarıklık var.' } ], star: true } }
+    },
+    examinationResult: 'Boğazı biraz hassas görünüyor. Su içmeli, dinlenmeli ve bir büyüğüne söylemeli.',
+    treatmentOptions: [
+      { id: 'suIc', correct: true },
+      { id: 'dinlen', correct: true },
+      { id: 'buyuk', correct: true },
+      { id: 'doktor', correct: true },
+      { id: 'antibiyotik', label: 'Antibiyotik seç', icon: '💊', correct: false,
+        msg: 'İlaç veya antibiyotiği biz seçemeyiz. Bunu yalnızca bir doktor söyler.' }
+    ],
+    requiredTreatment: ['suIc', 'dinlen', 'buyuk'],
+    treatmentSteps: {},
+    healthTip: 'Boğazımız ağrıdığında su içer, dinlenir ve bir büyüğe söyleriz.',
+    reward: 'ates',
+    hints: ['Önce ateşime bakabilir misin?', 'Boğazıma ışıkla bakabilirsin.'],
+    seriousCaseProbability: 0
+  },
+
+  /* 6 — KARNI AĞRIYAN HASTA */
+  {
+    id: 'karin', type: 'genel', name: 'Karnı ağrıyan hasta', expression: 0,
+    complaint: 'Karnım ağrıyor.',
+    requiredExaminations: ['soru', 'muayene'],
+    examinationSteps: {
+      soru: { type: 'quiz', need: 3, title: 'Önce hastayı dinleyelim. En az üç soru sor.',
+        questions: [
+          { q: 'Ne zamandır ağrıyor?', a: ['Sabahtan beri ağrıyor.', 'Dünden beri ara ara ağrıyor.'] },
+          { q: 'Bir şey yedin mi?', a: ['Okulda tost yedim.', 'Sabah bir şey yemedim.'] },
+          { q: 'Miden bulanıyor mu?', a: ['Biraz bulanıyor.', 'Hayır, bulanmıyor.'] },
+          { q: 'Ağrı çok mu şiddetli?', a: ['Orta derecede.', 'Bazen çok şiddetli oluyor.'] },
+          { q: 'Ağrı giderek artıyor mu?', a: ['Aynı kalıyor.', 'Biraz artıyor gibi.'] }
+        ] },
+      muayene: { type: 'points', focus: 'belly', tool: 'muayene',
+        title: 'Karnın dört bölgesine nazikçe dokun.',
+        points: [ { x: 124, y: 100, say: 'Burası rahat.' },
+                  { x: 196, y: 100, say: 'Burası da rahat.' },
+                  { x: 124, y: 150, say: 'Burası biraz hassas.' },
+                  { x: 196, y: 150, say: 'Burası iyi.' } ] }
+    },
+    examinationResult: {
+      simple:  'Karnı biraz rahatsız görünüyor. Dinlenmeli ve bir büyüğüne söylemeli.',
+      serious: 'Ağrısı çok şiddetli. Hemen bir büyüğe haber vermeli ve doktora gitmeli.'
+    },
+    treatmentOptions: [
+      { id: 'dinlen', correct: true },
+      { id: 'suIc', correct: true },
+      { id: 'buyuk', correct: true },
+      { id: 'doktor', correct: true },
+      { id: 'ilac', label: 'Ağrı kesici ver', icon: '💊', correct: false,
+        msg: 'Karın ağrısına kendi başımıza ilaç vermeyiz. Bir büyüğe haber verelim.' }
+    ],
+    requiredTreatment: ['dinlen', 'suIc', 'buyuk'],
+    requiredTreatmentSerious: ['buyuk', 'doktor'],
+    treatmentSteps: {},
+    healthTip: 'Karnımız ağrıdığında ilaç almadan önce bir büyüğe söylemeliyiz.',
+    reward: 'nazik',
+    hints: ['Bana birkaç soru sorabilirsin.', 'Karnıma nazikçe dokunabilirsin.'],
+    seriousCaseProbability: 0.35
+  },
+
+  /* 7 — GÖZÜNE TOZ KAÇAN HASTA */
+  {
+    id: 'goz', type: 'goz', name: 'Gözüne toz kaçan hasta', expression: 0,
+    complaint: 'Gözüme toz kaçtı. Gözüm yanıyor.',
+    requiredExaminations: ['muayene'],
+    examinationSteps: {
+      muayene: { type: 'points', focus: 'eye', tool: 'muayene', findPainful: true,
+        title: 'Göze nazikçe bak ve tozu bul.',
+        points: [ { x: 118, y: 112 }, { x: 168, y: 104, painful: true, say: 'İşte toz orada!' }, { x: 208, y: 132 } ] }
+    },
+    examinationResult: 'Gözünde küçük bir toz var. Ovuşturmasına izin vermeden temiz suyla yıkamalıyız.',
+    treatmentOptions: [
+      { id: 'su', label: 'Temiz suyla yıka', icon: '💧', correct: true, game: true },
+      { id: 'buyuk', correct: true },
+      { id: 'ovustur', label: 'Gözü ovuştur', icon: '🚫', correct: false,
+        msg: 'Gözü ovuşturmak daha fazla tahriş edebilir. Temiz suyu deneyelim.' },
+      { id: 'damla', label: 'Rastgele damla koy', icon: '💊', correct: false,
+        msg: 'Göze rastgele damla koymayız. Bunu yalnızca bir doktor söyleyebilir.' }
+    ],
+    requiredTreatment: ['su', 'buyuk'],
+    treatmentSteps: {
+      su: { type: 'eye', focus: 'eye', tool: 'su', count: 3,
+        title: 'Temiz su damlalarını göze taşı. Ovuşturmak isterse engelle!',
+        target: { x: 168, y: 116, r: 46 } }
+    },
+    healthTip: 'Gözümüze bir şey kaçarsa gözümüzü ovuşturmamalıyız.',
+    reward: 'nazik',
+    hints: ['Gözüme dikkatlice bakabilir misin?', 'Ovuşturmamam gerekiyor galiba.'],
+    seriousCaseProbability: 0
+  },
+
+  /* 8 — DİŞİ AĞRIYAN HASTA */
+  {
+    id: 'dis', type: 'dis', name: 'Dişi ağrıyan hasta', expression: 0,
+    complaint: 'Dişim ağrıyor.',
+    requiredExaminations: ['fener', 'ayna'],
+    examinationSteps: {
+      fener: { type: 'align', focus: 'mouth', tool: 'fener',
+        title: 'Feneri ağza doğru hizala.',
+        target: { x: 160, y: 126, r: 38 }, button: '💡 Işığı Tut' },
+      ayna: { type: 'probe', focus: 'teeth', tool: 'ayna',
+        title: 'Ağız aynasını dişlerin üzerinde gezdir, ağrıyan dişi bul.',
+        badge: 'dis' }
+    },
+    examinationResult: 'Bir dişinde küçük koyu bir nokta var. Bu dişi bir diş hekiminin kontrol etmesi gerekiyor.',
+    treatmentOptions: [
+      { id: 'disHekimi', correct: true },
+      { id: 'firca', correct: true },
+      { id: 'azSeker', label: 'Az şeker yesin', icon: '🍬', correct: true },
+      { id: 'buyuk', correct: true },
+      { id: 'pense', label: 'Dişi çek', icon: '🚫', correct: false,
+        msg: 'Dişi kendimiz çekmeyiz. Bunu yalnızca diş hekimi yapar.' }
+    ],
+    requiredTreatment: ['disHekimi', 'firca', 'buyuk'],
+    treatmentSteps: {},
+    healthTip: 'Dişlerimizi sabah ve akşam fırçalamalıyız.',
+    reward: 'dis',
+    hints: ['Ağzıma ışık tutabilir misin?', 'Küçük bir aynayla dişlerime bakabilirsin.'],
+    seriousCaseProbability: 0
+  },
+
+  /* 9 — BURNU AKAN HASTA */
+  {
+    id: 'burun', type: 'solunum', name: 'Burnu akan hasta', expression: 1,
+    complaint: 'Burnum akıyor ve sık sık hapşırıyorum.',
+    requiredExaminations: ['termometre', 'soru'],
+    examinationSteps: {
+      termometre: { type: 'hold', focus: 'armpit', tool: 'termometre', seconds: 3,
+        title: 'Termometreyi koltuk altına götür ve biraz beklet.',
+        target: { x: 96, y: 132, r: 40 }, badge: 'ates' },
+      soru: { type: 'quiz', need: 3, title: 'Hastaya kendini nasıl hissettiğini sor.',
+        questions: [
+          { q: 'Ateşin var mı?', a: ['Sanırım biraz var.', 'Pek yok gibi.'] },
+          { q: 'Nefes almakta zorlanıyor musun?', a: ['Hayır, rahat nefes alıyorum.'] },
+          { q: 'Ne zamandır böyle hissediyorsun?', a: ['İki gündür.', 'Dünden beri.'] }
+        ] }
+    },
+    examinationResult: 'Hafif bir nezle gibi görünüyor. Temiz mendil kullanmalı, ellerini yıkamalı ve bir büyüğüne söylemeli.',
+    treatmentOptions: [
+      { id: 'mendil', label: 'Temiz mendil ver', icon: '🧻', correct: true, game: true },
+      { id: 'cop', label: 'Mendili çöpe at', icon: '🗑️', correct: true, game: true },
+      { id: 'sabun', label: 'Elleri yıka', icon: '🧼', correct: true, game: true },
+      { id: 'buyuk', correct: true },
+      { id: 'paylas', label: 'Mendili arkadaşına ver', icon: '🚫', correct: false,
+        msg: 'Kullanılmış mendili paylaşmayız. Onu çöpe atarız.' }
+    ],
+    requiredTreatment: ['mendil', 'cop', 'sabun', 'buyuk'],
+    orderedTreatment: true,
+    orderMessages: {
+      mendil: 'Önce temiz bir mendil verelim.',
+      cop: 'Mendili kullandıktan sonra çöpe atalım.',
+      sabun: 'Mendili attıktan sonra ellerimizi yıkayalım.',
+      buyuk: 'En son bir büyüğe haber verelim.'
+    },
+    treatmentSteps: {
+      mendil: { type: 'drop', focus: 'nose', tool: 'mendil', count: 1,
+        title: 'Temiz mendili burnuna götür.', target: { x: 160, y: 142, r: 40 } },
+      cop: { type: 'drop', focus: 'trash', tool: 'mendil', count: 1, used: true,
+        title: 'Kullanılmış mendili çöp kutusuna at.', target: { x: 226, y: 150, r: 46 } },
+      sabun: { type: 'scrub', focus: 'hands', tool: 'sabun',
+        title: 'Sabunu ellerin üzerinde gezdir ve iyice yıka.',
+        spots: [ { x: 108, y: 118 }, { x: 132, y: 96 }, { x: 152, y: 132 },
+                 { x: 190, y: 100 }, { x: 210, y: 128 }, { x: 232, y: 112 } ],
+        foam: true, badge: 'temizlik' }
+    },
+    healthTip: 'Hapşırırken ağzımızı dirseğimizle kapatabiliriz.',
+    reward: 'temizlik',
+    hints: ['Önce ateşime bakabilirsin.', 'Bana birkaç soru sorabilirsin.'],
+    seriousCaseProbability: 0
+  },
+
+  /* 10 — BAŞINI HAFİFÇE ÇARPAN HASTA */
+  {
+    id: 'bas', type: 'travma', name: 'Başını çarpan hasta', expression: 0,
+    complaint: 'Koşarken başımı kapıya çarptım.',
+    requiredExaminations: ['soru', 'muayene'],
+    examinationSteps: {
+      soru: { type: 'quiz', need: 3, title: 'Önce nasıl hissettiğini soralım.',
+        questions: [
+          { q: 'Başın dönüyor mu?', a: ['Biraz dönüyor.', 'Hayır, dönmüyor.'] },
+          { q: 'Miden bulanıyor mu?', a: ['Azıcık bulanıyor.', 'Hayır, iyiyim.'] },
+          { q: 'Çok uykun geliyor mu?', a: ['Normalim.', 'Biraz uykum var.'] },
+          { q: 'Neresi acıyor?', a: ['Alnımın üst tarafı.'] }
+        ] },
+      muayene: { type: 'points', focus: 'head', tool: 'muayene', findPainful: true,
+        title: 'Başındaki şişliği nazikçe bul.',
+        points: [ { x: 120, y: 110 }, { x: 172, y: 84, painful: true, say: 'Tam orası acıyor.' }, { x: 214, y: 128 } ] }
+    },
+    examinationResult: {
+      simple:  'Küçük bir şişlik var. Dinlenmeli ve bir büyüğü onu takip etmeli.',
+      serious: 'Baş dönmesi ve mide bulantısı var. Hemen bir büyüğe haber vermeli ve sağlık kuruluşuna gitmeli.'
+    },
+    treatmentOptions: [
+      { id: 'buz', label: 'Beze sarılı buz koy', icon: '🧊', correct: true, game: true },
+      { id: 'dinlen', correct: true },
+      { id: 'buyuk', correct: true },
+      { id: 'hastane', correct: true },
+      { id: 'devam', label: 'Hemen oyuna dönsün', icon: '🚫', correct: false,
+        msg: 'Başını çarpan arkadaşımız önce dinlenmeli ve bir büyük onu takip etmeli.' }
+    ],
+    requiredTreatment: ['buz', 'dinlen', 'buyuk'],
+    requiredTreatmentSerious: ['buyuk', 'hastane'],
+    treatmentSteps: {
+      buz: { type: 'drop', focus: 'head', tool: 'buz', count: 1,
+        title: 'Beze sarılı buzu şişliğin üzerine kısa süre koy.',
+        target: { x: 172, y: 84, r: 40 } }
+    },
+    healthTip: 'Başımızı çarptığımızda mutlaka bir büyüğe haber vermeliyiz.',
+    reward: 'nazik',
+    hints: ['Bana nasıl hissettiğimi sorabilirsin.', 'Başımda bir şişlik var, nazikçe bulabilirsin.'],
+    seriousCaseProbability: 0.4
+  }
+];
+
+
+/* ============================================================
+   Bölüm 3: Muayene sahnesi çizimleri + mini oyun motoru
+   Tüm etkileşimler Pointer Events ile çalışır (mouse + dokunmatik),
+   ayrıca hedeflere dokunma ve klavye (Enter/Space) desteklenir.
+   ============================================================ */
+
+const NS = 'http://www.w3.org/2000/svg';
+
+function el(tag, attrs, parent) {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function txt(node, s) { node.textContent = s; return node; }
+function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+/** Ekran koordinatını SVG viewBox koordinatına çevirir. */
+function toSvgPoint(svg, e) {
+  const r = svg.getBoundingClientRect();
+  if (!r.width || !r.height) return { x: 160, y: 120 };
+  return { x: (e.clientX - r.left) / r.width * 320, y: (e.clientY - r.top) / r.height * 240 };
+}
+
+/* ------------------------- SAHNE ÇİZİMLERİ ------------------------- */
+/** İlgili vücut bölgesinin sevimli, çizgi film tarzı arka planını üretir. */
+function focusArt(kind, p) {
+  const skin = (p && p.skin) || '#f6d3b6';
+  const cloth = (p && p.cloth) || '#ffc2d6';
+  const hair = (p && p.hair) || '#6b4423';
+  switch (kind) {
+    case 'armpit':
+      return '<rect x="112" y="66" width="112" height="168" rx="34" fill="' + cloth + '"/>' +
+             '<circle cx="168" cy="44" r="34" fill="' + skin + '"/>' +
+             '<path d="M120 84 L58 44 q-14 -8 -20 6 q-8 16 8 24 L112 122 Z" fill="' + skin + '"/>' +
+             '<path d="M118 96 q-14 20 -6 40 q16 -12 22 -30 Z" fill="' + cloth + '" opacity=".7"/>' +
+             '<text x="60" y="230" font-size="13" fill="#9c8daa">koltuk altı</text>';
+    case 'chest':
+      return '<rect x="92" y="52" width="136" height="180" rx="38" fill="' + cloth + '"/>' +
+             '<circle cx="160" cy="34" r="28" fill="' + skin + '"/>' +
+             '<path d="M136 54 L160 84 L184 54 Z" fill="' + skin + '" opacity=".9"/>' +
+             '<circle cx="118" cy="104" r="4" fill="#fff" opacity=".5"/>';
+    case 'ear':
+      return '<circle cx="150" cy="122" r="88" fill="' + skin + '"/>' +
+             '<path d="M62 122 C62 58 104 30 150 30 C186 30 210 48 216 76 C190 66 150 70 128 92 C104 116 96 150 100 190 C76 176 62 152 62 122 Z" fill="' + hair + '"/>' +
+             '<ellipse cx="214" cy="126" rx="30" ry="40" fill="' + skin + '" stroke="#e0a887" stroke-width="3"/>' +
+             '<path d="M212 108 q14 16 0 34 q-10 -14 -2 -20" fill="none" stroke="#d9977a" stroke-width="4" stroke-linecap="round"/>' +
+             '<circle cx="118" cy="128" r="5" fill="#4a3346"/>';
+    case 'foot':
+      return '<path d="M120 20 h56 v92 q0 18 14 26 l64 34 q16 9 10 26 q-6 16 -24 14 l-104 -12 q-30 -4 -30 -34 V20 Z" fill="' + skin + '"/>' +
+             '<ellipse cx="238" cy="176" rx="12" ry="9" fill="#f0bfa2"/>' +
+             '<circle cx="206" cy="118" r="26" fill="#ff9ab5" opacity=".28"/>' +
+             '<text x="14" y="34" font-size="13" fill="#9c8daa">ayak</text>';
+    case 'knee':
+      return '<rect x="128" y="6" width="76" height="120" rx="26" fill="' + skin + '"/>' +
+             '<rect x="128" y="140" width="76" height="96" rx="26" fill="' + skin + '"/>' +
+             '<circle cx="166" cy="130" r="48" fill="' + skin + '"/>' +
+             '<circle cx="166" cy="130" r="30" fill="#f7c6ab" opacity=".6"/>' +
+             '<path d="M148 118 q18 -8 34 4 q-6 22 -30 20 q-8 -12 -4 -24 Z" fill="#ffb3ae" opacity=".85"/>';
+    case 'hands':
+      return '<g fill="' + skin + '">' +
+             '<rect x="72" y="92" width="86" height="70" rx="26"/>' +
+             '<rect x="82" y="62" width="16" height="42" rx="8"/><rect x="104" y="54" width="16" height="50" rx="8"/>' +
+             '<rect x="126" y="58" width="16" height="46" rx="8"/><rect x="146" y="72" width="16" height="36" rx="8"/>' +
+             '<rect x="162" y="92" width="86" height="70" rx="26"/>' +
+             '<rect x="172" y="72" width="16" height="36" rx="8"/><rect x="192" y="58" width="16" height="46" rx="8"/>' +
+             '<rect x="214" y="54" width="16" height="50" rx="8"/><rect x="236" y="62" width="16" height="42" rx="8"/>' +
+             '</g><text x="112" y="196" font-size="14" fill="#9c8daa">ellerimiz</text>';
+    case 'mouth':
+      return '<circle cx="160" cy="118" r="96" fill="' + skin + '"/>' +
+             '<circle cx="120" cy="76" r="7" fill="#4a3346"/><circle cx="200" cy="76" r="7" fill="#4a3346"/>' +
+             '<ellipse cx="160" cy="140" rx="48" ry="34" fill="#8e3b52"/>' +
+             '<ellipse cx="160" cy="158" rx="30" ry="16" fill="#e07a90"/>' +
+             '<rect x="122" y="110" width="76" height="12" rx="5" fill="#fff"/>';
+    case 'throat':
+      return '<ellipse cx="160" cy="126" rx="106" ry="92" fill="#8e3b52"/>' +
+             '<ellipse cx="160" cy="180" rx="60" ry="34" fill="#e07a90"/>' +
+             '<path d="M160 66 q10 26 0 44 q-10 -18 0 -44 Z" fill="#c95c74"/>' +
+             '<rect x="80" y="34" width="160" height="16" rx="7" fill="#fff"/>';
+    case 'belly':
+      return '<rect x="86" y="40" width="148" height="180" rx="46" fill="' + skin + '"/>' +
+             '<circle cx="160" cy="126" r="9" fill="#e0a887"/>' +
+             '<rect x="86" y="40" width="148" height="18" rx="9" fill="' + cloth + '"/>' +
+             '<rect x="86" y="204" width="148" height="16" rx="8" fill="' + cloth + '"/>';
+    case 'eye':
+      return '<rect x="20" y="20" width="280" height="200" rx="40" fill="' + skin + '"/>' +
+             '<path d="M60 116 q100 -76 200 0 q-100 76 -200 0 Z" fill="#fff" stroke="#e0a887" stroke-width="4"/>' +
+             '<circle cx="160" cy="116" r="36" fill="#7a5a3a"/><circle cx="160" cy="116" r="17" fill="#2c2130"/>' +
+             '<circle cx="150" cy="106" r="7" fill="#fff" opacity=".85"/>' +
+             '<path d="M56 108 q104 -84 208 0" fill="none" stroke="#4a3346" stroke-width="6" stroke-linecap="round"/>';
+    case 'teeth':
+      return '<path d="M28 60 q132 -46 264 0 v120 q-132 46 -264 0 Z" fill="#8e3b52"/>' +
+             '<path d="M40 78 q120 -38 240 0 v34 q-120 -26 -240 0 Z" fill="#ffb9c8" opacity=".7"/>';
+    case 'nose':
+      return '<circle cx="160" cy="110" r="98" fill="' + skin + '"/>' +
+             '<circle cx="118" cy="72" r="7" fill="#4a3346"/><circle cx="202" cy="72" r="7" fill="#4a3346"/>' +
+             '<path d="M160 96 q-16 34 -2 44 q12 8 22 -4" fill="none" stroke="#e0a887" stroke-width="5" stroke-linecap="round"/>' +
+             '<path d="M140 176 q20 12 40 0" fill="none" stroke="#4a3346" stroke-width="4" stroke-linecap="round"/>';
+    case 'head':
+      return '<circle cx="160" cy="120" r="94" fill="' + skin + '"/>' +
+             '<path d="M66 120 C66 52 110 26 160 26 C210 26 254 52 254 120 C244 90 210 74 160 74 C110 74 76 90 66 120 Z" fill="' + hair + '"/>' +
+             '<circle cx="128" cy="128" r="7" fill="#4a3346"/><circle cx="196" cy="128" r="7" fill="#4a3346"/>' +
+             '<path d="M140 168 q20 12 40 0" fill="none" stroke="#4a3346" stroke-width="4" stroke-linecap="round"/>' +
+             '<circle cx="172" cy="84" r="20" fill="#ffb3ae" opacity=".8"/>';
+    case 'trash':
+      return '<rect x="188" y="118" width="78" height="94" rx="14" fill="#b9d8e8"/>' +
+             '<rect x="180" y="102" width="94" height="18" rx="9" fill="#8fc0d8"/>' +
+             '<rect x="218" y="92" width="20" height="12" rx="5" fill="#8fc0d8"/>' +
+             '<path d="M206 132 v64 M226 132 v64 M246 132 v64" stroke="#a2cade" stroke-width="5" stroke-linecap="round"/>' +
+             '<text x="34" y="206" font-size="14" fill="#9c8daa">mendili çöpe atalım</text>';
+    default:
+      return '';
+  }
+}
+
+/* ------------------------- SPRITE & ETKİLEŞİM YARDIMCILARI ------------------------- */
+const SPRITE_EMOJI = {
+  muayene: '👆', termometre: '🌡️', stetoskop: '🩺', otoskop: '🔍', fener: '🔦',
+  ayna: '🪞', rontgen: '🩻', sabun: '🧼', su: '💧', bez: '🧽', antiseptik: '🧴',
+  yaraBandi: '🩹', bandaj: '🩹', buz: '🧊', mendil: '🧻'
+};
+function spriteEmoji(id) { return SPRITE_EMOJI[id] || '🩺'; }
+
+/** Sürüklenebilir araç sprite'ı oluşturur. */
+function makeSprite(svg, toolId, x, y, label) {
+  const g = el('g', { class: 'tool-sprite', transform: 'translate(' + x + ',' + y + ')', tabindex: '0',
+                      role: 'button', 'aria-label': (label || toolById(toolId).label) + ' — sürükle' }, svg);
+  el('circle', { r: 27, fill: '#ffffff', stroke: '#ead9f2', 'stroke-width': 3 }, g);
+  txt(el('text', { 'text-anchor': 'middle', y: 11, 'font-size': 30 }, g), spriteEmoji(toolId));
+  return g;
+}
+
+/** Sprite'a sürükleme davranışı ekler. */
+function draggable(g, svg, opts) {
+  const pos = { x: opts.x, y: opts.y };
+  let dragging = false, off = { x: 0, y: 0 };
+  function place(x, y) {
+    pos.x = clamp(x, 26, 294); pos.y = clamp(y, 26, 214);
+    g.setAttribute('transform', 'translate(' + pos.x + ',' + pos.y + ')');
+    if (opts.onMove) opts.onMove(pos);
+  }
+  place(pos.x, pos.y);
+  g.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); dragging = true;
+    try { g.setPointerCapture(e.pointerId); } catch (err) {}
+    const p = toSvgPoint(svg, e); off.x = pos.x - p.x; off.y = pos.y - p.y;
+  });
+  g.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    const p = toSvgPoint(svg, e); place(p.x + off.x, p.y + off.y);
+  });
+  function end() { if (!dragging) return; dragging = false; if (opts.onDrop) opts.onDrop(pos); }
+  g.addEventListener('pointerup', end);
+  g.addEventListener('pointercancel', end);
+  g.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (opts.onKey) opts.onKey(); }
+  });
+  return { node: g, pos: pos, place: place };
+}
+
+/** Dokunulabilir/odaklanabilir hedef bölge. */
+function hotspot(svg, x, y, r, label, onActivate, cls) {
+  const g = el('g', { class: 'hitzone ' + (cls || ''), tabindex: '0', role: 'button', 'aria-label': label }, svg);
+  el('circle', { cx: x, cy: y, r: r, fill: 'rgba(92,180,230,.14)', stroke: '#5cb4e6',
+                 'stroke-width': 3, 'stroke-dasharray': '9 8', class: 'pulse' }, g);
+  g.addEventListener('pointerdown', function (e) { e.preventDefault(); onActivate(); });
+  g.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onActivate(); }
+  });
+  return g;
+}
+
+/** Kısa görsel geri bildirim halkası. */
+function ripple(svg, x, y, color) {
+  const c = el('circle', { cx: x, cy: y, r: 8, fill: 'none', stroke: color || '#54c69b', 'stroke-width': 4, opacity: '.9' }, svg);
+  if (REDUCED) { setTimeout(function () { c.remove(); }, 200); return; }
+  let r = 8, o = 0.9;
+  const iv = setInterval(function () {
+    r += 3.5; o -= 0.06;
+    c.setAttribute('r', r); c.setAttribute('opacity', Math.max(0, o));
+    if (o <= 0) { clearInterval(iv); c.remove(); }
+  }, 28);
+}
+
+/* ------------------------- MİNİ OYUN MOTORU ------------------------- */
+let stageTimers = [];
+function clearStageTimers() { stageTimers.forEach(clearInterval); stageTimers.forEach(clearTimeout); stageTimers = []; }
+function later(fn, ms) { const t = setTimeout(fn, ms); stageTimers.push(t); return t; }
+function every(fn, ms) { const t = setInterval(fn, ms); stageTimers.push(t); return t; }
+
+function clearStage() { clearStageTimers(); $('#stageHost').innerHTML = ''; }
+
+/** Sahneyi kurar ve tipine göre ilgili mini oyunu başlatır. */
+function runMiniGame(cfg, onComplete) {
+  clearStage();
+  const host = $('#stageHost');
+  const box = document.createElement('div');
+  box.className = 'stage';
+  const h = document.createElement('h3');
+  h.textContent = cfg.title || '';
+  box.appendChild(h);
+
+  const foot = document.createElement('div');
+  foot.className = 'stage-foot';
+
+  let svg = null;
+  if (cfg.type !== 'quiz') {
+    svg = el('svg', { viewBox: '0 0 320 240', class: 'play', xmlns: NS });
+    svg.innerHTML = focusArt(cfg.focus, state.currentPatient);
+    box.appendChild(svg);
+  }
+  box.appendChild(foot);
+  host.appendChild(box);
+  if (host.scrollIntoView) host.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'nearest' });
+
+  function finish() {
+    clearStageTimers();
+    SFX.good();
+    if (cfg.badge) unlockBadge(cfg.badge);
+    later(function () {
+      if (cfg.next) { runMiniGame(cfg.next, onComplete); }
+      else { clearStage(); onComplete(); }
+    }, 700);
+  }
+
+  const games = { hold: gameHold, points: gamePoints, align: gameAlign, scrub: gameScrub,
+                  drop: gameDrop, quiz: gameQuiz, probe: gameProbe, eye: gameEye };
+  (games[cfg.type] || gamePoints)(cfg, svg, foot, finish);
+}
+
+/* --- 1) TUT VE BEKLE (termometre) --- */
+function gameHold(cfg, svg, foot, finish) {
+  const t = cfg.target;
+  const sec = cfg.seconds || 3;
+  let progress = 0, done = false;
+
+  hotspot(svg, t.x, t.y, t.r, 'Termometreyi buraya koy', function () { sprite.place(t.x, t.y); });
+
+  // ilerleme halkası
+  const R = t.r + 12, C = 2 * Math.PI * R;
+  el('circle', { cx: t.x, cy: t.y, r: R, fill: 'none', stroke: '#f0e4f2', 'stroke-width': 8 }, svg);
+  const ring = el('circle', { cx: t.x, cy: t.y, r: R, fill: 'none', stroke: '#54c69b', 'stroke-width': 8,
+    'stroke-linecap': 'round', 'stroke-dasharray': C, 'stroke-dashoffset': C,
+    transform: 'rotate(-90 ' + t.x + ' ' + t.y + ')' }, svg);
+
+  // yükselen sıcaklık göstergesi
+  el('rect', { x: 274, y: 40, width: 20, height: 150, rx: 10, fill: '#fff', stroke: '#ead9f2', 'stroke-width': 3 }, svg);
+  const merc = el('rect', { x: 279, y: 183, width: 10, height: 2, rx: 5, fill: '#ff8fb1' }, svg);
+  const label = txt(el('text', { x: 284, y: 210, 'text-anchor': 'middle', 'font-size': 13, fill: '#7b6689' }, svg), '');
+
+  let sprite = null;
+  sprite = draggable(makeSprite(svg, cfg.tool, 44, 206), svg, {
+    x: 44, y: 206,
+    onKey: function () { sprite.place(t.x, t.y); }
+  });
+
+  const iv = every(function () {
+    if (done) return;
+    const inside = dist(sprite.pos, t) < t.r + 6;
+    if (inside) progress = Math.min(1, progress + 0.1 / sec);
+    ring.setAttribute('stroke-dashoffset', C * (1 - progress));
+    const hgt = 2 + progress * 138;
+    merc.setAttribute('height', hgt); merc.setAttribute('y', 185 - hgt);
+    label.textContent = progress > 0 ? (36 + progress * 2.1).toFixed(1) + '°' : '';
+    if (progress > 0 && progress < 1 && inside && Math.random() < 0.1) SFX.tap();
+    if (progress >= 1) {
+      done = true; clearInterval(iv);
+      label.textContent = '38.1°';
+      bubbleSay('Ölçüm', 'Ateşi 38.1 derece. Biraz yüksek.', 'hint');
+      finish();
+    }
+  }, 100);
+}
+
+/* --- 2) NOKTALARA DOKUNMA (stetoskop, muayene, boğaz, karın) --- */
+function gamePoints(cfg, svg, foot, finish) {
+  const pts = cfg.points || [];
+  const visited = [];
+  let done = false;
+  const marks = [];
+
+  const counter = document.createElement('span');
+  counter.className = 'pill';
+  foot.appendChild(counter);
+  function updateCounter() {
+    counter.textContent = cfg.findPainful
+      ? '🔎 Ağrıyan yeri bul'
+      : '✅ ' + visited.length + ' / ' + pts.length;
+  }
+
+  pts.forEach(function (p, i) {
+    const g = hotspot(svg, p.x, p.y, 26, 'Kontrol noktası ' + (i + 1), function () { activate(i); });
+    marks.push(g);
+  });
+
+  let sprite = null;
+  sprite = draggable(makeSprite(svg, cfg.tool, 44, 206), svg, {
+    x: 44, y: 206,
+    onDrop: function (pos) {
+      let best = -1, bd = 999;
+      pts.forEach(function (p, i) { const d = dist(pos, p); if (d < bd) { bd = d; best = i; } });
+      if (best >= 0 && bd < 40) activate(best);
+    },
+    onKey: function () { const i = pts.findIndex(function (_, k) { return visited.indexOf(k) < 0; }); if (i >= 0) { sprite.place(pts[i].x, pts[i].y); activate(i); } }
+  });
+
+  function activate(i) {
+    if (done) return;
+    const p = pts[i];
+    ripple(svg, p.x, p.y, p.painful ? '#ff8fb1' : '#54c69b');
+    if (cfg.tool === 'stetoskop') { SFX.wave(); waveFx(svg, p.x, p.y); } else SFX.tap();
+
+    if (cfg.findPainful) {
+      if (p.painful) {
+        markDone(i, '#ff8fb1');
+        bubbleSay(state.currentPatient.pname, p.say || 'Tam orası acıyor.', '');
+        done = true; updateCounter(); finish();
+      } else {
+        markDone(i, '#a9e7d0');
+        bubbleSay(state.currentPatient.pname, 'Burası iyi, canım yanmıyor.', '');
+      }
+      return;
+    }
+    if (visited.indexOf(i) >= 0) return;
+    visited.push(i);
+    markDone(i, '#54c69b');
+    if (p.say) bubbleSay(state.currentPatient.pname, p.say, '');
+    updateCounter();
+    if (visited.length >= pts.length) { done = true; finish(); }
+  }
+
+  function markDone(i, color) {
+    const g = marks[i];
+    g.innerHTML = '';
+    g.setAttribute('class', '');          // tamamlanan nokta artık hedef değil
+    g.setAttribute('tabindex', '-1');
+    el('circle', { cx: pts[i].x, cy: pts[i].y, r: 24, fill: color, opacity: '.6' }, g);
+    txt(el('text', { x: pts[i].x, y: pts[i].y + 8, 'text-anchor': 'middle', 'font-size': 22 }, g), '✓');
+  }
+  updateCounter();
+}
+
+/** Stetoskop için küçük ses dalgası animasyonu */
+function waveFx(svg, x, y) {
+  for (let i = 0; i < 3; i++) later(function () { ripple(svg, x, y, '#5cb4e6'); }, i * 160);
+}
+
+/* --- 3) CİHAZI HİZALA (otoskop, fener, röntgen) --- */
+function gameAlign(cfg, svg, foot, finish) {
+  const t = cfg.target;
+  let aligned = false, fired = false;
+
+  hotspot(svg, t.x, t.y, t.r, 'Cihazı buraya hizala', function () { sprite.place(t.x, t.y); check(); });
+
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-mint';
+  btn.textContent = cfg.button || 'Başlat';
+  btn.disabled = true;
+  btn.style.opacity = '.45';
+  btn.setAttribute('aria-label', cfg.button || 'Başlat');
+  foot.appendChild(btn);
+
+  const info = document.createElement('span');
+  info.className = 'pill';
+  info.textContent = '🎯 Hizala';
+  foot.appendChild(info);
+
+  let sprite = null;
+  sprite = draggable(makeSprite(svg, cfg.tool, 46, 206), svg, {
+    x: 46, y: 206, onMove: check, onDrop: check,
+    onKey: function () { sprite.place(t.x, t.y); check(); }
+  });
+
+  function check() {
+    if (!sprite) return;                 // sürükleme kurulmadan çağrılırsa atla
+    aligned = dist(sprite.pos, t) < t.r;
+    btn.disabled = !aligned;
+    btn.style.opacity = aligned ? '1' : '.45';
+    info.textContent = aligned ? '✅ Hazır!' : '🎯 Hizala';
+  }
+
+  btn.addEventListener('click', function () {
+    if (!aligned || fired) return;
+    fired = true;
+    btn.disabled = true; btn.style.opacity = '.45';
+    SFX.good();
+    const flash = el('rect', { x: 0, y: 0, width: 320, height: 240, fill: '#fff', opacity: '0' }, svg);
+    let o = 0, up = true;
+    const iv = every(function () {
+      o += up ? 0.25 : -0.18;
+      if (o >= 0.95) up = false;
+      flash.setAttribute('opacity', Math.max(0, o));
+      if (o <= 0 && !up) { clearInterval(iv); flash.remove(); reveal(); }
+    }, REDUCED ? 4 : 40);
+  });
+
+  function reveal() {
+    if (cfg.reveal === 'bone') {
+      el('rect', { x: 30, y: 26, width: 260, height: 188, rx: 18, fill: '#1e2440' }, svg);
+      el('path', { d: 'M96 60 h34 v66 l70 34 v34 h-40 l-64 -32 Z', fill: 'none', stroke: '#cfe6ff', 'stroke-width': 6, 'stroke-linejoin': 'round' }, svg);
+      el('path', { d: 'M150 154 l52 24 M164 140 l50 22', stroke: '#cfe6ff', 'stroke-width': 5, 'stroke-linecap': 'round' }, svg);
+      txt(el('text', { x: 160, y: 202, 'text-anchor': 'middle', 'font-size': 14, fill: '#9fc4ea' }, svg), 'ayak kemikleri');
+    } else if (cfg.reveal === 'zoom') {
+      el('circle', { cx: 214, cy: 126, r: 62, fill: '#ffe9d6', stroke: '#fff', 'stroke-width': 8 }, svg);
+      el('circle', { cx: 214, cy: 126, r: 34, fill: '#ffc9b0' }, svg);
+      el('circle', { cx: 214, cy: 126, r: 16, fill: '#ff9d9d' }, svg);
+      txt(el('text', { x: 214, y: 204, 'text-anchor': 'middle', 'font-size': 14, fill: '#7b6689' }, svg), 'kulak içi biraz kızarmış');
+    } else {
+      el('circle', { cx: t.x, cy: t.y, r: t.r + 16, fill: '#fff6d0', opacity: '.65' }, svg);
+    }
+    finish();
+  }
+  check();
+}
+
+/* --- 4) TEMİZLEME (sabun, temiz bez) --- */
+function gameScrub(cfg, svg, foot, finish) {
+  const spots = [];
+  let done = false;
+
+  cfg.spots.forEach(function (s, i) {
+    const c = el('circle', { cx: s.x, cy: s.y, r: 13, fill: cfg.foam ? '#c9a887' : '#b07a52', opacity: '.85' }, svg);
+    c.setAttribute('tabindex', '0');
+    c.setAttribute('role', 'button');
+    c.setAttribute('aria-label', 'Kirli nokta ' + (i + 1));
+    c.addEventListener('pointerdown', function (e) { e.preventDefault(); clean(i); });
+    c.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); clean(i); } });
+    spots.push({ node: c, x: s.x, y: s.y, clean: false });
+  });
+
+  const counter = document.createElement('span');
+  counter.className = 'pill';
+  foot.appendChild(counter);
+  function upd() {
+    const left = spots.filter(function (s) { return !s.clean; }).length;
+    counter.textContent = left ? '🫧 Kalan: ' + left : '✨ Tertemiz!';
+  }
+
+  let sprite = null;
+  sprite = draggable(makeSprite(svg, cfg.tool, 44, 206), svg, {
+    x: 44, y: 206,
+    onMove: function (pos) { spots.forEach(function (s, i) { if (!s.clean && dist(pos, s) < 30) clean(i); }); },
+    onKey: function () { const i = spots.findIndex(function (s) { return !s.clean; }); if (i >= 0) clean(i); }
+  });
+
+  function clean(i) {
+    const s = spots[i];
+    if (s.clean || done) return;
+    s.clean = true;
+    s.node.remove();
+    SFX.tap();
+    if (cfg.foam) {
+      for (let k = 0; k < 3; k++) {
+        el('circle', { cx: s.x + (Math.random() * 26 - 13), cy: s.y + (Math.random() * 26 - 13),
+                       r: 6 + Math.random() * 7, fill: '#ffffff', opacity: '.85' }, svg);
+      }
+    } else ripple(svg, s.x, s.y, '#54c69b');
+    upd();
+    if (spots.every(function (x) { return x.clean; })) { done = true; finish(); }
+  }
+  upd();
+}
+
+/* --- 5) SÜRÜKLE VE BIRAK (antiseptik, yara bandı, buz, mendil, çöp) --- */
+function gameDrop(cfg, svg, foot, finish) {
+  const t = cfg.target;
+  const need = cfg.count || 1;
+  let placed = 0, done = false;
+
+  hotspot(svg, t.x, t.y, t.r, 'Hedef bölge', function () { sprite.place(t.x, t.y); land(); });
+
+  const counter = document.createElement('span');
+  counter.className = 'pill';
+  foot.appendChild(counter);
+  function upd() { counter.textContent = need > 1 ? '🎯 ' + placed + ' / ' + need : (placed ? '✅ Tamam' : '🎯 Hedefe götür'); }
+
+  const startX = 46, startY = 206;
+  let sprite = null;
+  sprite = draggable(makeSprite(svg, cfg.tool, startX, startY), svg, {
+    x: startX, y: startY,
+    onDrop: function (pos) { if (dist(pos, t) < t.r + 10) land(); else sprite.place(startX, startY); },
+    onKey: function () { sprite.place(t.x, t.y); land(); }
+  });
+
+  function land() {
+    if (done) return;
+    placed++;
+    SFX.tap();
+    ripple(svg, t.x, t.y, '#54c69b');
+    if (cfg.stick) {
+      // yara bandı yerine oturur
+      const g = el('g', { transform: 'translate(' + t.x + ',' + t.y + ') rotate(-18)' }, svg);
+      el('rect', { x: -34, y: -13, width: 68, height: 26, rx: 13, fill: '#ffe0c9', stroke: '#f0c4a6', 'stroke-width': 2 }, g);
+      el('rect', { x: -13, y: -9, width: 26, height: 18, rx: 5, fill: '#fff6ee' }, g);
+      for (let i = -1; i <= 1; i++) el('circle', { cx: i * 8, cy: 0, r: 2, fill: '#e5b8a0' }, g);
+    }
+    upd();
+    if (placed >= need) { done = true; sprite.node.remove(); finish(); }
+    else sprite.place(startX, startY);
+  }
+  upd();
+}
+
+/* --- 6) SORU KARTLARI (karın, burun, baş) --- */
+function gameQuiz(cfg, svg, foot, finish) {
+  const box = foot.parentNode;
+  const grid = document.createElement('div');
+  grid.className = 'options';
+  grid.style.marginTop = '4px';
+  box.insertBefore(grid, foot);
+
+  let asked = 0;
+  const need = cfg.need || 3;
+  const counter = document.createElement('span');
+  counter.className = 'pill';
+  counter.textContent = '💬 ' + asked + ' / ' + need + ' soru';
+  foot.appendChild(counter);
+
+  cfg.questions.forEach(function (q) {
+    const b = document.createElement('button');
+    b.className = 'option';
+    b.innerHTML = '<span class="ico">💬</span>' + q.q;
+    b.setAttribute('aria-label', 'Soru: ' + q.q);
+    b.addEventListener('click', function () {
+      if (b.classList.contains('chosen')) return;
+      b.classList.add('chosen');
+      SFX.tap();
+      const ans = rnd(q.a);
+      bubbleSay(state.currentPatient.pname, ans, '');
+      speak(ans);
+      asked++;
+      counter.textContent = '💬 ' + asked + ' / ' + need + ' soru';
+      if (asked >= need) { grid.querySelectorAll('button').forEach(function (x) { x.disabled = true; }); later(finish, 900); }
+    });
+    grid.appendChild(b);
+  });
+}
+
+/* --- 7) AYNAYLA TARAMA (diş) --- */
+function gameProbe(cfg, svg, foot, finish) {
+  const teeth = [];
+  const badIndex = 2 + Math.floor(Math.random() * 4);
+  let found = false, done = false;
+
+  for (let i = 0; i < 8; i++) {
+    const x = 48 + i * 32;
+    const g = el('g', { tabindex: '0', role: 'button', 'aria-label': (i + 1) + '. diş' }, svg);
+    el('rect', { x: x, y: 96, width: 26, height: 40, rx: 10, fill: '#ffffff', stroke: '#e6dff0', 'stroke-width': 2 }, g);
+    const t = { node: g, x: x + 13, y: 116, bad: i === badIndex, checked: false, picked: false, index: i + 1 };
+    g.addEventListener('pointerdown', function (e) { e.preventDefault(); pick(t); });
+    g.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(t); } });
+    teeth.push(t);
+  }
+
+  const counter = document.createElement('span');
+  counter.className = 'pill';
+  counter.textContent = '🔎 Ağrıyan dişi bul';
+  foot.appendChild(counter);
+
+  let sprite = null;
+  sprite = draggable(makeSprite(svg, cfg.tool, 44, 206), svg, {
+    x: 44, y: 206,
+    onMove: function (pos) {
+      teeth.forEach(function (t) {
+        if (dist(pos, t) < 24 && !t.checked) {
+          t.checked = true;
+          if (t.bad) {
+            found = true;
+            counter.textContent = '😖 Buldun! Dişe dokun.';
+            bubbleSay(state.currentPatient.pname, 'Ay! Tam orası acıyor.', '');
+            setMood(0);
+            SFX.soft();
+          } else { SFX.tap(); }
+        }
+      });
+    },
+    onDrop: function (pos) { teeth.forEach(function (t) { if (dist(pos, t) < 26) pick(t); }); },
+    onKey: function () { pick(teeth[badIndex]); }
+  });
+
+  function pick(t) {
+    if (done) return;
+    if (!t.bad) {
+      // sağlam diş: kontrol edildiği görünsün ki çocuk nereye baktığını takip edebilsin
+      if (!t.picked) {
+        t.picked = true;
+        t.node.setAttribute('aria-label', t.index + '. diş — kontrol edildi');
+        el('rect', { x: t.x - 13, y: 96, width: 26, height: 40, rx: 10, fill: '#a9e7d0', opacity: '.55' }, t.node);
+        txt(el('text', { x: t.x, y: 122, 'text-anchor': 'middle', 'font-size': 15 }, t.node), '✓');
+      }
+      ripple(svg, t.x, t.y, '#a9e7d0');
+      bubbleSay(state.currentPatient.pname, 'Bu diş iyi.', '');
+      return;
+    }
+    done = true;
+    el('circle', { cx: t.x, cy: t.y + 4, r: 7, fill: '#5b4032' }, t.node);
+    ripple(svg, t.x, t.y, '#ff8fb1');
+    counter.textContent = '✅ Çürük diş bulundu';
+    bubbleSay(state.currentPatient.pname, 'Evet, ağrıyan diş bu.', '');
+    finish();
+  }
+}
+
+/* --- 8) GÖZ BAKIMI (su damlası + ovuşturmayı engelleme) --- */
+function gameEye(cfg, svg, foot, finish) {
+  const t = cfg.target;
+  const need = cfg.count || 3;
+  let drops = 0, guards = 0, done = false, rubbing = false;
+
+  const dust = el('circle', { cx: 176, cy: 104, r: 6, fill: '#9c8b6f' }, svg);
+  hotspot(svg, t.x, t.y, t.r, 'Göz bölgesi', function () { sprite.place(t.x, t.y); land(); });
+
+  const counter = document.createElement('span');
+  counter.className = 'pill';
+  foot.appendChild(counter);
+
+  const guardBtn = document.createElement('button');
+  guardBtn.className = 'btn btn-primary';
+  guardBtn.textContent = '✋ Ovuşturma!';
+  guardBtn.style.display = 'none';
+  guardBtn.setAttribute('aria-label', 'Ovuşturmasını engelle');
+  foot.appendChild(guardBtn);
+
+  function upd() { counter.textContent = '💧 ' + drops + ' / ' + need + ' damla  ·  ✋ ' + guards + ' / 2'; }
+
+  const startX = 46, startY = 206;
+  let sprite = null;
+  sprite = draggable(makeSprite(svg, 'su', startX, startY), svg, {
+    x: startX, y: startY,
+    onDrop: function (pos) { if (dist(pos, t) < t.r + 10) land(); else sprite.place(startX, startY); },
+    onKey: function () { sprite.place(t.x, t.y); land(); }
+  });
+
+  function land() {
+    if (done) return;
+    drops++;
+    SFX.tap();
+    ripple(svg, t.x, t.y, '#5cb4e6');
+    if (drops >= need) { dust.setAttribute('opacity', '0'); }
+    else dust.setAttribute('r', Math.max(2, 6 - drops * 1.6));
+    upd();
+    sprite.place(startX, startY);
+    check();
+  }
+
+  guardBtn.addEventListener('click', function () {
+    if (!rubbing) return;
+    rubbing = false;
+    guardBtn.style.display = 'none';
+    guards++;
+    SFX.good();
+    bubbleSay(state.currentPatient.pname, 'Tamam, ovuşturmuyorum.', '');
+    upd();
+    check();
+  });
+
+  function promptRub() {
+    if (done || rubbing) return;
+    rubbing = true;
+    guardBtn.style.display = '';
+    bubbleSay(state.currentPatient.pname, 'Gözüm kaşınıyor, ovuşturmak istiyorum!', '');
+    later(function () {
+      if (!rubbing || done) return;
+      rubbing = false;
+      guardBtn.style.display = 'none';
+      bubbleSay('Şifacı', 'Ovuşturmasına izin vermeyelim. Butona hızlıca basabilirsin.', 'hint');
+    }, 4500);
+  }
+  later(promptRub, 1200);
+  const iv = every(promptRub, 4800);
+
+  function check() {
+    if (drops >= need && guards >= 2 && !done) {
+      done = true; clearInterval(iv); guardBtn.style.display = 'none';
+      finish();
+    }
+  }
+  upd();
+}
+
+
+/* ============================================================
+   Bölüm 4: Ekranlar, oyun akışı, rozetler, özet ve başlatma
+   ============================================================ */
+
+/* ------------------------- EKRAN GEÇİŞİ ------------------------- */
+function showScreen(name) {
+  state.screen = name;
+  $$('.screen').forEach(function (s) { s.classList.remove('active'); });
+  const el = document.getElementById('screen-' + name);
+  if (el) el.classList.add('active');
+  try { window.scrollTo(0, 0); } catch (e) {}
+}
+
+/* ------------------------- ANA MENÜ ------------------------- */
+function renderMenu() {
+  const prog = $('#menuProgress');
+  prog.innerHTML =
+    '<span class="pill">⭐ ' + state.stars + ' yıldız</span>' +
+    '<span class="pill">💚 ' + state.completedPatients + ' hasta</span>' +
+    '<span class="pill">🏅 ' + state.unlockedBadges.length + ' / ' + BADGES.length + ' rozet</span>' +
+    '<span class="pill">🏥 ' + currentRoom().name + '</span>';
+
+  const pick = $('#doctorPick');
+  pick.innerHTML = '';
+  DOCTORS.forEach(function (d) {
+    const b = document.createElement('button');
+    b.className = 'doc';
+    b.setAttribute('aria-pressed', String(state.selectedDoctor === d.id));
+    b.setAttribute('aria-label', d.name + ' adlı doktoru seç');
+    b.innerHTML = doctorSVG(d.id, state.level) + d.name;
+    b.addEventListener('click', function () {
+      state.selectedDoctor = d.id; SFX.tap(); saveGame(); renderMenu();
+    });
+    pick.appendChild(b);
+  });
+  updateSoundButtons();
+}
+
+function updateSoundButtons() {
+  const on = state.soundEnabled;
+  const b1 = $('#btnSound'), b2 = $('#btnSound2');
+  b1.textContent = on ? '🔊 Ses Açık' : '🔇 Ses Kapalı';
+  b1.setAttribute('aria-pressed', String(on));
+  b2.textContent = on ? '🔊' : '🔇';
+  b2.setAttribute('aria-pressed', String(on));
+}
+function toggleSound() {
+  state.soundEnabled = !state.soundEnabled;
+  if (!state.soundEnabled && 'speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch (e) {} }
+  updateSoundButtons(); saveGame();
+  if (state.soundEnabled) SFX.tap();
+}
+
+/* ------------------------- ROZETLER ------------------------- */
+function renderBadgeGrid() {
+  const grid = $('#badgeGrid');
+  grid.innerHTML = '';
+  BADGES.forEach(function (b) {
+    const on = state.unlockedBadges.indexOf(b.id) >= 0;
+    const d = document.createElement('div');
+    d.className = 'bdg' + (on ? ' on' : '');
+    d.setAttribute('aria-label', b.name + (on ? ' — kazanıldı' : ' — henüz kazanılmadı'));
+    d.innerHTML = '<span class="ico">' + b.icon + '</span>' + b.name + (on ? '' : '<div class="muted">kilitli</div>');
+    grid.appendChild(d);
+  });
+}
+function unlockBadge(id) {
+  if (!id || state.unlockedBadges.indexOf(id) >= 0) return;
+  const b = BADGES.find(function (x) { return x.id === id; });
+  if (!b) return;
+  state.unlockedBadges.push(id);
+  state.session.badges.push(b.name);
+  saveGame();
+  SFX.badge();
+  toast(b.icon, 'Yeni rozet!<br>' + b.name, 2400);
+  confetti(20);
+}
+
+/* ------------------------- ODA & SAHNE ------------------------- */
+function currentRoom() {
+  let r = ROOMS[0];
+  ROOMS.forEach(function (x) { if (state.completedPatients >= x.need) r = x; });
+  return r;
+}
+function refreshLevel() {
+  let lvl = 1;
+  ROOMS.forEach(function (x, i) { if (state.completedPatients >= x.need) lvl = i + 1; });
+  if (lvl > state.level) {
+    state.level = lvl;
+    toast('🏥', 'Yeni bölüm açıldı!<br>' + ROOMS[lvl - 1].name, 2600);
+    confetti(26);
+  }
+  state.level = lvl;
+}
+function renderRoom() {
+  const room = $('#room');
+  const r = currentRoom();
+  room.style.setProperty('--roomTop', r.top);
+  room.style.setProperty('--roomFloor', r.floor);
+  $('#roomName').textContent = r.name;
+  $$('.decor', room).forEach(function (d) { d.remove(); });
+  DECOR.forEach(function (d) {
+    if (state.completedPatients >= d.need) {
+      const s = document.createElement('span');
+      s.className = 'decor';
+      s.style.cssText = d.style;
+      s.textContent = d.emoji;
+      s.setAttribute('aria-hidden', 'true');
+      room.appendChild(s);
+    }
+  });
+  $('#doctorFig').innerHTML = doctorSVG(state.selectedDoctor, state.level);
+}
+
+function renderPatientFig() {
+  const p = state.currentPatient;
+  if (!p) return;
+  const host = $('#patientFig');
+  host.innerHTML = figureSVG({
+    skin: p.skin, hair: p.hair, cloth: p.cloth, scarf: p.scarf,
+    hairStyle: p.hairStyle, mood: p.mood
+  });
+  host.setAttribute('aria-label', p.pname + ' adlı hasta');
+}
+function setMood(m) {
+  if (!state.currentPatient) return;
+  state.currentPatient.mood = clamp(m, 0, 3);
+  renderPatientFig();
+}
+
+function bubbleSay(who, text, cls) {
+  const b = $('#bubble');
+  b.className = 'bubble ' + (cls || '');
+  $('#bubbleWho').textContent = who;
+  $('#bubbleText').textContent = text;
+  b.classList.remove('pop');
+  void b.offsetWidth;
+  b.classList.add('pop');
+}
+
+/* ------------------------- ÜST BİLGİ & İLERLEME ------------------------- */
+function updateTopbar() {
+  $('#statStars').textContent = '⭐ ' + state.stars;
+  $('#statLevel').textContent = '🏥 ' + state.level;
+  $('#statPatients').textContent = '💚 ' + state.completedPatients;
+  const p = state.currentPatient;
+  if (!p) return;
+  const total = p.requiredExaminations.length + requiredList().length + 1;
+  const doneCount = state.examsDone.length + state.treatsDone.filter(function (id) { return requiredList().indexOf(id) >= 0; }).length +
+                    (state.currentStep === 'result' || state.currentStep === 'treat' || state.currentStep === 'done' ? 1 : 0);
+  $('#stepBar').style.width = Math.round(doneCount / total * 100) + '%';
+}
+
+/** Bu hasta için gereken bakım listesi (ciddi senaryoda farklı olabilir). */
+function requiredList() {
+  const p = state.currentPatient;
+  if (!p) return [];
+  if (state.seriousCase && p.requiredTreatmentSerious) return p.requiredTreatmentSerious;
+  return p.requiredTreatment;
+}
+
+/* ------------------------- ARAÇ ÇANTASI ------------------------- */
+function renderBag() {
+  const host = $('#bagHost');
+  host.innerHTML = '';
+  const groups = [
+    { key: 'exam', title: 'Muayene araçları' },
+    { key: 'care', title: 'Bakım araçları' }
+  ];
+  groups.forEach(function (g) {
+    const h = document.createElement('h3');
+    h.textContent = g.title;
+    host.appendChild(h);
+    const grid = document.createElement('div');
+    grid.className = 'tools';
+    TOOLS.filter(function (t) { return t.group === g.key; }).forEach(function (t) {
+      const b = document.createElement('button');
+      b.className = 'tool' + (state.examsDone.indexOf(t.id) >= 0 ? ' done' : '');
+      b.dataset.tool = t.id;
+      b.setAttribute('aria-label', t.label + ' aracını seç');
+      b.innerHTML = '<span class="ico">' + t.icon + '</span>' + t.label;
+      grid.appendChild(b);
+    });
+    host.appendChild(grid);
+  });
+  host.onclick = function (e) {
+    const b = e.target.closest('[data-tool]');
+    if (b) onToolPick(b.dataset.tool, b);
+  };
+}
+
+/* ------------------------- BAKIM SEÇENEKLERİ ------------------------- */
+function renderOptions() {
+  const p = state.currentPatient;
+  const host = $('#bagHost');
+  host.innerHTML = '';
+  const h = document.createElement('h3');
+  h.textContent = 'Bakım seçenekleri';
+  host.appendChild(h);
+  const grid = document.createElement('div');
+  grid.className = 'options';
+  p.treatmentOptions.forEach(function (o) {
+    const base = toolById(o.id);
+    const b = document.createElement('button');
+    b.className = 'option' + (state.treatsDone.indexOf(o.id) >= 0 ? ' chosen' : '');
+    b.dataset.opt = o.id;
+    const label = o.label || base.label;
+    const icon = o.icon || (base.icon.charAt(0) === '<' ? '🧰' : base.icon);
+    b.setAttribute('aria-label', label);
+    b.innerHTML = '<span class="ico">' + icon + '</span>' + label;
+    grid.appendChild(b);
+  });
+  host.appendChild(grid);
+  const need = document.createElement('div');
+  need.className = 'muted';
+  need.style.marginTop = '8px';
+  need.textContent = 'Gereken bakım adımı: ' + requiredList().length;
+  host.appendChild(need);
+  host.onclick = function (e) {
+    const b = e.target.closest('[data-opt]');
+    if (b) onOptionPick(b.dataset.opt, b);
+  };
+}
+
+/* ------------------------- HASTA YÜKLEME ------------------------- */
+function loadPatient() {
+  const tpl = PATIENTS[state.currentPatientIndex % PATIENTS.length];
+  const pname = rnd(PATIENT_NAMES);
+  const girl = GIRL_NAMES.indexOf(pname) >= 0;
+  const p = Object.assign({}, tpl);
+  p.pname = pname;
+  p.skin = rnd(SKINS);
+  p.hair = rnd(HAIRS);
+  p.cloth = rnd(CLOTHS);
+  p.hairStyle = girl ? 'long' : 'short';
+  p.scarf = (girl && Math.random() < 0.45) ? rnd(CLOTHS) : null;
+  p.mood = tpl.expression === undefined ? 0 : tpl.expression;
+
+  state.currentPatient = p;
+  state.seriousCase = Math.random() < (tpl.seriousCaseProbability || 0);
+  state.examsDone = [];
+  state.treatsDone = [];
+  state.mistakes = 0;
+  state.examMistakes = 0;
+  state.treatMistakes = 0;
+  state.currentPatientStars = 0;
+  state.hintIndex = 0;
+  state.selectedTool = null;
+  state.currentStep = 'exam';
+
+  clearStage();
+  renderRoom();
+  renderPatientFig();
+  renderBag();
+  updateTopbar();
+  bubbleSay(p.pname, p.complaint, '');
+  speak(p.complaint);
+}
+
+/* ------------------------- MUAYENE ------------------------- */
+function onToolPick(id, btn) {
+  const p = state.currentPatient;
+  if (!p) return;
+  if (btn) { btn.classList.remove('bounce'); void btn.offsetWidth; btn.classList.add('bounce'); }
+
+  if (state.currentStep !== 'exam') {
+    SFX.soft();
+    bubbleSay('Şifacı', 'Şimdi bakım zamanı. Sağdaki bakım seçeneklerinden birini seçelim.', 'hint');
+    return;
+  }
+  if (state.examsDone.indexOf(id) >= 0) {
+    bubbleSay(p.pname, 'Bunu az önce yaptık, teşekkürler!', 'hint');
+    return;
+  }
+  if (p.requiredExaminations.indexOf(id) < 0) {
+    softMistake('exam', p);
+    return;
+  }
+  SFX.tap();
+  state.selectedTool = id;
+  const step = p.examinationSteps[id];
+  runMiniGame(step, function () {
+    state.examsDone.push(id);
+    if (step.badge) unlockBadge(step.badge);
+    setMood(clamp(p.mood + 1, 0, 2));
+    renderBag();
+    updateTopbar();
+    if (state.examsDone.length >= p.requiredExaminations.length) showExamResult();
+    else bubbleSay(p.pname, 'Teşekkürler! Başka bir kontrol yapabilir misin?', '');
+  });
+}
+
+/** Yanlış seçim: puan kaybı yok, nazik ipucu var. */
+function softMistake(phase, p) {
+  SFX.soft();
+  state.mistakes++;
+  if (phase === 'exam') state.examMistakes++; else state.treatMistakes++;
+  const gentle = [
+    'Bir daha düşünelim. Başka bir aracı deneyelim mi?',
+    'Bu araç şimdi işimize yaramaz. Başka bir şey deneyelim.',
+    'Sorun değil! Birlikte tekrar bakalım.'
+  ];
+  if (state.mistakes >= 2 && p.hints && p.hints.length) {
+    bubbleSay(p.pname, hintForMissingExam(p), 'hint');
+  } else {
+    bubbleSay('Şifacı', rnd(gentle), 'hint');
+  }
+}
+
+/** Henüz yapılmamış ilk muayeneye karşılık gelen ipucu cümlesini seçer. */
+function hintForMissingExam(p) {
+  if (!p.hints || !p.hints.length) return 'Araç çantasına bir bakalım.';
+  const missing = p.requiredExaminations.filter(function (id) { return state.examsDone.indexOf(id) < 0; });
+  if (!missing.length) return p.hints[0];
+  const i = p.requiredExaminations.indexOf(missing[0]);
+  return p.hints[i] || p.hints[state.hintIndex++ % p.hints.length];
+}
+
+/* ------------------------- MUAYENE SONUCU ------------------------- */
+function showExamResult() {
+  const p = state.currentPatient;
+  state.currentStep = 'result';
+  const res = typeof p.examinationResult === 'string'
+    ? p.examinationResult
+    : (state.seriousCase ? p.examinationResult.serious : p.examinationResult.simple);
+
+  clearStage();
+  const box = document.createElement('div');
+  box.className = 'result-card';
+  box.innerHTML = '<h3>🔎 Muayene sonucu</h3><p style="font-weight:700;margin:0 0 12px">' + res + '</p>';
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-big btn-mint';
+  btn.textContent = '💚 Bakıma Geç';
+  btn.addEventListener('click', function () {
+    SFX.tap();
+    state.currentStep = 'treat';
+    clearStage();
+    renderOptions();
+    bubbleSay('Şifacı', 'Şimdi ona nasıl yardım edeceğimizi seçelim.', 'hint');
+    updateTopbar();
+  });
+  box.appendChild(btn);
+  $('#stageHost').appendChild(box);
+  bubbleSay('Muayene sonucu', res, 'hint');
+  speak(res);
+  setMood(2);
+  updateTopbar();
+  SFX.star();
+}
+
+/* ------------------------- BAKIM ------------------------- */
+function onOptionPick(id, btn) {
+  const p = state.currentPatient;
+  if (state.currentStep !== 'treat') return;
+  if (state.treatsDone.indexOf(id) >= 0) return;
+  const opt = p.treatmentOptions.find(function (o) { return o.id === id; });
+  if (!opt) return;
+
+  if (!opt.correct) {
+    softMistake('treat', p);
+    bubbleSay('Şifacı', opt.msg || 'Bunu yapmayalım. Başka bir seçenek deneyelim.', 'hint');
+    return;
+  }
+
+  // sıralı senaryolarda doğru adım sırası kontrolü
+  const req = requiredList();
+  if (p.orderedTreatment && req.indexOf(id) >= 0) {
+    const expected = req[state.treatsDone.filter(function (x) { return req.indexOf(x) >= 0; }).length];
+    if (expected && id !== expected) {
+      state.treatMistakes++;
+      SFX.soft();
+      bubbleSay('Şifacı', (p.orderMessages && p.orderMessages[expected]) || 'Sırayla ilerleyelim.', 'hint');
+      return;
+    }
+  }
+
+  SFX.tap();
+  const step = p.treatmentSteps ? p.treatmentSteps[id] : null;
+  if (opt.game && step) {
+    runMiniGame(step, function () {
+      if (step.badge) unlockBadge(step.badge);
+      completeTreatment(id);
+    });
+  } else {
+    completeTreatment(id);
+  }
+}
+
+function completeTreatment(id) {
+  const p = state.currentPatient;
+  state.treatsDone.push(id);
+  const req = requiredList();
+  const doneReq = state.treatsDone.filter(function (x) { return req.indexOf(x) >= 0; });
+  setMood(clamp(2 + (doneReq.length >= req.length ? 1 : 0), 0, 3));
+  renderOptions();
+  updateTopbar();
+  if (req.indexOf(id) < 0) {
+    bubbleSay('Şifacı', 'Bu da güzel bir fikir! 👍', 'hint');
+    return;
+  }
+  if (doneReq.length >= req.length) finishPatient();
+  else bubbleSay(p.pname, 'Kendimi biraz daha iyi hissediyorum.', '');
+}
+
+/* ------------------------- HASTA TAMAMLANDI ------------------------- */
+function finishPatient() {
+  const p = state.currentPatient;
+  state.currentStep = 'done';
+  const earned = 1 + (state.examMistakes === 0 ? 1 : 0) + (state.treatMistakes === 0 ? 1 : 0);
+  state.currentPatientStars = earned;
+  state.stars += earned;
+  state.completedPatients++;
+  if (state.healedTypes.indexOf(p.id) < 0) state.healedTypes.push(p.id);
+  state.session.patients++;
+  state.session.stars += earned;
+  if (state.session.tips.indexOf(p.healthTip) < 0) state.session.tips.push(p.healthTip);
+  state.session.best = p.name;
+
+  setMood(3);
+  bubbleSay(p.pname, 'Artık çok daha iyi hissediyorum. Teşekkür ederim!', '');
+  speak('Artık çok daha iyi hissediyorum. Teşekkür ederim!');
+  SFX.heal();
+  confetti(40);
+
+  // rozet kontrolleri
+  unlockBadge('ilk');
+  if (p.reward) unlockBadge(p.reward);
+  if (earned === 3) unlockBadge('nazik');
+  if (state.completedPatients >= 5) unlockBadge('bes');
+  if (state.completedPatients >= 10) unlockBadge('on');
+  if (state.healedTypes.length >= PATIENTS.length) unlockBadge('hepsi');
+
+  refreshLevel();
+  renderRoom();
+  saveGame();
+  updateTopbar();
+
+  // sonuç kartı
+  const host = $('#stageHost');
+  host.innerHTML = '';
+  const box = document.createElement('div');
+  box.className = 'result-card center';
+  box.innerHTML =
+    '<div class="starline">' + '⭐'.repeat(earned) + '☆'.repeat(3 - earned) + '</div>' +
+    '<h3>' + p.pname + ' iyileşti!</h3>' +
+    '<div class="bubble tip" style="margin-top:10px"><div><span class="who">💡 Bugünün Sağlık Bilgisi</span>' + p.healthTip + '</div></div>';
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-big btn-primary';
+  btn.style.marginTop = '12px';
+  btn.textContent = '➡️ Sonraki Hasta';
+  btn.addEventListener('click', function () {
+    SFX.tap();
+    if (state.session.patients > 0 && state.session.patients % 5 === 0) showSummary();
+    else nextPatient();
+  });
+  box.appendChild(btn);
+  host.appendChild(box);
+
+  // araç çantasını tekrar göster
+  renderBag();
+}
+
+function nextPatient() {
+  state.currentPatientIndex++;
+  saveGame();
+  loadPatient();
+}
+
+/* ------------------------- GÜNLÜK KLİNİK ÖZETİ ------------------------- */
+function showSummary() {
+  const s = state.session;
+  const body = $('#summaryBody');
+  body.innerHTML =
+    '<div class="logo"><span class="badge-emoji">🏆</span><h1 style="font-size:30px">Klinik Özeti</h1>' +
+    '<p>Bugün kliniğinde ' + s.patients + ' hastaya yardım ettin.</p></div>' +
+    '<div class="card" style="margin-top:12px">' +
+      '<div class="row" style="justify-content:center">' +
+        '<span class="pill">⭐ ' + s.stars + ' yıldız</span>' +
+        '<span class="pill">🏅 ' + s.badges.length + ' yeni rozet</span>' +
+        '<span class="pill">🏥 ' + currentRoom().name + '</span>' +
+      '</div>' +
+      '<h3 style="margin-top:14px;font-size:17px">En iyi yaptığın iş</h3>' +
+      '<p style="font-weight:800;margin:4px 0 0">' + (s.best || 'Hastaları dikkatle dinlemek') + '</p>' +
+      '<h3 style="margin-top:14px;font-size:17px">Yeni rozetler</h3>' +
+      '<p style="font-weight:700;margin:4px 0 0">' + (s.badges.length ? s.badges.join(' · ') : 'Bu turda yeni rozet yok, devam!') + '</p>' +
+      '<h3 style="margin-top:14px;font-size:17px">Öğrendiğin sağlık bilgileri</h3>' +
+      '<ul class="list-clean">' + s.tips.map(function (t) { return '<li>💡 ' + t + '</li>'; }).join('') + '</ul>' +
+    '</div>' +
+    '<div class="row" style="margin-top:14px">' +
+      '<button class="btn btn-big btn-primary" id="sumAgain">🔁 Yeniden Oyna</button>' +
+      '<button class="btn btn-big btn-ghost" id="sumHome">🏠 Ana Menüye Dön</button>' +
+    '</div>' +
+    '<div class="notice">⚠️ Bu oyun eğlence ve temel sağlık farkındalığı amacıyla hazırlanmıştır. Gerçek bir sağlık sorunu olduğunda bir yetişkine ve sağlık çalışanına başvurulmalıdır.</div>';
+
+  showScreen('summary');
+  confetti(46);
+  SFX.badge();
+  $('#sumAgain').addEventListener('click', function () {
+    SFX.tap();
+    state.session = { patients: 0, stars: 0, badges: [], tips: [], best: '' };
+    showScreen('game');
+    nextPatient();
+  });
+  $('#sumHome').addEventListener('click', function () {
+    SFX.tap();
+    state.session = { patients: 0, stars: 0, badges: [], tips: [], best: '' };
+    goHome();
+  });
+}
+
+/* ------------------------- OYUNU BAŞLAT / BİTİR ------------------------- */
+function startClinic() {
+  SFX.tap();
+  state.session = { patients: 0, stars: 0, badges: [], tips: [], best: '' };
+  showScreen('game');
+  refreshLevel();
+  loadPatient();
+}
+function goHome() {
+  clearStage();
+  if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch (e) {} }
+  saveGame();
+  renderMenu();
+  showScreen('menu');
+}
+
+/* ------------------------- İPUCU ------------------------- */
+function showHint() {
+  const p = state.currentPatient;
+  SFX.tap();
+  if (!p) return;
+  if (state.currentStep === 'exam') {
+    const missing = p.requiredExaminations.filter(function (id) { return state.examsDone.indexOf(id) < 0; });
+    bubbleSay(p.pname, hintForMissingExam(p) + (missing.length ? ' (' + toolById(missing[0]).label + ')' : ''), 'hint');
+  } else if (state.currentStep === 'treat') {
+    const req = requiredList().filter(function (id) { return state.treatsDone.indexOf(id) < 0; });
+    if (req.length) {
+      const o = p.treatmentOptions.find(function (x) { return x.id === req[0]; });
+      bubbleSay('Şifacı', 'Şunu deneyebiliriz: ' + ((o && o.label) || toolById(req[0]).label), 'hint');
+    } else bubbleSay('Şifacı', 'Neredeyse bitti!', 'hint');
+  } else {
+    bubbleSay('Şifacı', 'Devam etmek için yeşil butona basabilirsin.', 'hint');
+  }
+}
+
+/* ------------------------- ONAY PENCERESİ ------------------------- */
+function askConfirm(text, onYes) {
+  const dlg = $('#confirmDialog');
+  $('#confirmText').textContent = text;
+  const yes = $('#confirmYes'), no = $('#confirmNo');
+  function close() { try { dlg.close(); } catch (e) { dlg.removeAttribute('open'); } cleanup(); }
+  function cleanup() { yes.removeEventListener('click', onY); no.removeEventListener('click', close); }
+  function onY() { close(); onYes(); }
+  yes.addEventListener('click', onY);
+  no.addEventListener('click', close);
+  if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+}
+
+/* ------------------------- BAŞLATMA ------------------------- */
+function init() {
+  loadGame();
+  renderMenu();
+  renderBadgeGrid();
+
+  $('#btnStart').addEventListener('click', startClinic);
+  $('#btnHowto').addEventListener('click', function () { SFX.tap(); showScreen('howto'); });
+  $('#btnBadges').addEventListener('click', function () { SFX.tap(); renderBadgeGrid(); showScreen('badges'); });
+  $('#btnSound').addEventListener('click', toggleSound);
+  $('#btnSound2').addEventListener('click', toggleSound);
+  $('#btnReset').addEventListener('click', function () {
+    askConfirm('Tüm yıldızların, rozetlerin ve açılan odaların silinecek. Devam edelim mi?', function () {
+      resetProgress();
+      toast('🔄', 'İlerleme sıfırlandı.', 1600);
+    });
+  });
+  $('#btnBackHome').addEventListener('click', function () { SFX.tap(); goHome(); });
+  $('#btnHint').addEventListener('click', showHint);
+  $$('[data-back]').forEach(function (b) {
+    b.addEventListener('click', function () { SFX.tap(); showScreen('menu'); });
+  });
+
+  // sesler için tarayıcı izni ilk dokunuşta alınır
+  document.addEventListener('pointerdown', function once() {
+    ac();
+    document.removeEventListener('pointerdown', once);
+  }, { once: true });
+
+  showScreen('menu');
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+
+
+</script>
+</body>
+</html>
