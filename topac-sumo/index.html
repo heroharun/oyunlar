@@ -1598,13 +1598,15 @@ requestAnimationFrame(loop);
 /* ── Dokunmatik kumanda (mobil) ── */
 #tctl{position:fixed;inset:0;pointer-events:none;z-index:40;display:none}
 #tctl.acik{display:block}
-#joyZone{position:absolute;left:0;bottom:0;width:55%;height:60%;pointer-events:auto;touch-action:none}
-#joyBase{position:absolute;width:112px;height:112px;border-radius:50%;
-  border:2px solid rgba(255,209,102,.4);background:rgba(255,255,255,.06);
-  transform:translate(-50%,-50%);display:none}
-#joyKnob{position:absolute;width:52px;height:52px;border-radius:50%;
-  background:rgba(255,209,102,.55);border:2px solid rgba(255,255,255,.5);
-  transform:translate(-50%,-50%);display:none}
+#padZone{position:absolute;inset:0;pointer-events:auto;touch-action:none}
+#fingerRing{position:absolute;width:64px;height:64px;border-radius:50%;
+  border:2.5px solid rgba(255,209,102,.75);background:rgba(255,209,102,.10);
+  transform:translate(-50%,-50%);display:none;pointer-events:none;
+  box-shadow:0 0 18px rgba(255,209,102,.35)}
+#tHint{position:absolute;left:50%;top:14%;transform:translateX(-50%);
+  font:700 13px system-ui;color:rgba(255,255,255,.75);letter-spacing:.5px;
+  background:rgba(0,0,0,.35);padding:8px 14px;border-radius:999px;
+  pointer-events:none;transition:opacity .5s;white-space:nowrap}
 #dashBtn{position:absolute;right:18px;bottom:calc(34px + env(safe-area-inset-bottom));
   width:92px;height:92px;border-radius:50%;pointer-events:auto;touch-action:none;
   border:2.5px solid rgba(142,240,168,.55);background:rgba(142,240,168,.14);
@@ -1619,8 +1621,9 @@ requestAnimationFrame(loop);
 #tOver button.gri{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#ccc}
 </style>
 <div id="tctl">
-  <div id="joyZone"><div id="joyBase"></div><div id="joyKnob"></div></div>
+  <div id="padZone"><div id="fingerRing"></div></div>
   <div id="dashBtn">DASH</div>
+  <div id="tHint">Parmağını bas: topacın oraya koşar · Fiske at: DASH!</div>
   <div id="tOver">
     <button id="tRetry">🔄 TEKRAR OYNA</button>
     <button id="tMenu" class="gri">ANA MENÜ</button>
@@ -1635,12 +1638,15 @@ requestAnimationFrame(loop);
   var dokunmatik = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   if(!dokunmatik) return;
   var tctl = document.getElementById('tctl');
-  var zone = document.getElementById('joyZone');
-  var base = document.getElementById('joyBase');
-  var knob = document.getElementById('joyKnob');
+  var zone = document.getElementById('padZone');
   var dash = document.getElementById('dashBtn');
   var menuEl = document.getElementById('menu');
-  var R = 56;
+  var ring = document.getElementById('fingerRing');
+  var hint = document.getElementById('tHint');
+  var touchId = null, fx = 0, fy = 0;
+  var samples = [];          // fiske algılama için son konumlar
+  var dashPulse = 0;         // fiske dash'inin boşluk tuşunu bıraktığı an
+  var hintGizle = 0;
 
   function goster(){
     var oyunda = menuEl.classList.contains('hidden');
@@ -1650,50 +1656,92 @@ requestAnimationFrame(loop);
   new MutationObserver(goster).observe(menuEl, {attributes:true, attributeFilter:['class']});
   goster();
 
-  function tusla(dx, dy){
-    var esik = R*0.30;
-    keys['a'] = dx < -esik; keys['d'] = dx > esik;
-    keys['w'] = dy < -esik; keys['s'] = dy > esik;
+  /* ── Parmağı takip: topaç parmağına koşar ── */
+  function myP(){
+    if (typeof players === 'undefined' || !players || !players.length) return null;
+    return (typeof net !== 'undefined' && net.role === 'guest') ? players[1] : players[0];
   }
+  function titret(ms){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(err){} }
   function birak(){
     keys['a']=keys['d']=keys['w']=keys['s']=false;
-    base.style.display=knob.style.display='none';
-    joyId=null;
+    ring.style.display='none';
+    touchId=null; samples.length=0;
   }
 
-  var joyId=null, ox=0, oy=0;
+  /* 30 fps: parmağa doğru 8 yönlü sür (fizikteki atalet akıcılığı sağlar) */
+  setInterval(function(){
+    if (touchId === null) return;
+    var p = myP();
+    if (!p || !tctl.classList.contains('acik')) return;
+    var dx = fx - p.x, dy = fy - p.y;
+    var m = Math.hypot(dx, dy);
+    if (m < 26){ keys['a']=keys['d']=keys['w']=keys['s']=false; return; } // parmağa vardı: dur
+    keys['a'] = dx < -0.38*m; keys['d'] = dx > 0.38*m;
+    keys['w'] = dy < -0.38*m; keys['s'] = dy > 0.38*m;
+    if (dashPulse && performance.now() > dashPulse){ keys[' ']=false; dashPulse=0; }
+  }, 33);
+
+  function fiskeKontrol(t){
+    var now = performance.now();
+    samples.push({t:now, x:t.clientX, y:t.clientY});
+    while (samples.length > 6) samples.shift();
+    var eski = samples[0];
+    var dt = now - eski.t;
+    if (dt < 30 || dt > 160) return;
+    var dx = t.clientX - eski.x, dy = t.clientY - eski.y;
+    var hiz = Math.hypot(dx, dy) / dt;      // px/ms
+    if (hiz > 1.35 && !dashPulse){
+      // Fiske! O yöne dash: yön tuşları + boşluk kısa süre basılı
+      var m = Math.hypot(dx, dy);
+      keys['a'] = dx < -0.38*m; keys['d'] = dx > 0.38*m;
+      keys['w'] = dy < -0.38*m; keys['s'] = dy > 0.38*m;
+      keys[' '] = true;
+      dashPulse = performance.now() + 140;
+      titret(25);
+      samples.length = 0;
+    }
+  }
+
   zone.addEventListener('touchstart', function(e){
     e.preventDefault();
     var t = e.changedTouches[0];
-    joyId = t.identifier; ox=t.clientX; oy=t.clientY;
-    base.style.display=knob.style.display='block';
-    base.style.left=knob.style.left=ox+'px';
-    base.style.top=knob.style.top=oy+'px';
+    touchId = t.identifier; fx = t.clientX; fy = t.clientY;
+    samples.length = 0;
+    ring.style.display = 'block';
+    ring.style.left = fx+'px'; ring.style.top = fy+'px';
+    if (!hintGizle){ hintGizle = 1; setTimeout(function(){ hint.style.opacity = '0'; }, 4000); }
   }, {passive:false});
   zone.addEventListener('touchmove', function(e){
     e.preventDefault();
-    for(var i=0;i<e.changedTouches.length;i++){
-      var t=e.changedTouches[i];
-      if(t.identifier!==joyId) continue;
-      var dx=t.clientX-ox, dy=t.clientY-oy;
-      var m=Math.hypot(dx,dy)||1;
-      var kx=ox+dx*Math.min(1,R/m), ky=oy+dy*Math.min(1,R/m);
-      knob.style.left=kx+'px'; knob.style.top=ky+'px';
-      tusla(dx,dy);
+    for (var i=0; i<e.changedTouches.length; i++){
+      var t = e.changedTouches[i];
+      if (t.identifier !== touchId) continue;
+      fx = t.clientX; fy = t.clientY;
+      ring.style.left = fx+'px'; ring.style.top = fy+'px';
+      fiskeKontrol(t);
     }
   }, {passive:false});
-  function joyEnd(e){
-    for(var i=0;i<e.changedTouches.length;i++){
-      if(e.changedTouches[i].identifier===joyId){ birak(); }
+  function padEnd(e){
+    for (var i=0; i<e.changedTouches.length; i++){
+      if (e.changedTouches[i].identifier === touchId) birak();
     }
   }
-  zone.addEventListener('touchend', joyEnd);
-  zone.addEventListener('touchcancel', joyEnd);
+  zone.addEventListener('touchend', padEnd);
+  zone.addEventListener('touchcancel', padEnd);
+
+  /* Darbe titreşimi: ekran sarsıntısı sıçrayınca */
+  var sonShake = 0;
+  setInterval(function(){
+    if (typeof game === 'undefined') return;
+    if (game.shake > sonShake + 3) titret(Math.min(60, Math.round(game.shake*4)));
+    sonShake = game.shake;
+  }, 90);
 
   dash.addEventListener('touchstart', function(e){
     e.preventDefault();
     dash.classList.add('basili');
     keys[' ']=true;
+    titret(20);
   }, {passive:false});
   function dashEnd(e){
     e.preventDefault();
