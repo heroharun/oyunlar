@@ -429,15 +429,26 @@ function fxFloat(x,y,txt,c){ addFloat(x,y,txt,c); if(net.role==='host') net.ev.p
 function fxShake(v){ game.shake=Math.max(game.shake,v); if(net.role==='host') net.ev.push({e:'shake',v}); }
 function showBanner(txt,d){ setBanner(txt,d); if(net.role==='host') net.ev.push({e:'ban',txt,d}); }
 
+let sonGirdiImza='';
 function sendInput(){
   if(net.role!=='guest' || !net.conn || !net.conn.open) return;
-  net.conn.send({t:'input', k:{
+  const k={
     up:!!(keys['w']||keys['arrowup']), down:!!(keys['s']||keys['arrowdown']),
     left:!!(keys['a']||keys['arrowleft']), right:!!(keys['d']||keys['arrowright']),
     dash:!!(keys[' ']||keys['enter'])
-  }});
+  };
+  sonGirdiImza=''+k.up+k.down+k.left+k.right+k.dash;
+  net.conn.send({t:'input', k});
 }
-setInterval(sendInput, 45);
+/* Tuş durumu DEĞİŞTİYSE anında gönder (33ms aralığı beklemeden) —
+   özellikle dash ve dokunmatik yön değişimlerinde gecikmeyi yok eder. */
+function sendInputHemen(){
+  if(net.role!=='guest' || !net.conn || !net.conn.open) return;
+  const imza=''+!!(keys['w']||keys['arrowup'])+!!(keys['s']||keys['arrowdown'])+
+    !!(keys['a']||keys['arrowleft'])+!!(keys['d']||keys['arrowright'])+!!(keys[' ']||keys['enter']);
+  if(imza!==sonGirdiImza) sendInput();
+}
+setInterval(sendInput, 33);
 
 function enterGuestMode(){
   net.lastQ = 0;
@@ -469,9 +480,10 @@ addEventListener('keydown', e=>{
     else startGame(game.mode, game.diff);
   }
   if(e.key.toLowerCase()==='m' && game.state==='gameover') location.reload();
-  sendInput();
+  sendInputHemen();
 });
 addEventListener('keyup', e=>{
+  sendInputHemen();
   if(e.target.tagName==='INPUT') return;
   keys[e.key.toLowerCase()] = false;
   // Cmd/Meta basılıyken diğer tuşların keyup'ı yutulur — Meta bırakılınca hepsini temizle
@@ -1128,6 +1140,17 @@ function update(dt){
         const dmp=Math.exp(-DAMP*dt); p.vx*=dmp; p.vy*=dmp;
         const vv=Math.hypot(p.vx,p.vy); if(vv>MAXV){ p.vx=p.vx/vv*MAXV; p.vy=p.vy/vv*MAXV; }
         p.x += p.vx*dt; p.y += p.vy*dt;
+        // rakiple çarpışma HİSSİ yerel: iç içe girme anında itilirsin (otorite yine host)
+        const foe = players[1-GUEST_SELF];
+        if(foe && foe.falling<=0 && p.ghostT<=0){
+          const cdx=p.x-foe.x, cdy=p.y-foe.y, cd=Math.hypot(cdx,cdy), cmin=p.r+foe.r;
+          if(cd>0 && cd<cmin){
+            const cnx=cdx/cd, cny=cdy/cd;
+            p.x+=cnx*(cmin-cd); p.y+=cny*(cmin-cd);
+            const cdot=p.vx*cnx+p.vy*cny;
+            if(cdot<0){ p.vx-=1.5*cdot*cnx; p.vy-=1.5*cdot*cny; }
+          }
+        }
         // host ile uzlaşma: küçük sapmayı yumuşak düzelt, büyükte anında geç (çarpışma/itiş host'ta)
         if(p.sx!==undefined){
           const err=Math.hypot(p.sx-p.x, p.sy-p.y);
@@ -1688,6 +1711,7 @@ requestAnimationFrame(loop);
 
   function temizle(pad){
     keys[pad.l]=keys[pad.r]=keys[pad.u]=keys[pad.d]=false;
+    if (typeof sendInputHemen === 'function') sendInputHemen();
     pad.ring.style.display='none'; pad.knob.style.display='none';
     pad.touchId=null; pad.samples.length=0;
   }
@@ -1731,10 +1755,12 @@ requestAnimationFrame(loop);
       dx = px-pad.ax; dy = py-pad.ay; m = MAXR;
     }
     pad.knob.style.left=px+'px'; pad.knob.style.top=py+'px';
-    if (m < OLU){ keys[pad.l]=keys[pad.r]=keys[pad.u]=keys[pad.d]=false; return; }
+    if (m < OLU){ keys[pad.l]=keys[pad.r]=keys[pad.u]=keys[pad.d]=false;
+      if (typeof sendInputHemen === 'function') sendInputHemen(); return; }
     var ex = pad.invert ? -dx : dx, ey = pad.invert ? -dy : dy;
     keys[pad.l] = ex < -0.34*m; keys[pad.r] = ex > 0.34*m;
     keys[pad.u] = ey < -0.34*m; keys[pad.d] = ey > 0.34*m;
+    if (typeof sendInputHemen === 'function') sendInputHemen();
   }
 
   function fiskeKontrol(pad, t){
@@ -1752,8 +1778,10 @@ requestAnimationFrame(loop);
       keys[pad.l] = ex < -0.38*m; keys[pad.r] = ex > 0.38*m;
       keys[pad.u] = ey < -0.38*m; keys[pad.d] = ey > 0.38*m;
       keys[pad.dash] = true;
+      if (typeof sendInputHemen === 'function') sendInputHemen();
       pad.dashPulse = 1;
-      (function(pd){ setTimeout(function(){ keys[pd.dash]=false; pd.dashPulse=0; }, 140); })(pad);
+      (function(pd){ setTimeout(function(){ keys[pd.dash]=false; pd.dashPulse=0;
+        if (typeof sendInputHemen === 'function') sendInputHemen(); }, 140); })(pad);
       titret(25);
       pad.samples.length = 0;
     }
@@ -1805,12 +1833,14 @@ requestAnimationFrame(loop);
       e.preventDefault();
       el.classList.add('basili');
       keys[tus]=true;
+      if (typeof sendInputHemen === 'function') sendInputHemen();
       titret(20);
     }, {passive:false});
     function birakDash(e){
       e.preventDefault();
       el.classList.remove('basili');
       keys[tus]=false;
+      if (typeof sendInputHemen === 'function') sendInputHemen();
     }
     el.addEventListener('touchend', birakDash, {passive:false});
     el.addEventListener('touchcancel', birakDash, {passive:false});
