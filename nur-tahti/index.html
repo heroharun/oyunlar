@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nûr Tahtı — Bir Prensesin Yetişmesi</title>
+<meta name="description" content="Nûr Tahtı: Küçük bir prensesi 12 yıl boyunca yetiştirdiğin, ilim, ahlak, adalet ve cesaret üzerine kurulu ücretsiz ve reklamsız bir yaşam simülasyonu oyunu.">
+<meta name="theme-color" content="#0f1424">
+<meta property="og:title" content="Nûr Tahtı — Bir Prensesin Yetişmesi">
+<meta property="og:description" content="Tahtı kazanacak mısın, yoksa tahta layık biri mi olacaksın?">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --gece:#0f1424;
+  --katman:#161e35;
+  --panel:#1d2643;
+  --panel2:#232e50;
+  --cizgi:#33406b;
+  --altin:#d8b25e;
+  --altin-ac:#f3e0aa;
+  --firuze:#2fa093;
+  --gul:#c07589;
+  --metin:#ece7db;
+  --soluk:#8e99b6;
+  --yesil:#5ec08a;
+  --kirmizi:#e06a6a;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(120% 80% at 50% -10%, #1b2547 0%, rgba(27,37,71,0) 60%),
+    var(--gece);
+  color:var(--metin);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.55;
+  min-height:100vh;
+  padding:0 0 90px;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(216,178,94,.035) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(-45deg, rgba(216,178,94,.035) 0 1px, transparent 1px 26px);
+}
+.sarma{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:0 14px}
+h1,h2,h3{font-family:var(--serif);font-weight:600;margin:0 0 8px;letter-spacing:.01em}
+h1{font-size:1.9rem;line-height:1.15}
+h2{font-size:1.25rem;color:var(--altin-ac)}
+h3{font-size:1.05rem;color:var(--altin-ac)}
+p{margin:0 0 12px}
+.gizli{display:none !important}
+
+/* --- üst bilgi çubuğu --- */
+.ust{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg, rgba(15,20,36,.98) 70%, rgba(15,20,36,.85));
+  border-bottom:1px solid var(--cizgi);
+  padding:8px 0 10px;
+  backdrop-filter:blur(6px);
+}
+.ust-ic{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rozet{
+  font-family:var(--serif);font-size:.95rem;color:var(--altin);
+  border:1px solid var(--cizgi);border-radius:999px;padding:3px 11px;
+  background:var(--panel);white-space:nowrap;
+}
+.rozet b{color:var(--altin-ac);font-weight:600}
+.dinc-kutu{flex:1;min-width:130px}
+.dinc-etiket{font-size:.72rem;color:var(--soluk);letter-spacing:.08em;text-transform:uppercase}
+.cubuk{height:8px;border-radius:99px;background: #0b1022;border:1px solid var(--cizgi);overflow:hidden}
+.cubuk i{display:block;height:100%;background:linear-gradient(90deg,var(--firuze),var(--altin));transition:width .4s ease}
+.cubuk.az i{background:linear-gradient(90deg,#8a4b4b,var(--kirmizi))}
+
+/* mevsim gülü */
+.mevsim{display:flex;gap:5px;align-items:center}
+.mevsim span{
+  width:9px;height:9px;transform:rotate(45deg);
+  border:1px solid var(--cizgi);background:transparent;
+}
+.mevsim span.aktif{background:var(--altin);border-color:var(--altin);box-shadow:0 0 8px rgba(216,178,94,.5)}
+.mevsim span.gecti{background:var(--cizgi)}
+
+/* --- kartlar --- */
+.kart{
+  background:linear-gradient(180deg,var(--panel),var(--katman));
+  border:1px solid var(--cizgi);border-radius:14px;
+  padding:16px;margin:14px 0;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+.kart.altin{border-color:rgba(216,178,94,.45)}
+.uyari{border-color:rgba(224,106,106,.45)}
+.gozustu{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--altin);margin-bottom:6px}
+.metin-sol{white-space:pre-line}
+
+/* --- düğmeler --- */
+button{font-family:inherit;font-size:1rem;color:inherit;cursor:pointer;border:none;background:none}
+.dugme{
+  display:block;width:100%;text-align:left;
+  background:var(--panel2);border:1px solid var(--cizgi);border-radius:11px;
+  padding:12px 14px;margin:8px 0;color:var(--metin);
+  transition:transform .12s ease, border-color .15s ease, background .15s ease;
+}
+.dugme:hover,.dugme:focus-visible{border-color:var(--altin);background:#28345c}
+.dugme:active{transform:scale(.985)}
+.dugme:disabled{opacity:.4;cursor:not-allowed}
+.dugme .not{display:block;font-size:.82rem;color:var(--soluk);margin-top:3px}
+.dugme .ipucu{display:block;font-size:.78rem;color:var(--firuze);margin-top:3px}
+.dugme .bedel{float:right;font-size:.8rem;color:var(--altin);margin-left:8px}
+.dugme.ana{
+  text-align:center;background:linear-gradient(180deg,var(--altin),#b38f3f);
+  color:#231a06;font-weight:700;border-color:#e6c877;
+}
+.dugme.ana:hover{background:linear-gradient(180deg,var(--altin-ac),var(--altin))}
+.dugme.kucuk{display:inline-block;width:auto;padding:7px 14px;font-size:.85rem;margin:4px 6px 4px 0;text-align:center}
+.satir{display:flex;gap:8px;flex-wrap:wrap}
+.satir .dugme{flex:1;min-width:120px;text-align:center}
+
+/* --- özellik ızgarası --- */
+.ozet{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+@media(min-width:520px){.ozet{grid-template-columns:repeat(3,1fr)}}
+.oz{
+  background:var(--katman);border:1px solid var(--cizgi);border-radius:9px;
+  padding:7px 9px;display:flex;align-items:center;gap:7px;font-size:.85rem;
+}
+.oz .ad{flex:1;color:var(--soluk);font-size:.78rem;line-height:1.2}
+.oz .dg{font-family:var(--serif);font-size:1.05rem;color:var(--altin-ac);font-weight:600}
+.oz .ik{font-size:1rem}
+.oz.artti{animation:parla .9s ease}
+@keyframes parla{0%{background:#3a4a22}100%{background:var(--katman)}}
+
+/* yıldız dağıtımı */
+.dagit{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--cizgi)}
+.dagit:last-child{border-bottom:none}
+.dagit .ad{flex:1}
+.dagit .ad small{display:block;color:var(--soluk);font-size:.75rem;line-height:1.25}
+.dagit .say{width:36px;text-align:center;font-family:var(--serif);font-size:1.15rem;color:var(--altin-ac)}
+.yk{
+  width:34px;height:34px;border-radius:9px;border:1px solid var(--cizgi);
+  background:var(--panel2);font-size:1.2rem;line-height:1;display:flex;
+  align-items:center;justify-content:center;flex:0 0 auto;
+}
+.yk:disabled{opacity:.3}
+
+/* itibar / gruplar */
+.grup{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:.85rem}
+.grup .gad{width:88px;color:var(--soluk);font-size:.8rem}
+.grup .cubuk{flex:1}
+.grup .cubuk i{background:var(--firuze)}
+.grup.dus .cubuk i{background:var(--kirmizi)}
+.grup.yuk .cubuk i{background:var(--altin)}
+
+/* nefis */
+.nefis .cubuk i{background:linear-gradient(90deg,#6b5aa6,var(--gul))}
+
+/* günlük */
+.gunluk{font-size:.9rem;color:var(--soluk);max-height:230px;overflow-y:auto;padding-right:6px}
+.gunluk div{padding:5px 0;border-bottom:1px dashed var(--cizgi)}
+.gunluk b{color:var(--altin)}
+
+/* --- düello --- */
+.arena{
+  position:relative;background:radial-gradient(70% 70% at 50% 30%, #24305a, #10162a);
+  border:1px solid var(--cizgi);border-radius:14px;padding:14px;text-align:center;
+}
+.can-satir{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.can-satir .cubuk{flex:1}
+.can-satir .cubuk i{background:linear-gradient(90deg,var(--yesil),var(--firuze))}
+.can-satir.rakip .cubuk i{background:linear-gradient(90deg,#a8455c,var(--gul))}
+.isaret{
+  font-family:var(--serif);font-size:1.5rem;color:var(--altin-ac);
+  min-height:86px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+}
+.isaret .ok{font-size:2.6rem;line-height:1;animation:titre .5s ease}
+@keyframes titre{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.zaman{height:6px;background:#0b1022;border-radius:99px;overflow:hidden;margin:8px 0 12px;border:1px solid var(--cizgi)}
+.zaman i{display:block;height:100%;background:var(--altin);width:100%}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.pad button{
+  background:var(--panel2);border:1px solid var(--cizgi);border-radius:11px;
+  padding:14px 4px;font-size:.82rem;line-height:1.2;color:var(--metin);
+}
+.pad button:active{background:var(--altin);color:#231a06}
+.pad button .simge{display:block;font-size:1.3rem;margin-bottom:2px}
+.duello-not{font-size:.85rem;color:var(--soluk);margin-top:10px;min-height:20px}
+
+/* --- okçuluk --- */
+.yay-alan{background:linear-gradient(180deg,#1b2544,#101a30);border:1px solid var(--cizgi);border-radius:14px;padding:14px}
+.hedef{
+  position:relative;height:74px;border-radius:10px;overflow:hidden;
+  background:repeating-linear-gradient(90deg,#2a3459 0 2px,transparent 2px 30px), #16203c;
+  border:1px solid var(--cizgi);
+}
+.hedef .halka{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%}
+.h1{width:64px;height:64px;background:#3a4570}
+.h2{width:42px;height:42px;background:#4c5a91}
+.h3{width:22px;height:22px;background:var(--altin)}
+.hedef .imlec{position:absolute;top:0;bottom:0;width:3px;background:var(--gul);box-shadow:0 0 10px var(--gul)}
+.hedef .ok-izi{position:absolute;top:50%;width:10px;height:2px;background:var(--altin-ac);transform:translateY(-50%)}
+.ruzgar{display:flex;justify-content:space-between;font-size:.82rem;color:var(--soluk);margin:10px 0 6px}
+.gerginlik{height:14px;border:1px solid var(--cizgi);border-radius:99px;background:#0b1022;overflow:hidden;position:relative}
+.gerginlik i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--firuze),var(--altin))}
+.gerginlik u{position:absolute;top:0;bottom:0;border-left:2px dashed var(--altin-ac);border-right:2px dashed var(--altin-ac);opacity:.7}
+
+/* --- diplomasi ipuçları --- */
+.ipuc{background:var(--katman);border-left:3px solid var(--firuze);padding:8px 11px;margin:7px 0;border-radius:0 8px 8px 0;font-size:.9rem}
+.ipuc.kapali{color:var(--soluk);border-left-color:var(--cizgi);font-style:italic}
+
+/* --- final --- */
+.final{text-align:center;padding:26px 16px}
+.final .unvan{font-family:var(--serif);font-size:2rem;color:var(--altin-ac);margin:10px 0}
+.final .muhur{
+  width:96px;height:96px;margin:0 auto 12px;border-radius:50%;
+  border:2px solid var(--altin);display:flex;align-items:center;justify-content:center;
+  font-size:2.6rem;background:radial-gradient(circle,#2a3663,#151d36);
+  box-shadow:0 0 34px rgba(216,178,94,.28);
+}
+.rozetler{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:12px 0}
+.rozetler span{font-size:.78rem;border:1px solid var(--cizgi);border-radius:99px;padding:4px 10px;color:var(--soluk)}
+
+/* --- alt bar --- */
+.alt{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(15,20,36,.96);border-top:1px solid var(--cizgi);
+  backdrop-filter:blur(8px);padding:7px 0 calc(7px + env(safe-area-inset-bottom));
+}
+.alt-ic{max-width:720px;margin:0 auto;display:flex;gap:4px;padding:0 10px}
+.alt button{
+  flex:1;padding:8px 2px;border-radius:9px;font-size:.72rem;color:var(--soluk);
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.alt button .simge{font-size:1.15rem}
+.alt button.aktif{color:var(--altin-ac);background:var(--panel)}
+
+/* çeşitli */
+.giris{text-align:center;padding:34px 6px 10px}
+.giris .hilal{font-size:3rem;line-height:1;filter:drop-shadow(0 0 18px rgba(216,178,94,.45))}
+.giris .alt-baslik{color:var(--soluk);font-size:.95rem;margin-top:4px}
+.giris .soru{font-family:var(--serif);font-style:italic;color:var(--altin);margin:18px auto 0;max-width:420px}
+.ayrac{height:1px;background:linear-gradient(90deg,transparent,var(--cizgi),transparent);margin:18px 0}
+.kucuk-not{font-size:.78rem;color:var(--soluk);line-height:1.45}
+.sonuc-iyi{color:var(--yesil)}
+.sonuc-kotu{color:var(--kirmizi)}
+.etiket{font-size:.75rem;color:var(--soluk)}
+.arti{color:var(--yesil);font-weight:600}
+.eksi{color:var(--kirmizi);font-weight:600}
+.dugme.fa{display:flex;gap:12px;align-items:center;padding:10px}
+.fa-gorsel{
+  flex:0 0 auto;width:92px;height:92px;border-radius:11px;overflow:hidden;
+  background:var(--katman);border:1px solid var(--cizgi);
+  display:flex;align-items:center;justify-content:center;font-size:2rem;
+}
+.fa-gorsel img{width:100%;height:100%;object-fit:cover;display:block}
+.fa-yazi{flex:1;min-width:0}
+.fa-ad{display:block;font-family:var(--serif);font-size:1.06rem;line-height:1.25;color:var(--metin)}
+.fa-alt{display:block;margin-top:6px}
+.fa-alt .bedel{float:none;display:inline-block;margin:0 10px 0 0}
+.fa-alt .ipucu{display:inline-block;margin:0}
+.dugme.fa .not{margin-top:2px}
+.sonuc-sahne{
+  position:relative;border-radius:14px;overflow:hidden;
+  border:1px solid var(--cizgi);margin:14px 0;
+  box-shadow:0 12px 34px rgba(0,0,0,.4);
+}
+.sonuc-sahne>img{width:100%;height:224px;object-fit:cover;display:block}
+.sonuc-ust{
+  position:absolute;top:0;left:0;right:0;padding:10px 14px;
+  background:linear-gradient(180deg, rgba(15,20,36,.85), rgba(15,20,36,0));
+  font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--altin-ac);
+}
+.sonuc-ic{
+  position:absolute;left:0;right:0;bottom:0;padding:34px 14px 13px;
+  background:linear-gradient(180deg, rgba(15,20,36,0), rgba(15,20,36,.82) 42%, rgba(15,20,36,.97));
+}
+.sonuc-ic p{margin:0 0 8px;font-size:.95rem;line-height:1.45;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.kazanc span,.etiket span{
+  display:inline-block;margin:0 6px 6px 0;padding:3px 10px;border-radius:99px;
+  font-size:.78rem;font-weight:600;line-height:1.5;
+  border:1px solid rgba(94,192,138,.55);background:rgba(94,192,138,.16);color:#9fe3ba;
+}
+.kazanc span.eksi,.etiket span.eksi{
+  border-color:rgba(224,106,106,.55);background:rgba(224,106,106,.16);color:#f0a2a2;
+}
+.sonuc-gorsel{
+  float:left;width:112px;height:112px;border-radius:11px;overflow:hidden;
+  margin:0 13px 8px 0;border:1px solid var(--cizgi);
+}
+.sonuc-gorsel img{width:100%;height:100%;object-fit:cover;display:block}
+@media(max-width:360px){.fa-gorsel{width:74px;height:74px}}
+.girdi{
+  width:100%;background:var(--katman);border:1px solid var(--cizgi);border-radius:10px;
+  padding:11px 13px;color:var(--metin);font-family:var(--serif);font-size:1.15rem;
+}
+.girdi:focus{outline:none;border-color:var(--altin);box-shadow:0 0 0 2px rgba(216,178,94,.18)}
+textarea.girdi{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem;line-height:1.4;height:96px;resize:vertical}
+.dugme.tehlike{border-color:var(--kirmizi);background:#3a2130}
+.bilgi{font-size:.85rem;color:var(--firuze);margin:8px 0 0}
+button:focus-visible,.girdi:focus-visible{outline:2px solid var(--altin);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+<header class="ust gizli" id="ust">
+  <div class="sarma ust-ic">
+    <span class="rozet" id="r-yas">7 yaş</span>
+    <span class="rozet" id="r-donem">İlim Dönemi</span>
+    <div class="mevsim" id="mevsim-gul" aria-hidden="true"></div>
+    <div class="dinc-kutu">
+      <div class="dinc-etiket">Dinçlik <span id="dinc-sayi">100</span></div>
+      <div class="cubuk" id="dinc-cubuk"><i style="width:100%"></i></div>
+    </div>
+  </div>
+</header>
+
+<main class="sarma" id="govde">
+
+  <!-- ================= GİRİŞ ================= -->
+  <section id="ekran-giris">
+    <div class="giris">
+      <div class="hilal">🌙</div>
+      <h1>Nûr Tahtı</h1>
+      <div class="alt-baslik">Bir Prensesin Yetişmesi</div>
+      <p class="soru">“Tahtı kazanacak mısın, yoksa tahta layık biri mi olacaksın?”</p>
+    </div>
+    <div class="kart altin">
+      <div class="gozustu">Oyun hakkında</div>
+      <p>Yedi yaşında saraya alınan bir prensesi on iki yıl boyunca yetiştiriyorsun. Her mevsim onun neyi öğreneceğine, kiminle vakit geçireceğine ve zor bir anda ne yapacağına karar veriyorsun.</p>
+      <p>Kılıç kullanmayı öğrenebilir. Ama asıl mesele, ne zaman kılıç çekmeyeceğini bilmesi.</p>
+      <p class="kucuk-not">Ücretsiz · Reklamsız · Kayıt yok · Çevrimdışı çalışır. İlerlemen yalnızca bu cihazda saklanır.</p>
+    </div>
+    <button class="dugme ana" data-act="yeni">Yeni bir prenses yetiştir</button>
+    <button class="dugme gizli" id="dugme-devam" data-act="devam">Kayıtlı oyuna devam et</button>
+    <div class="kart">
+      <div class="gozustu">Bu oyunda ne var</div>
+      <p class="kucuk-not">Hikmet Medresesi ve Fen İlimleri Akademisi dersleri · Hilal Muhafızları eğitimi · kılıç düellosu · okçuluk · diplomasi · gizli halk görevleri · saray siyaseti · 20 hikâye bölümü · 7 farklı final.</p>
+    </div>
+  </section>
+
+  <!-- ================= YILDIZ DAĞITIMI ================= -->
+  <section id="ekran-dagit" class="gizli">
+    <h2>Eğitim yıldızları</h2>
+    <p class="kucuk-not">Prensesin yedi yaşındaki başlangıcı senin elinde. <b id="kalan-yildiz">20</b> yıldızın var. Her dağılım bambaşka bir prenses ortaya çıkarır: güçlü ama bilgisiz bir prenses savaşı kazanır, sarayı yönetemez.</p>
+    <div class="kart" id="dagit-liste"></div>
+    <div class="kart">
+      <div class="gozustu">Adı</div>
+      <input class="girdi" id="ad-girdi" type="text" maxlength="18" value="Nûr" autocomplete="off" spellcheck="false" aria-label="Prensesin adı">
+      <p class="kucuk-not">Kutuya dokunup istediğin adı yazabilirsin.</p>
+    </div>
+    <button class="dugme ana" data-act="basla" id="dugme-basla">Saraya gir</button>
+    <button class="dugme kucuk" data-act="onerilen">Dengeli dağılım öner</button>
+    <button class="dugme kucuk" data-act="sifirla-dagit">Sıfırla</button>
+  </section>
+
+  <!-- ================= OYUN ================= -->
+  <section id="ekran-oyun" class="gizli">
+
+    <div id="sekme-donem">
+      <div class="kart altin" id="donem-kart">
+        <div class="gozustu" id="donem-ust">7 yaş · İlim Dönemi</div>
+        <h2 id="donem-baslik">Hikmet Medresesi açılıyor</h2>
+        <p id="donem-metin" class="metin-sol"></p>
+      </div>
+      <div id="faaliyet-alani"></div>
+      <div id="sonuc-alani"></div>
+    </div>
+
+    <div id="sekme-prenses" class="gizli">
+      <div class="kart">
+        <div class="gozustu">Özellikler</div>
+        <div class="ozet" id="ozellik-izgara"></div>
+      </div>
+      <div class="kart">
+        <div class="gozustu">İtibar</div>
+        <div id="itibar-alani"></div>
+      </div>
+      <div class="kart nefis">
+        <div class="gozustu">Nefis muhasebesi</div>
+        <p class="kucuk-not">Bunlar düşman değil, sınav. Yükseldiklerinde prenses zor anlarda yanlış karar vermeye daha yatkın olur.</p>
+        <div id="nefis-alani"></div>
+      </div>
+      <div class="kart">
+        <div class="gozustu">Kuşanılan</div>
+        <div id="ekipman-alani"></div>
+      </div>
+    </div>
+
+    <div id="sekme-saray" class="gizli">
+      <div class="kart">
+        <div class="gozustu">Sarayın grupları</div>
+        <p class="kucuk-not">Bir kararın askerleri sevindirirken halkı zorlayabilir. Kimseyi tamamen memnun edemezsin.</p>
+        <div id="grup-alani"></div>
+      </div>
+      <div class="kart">
+        <div class="gozustu">Arkadaşlar</div>
+        <div id="arkadas-alani"></div>
+      </div>
+      <div class="kart">
+        <div class="gozustu">Hazine</div>
+        <div id="hazine-alani"></div>
+      </div>
+    </div>
+
+    <div id="sekme-gunluk" class="gizli">
+      <div class="kart">
+        <div class="gozustu">Saray günlüğü</div>
+        <div class="gunluk" id="gunluk-alani"></div>
+      </div>
+      <div class="kart">
+        <div class="gozustu">Kayıt</div>
+        <div id="depo-uyari"></div>
+        <button class="dugme kucuk" data-act="kaydet">Elle kaydet</button>
+        <button class="dugme kucuk" data-act="bastan">Baştan başla</button>
+        <p class="bilgi" id="kayit-bilgi"></p>
+        <p class="kucuk-not">Oyun her faaliyetten ve her bölümden sonra kendiliğinden kaydedilir.</p>
+      </div>
+      <div class="kart">
+        <div class="gozustu">Kayıt kodu</div>
+        <p class="kucuk-not">Kaydın silinirse veya oyunu başka bir cihazda açmak istersen: aşağıdaki kodu bir yere kopyala. Geri yüklemek için kodu buraya yapıştırıp düğmeye bas.</p>
+        <textarea class="girdi" id="kod-alani" spellcheck="false" aria-label="Kayıt kodu"></textarea>
+        <button class="dugme kucuk" data-act="kod-yenile">Kodu göster</button>
+        <button class="dugme kucuk" data-act="kod-yukle">Bu koddan yükle</button>
+        <p class="bilgi" id="kod-bilgi"></p>
+      </div>
+      <div class="kart">
+        <div class="gozustu">Not</div>
+        <p class="kucuk-not">Oyundaki dinî ve ahlaki içerikler genel ve mezhepler üstü tutulmuştur; kesin fetva veya hüküm bildirmez. Yayımlanmadan önce din eğitimi ve çocuk gelişimi uzmanlarınca gözden geçirilmesi tavsiye edilir.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FİNAL ================= -->
+  <section id="ekran-final" class="gizli">
+    <div class="kart altin final">
+      <div class="muhur" id="final-muhur">👑</div>
+      <div class="gozustu">On iki yıl sonra</div>
+      <div class="unvan" id="final-unvan"></div>
+      <p id="final-metin" class="metin-sol"></p>
+      <div class="rozetler" id="final-rozet"></div>
+    </div>
+    <div class="kart">
+      <div class="gozustu">Prensesin künyesi</div>
+      <div class="ozet" id="final-ozellik"></div>
+    </div>
+    <div class="kart">
+      <div class="gozustu">Kararlarının izi</div>
+      <div id="final-izler"></div>
+    </div>
+    <button class="dugme ana" data-act="bastan">Yeniden yetiştir</button>
+  </section>
+</main>
+
+<!-- ================= MİNİ OYUN ÖRTÜSÜ ================= -->
+<div id="mini-alan" class="sarma gizli"></div>
+
+<nav class="alt gizli" id="alt-bar">
+  <div class="alt-ic">
+    <button data-sekme="donem" class="aktif"><span class="simge">🕰️</span>Dönem</button>
+    <button data-sekme="prenses"><span class="simge">👑</span>Prenses</button>
+    <button data-sekme="saray"><span class="simge">🏛️</span>Saray</button>
+    <button data-sekme="gunluk"><span class="simge">📜</span>Günlük</button>
+  </div>
+</nav>
+<script>
+"use strict";
+const GORSEL = {"tefsir": "gorsel/tefsir.webp", "fikih": "gorsel/fikih.webp", "hesap": "gorsel/hesap.webp", "yildiz": "gorsel/yildiz.webp", "tip": "gorsel/tip.webp", "dil": "gorsel/dil.webp", "kutuphane": "gorsel/kutuphane.webp", "bahce": "gorsel/bahce.webp", "adab": "gorsel/adab.webp", "elci": "gorsel/elci.webp", "divan": "gorsel/divan.webp", "fisilti": "gorsel/fisilti.webp", "hazine": "gorsel/hazine.webp", "ziyafet": "gorsel/ziyafet.webp", "arkadas": "gorsel/arkadas.webp", "oda": "gorsel/oda.webp"};
+/* =========================================================
+   NÛR TAHTI — veri katmanı
+   ========================================================= */
+
+const OZ = [
+  {k:"iman",     ad:"İman ve Ahlak", ik:"🌙", not:"Doğru kararlar, halkın güveni, nefse direnç"},
+  {k:"dini",     ad:"Dinî İlimler",  ik:"📖", not:"Kur'an, siyer, ibadet ve adalet bilgisi"},
+  {k:"akil",     ad:"Akıl",          ik:"🧠", not:"Bulmaca, plan kurma, olayları çözme"},
+  {k:"bilgelik", ad:"Bilgelik",      ik:"🕯️", not:"Zor kararlar, uzun vadeyi görmek"},
+  {k:"guc",      ad:"Güç",           ik:"💪", not:"Kılıç, kalkan, ağır zırh"},
+  {k:"ceviklik", ad:"Çeviklik",      ik:"🏹", not:"Okçuluk, at sürme, kaçınma"},
+  {k:"cesaret",  ad:"Cesaret",       ik:"🦁", not:"Tehlike anında paniklememek"},
+  {k:"hitabet",  ad:"Hitabet",       ik:"🗣️", not:"İkna etme, arabuluculuk"},
+  {k:"zarafet",  ad:"Zarafet",       ik:"🎀", not:"Saray adabı, temsil gücü"},
+  {k:"merhamet", ad:"Merhamet",      ik:"🤲", not:"Halkın sevgisi, barış seçenekleri"},
+  {k:"irade",    ad:"İrade",         ik:"⚖️", not:"Rüşvete, korkuya, öfkeye direnmek"}
+];
+
+const GRUPLAR = [
+  {k:"ulema",  ad:"Ulema"},
+  {k:"asker",  ad:"Askerler"},
+  {k:"halk",   ad:"Halk"},
+  {k:"tuccar", ad:"Tüccarlar"},
+  {k:"saray",  ad:"Saray"},
+  {k:"elci",   ad:"Elçiler"}
+];
+
+const NEFIS = [
+  {k:"kibir",   ad:"Kibir"},
+  {k:"ofke",    ad:"Öfke"},
+  {k:"korku",   ad:"Korku"},
+  {k:"haset",   ad:"Haset"},
+  {k:"tamah",   ad:"Açgözlülük"},
+  {k:"gosteris",ad:"Gösteriş"}
+];
+
+const ARKADASLAR = [
+  {k:"safiye", ad:"Safiye",  rol:"Âlime adayı",       ik:"📖", not:"Dinî ilimlerde güçlü, sabırlı"},
+  {k:"gulnar", ad:"Gülnar",  rol:"Demirci kızı",      ik:"🔨", not:"Cesur ve pratik zekâlı"},
+  {k:"kerime", ad:"Kerime",  rol:"Hekim çırağı",      ik:"🌿", not:"Merhametli, bilime meraklı"},
+  {k:"tarik",  ad:"Târık",   rol:"Muhafız öğrencisi", ik:"🛡️", not:"Rekabetçi ama sadık"},
+  {k:"leyla",  ad:"Leylâ",   rol:"Elçi kızı",         ik:"🕊️", not:"Dil ve diplomasi biliyor"},
+  {k:"yakup",  ad:"Yakup",   rol:"Köyden gelen öğrenci", ik:"🌾", not:"Halkın derdini iyi tanır"}
+];
+
+const DONEMLER = ["İlim Dönemi","Saray Dönemi","Halk Dönemi","Sefer ve Kriz Dönemi"];
+const DONEM_NOT = [
+  "Medrese ve akademi kapıları açık. Bu mevsim öğrenmek için.",
+  "Saray kalabalık. Görünmez bıçaklarla dolu bir satranç tahtası.",
+  "Şehre inme mevsimi. Yöneticilik saray salonunda değil, sokakta öğrenilir.",
+  "Sınırlar hareketli. Talim, sefer ve beklenmedik haberler mevsimi."
+];
+
+/* ---------- FAALİYETLER ---------- */
+const FAALIYET = [
+/* 0 — İLİM */
+[
+ {ad:"Tefsir ve siyer dersi", gorsel:"tefsir", ik:"📖", not:"Hikmet Medresesi'nde Kur'an, siyer ve peygamber kıssaları.", bedel:18, etki:{dini:2, iman:1}, grup:{ulema:2}},
+ {ad:"Ahlak ve fıkıh sohbeti", gorsel:"fikih", ik:"🕌", not:"Emanet, kul hakkı, israf ve doğruluk üzerine.", bedel:16, etki:{iman:2, irade:1}, grup:{ulema:1}},
+ {ad:"Hesap ve hendese", gorsel:"hesap", ik:"📐", not:"Kemer açısı, ölçü, oran. Sayılarla düşünmek.", bedel:18, etki:{akil:1}, mini:"bulmaca"},
+ {ad:"Yıldız ve coğrafya", gorsel:"yildiz", ik:"🔭", not:"Yön bulma, mevsimler, uzak diyarlar.", bedel:18, etki:{akil:1, bilgelik:1}},
+ {ad:"Tıp ve şifalı bitkiler", gorsel:"tip", ik:"🌿", not:"Hekim çırakları arasında.", bedel:18, etki:{akil:1, merhamet:1}, arkadas:{kerime:2}},
+ {ad:"Dil ve hitabet çalışması", gorsel:"dil", ik:"🗣️", not:"Komşu ülkelerin dili, güzel söz söyleme.", bedel:16, etki:{hitabet:2, zarafet:1}, arkadas:{leyla:2}},
+ {ad:"Kütüphanede yalnız oku", gorsel:"kutuphane", ik:"📚", not:"Sessizlik iyi gelir. Ama arkadaşlar seni özler.", bedel:14, etki:{bilgelik:2, dini:1}, arkadasHepsi:-1},
+ {ad:"Bahçede dinlen", gorsel:"bahce", ik:"🍃", not:"Dinlenmek de eğitimin parçası.", bedel:-38, etki:{irade:1}, nefis:{ofke:-3, korku:-2}}
+],
+/* 1 — SARAY */
+[
+ {ad:"Saray adabı dersi", gorsel:"adab", ik:"🎀", not:"Duruş, hitap, sofra ve temsil.", bedel:14, etki:{zarafet:2}, grup:{saray:2}},
+ {ad:"Elçi heyetini karşıla", gorsel:"elci", ik:"🕊️", not:"Kim ne demek istiyor? Dinlemeyi öğren.", bedel:18, etki:{zarafet:1}, grup:{elci:2}, mini:"diplomasi"},
+ {ad:"Divanı dinle", gorsel:"divan", ik:"⚖️", not:"Kararların nasıl alındığını sessizce izle.", bedel:16, etki:{bilgelik:2, akil:1}, grup:{saray:1}},
+ {ad:"Saraydaki fısıltıyı araştır", gorsel:"fisilti", ik:"🕯️", not:"Herkes bir şey saklıyor. Ama merak da bir sınav.", bedel:18, etki:{akil:2}, grup:{saray:-1}, nefis:{haset:2}},
+ {ad:"Hazine defterini incele", gorsel:"hazine", ik:"🧾", not:"Devlet, sayıların doğru tutulmasıyla ayakta durur.", bedel:16, etki:{akil:2}, grup:{tuccar:1}, hazine:40},
+ {ad:"Görkemli bir ziyafet ver", gorsel:"ziyafet", ik:"🍽️", not:"Saray parlar, halkın kesesi incelir.", bedel:12, etki:{zarafet:1}, grup:{saray:4, halk:-3}, hazine:-120, nefis:{gosteris:6}},
+ {ad:"Bir arkadaşınla vakit geçir", gorsel:"arkadas", ik:"🤝", not:"Bonus için değil, dostluk için.", bedel:-14, arkadasSec:true},
+ {ad:"Odanda dinlen", gorsel:"oda", ik:"🕯️", not:"Yorgun bir zihin yanlış karar verir.", bedel:-38, nefis:{ofke:-3, korku:-2}}
+],
+/* 2 — HALK */
+[
+ {ad:"Kimliğini gizleyip pazarı gez", ik:"🧕", not:"Fiyatlar, ölçüler, gerçek şikâyetler.", bedel:18, etki:{akil:1, bilgelik:1}, grup:{halk:3}},
+ {ad:"Yetimhaneyi ziyaret et", ik:"🤲", not:"Kimsesizlerin hâli yönetimin aynasıdır.", bedel:16, etki:{merhamet:2, iman:1}, grup:{halk:3}},
+ {ad:"Şifahanede gönüllü ol", ik:"🌿", not:"Kan, yorgunluk ve sabır.", bedel:20, etki:{merhamet:2, cesaret:1}, grup:{halk:2}, arkadas:{kerime:2}},
+ {ad:"Şikâyetleri dinle", ik:"📜", not:"Söz kesmeden dinlemek de bir hüner.", bedel:16, etki:{hitabet:1, bilgelik:1}, grup:{halk:2}},
+ {ad:"Zanaatkârları ziyaret et", ik:"🔨", not:"Demirci, dokumacı, marangoz.", bedel:14, etki:{akil:1, guc:1}, grup:{tuccar:2}, arkadas:{gulnar:2}},
+ {ad:"Kuyu ve su yolu onart", ik:"💧", not:"Hazineden çıkar, halkta kalır.", bedel:16, etki:{merhamet:1}, grup:{halk:5}, hazine:-90},
+ {ad:"Bir arkadaşınla vakit geçir", gorsel:"arkadas", ik:"🤝", not:"Bonus için değil, dostluk için.", bedel:-14, arkadasSec:true},
+ {ad:"Köy misafirhanesinde dinlen", ik:"🍃", not:"Sade bir sofra, uzun bir uyku.", bedel:-38, nefis:{kibir:-3, gosteris:-3}}
+],
+/* 3 — SEFER VE KRİZ */
+[
+ {ad:"Kılıç talimi", ik:"⚔️", not:"Hilal Muhafızları meydanında.", bedel:20, etki:{guc:1, cesaret:1}, grup:{asker:1}, mini:"kilic"},
+ {ad:"Okçuluk talimi", ik:"🏹", not:"Nefes, rüzgâr, sabır.", bedel:18, etki:{ceviklik:1}, mini:"ok"},
+ {ad:"At binme ve süvari talimi", ik:"🐎", not:"Dengeyi bulmak yıllar alır.", bedel:18, etki:{ceviklik:1, cesaret:1}, arkadas:{tarik:2}},
+ {ad:"Harita ve kale savunması", ik:"🗺️", not:"Savaşın çoğu, savaştan önce kazanılır.", bedel:16, etki:{akil:2}, grup:{asker:1}},
+ {ad:"Birlik yönetimi", ik:"🛡️", not:"Yüz kişiye tek cümleyle yön vermek.", bedel:18, etki:{hitabet:1, cesaret:1}, grup:{asker:2}},
+ {ad:"Yaralı kurtarma tatbikatı", ik:"🩹", not:"Meydanda düşeni geri getirmek.", bedel:16, etki:{merhamet:1, guc:1}, grup:{asker:1}},
+ {ad:"Sessiz ilerleme talimi", ik:"🌑", not:"Görünmeden geçmek, çoğu zaman vuruşmaktan iyidir.", bedel:16, etki:{ceviklik:2, akil:1}},
+ {ad:"Çadırda dinlen", ik:"🔥", not:"Yorgun asker, yanlış hedefe atar.", bedel:-38, nefis:{ofke:-3, korku:-3}}
+]
+];
+
+/* ---------- BULMACALAR ---------- */
+const BULMACALAR = [
+ {s:"Kurak bir köye su getireceksin. İki tepe arasındaki kanalın eğimi ne olmalı?",
+  c:["Su hızla aksın diye çok dik", "Her yüz adımda bir adım kadar hafif eğimli", "Tamamen düz, su kendi bulur"],
+  d:1, a:"Çok dik kanal toprağı oyar ve yıkılır; düz kanalda su durur ve bataklık olur. Hafif ve sürekli eğim doğrusudur."},
+ {s:"Pazarda bir tüccar 3 okkalık ağırlıkla tartıp 4 okka satıyor. Bir müşteri 12 okka un aldığını sanıyor. Gerçekte kaç okka almıştır?",
+  c:["9 okka", "12 okka", "16 okka"],
+  d:0, a:"Her 4 okkada 1 okka eksik verilmiş; 12 okkanın dörtte biri 3'tür. Müşteri 9 okka almıştır. Ölçüyü eksik tutmak, kul hakkına girmenin en sessiz yoludur."},
+ {s:"Bir köprü kemerinde taşlar hangi biçimde dizildiğinde yük en iyi dağılır?",
+  c:["Düz bir hatıl gibi yan yana", "Ortası yukarı bakan kemer biçiminde", "Ortası aşağı sarkan biçimde"],
+  d:1, a:"Kemer, üstündeki yükü yanlara ve ayaklara aktarır. Düz hatıl ortadan kırılır."},
+ {s:"Gece yol alıyorsun, pusulan yok. Kuzeyi nasıl bulursun?",
+  c:["En parlak yıldıza bakarım", "Kutup yıldızını bulurum, o gece boyunca yer değiştirmez", "Ayın doğduğu yön kuzeydir"],
+  d:1, a:"En parlak yıldız kuzeyi göstermez. Kutup yıldızı neredeyse sabittir; diğer yıldızlar onun etrafında döner gibi görünür."},
+ {s:"Bir köyde aynı hafta çok sayıda kişi ishal ve ateşle hastalandı. İlk bakılacak yer neresidir?",
+  c:["Köyün su kaynağı", "Havanın soğuması", "Köylülerin kimi kıskandığı"],
+  d:0, a:"Toplu ve ani hastalıkta ilk şüpheli ortak kullanılan sudur. Kaynağı temizlemeden ilaç dağıtmak, deliği kapatmadan tekneden su boşaltmaktır."},
+ {s:"Hazinede 900 altın var. Kale duvarı 700, buğday stoku 400 altın. Kışa üç ay var ve düşman uzakta. Öncelik hangisi?",
+  c:["Önce duvar, savaş her an çıkabilir", "Önce buğday, aç halkı hiçbir duvar korumaz", "İkisini de yarım yap"],
+  d:1, a:"Yarım duvar da yarım ambar da işe yaramaz. Yakın ve kesin olan tehlike açlıktır; duvar için zaman ve gelir vardır."},
+ {s:"Bir tarlanın kenarları 40 ve 30 adım. Etrafını çitle çevireceksin. Kaç adımlık çit gerekir?",
+  c:["70 adım", "120 adım", "140 adım"],
+  d:2, a:"Çevre, kenarların toplamıdır: 40+30+40+30 = 140 adım. Alan ile çevreyi karıştırmak, hazineye pahalıya mal olur."},
+ {s:"Elçi sana 'Kervanlarımız üç haftadır yola çıkmıyor' dedi. Bu cümle sana ne söyler?",
+  c:["Ticaretten vazgeçmişler", "Yolda bilmediğin bir tehlike ya da hazırlık var", "Bize güvenmiyorlar"],
+  d:1, a:"Tüccar zarar edeceğini bile bile durmaz. Kervanların durması ya yolda tehlike ya da yakında bir hareket olduğunu gösterir."},
+ {s:"Bir hastanın yarası kızarmış, sıcak ve şişmiş. Hekimin ilk işi ne olmalı?",
+  c:["Yarayı temiz suyla yıkayıp havalandırmak", "Üzerini sıkıca sarıp kapatmak", "Beklemek, kendi geçer"],
+  d:0, a:"Temizlik, ilaçtan önce gelir. Kirli yarayı sımsıkı kapatmak iltihabı içeride büyütür."},
+ {s:"Kuşatma altındasın. Kuyu suyu azalıyor. Hangi tedbir önce gelir?",
+  c:["Suyu ölçüyle ve herkese eşit dağıtmak", "Askerlere serbest, halka kısıtlı vermek", "Kimseye söylemeyip idare etmek"],
+  d:0, a:"Ölçülü ve adil dağıtım hem suyu uzatır hem paniği önler. Ayrımcılık, kuşatmadan önce içeriyi çökertir."}
+];
+
+/* ---------- DİPLOMASİ SAHNELERİ ---------- */
+const DIPLOMASI = [
+ {kim:"Doğu Beyliği elçisi", soz:"Sınırdaki otlaklar için anlaşmaya hazırız. Yalnız cevabınızı bu ay içinde almalıyız.",
+  ipuc:[
+   {z:0, m:"Eldivenini masaya bırakırken parmakları titriyor."},
+   {z:3, m:"Kendi ülkesinin adını söylerken sesi alçalıyor."},
+   {z:6, m:"Sınır haritasında kuzeyi hiç göstermiyor; sözü hep güneye çekiyor."}
+  ],
+  sec:[
+   {ad:"Barışa gerçekten açık, aceleci davranmıyor", dg:false, a:"Aceleyi barış isteği sanmak kolaydır. Ama acele eden, çoğu zaman arkasında bir tehdit taşıyandır."},
+   {ad:"Kuzeyde bir tehlike var, sırtını sağlama almak istiyor", dg:true, a:"Doğru okudun. Kuzeyden baskı gören bir beylik, güney sınırını hızla kapatmak ister. Bu, ona da sana da fırsat verir."},
+   {ad:"Blöf yapıyor, aslında saldırmayı planlıyor", dg:false, a:"Saldıracak olan süre koymaz, sessiz kalır."},
+   {ad:"Zaman kazanmaya çalışıyor", dg:false, a:"Zaman kazanan kişi tarih vermez; tarihi belirsiz bırakır."}
+  ]},
+ {kim:"Batı Krallığı elçisi", soz:"Efendim, hediyelerinizi beğendik. Ancak antlaşma metnini bir kez daha okumamız gerekiyor.",
+  ipuc:[
+   {z:0, m:"Metni okurken hep aynı paragrafa dönüyor."},
+   {z:3, m:"Ellerini masanın altında tutuyor."},
+   {z:6, m:"Kendi kralından bahsederken 'inşallah döner' diyor."}
+  ],
+  sec:[
+   {ad:"Hediyeler yetersiz geldi, daha fazlasını istiyor", dg:false, a:"Açgözlü elçi metne değil, sandığa bakar."},
+   {ad:"Metinde beğenmediği tek bir madde var", dg:false, a:"Tek maddeyi beğenmeyen onu yüksek sesle söyler; sana pazarlık payı bırakır."},
+   {ad:"Kralı yerinde değil, imzalama yetkisi yok", dg:true, a:"Doğru okudun. Yetkisiz elçi metni uzatır, çünkü hayır demeye de evet demeye de gücü yoktur. Ona baskı yapmak yerine yetkili kişiyi beklemek gerekir."},
+   {ad:"Bize tuzak kuruyor", dg:false, a:"Her gecikmeyi tuzak saymak, kurulmamış tuzakları gerçeğe çevirir."}
+  ]},
+ {kim:"Kuzey Kabilesi temsilcisi", soz:"Bizden vergi istiyorsunuz. Oysa geçen kış sürülerimizin yarısını kaybettik.",
+  ipuc:[
+   {z:0, m:"Elleri çatlamış, cübbesi eski ama temiz."},
+   {z:3, m:"Yanındaki genç açlıktan zayıf düşmüş."},
+   {z:6, m:"Vergiyi reddetmiyor, yalnızca 'bu yıl' diyor."}
+  ],
+  sec:[
+   {ad:"Yalan söylüyor, vergiden kaçıyor", dg:false, a:"Kaçmak isteyen hiç ödemeyeceğini söyler, 'bu yıl' demez."},
+   {ad:"Gerçekten zor durumda, süre veya indirim istiyor", dg:true, a:"Doğru okudun. Ödeyemeyeni zorlamak, sadık bir kabileyi düşman kampına iter. Ertelenen vergi geri gelir; kırılan gönül geç gelir."},
+   {ad:"İsyan hazırlığı yapıyor", dg:false, a:"İsyan hazırlayan gelip yüz yüze konuşmaz."},
+   {ad:"Başka bir devletten destek almış", dg:false, a:"Destek alan pazarlık eder, hâlini anlatmaz."}
+  ]},
+ {kim:"Tüccar loncası başı", soz:"Yeni köprü resmi çok yüksek. Bu gidişle kervanlar başka yoldan geçer.",
+  ipuc:[
+   {z:0, m:"Konuşurken loncanın defterini açmıyor."},
+   {z:3, m:"'Başka yol' derken hangi yol olduğunu söylemiyor."},
+   {z:6, m:"Geçen ay aynı köprüden geçen kervan sayısı artmış."}
+  ],
+  sec:[
+   {ad:"Doğru söylüyor, resmi hemen düşürmeliyim", dg:false, a:"Defterini açmayan tüccarın rakamına inanmak pahalıya patlar."},
+   {ad:"Pazarlık ediyor; başka yol yok, geçiş artmış", dg:true, a:"Doğru okudun. Rakamlar sözünü yalanlıyor. Yine de tamamen reddetmek yerine kervan başına küçük bir indirim, hem ticareti hem itibarı korur."},
+   {ad:"Rakip loncayla anlaşmış", dg:false, a:"Anlaşmış olsa şikâyete gelmez, sessizce yolunu değiştirirdi."},
+   {ad:"Beni sınıyor", dg:false, a:"Belki. Ama karar sınavla değil, defterle verilir."}
+  ]}
+];
+
+/* ---------- HİKÂYE BÖLÜMLERİ ---------- */
+const BOLUMLER = [
+{tur:1, no:1, ad:"Saraydaki İlk Gün",
+ metin:"Sarayın avlusu senin için fazla büyük. Mermerin üstünde ayakkabıların ses çıkarıyor ve herkes bunu duyuyor.\nBaş lala önünde eğiliyor. Karşında altı çocuk sıralanmış: medreseden, demirhaneden, şifahaneden, muhafız ocağından, elçi konağından ve uzak bir köyden gelmişler. Bugün kiminle konuşacağın, on iki yıl boyunca kimin yanında olacağını belirleyecek.",
+ sec:[
+  {ad:"Hepsinin adını tek tek sor", not:"Yavaş ama sağlam bir başlangıç.", etki:{zarafet:1, merhamet:1}, arkadasHepsi:2, sonuc:"Adlarını sordun ve tekrar ettin. Küçük bir şey. Ama on iki yıl sonra hâlâ hatırlayacaklar."},
+  {ad:"Köyden gelen çocuğun yanına otur", not:"En yalnız duran o.", etki:{merhamet:2, iman:1}, arkadas:{yakup:6}, grup:{halk:3, saray:-1}, bayrak:"kimsesizin_yani", sonuc:"Yakup şaşırdı. Saray görevlileri de şaşırdı, ama farklı bir yüzle."},
+  {ad:"Muhafız öğrencisiyle kılıç boyunu ölç", not:"İlk günden meydan okumak.", etki:{cesaret:2, guc:1}, arkadas:{tarik:4, safiye:-2}, nefis:{gosteris:5}, sonuc:"Târık güldü, sonra ciddileşti. O günden sonra seni hep bir rakip olarak gördü — bu bazen iyi, bazen yorucu."},
+  {ad:"Sessizce izle, kimseyle konuşma", not:"Kalabalık ürkütücü.", etki:{akil:2, bilgelik:1}, nefis:{korku:6}, arkadasHepsi:-1, sonuc:"Çok şey gördün. Ama gördüklerini paylaşacak kimsen olmadı."}
+ ]},
+
+{tur:3, no:2, ad:"Kayıp Mühür",
+ metin:"Kraliyet mührü çalışma odasından kayboldu. Mühürsüz ferman yazılamaz; devlet üç gündür duruyor.\nBaş lala hizmetkâr bir kızı işaret ediyor: odaya en son o girmiş. Kız ağlıyor ve bir şey demiyor. Sen ise dün gece koridorda başka birinin ayak sesini duyduğunu hatırlıyorsun.",
+ sec:[
+  {ad:"Hizmetkâr kızı savun, delil iste", not:"Ağlamak suç değildir.", gerek:{iman:5}, etki:{iman:2, bilgelik:1, irade:1}, grup:{halk:4, saray:-2}, bayrak:"masumu_korudu",
+   sonuc:"Delil istedin. Bir gün sonra mühür, borcu olan bir kâtibin sandığında bulundu. Kız hâlâ sarayda çalışıyor.",
+   gecikme:{tur:14, metin:"Yıllar önce savunduğun hizmetkâr kız artık saray mutfağının başında. Sana yalnızca sana söyleyeceği bir şey var: mutfakta kimin kimden para aldığını biliyor.", etki:{akil:2}, grup:{saray:3}}},
+  {ad:"Koridordaki ayak sesini araştır", not:"Hatırladığın şey delil olabilir.", etki:{akil:3, cesaret:1}, bayrak:"delil_pesinde",
+   sonuc:"İzi sürdün. Ayak sesleri hazine kâtibinin odasına çıkıyordu. Mühür bulundu, kimse haksız yere cezalanmadı."},
+  {ad:"Baş lalanın dediğine uy", not:"Büyükler bilir.", etki:{zarafet:1}, grup:{saray:3, halk:-5}, nefis:{korku:5}, bayrak:"masum_cezalandi",
+   sonuc:"Kız saraydan uzaklaştırıldı. Üç hafta sonra gerçek hırsız yakalandı. Kızı kimse geri çağırmadı.",
+   gecikme:{tur:20, metin:"Şehirde bir kadın seni tanıyıp yüzünü çeviriyor. Yanındaki çocuğa 'saraya güvenme' diyor. Sesini tanıyorsun.", grup:{halk:-4}, nefis:{korku:4}}},
+  {ad:"Kimseye karışma, dersine dön", not:"Bu senin işin değil.", etki:{dini:1}, nefis:{korku:6}, grup:{halk:-2}, sonuc:"Bir şey demedin. Kimse seni suçlamadı. Yalnız sen kendini suçladın."}
+ ]},
+
+{tur:5, no:3, ad:"Okçuluk Turnuvası",
+ metin:"Saray bahçesinde ilk büyük yarışma. Hedefler dikildi, rüzgâr batıdan esiyor ve Târık senden önce attı: üç okun üçü de merkeze yakın.\nHocan yanına geliyor. 'Yayı çekmek kolay,' diyor, 'nefesini tutmak zor.'",
+ sec:[
+  {ad:"Turnuvaya gir ve elinden geleni yap", not:"Üç ok. Rüzgâr, gerginlik ve zamanlama.",
+   mini:{tip:"ok", zorluk:1,
+    basari:{sonuc:"Üçüncü okun merkeze saplandığında meydan sustu. Târık ilk tebrik eden oldu.", etki:{ceviklik:2, cesaret:1}, grup:{asker:3, saray:2}, arkadas:{tarik:3}, bayrak:"turnuva_1_kazandi"},
+    basarisiz:{sonuc:"Okların hedefi buldu ama merkezi bulamadı. Târık kazandı. Akşam yayını temizlerken hocan yanına oturdu: 'Kaybetmek de talimdir.'", etki:{ceviklik:1, irade:2}, nefis:{haset:4}}}},
+  {ad:"Târık'a bilerek kaybet, gönlü kalmasın", not:"Arkadaşlık mı, dürüstlük mü?", etki:{merhamet:1}, arkadas:{tarik:-3}, nefis:{gosteris:4}, iman:-1,
+   sonuc:"Târık anladı. 'Bana acıdın,' dedi ve okunu bıraktı. Acımak ile saygı göstermek aynı şey değil."},
+  {ad:"Katılma, seyret ve rakipleri incele", not:"Bu yıl öğren, gelecek yıl kazan.", etki:{akil:2, bilgelik:1}, grup:{asker:-1}, bayrak:"turnuva_izledi",
+   sonuc:"Her okçunun bir alışkanlığı olduğunu gördün: biri rüzgârı hep küçümsüyor, biri son anda nefesini tutuyor. Bu bilgi bir gün işine yarayacak.",
+   gecikme:{tur:20, metin:"Yıllar önce izlediğin okçuların alışkanlıklarını hatırlıyorsun. Bugünkü talimlerde bu, sana zaman kazandırıyor.", etki:{ceviklik:2, akil:1}}}
+ ]},
+
+{tur:8, no:4, ad:"Kurak Köy",
+ metin:"Sınıra üç günlük mesafedeki Karaçalı köyü iki yıldır susuz. Köylüler kadınları ve çocukları göndermeye başlamış.\nİki tepenin arasından bir su yolu getirilebilir. Ama mühendis, hazinenin bunu tek başına kaldıramayacağını söylüyor.",
+ sec:[
+  {ad:"Kanalın nasıl yapılacağını kendin hesapla", not:"Hendese dersi işe yarayacak mı?",
+   mini:{tip:"bulmaca", zorluk:1,
+    basari:{sonuc:"Eğimi doğru hesapladın. Su, üç ay sonra köyün meydanından akmaya başladı. Köyün adını değiştirdiler.", etki:{akil:3, bilgelik:1}, grup:{halk:6, tuccar:2}, hazine:-150, bayrak:"su_getirdi",
+     gecikme:{tur:24, metin:"Karaçalı artık su satıyor. Köyün ileri geleni, savaş çıkarsa kendi atlarını göndereceklerini bildiriyor.", grup:{halk:4, asker:2}, hazine:120}},
+    basarisiz:{sonuc:"Kanalın eğimi fazla dik oldu; ilk yağmurda toprak çöktü. İkinci kez, bu kez mühendisi dinleyerek yapıldı. Gecikme köye pahalıya mal oldu.", etki:{akil:1, bilgelik:2}, grup:{halk:2}, hazine:-260}}},
+  {ad:"Halkla birlikte gönüllü çalışma başlat", not:"Hazine az, kollar çok.", gerek:{hitabet:6}, etki:{hitabet:2, merhamet:1}, grup:{halk:7, saray:-2}, hazine:-60, bayrak:"imece",
+   sonuc:"Kürek tutan bir prenses gördüler. Kanal daha yavaş bitti ama köy onu kendi eseri saydı."},
+  {ad:"Vergiyi artırıp işi devlete yaptır", not:"Hızlı çözüm, uzun fatura.", grup:{halk:-6, tuccar:-4, saray:2}, hazine:200, etki:{akil:1}, nefis:{tamah:5},
+   sonuc:"Kanal hızla bitti. Ama üç kasabada 'saray su verdi, ekmeği aldı' diye konuşuluyor."},
+  {ad:"İşi ertele, hazineyi koru", not:"Bu yıl olmaz.", grup:{halk:-8, tuccar:1}, hazine:0, nefis:{tamah:4}, bayrak:"koyu_bekletti",
+   sonuc:"Köy bir kış daha bekledi. Otuz aile göç etti. Hazine korundu.",
+   gecikme:{tur:16, metin:"Karaçalı'dan göç eden aileler başkentin kenarına yerleşti. Kalabalık, işsiz ve kırgınlar.", grup:{halk:-4}}}
+ ]},
+
+{tur:10, no:5, ad:"Gece Baskını",
+ metin:"Gece yarısı çan çaldı. Sarayın doğu kapısından içeri giren bir grup, hazineye değil kütüphaneye yöneldi.\nMuhafızlar batı kanadında. Elinde yalnızca talim kılıcın var ve koridorun ucunda bir gölge duruyor.",
+ sec:[
+  {ad:"Karşısına çık", not:"İlk gerçek çarpışman.",
+   mini:{tip:"kilic", zorluk:1, rakip:"Kapüşonlu adam", rakipCan:60,
+    basari:{sonuc:"Kılıcı elinden düştü. Muhafızlar yetiştiğinde sen zaten önünde duruyordun.", etki:{guc:2, cesaret:2}, grup:{asker:5, saray:3}, bayrak:"baskini_durdurdu"},
+    basarisiz:{sonuc:"Kolun kesildi ve yere düştün. Adam kaçtı, ama çaldığı defteri düşürdü. Yaran üç hafta iyileşmedi.", etki:{cesaret:1, irade:2}, nefis:{korku:6}, grup:{asker:1}}}},
+  {ad:"Bağır ve muhafızları çağır", not:"Kahramanlık her zaman doğru değil.", etki:{akil:2, bilgelik:1}, grup:{asker:2, saray:2}, bayrak:"akilli_davrandi",
+   sonuc:"Sesin bütün kanadı uyandırdı. Adamlar yakalanamadı ama kimse yaralanmadı. Baş muhafız 'iyi yaptın' dedi, 'çünkü sen henüz onlarla baş edemezdin.'"},
+  {ad:"Saklan ve neyi aradıklarını izle", not:"Bilgi, kılıçtan keskin.", gerek:{ceviklik:6}, etki:{akil:3, ceviklik:1}, nefis:{korku:3}, bayrak:"defteri_gordu",
+   sonuc:"Kütüphanede sınır haritalarının bulunduğu dolabı aradıklarını gördün. Kimsenin bilmediği bir şey biliyorsun artık.",
+   gecikme:{tur:19, metin:"Yıllar önce o gece ne aradıklarını hatırlıyorsun: sınır haritaları. Şimdi kimin işine yaradığı belli oluyor.", etki:{akil:2, bilgelik:2}, grup:{asker:3}}}
+ ]},
+
+{tur:12, no:6, ad:"İki Arkadaşın Kavgası",
+ metin:"Gülnar ile Safiye üç gündür konuşmuyor. Gülnar'ın demirhanede yaptığı bir bıçak, Safiye'nin babasının kitaplığında bulunmuş — kimse nasıl geldiğini bilmiyor.\nHer ikisi de senin haklı bulmanı istiyor. Yanlış cümle, iki arkadaşını birden kaybettirebilir.",
+ sec:[
+  {ad:"İkisini karşı karşıya oturt, sen sus", not:"Arabuluculuk konuşmak değil, dinletmektir.", gerek:{bilgelik:7}, etki:{bilgelik:2, hitabet:2}, arkadas:{gulnar:4, safiye:4}, bayrak:"arabulucu",
+   sonuc:"Konuştular. Bıçağı Safiye'nin küçük kardeşinin aldığı ortaya çıktı. İkisi de sana değil, birbirine teşekkür etti — asıl başarı bu."},
+  {ad:"Gülnar'ı savun, o senin en eski dostun", etki:{cesaret:1}, arkadas:{gulnar:5, safiye:-6}, nefis:{haset:3}, bayrak:"taraf_tuttu",
+   sonuc:"Gülnar rahatladı. Safiye bir daha derste yanına oturmadı."},
+  {ad:"Safiye'yi savun, ailesi ulemadan", etki:{zarafet:1}, grup:{ulema:3}, arkadas:{safiye:5, gulnar:-6}, nefis:{tamah:3}, bayrak:"taraf_tuttu",
+   sonuc:"Ulema memnun oldu. Gülnar demirhaneden çıkmaz oldu ve sana bir daha kılıç yapmadı."},
+  {ad:"İkisine de kızıp meseleyi kapat", etki:{guc:1}, arkadas:{gulnar:-3, safiye:-3}, nefis:{ofke:7}, sonuc:"Sustular. Ama susmak barışmak değildir."}
+ ]},
+
+{tur:15, no:7, ad:"Sahte Hekim",
+ metin:"Aşağı mahallede bir adam 'her derde deva' diye şişeler satıyor. Üç haftada yirmi kişi ilacını almış; ikisi ağırlaşmış.\nKerime şişeyi getirdi. İçinde tortu var ve kokusu bal ile sirkeye benziyor. Adam yakalanırsa halk 'şifamızı elimizden aldılar' diye bağırabilir.",
+ sec:[
+  {ad:"Şişeyi incele, hastaları tek tek dinle", not:"Suçlamadan önce anlamak.",
+   mini:{tip:"bulmaca", zorluk:2,
+    basari:{sonuc:"Ağırlaşan iki hastanın da aynı kuyudan su içtiğini fark ettin. Şişeler işe yaramazdı ama asıl zehir sudaydı. Kuyu kapatıldı, hasta sayısı düştü.", etki:{akil:3, bilgelik:2}, grup:{halk:6, ulema:2}, bayrak:"gercek_sebep", arkadas:{kerime:4}},
+     basarisiz:{sonuc:"İncelemen yarım kaldı; adamı sattığı şişelerden dolayı cezalandırdın. Hastalık iki hafta daha sürdü, sonra kuyu tesadüfen kapandı.", etki:{akil:1}, grup:{halk:1}}}},
+  {ad:"Adamı hemen tutuklat", not:"Hızlı ama eksik.", etki:{cesaret:1}, grup:{halk:-3, saray:2}, nefis:{ofke:4},
+   sonuc:"Adam hapse atıldı. Mahallede hastalık sürdü — çünkü sebep o değildi."},
+  {ad:"Ücretsiz bir şifahane aç, adama karışma", not:"Yanlışı yasakla değil, doğrusunu kur.", etki:{merhamet:2}, grup:{halk:5, ulema:2}, hazine:-180, bayrak:"sifahane",
+   sonuc:"Halk parasız hekime gitti; sahte şişeler kendiliğinden satılmaz oldu.",
+   gecikme:{tur:17, metin:"Yıllar önce açtırdığın şifahane, salgın günlerinde en hazırlıklı yer olarak duruyor.", grup:{halk:3}, etki:{merhamet:1}}}
+ ]},
+
+{tur:17, no:8, ad:"Elçiler Sofrası",
+ metin:"Üç ülkenin elçisi aynı sofrada. Herkes gülümsüyor ve herkes bir şey saklıyor.\nBabanın koltuğunun yanına oturtuldun. Bu, artık seyirci değil taraf olduğun anlamına geliyor.",
+ sec:[
+  {ad:"Elçiyi dikkatle dinle ve niyetini oku", not:"Yüksek akıl cevabı vermez, yalnızca ipucu gösterir.",
+   mini:{tip:"diplomasi", zorluk:1,
+    basari:{sonuc:"Doğru okudun. Sofradan kalkarken elçi sana ayrıca selam verdi — bu, sofrada kimsenin gözünden kaçmadı.", etki:{bilgelik:2, zarafet:1}, grup:{elci:6, saray:3}, bayrak:"diplomasi_basari"},
+    basarisiz:{sonuc:"Yanlış okudun ve fazla erken konuştun. Baban seni düzeltmedi; düzeltmemesi daha çok yaktı.", etki:{bilgelik:1, irade:1}, grup:{elci:-2}, nefis:{gosteris:3}}}},
+  {ad:"Hiç konuşma, yalnızca gözlemle", not:"Susmak da bir cevaptır.", etki:{bilgelik:2, akil:1}, grup:{elci:1, saray:1},
+   sonuc:"Kimin kime baktığını, kimin kimden önce konuştuğunu öğrendin. Sofrada söylenmeyenler söylenenlerden fazlaydı."},
+  {ad:"Ülkenin gücünü öven bir konuşma yap", gerek:{hitabet:9}, etki:{hitabet:2}, grup:{saray:4, asker:3, elci:-4}, nefis:{gosteris:6},
+   sonuc:"Saray alkışladı. Elçiler not aldı. Alkış ile itibar aynı şey değildir."}
+ ]},
+
+{tur:19, no:9, ad:"Saraydaki Casus",
+ metin:"Sınır planları düşman eline geçti. Planları görebilen yalnızca dört kişi vardı: baş kâtip, hazinedar, süvari komutanı ve baş lala.\nHerkes birbirini suçluyor. Baba hasta, karar sende.",
+ sec:[
+  {ad:"Dördünü ayrı ayrı, sakince sorgula", not:"Delil topla, sonra konuş.", gerek:{akil:9}, etki:{akil:3, bilgelik:2, irade:1}, grup:{saray:3, asker:3}, bayrak:"casus_bulundu",
+   sonuc:"Hazinedarın son üç ayda üç kez borç kapattığını fark ettin. İtiraf etti: kumar borcu için satmıştı. Kimse haksız yere suçlanmadı."},
+  {ad:"Dördünü de görevden al", not:"Temizlik mi, panik mi?", grup:{saray:-6, asker:-3}, nefis:{korku:6}, bayrak:"toptan_ceza",
+   sonuc:"Casus gitti — ama üç masum da gitti. Yerlerine gelenlerin sadakatini kimse bilmiyor.",
+   gecikme:{tur:16, metin:"Haksız yere görevden aldığın süvari komutanı, sınır beyliğinde danışman olmuş. Senin savunma alışkanlıklarını iyi biliyor.", grup:{asker:-4}}},
+  {ad:"Baş lalaya güven, o söylediğine inan", etki:{zarafet:1}, grup:{saray:2}, nefis:{korku:4}, bayrak:"yanlis_suclu",
+   sonuc:"Baş kâtip suçlandı ve sürüldü. Sızıntı üç ay sonra tekrarladı."},
+  {ad:"Tuzak kur: her birine farklı bir yalan söyle", not:"Zeki ama riskli.", gerek:{akil:7, bilgelik:6}, etki:{akil:4}, grup:{saray:-2, asker:4}, nefis:{kibir:4}, bayrak:"casus_bulundu",
+   sonuc:"Hangi yalanın düşmana ulaştığına baktın. Casus kendini ele verdi. Yöntemin herkesi biraz ürküttü."}
+ ]},
+
+{tur:22, no:10, ad:"Kayıp Kervan",
+ metin:"Kırk kişilik bir kervan çölde kayboldu. İki gündür haber yok. Su, üç gün yeter.\nHaritada iki yol var: kısa olan tuz gölünün kenarından, uzun olan vaha üzerinden geçiyor. Süvari komutanı kısa yolu, kervancı başı vahayı işaret ediyor.",
+ sec:[
+  {ad:"Vaha yolunu seç, su ikmali yapılabilir", not:"Uzun ama akıllı.", gerek:{akil:8}, etki:{akil:2, bilgelik:2}, grup:{tuccar:5, halk:3}, bayrak:"kervan_kurtuldu",
+   sonuc:"Kervanı vahanın iki fersah ötesinde buldunuz. Susuz kalan develeri vahada dinlendirdiniz. Kırk kişi de sağ."},
+  {ad:"Kısa yoldan hızlı git", not:"Zaman en büyük düşman.", etki:{cesaret:2, ceviklik:1}, grup:{asker:3, tuccar:-2}, bayrak:"kervan_yarim",
+   sonuc:"Yirmi altı kişiyi kurtardınız. Diğerleri tuz gölünün ötesinde kaldı. Hızlı gitmek, doğru gitmek değildir."},
+  {ad:"Ekibi ikiye böl, iki yolu birden dene", gerek:{hitabet:8}, etki:{hitabet:2, akil:1}, grup:{asker:2, tuccar:3},
+   sonuc:"İki kol da yola çıktı. Vaha kolu kervanı buldu, tuz kolu bir gün geç geldi ama kayıp yok. Bölmek risklidir; iyi yönetilirse işe yarar."},
+  {ad:"Arama masrafını tüccarlardan iste", grup:{tuccar:-7, halk:-3, saray:2}, hazine:150, nefis:{tamah:6},
+   sonuc:"Para toplandı, kervan arandı. Ama loncanın defterine bir not düşüldü: 'Saray, kaybolanı parayla arar.'"}
+ ]},
+
+{tur:25, no:11, ad:"Büyük Turnuva",
+ metin:"On yedi yaşındasın. Meydan dolu. Bu turnuvada okçuluk ve kılıç ayrı ayrı değil, arka arkaya yapılıyor.\nHalk seni izliyor, ulema seni tartıyor, askerler seni ölçüyor. Kazanmak zorunda değilsin. Ama nasıl kaybettiğin de bir cevaptır.",
+ sec:[
+  {ad:"Okçulukla başla", not:"Önce nefes, sonra çelik.",
+   mini:{tip:"ok", zorluk:2,
+    basari:{sonuc:"Üç ok, üç merkez. Meydan ayağa kalktı.", etki:{ceviklik:2}, grup:{halk:4, asker:3}, bayrak:"turnuva_ok"},
+    basarisiz:{sonuc:"Rüzgârı yanlış hesapladın. Yine de yayını indirirken kimseyi suçlamadın; bunu görenler oldu.", etki:{irade:2}, grup:{halk:1}}}},
+  {ad:"Doğrudan kılıç meydanına çık",
+   mini:{tip:"kilic", zorluk:2, rakip:"Şampiyon süvari", rakipCan:90,
+    basari:{sonuc:"Şampiyonun kalkanı yere düştü. Kılıcını boynuna değdirmeden geri çektin.", etki:{guc:2, cesaret:2}, grup:{asker:6, saray:3}, bayrak:"turnuva_kilic"},
+    basarisiz:{sonuc:"Üçüncü hamlede dengeni kaybettin. Şampiyon elini uzatıp seni kaldırdı; meydan bunu alkışladı.", etki:{irade:2, cesaret:1}, grup:{asker:2}, nefis:{haset:3}}}},
+  {ad:"Turnuvaya girme, kazananı ödüllendir", not:"Meydan senin değil, onların.", etki:{zarafet:2, bilgelik:1}, grup:{halk:3, asker:2, saray:1}, nefis:{gosteris:-5}, bayrak:"turnuvayi_birakti",
+   sonuc:"Kazananın elini kaldırdın. Kalabalık önce şaşırdı, sonra daha yüksek sesle bağırdı."}
+ ]},
+
+{tur:27, no:12, ad:"Tahtın Gölgesi",
+ metin:"Sarayda bir grup seni ayrı ayrı ziyaret ediyor. Sözleri hep aynı yere çıkıyor: 'Baban zayıfladı. Sen hazırsın. Bir imza yeter.'\nÖnüne bir ferman koyuyorlar. Metinde yönetim yetkisinin geçici olarak sana devredildiği yazılı — ama babanın imzası yok.",
+ sec:[
+  {ad:"İmzalamayı reddet ve fermanı babana götür", gerek:{irade:8}, etki:{irade:3, iman:2, bilgelik:1}, grup:{saray:-4, ulema:5, halk:3}, bayrak:"fermani_reddetti",
+   sonuc:"Baban fermanı okudu, uzun süre sustu. 'Bunu getirdiğin için değil,' dedi, 'imzalamadığın için gurur duyuyorum.'",
+   gecikme:{tur:9, metin:"Reddettiğin fermanı hazırlayan grup şimdi başka bir kapıyı çalıyor. Ulema seni uyarıyor — ama sana güveniyor.", grup:{ulema:3, saray:-2}}},
+  {ad:"İmzala, zaten yetki sende olacak", etki:{akil:1}, grup:{saray:5, ulema:-6, halk:-3}, nefis:{tamah:8, kibir:6}, bayrak:"fermani_imzaladi",
+   sonuc:"Mühür kâğıda değdi. O gece hiç uyuyamadın. Sarayda bazı kapılar sana açıldı, bazı yüzler kapandı."},
+  {ad:"Oyala: 'Düşüneyim' de ve grubu izlemeye al", gerek:{akil:8}, etki:{akil:2, bilgelik:2}, grup:{saray:1}, bayrak:"grubu_izliyor",
+   sonuc:"Kim kimin adamı, kim kimden korkuyor — hepsini not ettin. Karar vermedin, ama bilgiyi topladın."},
+  {ad:"Grubu açıkça ihbar et", etki:{cesaret:2}, grup:{saray:-8, asker:3, ulema:3}, nefis:{ofke:5},
+   sonuc:"Üç kişi görevden alındı. Geri kalanlar daha derine indi ve seni artık düşman biliyorlar."}
+ ]},
+
+{tur:29, no:13, ad:"Sınır Savaşı",
+ metin:"Doğu sınırında bir müfreze köyü bastı, iki çoban öldü. Askerler misilleme istiyor, ulema sabır, tüccarlar ticaretin durmamasını.\nGelen habere göre saldıranlar beyliğin resmi ordusu değil, başıboş bir çete.",
+ sec:[
+  {ad:"Beye haber gönder: 'Çeteyi sen temizle, yoksa biz gireriz'", gerek:{hitabet:10}, etki:{hitabet:2, bilgelik:3}, grup:{elci:5, ulema:4, asker:-2}, bayrak:"savasi_onledi",
+   sonuc:"Bey iki hafta içinde çeteyi dağıttı ve çobanların ailesine diyet gönderdi. Tek bir asker sınırı geçmedi."},
+  {ad:"Sınıra ordu yığ, ama geçme", etki:{cesaret:2, akil:1}, grup:{asker:4, elci:-2}, hazine:-200,
+   sonuc:"Gövde gösterisi işe yaradı; çete dağıldı. Hazine, üç ay boyunca yem parası ödedi."},
+  {ad:"Misilleme yap, iki köyü bas", etki:{guc:2, cesaret:1}, grup:{asker:6, halk:-4, ulema:-7, elci:-6}, nefis:{ofke:8}, bayrak:"misilleme",
+   sonuc:"Çete dağıldı, ama iki köyde suçsuz insanlar zarar gördü. Ulema fetva vermedi, sessiz kaldı — bu daha ağırdı.",
+   gecikme:{tur:13, metin:"Bastığın köylerden gençler, karşı tarafın saflarına katılmış. Kuşatmada onların yüzünü göreceksin.", grup:{asker:-2}, nefis:{korku:4}}},
+  {ad:"Hiçbir şey yapma, ticareti koru", grup:{tuccar:4, asker:-6, halk:-5}, nefis:{korku:6}, bayrak:"tepkisiz",
+   sonuc:"Kervanlar geçmeye devam etti. Sınır köyleri kendi başının çaresine bakmayı öğrendi — saraydan umutlarını keserek."}
+ ]},
+
+{tur:32, no:14, ad:"Veba Günleri",
+ metin:"Limandan gelen bir gemiyle hastalık şehre girdi. Üç mahallede ateş ve öksürük var. Hekimler yetmiyor, halk kaçmak istiyor.\nKaçış hastalığı taşır; kapatmak açlığı getirir.",
+ sec:[
+  {ad:"Mahalleleri kapat, yiyeceği devlet dağıtsın", gerek:{irade:9, akil:8}, etki:{akil:2, irade:3, merhamet:1}, grup:{halk:4, ulema:4, tuccar:-4}, hazine:-320, bayrak:"salgin_yonetildi",
+   sonuc:"Zor oldu. İnsanlar bağırdı, kapıları dövdü. Ama altıncı hafta hastalık durdu ve kimse açlıktan ölmedi."},
+  {ad:"Şifahaneyi genişlet, kapatma yapma", etki:{merhamet:3}, grup:{halk:3, tuccar:2, ulema:-2}, hazine:-200, bayrak:"salgin_yayildi",
+   sonuc:"Hastaneler doldu. Hastalık şehrin yarısına yayıldı ve dört ay sürdü. Merhamet tek başına tedbir değildir."},
+  {ad:"Sarayı taşı, kendini koru", grup:{halk:-10, ulema:-8, asker:-4}, nefis:{korku:9, tamah:5}, bayrak:"halki_birakti",
+   sonuc:"Saray güvendeydi. Şehir bunu unutmadı."},
+  {ad:"Kerime ile birlikte hastaların arasına gir", gerek:{cesaret:8}, etki:{merhamet:3, cesaret:2, iman:2}, grup:{halk:8, ulema:3}, arkadas:{kerime:6}, nefis:{korku:-6}, bayrak:"hastalarin_arasinda",
+   sonuc:"Yüzün maskeliydi ama kim olduğunu herkes biliyordu. İki hafta sonra hastalandın ve atlattın. Şehir bunu da unutmadı."}
+ ]},
+
+{tur:34, no:15, ad:"Kırık Antlaşma",
+ metin:"Batı Krallığı ile üç yıllık ticaret antlaşması vardı. Bu sabah sınır kapıları kapandı ve kervanlar geri çevrildi.\nElçileri saraya geldi. Yüzü solgun ve elleri boş.",
+ sec:[
+  {ad:"Elçiyi dinle, niyetini oku",
+   mini:{tip:"diplomasi", zorluk:2,
+    basari:{sonuc:"Doğru okudun: kapıları kapatan kral değil, sınır valisiydi ve kendi başına hareket etmişti. Doğru kişiye doğru mektup gitti; kapılar on gün içinde açıldı.", etki:{bilgelik:3, akil:2}, grup:{elci:6, tuccar:5}, bayrak:"antlasma_kurtarildi"},
+    basarisiz:{sonuc:"Yanlış okudun. Sert bir mektup yazdın ve kral bunu hakaret saydı. Kapılar üç ay kapalı kaldı.", etki:{irade:1}, grup:{tuccar:-5, elci:-4}, hazine:-200}}},
+  {ad:"Karşılık ver: sen de kapıları kapat", etki:{cesaret:1}, grup:{asker:3, tuccar:-8, elci:-5}, nefis:{ofke:7}, hazine:-250,
+   sonuc:"Onur kurtuldu, kese boşaldı. İki taraf da kaybetti."},
+  {ad:"Sabret ve altı ay bekle", etki:{irade:2, bilgelik:1}, grup:{tuccar:-3, ulema:2}, sonuc:"Beklemek bazen doğrudur. Kapılar beş ay sonra kendiliğinden açıldı — ama tüccarlar o beş ayı hatırlıyor."}
+ ]},
+
+{tur:36, no:16, ad:"Babasının Hastalığı",
+ metin:"Baban yatağa düştü. Hekimler aylardan söz ediyor, kimse 'iyileşecek' demiyor.\nDivan sana bakıyor. Bugünden itibaren fermanları sen imzalayacaksın. Ama tahtın sahibi hâlâ o.",
+ sec:[
+  {ad:"Her kararı yatağının başında ona da danış", gerek:{iman:9}, etki:{iman:2, bilgelik:2, merhamet:2}, grup:{ulema:5, saray:3, halk:3}, bayrak:"babasina_danisti",
+   sonuc:"Yorucuydu. Bazen cevap veremeyecek kadar hastaydı. Ama bir gün elini tuttu: 'Ben ölmeden önce yönetmeyi öğrendin. Bu nadirdir.'"},
+  {ad:"Kararları kendin al, onu yorma", etki:{akil:2, irade:2}, grup:{saray:2, ulema:-2}, nefis:{kibir:4},
+   sonuc:"İşler hızlandı. Baban bazı kararları sonradan duydu ve bir şey demedi. Susması onay değildi."},
+  {ad:"Divana bırak, sen ilimle meşgul ol", etki:{dini:2, bilgelik:1}, grup:{saray:4, halk:-4, asker:-3}, nefis:{korku:5}, bayrak:"yonetimi_birakti",
+   sonuc:"Divan yönetti. İki ay içinde iki yeni vergi çıktı ve kimse sana sormadı."},
+  {ad:"Yetkiyi tamamen al, babanın mührünü de iste", grup:{saray:5, ulema:-7, halk:-4}, nefis:{tamah:8, kibir:7}, bayrak:"muhru_aldi",
+   sonuc:"Mühür sende. Odadan çıkarken babanın yüzüne bakamadın."}
+ ]},
+
+{tur:39, no:17, ad:"Halk Ayaklanması",
+ metin:"Un fiyatı iki katına çıktı ve dün gece bir değirmen yakıldı. Kalabalık saray kapısında.\nSüvari komutanı 'izin ver, dağıtayım' diyor. Yakup ise kalabalığın içinde tanıdıklarını gördüğünü söylüyor: aç insanlar, isyancı değil.",
+ sec:[
+  {ad:"Kimliğini gizleyip kalabalığın içine gir", gerek:{cesaret:9}, etki:{cesaret:2, bilgelik:2, merhamet:1}, grup:{halk:7}, bayrak:"halkin_icinde",
+   sonuc:"İki saat dinledin. Un fiyatını yükselten kıtlık değil, ambarları bekleten üç tüccardı. Onu bulmadan hiçbir asker meseleyi çözemezdi.",
+   gecikme:{tur:6, metin:"Ambarları bekleten tüccarlar mahkemeye çıkarıldı, stoklar piyasaya sürüldü. Ekmek ucuzladı.", grup:{halk:5, tuccar:-4}}},
+  {ad:"Ambarları aç, unu dağıt", etki:{merhamet:2}, grup:{halk:6, tuccar:-3}, hazine:-260, bayrak:"ambar_acildi",
+   sonuc:"Kalabalık dağıldı. Sebep durmadı ama insanlar bu gece aç yatmadı."},
+  {ad:"Süvarilere izin ver, meydanı boşalt", grup:{halk:-12, asker:4, ulema:-5}, nefis:{ofke:8, korku:5}, bayrak:"halka_asker",
+   sonuc:"Meydan yarım saatte boşaldı. On yedi kişi yaralandı. Bir daha kimse kapıya gelmedi — derdini anlatmaya da gelmedi."},
+  {ad:"Kalabalığa kendin seslen", gerek:{hitabet:11}, etki:{hitabet:3, cesaret:2}, grup:{halk:5, saray:2}, bayrak:"halka_seslendi",
+   sonuc:"Kapıya çıktın ve bağırmadan konuştun. Susmalarını sesin değil, korkmadığını görmeleri sağladı."}
+ ]},
+
+{tur:42, no:18, ad:"Büyük Kuşatma",
+ metin:"Sur dibinde çadırlar var. Kuşatma on birinci gününde. Su ölçüyle dağıtılıyor, ok sayısı azalıyor.\nGece bir grup, doğu burcundan içeri sızdı. Sen de oradasın.",
+ sec:[
+  {ad:"Burcu savun", not:"Bu sefer talim değil.",
+   mini:{tip:"kilic", zorluk:3, rakip:"Kuşatma birliği subayı", rakipCan:120,
+    basari:{sonuc:"Subay dizlerinin üstüne çöktü. Merdivenler yakıldı, sızma durdu.", etki:{guc:2, cesaret:3}, grup:{asker:8, halk:4}, bayrak:"burcu_savundu"},
+    basarisiz:{sonuc:"Geri püskürtüldün ve burç bir saat düşmanda kaldı. Târık ile Gülnar seni sürükleyerek çıkardı. Sur sabaha karşı geri alındı — ama bedeli ağır oldu.", etki:{irade:2, cesaret:1}, grup:{asker:2}, arkadas:{tarik:3, gulnar:3}, nefis:{korku:5}}}},
+  {ad:"Kuşatma komutanına görüşme teklif et", gerek:{bilgelik:12, hitabet:10}, etki:{bilgelik:3, hitabet:2}, grup:{elci:6, ulema:5, asker:-2}, bayrak:"kusatma_konusuldu",
+   sonuc:"Sur kapısının önünde, iki adım mesafede konuştunuz. Adamın niyeti şehir değil, üç yıl önce durdurulan su hakkıydı. Antlaşma imzalandı ve ordu çekildi."},
+  {ad:"Suyu askerlere ayır, halka kıs", grup:{asker:5, halk:-10, ulema:-6}, nefis:{korku:6}, bayrak:"suyu_ayirdi",
+   sonuc:"Sur dayandı. İçeride iki çocuk susuzluktan hastalandı. Kuşatma bittiğinde kimse bunu unutmadı."}
+ ]},
+
+{tur:45, no:19, ad:"Taht Konseyi",
+ metin:"Ulema, askerler, tüccarlar, halkın temsilcileri ve saray erkânı aynı salonda.\nÖnlerinde on iki yıllık defterin var. Bugün seni değil, verdiğin kararları konuşacaklar.",
+ konsey:true,
+ sec:[
+  {ad:"Her eleştiriyi sonuna kadar dinle", gerek:{irade:10}, etki:{irade:2, bilgelik:3}, grup:{ulema:4, halk:4, saray:2}, bayrak:"konsey_dinledi",
+   sonuc:"Bazı cümleler ağırdı. Sözlerini kesmedin. Konsey dağılırken en sert konuşan adam sana selam verdi."},
+  {ad:"Hatalarını açıkça kabul et", gerek:{iman:10}, etki:{iman:3, bilgelik:2}, grup:{ulema:6, halk:5, asker:-1}, nefis:{kibir:-10}, bayrak:"hatasini_kabul",
+   sonuc:"'Şunu yanlış yaptım' dedin ve gerekçe sıralamadın. Salonda uzun bir sessizlik oldu."},
+  {ad:"Kararlarını tek tek savun", etki:{hitabet:2, akil:1}, grup:{saray:3, ulema:-2}, nefis:{kibir:5},
+   sonuc:"Çoğunu ikna ettin. İkna etmek ile haklı olmak arasındaki farkı yalnız sen biliyorsun."},
+  {ad:"Konseyi dağıt, hesap vermeyi reddet", grup:{ulema:-10, halk:-8, saray:2, asker:-4}, nefis:{kibir:12}, bayrak:"hesap_vermedi",
+   sonuc:"Salon boşaldı. Yetki sende kaldı, meşruiyet salonu terk etti."}
+ ]},
+
+{tur:48, no:20, ad:"Taç Giyme", final:true,
+ metin:"On dokuz yaşındasın. Sarayın kapısından girdiğin günden bu yana on iki yıl geçti.\nSalon dolu. Taç, kırmızı yastığın üstünde duruyor ve kimse konuşmuyor. Bugünkü kararın, bu on iki yılın toplamı.",
+ sec:[
+  {ad:"Tahta çık", not:"Emaneti üstlen."},
+  {ad:"Tahtı reddet, ilim ve hizmet yolunu seç", not:"Herkes kraliçe olmak zorunda değildir."}
+ ]}
+];
+
+/* ---------- KÜÇÜK OLAYLAR ---------- */
+const OLAYLAR = [
+ {m:"Medresede yaşlı bir hoca dersten sonra yanına geldi: 'Bilmediğini söylemek de ilimdendir' dedi.", etki:{bilgelik:1}, nefis:{kibir:-3}},
+ {m:"Bahçede yaralı bir kuş buldun. Kanadını sardın, üç gün besledin, sonra saldın.", etki:{merhamet:1}, nefis:{ofke:-2}},
+ {m:"Bir hizmetkâr kadın, oğlunun askere alındığını ve haber alamadığını anlattı. Dinledin.", etki:{merhamet:1}, grup:{halk:2}},
+ {m:"Talimde kılıcın kırıldı. Gülnar bir gecede yenisini yaptı ve hiçbir şey istemedi.", arkadas:{gulnar:3}, etki:{guc:1}},
+ {m:"Sarayda birileri senin hakkında konuşurken sustu. Sustukları şeyin ne olduğunu öğrenemedin.", nefis:{haset:3}},
+ {m:"Uzun bir gece Kur'an okudun. Sabaha karşı zihnin durulmuştu.", etki:{dini:1, iman:1}, nefis:{ofke:-3, korku:-3}},
+ {m:"Pazarda bir çocuk seni tanımadan elini tuttu ve yolunu sordu. Ona kadar eşlik ettin.", grup:{halk:2}, etki:{merhamet:1}},
+ {m:"Bir tüccar sana değerli bir hediye gönderdi. Kabul etmedin; adam ertesi gün bir dilekçeyle geldi.", etki:{irade:2}, grup:{tuccar:-1, ulema:2}, nefis:{tamah:-4}},
+ {m:"Yağmurlu bir gün at üstünde uzun süre kaldın. Ertesi gün hastalandın.", dinclik:-20, etki:{irade:1}},
+ {m:"Safiye sana ezberlediği bir sureyi dinletti. Sonra 'anlamını da anlat' dedin ve ikiniz sabahladınız.", arkadas:{safiye:3}, etki:{dini:1}},
+ {m:"Leylâ komşu ülkenin dilinde bir şiir öğretti. Kelimeler kulağında kaldı.", arkadas:{leyla:3}, etki:{hitabet:1, zarafet:1}},
+ {m:"Sabah talime kalkamadın. Hoca kızmadı, bu daha çok utandırdı.", nefis:{gosteris:2}, etki:{irade:1}},
+ {m:"Târık sana kendi kalkanını verdi: 'Benimki daha ağır, sana lazım olur.'", arkadas:{tarik:3}, etki:{guc:1}},
+ {m:"Yakup köyünden mektup aldı: ürün iyi değil. Sen bunu divanda kimseye söylemedin, ama not ettin.", arkadas:{yakup:2}, etki:{bilgelik:1}},
+ {m:"Aynada kendine uzun uzun baktın ve 'ben kimim' diye düşündün. Cevap gelmedi, soru kaldı.", etki:{bilgelik:1}}
+];
+
+/* ---------- FİNALLER ---------- */
+const FINALLER = [
+ {k:"vazgecen", ik:"🕯️", ad:"Tahttan Vazgeçen Bilge",
+  m:"Tacı yastığın üstünde bıraktın.\nAmcanın oğlu tahta çıktı; sen medresenin ve şifahanenin başına geçtin. Otuz yıl sonra senin adını taşıyan üç kütüphane, iki şifahane ve sayısız talebe vardı.\nOyunun mesajı 'herkes kraliçe olmalıdır' değildi. İnsan, kendisine emanet edilen işi en güzel biçimde yapmalıdır."},
+ {k:"alim", ik:"📖", ad:"Âlim Sultan",
+  m:"Tacı ilimle taşıdın.\nSaltanatın boyunca medreseler çoğaldı, kadılar liyakatle seçildi, fermanlar gerekçeleriyle yazıldı. Halk seni sevmekle kalmadı, anladı da.\nBir hükümdarın en büyük gücü, verdiği kararın sebebini anlatabilmesidir."},
+ {k:"halkin", ik:"🤲", ad:"Halkın Sultanı",
+  m:"Tahta çıktığın gün meydan doluydu ve kimse zorla getirilmemişti.\nSaltanatın boyunca sarayın kapısı haftada bir gün herkese açıktı. Vergiler adil, ambarlar dolu, mahkemeler hızlıydı.\nHalkın seni sevmesi bir imtiyaz değil, her gün yeniden kazanılan bir emanetti."},
+ {k:"arabulucu", ik:"🕊️", ad:"Bilge Arabulucu",
+  m:"Saltanatın boyunca üç savaş çıkabilirdi; üçü de çıkmadı.\nKomşu devletler anlaşmazlıklarını senin sarayında çözmeye başladı. Askerlerin talim etti ama çoğu zaman seferden çok köprü yaptı.\nKılıç kullanmayı bilmek güçtür; ne zaman kılıç çekmemek gerektiğini bilmek bilgeliktir."},
+ {k:"demir", ik:"⚔️", ad:"Demir Komutan",
+  m:"Sınırlar senin devrinde hiç bu kadar güvenli olmamıştı.\nOrdular seni sever, düşmanlar adını duyunca durur. Ancak saray dışındaki hayatı çoğu zaman raporlardan öğrendin.\nGüçlü bir kalkanın gölgesi, koruduğu insanları da karartabilir."},
+ {k:"yalniz", ik:"🌑", ad:"Yalnız Taht",
+  m:"Kazandın. Hepsini kazandın.\nTurnuvaları, savaşları, tartışmaları. Taç giydiğin gün salon doluydu ama tanıdığın kimse yoktu; çocukluk arkadaşların birer birer uzaklaşmıştı.\nBir insanı en çok yoran şey, haklı olduğu hâlde yanında kimsenin kalmamasıdır."},
+ {k:"golge", ik:"🕯️", ad:"Gölge Hükümdar",
+  m:"Kimse sana karşı çıkmıyor. Bu, herkesin seni sevdiği anlamına gelmiyor.\nSaray dışarıdan görkemli duruyor; içeride herkes bir sonraki emri bekliyor ve kimse doğruyu söylemiyor.\nKorkuyla yönetilen bir devlet, ilk sarsıntıda içeriden çöker."}
+];
+
+/* =========================================================
+   DURUM VE MOTOR
+   ========================================================= */
+const KAYIT = "nurTahti_v1";
+const Depo = (function(){
+  let bellek = {}, calisir = true;
+  try{ localStorage.setItem("__nt_dene","1"); localStorage.removeItem("__nt_dene"); }
+  catch(e){ calisir = false; }
+  return {
+    calisir(){ return calisir; },
+    al(k){ if(calisir){ try{ return localStorage.getItem(k); }catch(e){ calisir=false; } } return bellek[k]||null; },
+    koy(k,v){ if(calisir){ try{ localStorage.setItem(k,v); return true; }catch(e){ calisir=false; } } bellek[k]=v; return false; },
+    sil(k){ if(calisir){ try{ localStorage.removeItem(k); }catch(e){} } delete bellek[k]; }
+  };
+})();
+function kodla(str){
+  const b = new TextEncoder().encode(str);
+  let s=""; for(let i=0;i<b.length;i++) s += String.fromCharCode(b[i]);
+  return btoa(s);
+}
+function kodCoz(k){
+  const s = atob(k.replace(/\s+/g,""));
+  const b = new Uint8Array(s.length);
+  for(let i=0;i<s.length;i++) b[i] = s.charCodeAt(i);
+  return new TextDecoder().decode(b);
+}
+const SON_TUR = 48;
+const SECIM_HAK = 2;
+const TAVAN = 30;
+
+let S = null;
+let dagitim = null;
+let secilenBolum = null;
+
+function bosDurum(){
+  const oz = {}; OZ.forEach(o=>oz[o.k]=0);
+  const grup = {}; GRUPLAR.forEach(g=>grup[g.k]=50);
+  const nefis = {}; NEFIS.forEach(n=>nefis[n.k]=12);
+  const ark = {}; ARKADASLAR.forEach(a=>ark[a.k]=22);
+  return {ad:"Nûr", tur:1, oz, grup, nefis, arkadas:ark,
+    dinclik:100, hazine:600, secim:0, bayrak:{}, gunluk:[], bekleyen:[],
+    ekipman:{kilic:"Eğitim kılıcı", yay:"Talim yayı", zirh:"Hafif kaftan"},
+    yapilan:[], sonSecim:null, bitti:false, finalKod:null};
+}
+
+/* ---------- yardımcılar ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+function goster(el, e){ el.classList.toggle("gizli", !e); }
+function sinirla(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function yas(){ return 7 + Math.floor((S.tur-1)/4); }
+function donem(){ return (S.tur-1)%4; }
+function rastgele(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+function gunluge(m){
+  S.gunluk.unshift("<div><b>"+yas()+" yaş · "+DONEMLER[donem()].split(" ")[0]+"</b> — "+m+"</div>");
+  if(S.gunluk.length>140) S.gunluk.pop();
+}
+
+/* etkileri uygula, özet metin döndür */
+function uygula(o){
+  const parca = [];
+  if(o.etki) for(const k in o.etki){
+    const v=o.etki[k];
+    S.oz[k]=sinirla((S.oz[k]||0)+v, 0, TAVAN);
+    const ad = (OZ.find(x=>x.k===k)||{}).ad || k;
+    parca.push('<span class="'+(v>0?"arti":"eksi")+'">'+ad+" "+(v>0?"+":"")+v+"</span>");
+  }
+  if(o.grup) for(const k in o.grup){
+    S.grup[k]=sinirla(S.grup[k]+o.grup[k],0,100);
+    const ad=(GRUPLAR.find(x=>x.k===k)||{}).ad||k;
+    parca.push('<span class="'+(o.grup[k]>0?"arti":"eksi")+'">'+ad+" "+(o.grup[k]>0?"+":"")+o.grup[k]+"</span>");
+  }
+  if(o.nefis) for(const k in o.nefis){
+    S.nefis[k]=sinirla(S.nefis[k]+o.nefis[k],0,100);
+    const ad=(NEFIS.find(x=>x.k===k)||{}).ad||k;
+    parca.push('<span class="'+(o.nefis[k]<0?"arti":"eksi")+'">'+ad+" "+(o.nefis[k]>0?"+":"")+o.nefis[k]+"</span>");
+  }
+  if(o.arkadas) for(const k in o.arkadas){
+    S.arkadas[k]=sinirla(S.arkadas[k]+o.arkadas[k],0,100);
+    const ad=(ARKADASLAR.find(x=>x.k===k)||{}).ad||k;
+    parca.push('<span class="'+(o.arkadas[k]>0?"arti":"eksi")+'">'+ad+" "+(o.arkadas[k]>0?"+":"")+o.arkadas[k]+"</span>");
+  }
+  if(o.arkadasHepsi) { ARKADASLAR.forEach(a=>{ S.arkadas[a.k]=sinirla(S.arkadas[a.k]+o.arkadasHepsi,0,100); });
+    parca.push('<span class="'+(o.arkadasHepsi>0?"arti":"eksi")+'">Tüm arkadaşlar '+(o.arkadasHepsi>0?"+":"")+o.arkadasHepsi+"</span>"); }
+  if(o.hazine){ S.hazine=Math.max(0,S.hazine+o.hazine);
+    parca.push('<span class="'+(o.hazine>0?"arti":"eksi")+'">Hazine '+(o.hazine>0?"+":"")+o.hazine+"</span>"); }
+  if(o.dinclik){ S.dinclik=sinirla(S.dinclik+o.dinclik,0,100); }
+  if(o.bayrak) S.bayrak[o.bayrak]=true;
+  if(o.gecikme){
+    const g=Object.assign({}, o.gecikme);
+    g.hedef = S.tur + (g.tur||6);
+    S.bekleyen.push(g);
+  }
+  return parca.join("");
+}
+
+/* ---------- ekran geçişleri ---------- */
+function ekran(hangi){
+  goster($("#ekran-giris"), hangi==="giris");
+  goster($("#ekran-dagit"), hangi==="dagit");
+  goster($("#ekran-oyun"), hangi==="oyun");
+  goster($("#ekran-final"), hangi==="final");
+  goster($("#ust"), hangi==="oyun");
+  goster($("#alt-bar"), hangi==="oyun");
+  window.scrollTo(0,0);
+}
+function sekme(ad){
+  ["donem","prenses","saray","gunluk"].forEach(s=>goster($("#sekme-"+s), s===ad));
+  $$("#alt-bar button").forEach(b=>b.classList.toggle("aktif", b.dataset.sekme===ad));
+  if(ad==="prenses") ozellikCiz();
+  if(ad==="saray") sarayCiz();
+  if(ad==="gunluk"){
+    $("#gunluk-alani").innerHTML = S.gunluk.join("") || "<div>Henüz bir şey yazılmadı.</div>";
+    kayitPaneli();
+    $("#kayit-bilgi").textContent = "";
+    $("#kod-bilgi").textContent = "";
+  }
+  window.scrollTo(0,0);
+}
+
+/* ---------- üst çubuk ---------- */
+function ustCiz(){
+  $("#r-yas").textContent = yas()+" yaş";
+  $("#r-donem").textContent = DONEMLER[donem()];
+  $("#dinc-sayi").textContent = Math.round(S.dinclik);
+  const c=$("#dinc-cubuk"); c.querySelector("i").style.width = S.dinclik+"%";
+  c.classList.toggle("az", S.dinclik<35);
+  const g=$("#mevsim-gul"); g.innerHTML="";
+  for(let i=0;i<4;i++){ const s=document.createElement("span");
+    if(i===donem()) s.className="aktif"; else if(i<donem()) s.className="gecti"; g.appendChild(s); }
+}
+
+/* ---------- özellik / saray panelleri ---------- */
+function ozellikCiz(){
+  $("#ozellik-izgara").innerHTML = OZ.map(o=>
+    '<div class="oz"><span class="ik">'+o.ik+'</span><span class="ad">'+o.ad+'</span><span class="dg">'+S.oz[o.k]+'</span></div>').join("");
+  const it = Math.round((S.grup.ulema+S.grup.asker+S.grup.halk+S.grup.saray)/4);
+  $("#itibar-alani").innerHTML =
+    '<div class="grup yuk"><span class="gad">Genel itibar</span><div class="cubuk"><i style="width:'+it+'%"></i></div><span>'+it+'</span></div>'+
+    '<p class="kucuk-not">İtibar, sarayın, halkın, ulemanın ve askerlerin sana yaklaşımının ortalamasıdır.</p>';
+  $("#nefis-alani").innerHTML = NEFIS.map(n=>
+    '<div class="grup"><span class="gad">'+n.ad+'</span><div class="cubuk"><i style="width:'+S.nefis[n.k]+'%"></i></div><span>'+S.nefis[n.k]+'</span></div>').join("");
+  $("#ekipman-alani").innerHTML =
+    '<div class="grup"><span class="gad">Kılıç</span><span>'+S.ekipman.kilic+'</span></div>'+
+    '<div class="grup"><span class="gad">Yay</span><span>'+S.ekipman.yay+'</span></div>'+
+    '<div class="grup"><span class="gad">Kuşam</span><span>'+S.ekipman.zirh+'</span></div>';
+}
+function sarayCiz(){
+  $("#grup-alani").innerHTML = GRUPLAR.map(g=>{
+    const v=S.grup[g.k]; const sn = v<35?"dus":(v>70?"yuk":"");
+    return '<div class="grup '+sn+'"><span class="gad">'+g.ad+'</span><div class="cubuk"><i style="width:'+v+'%"></i></div><span>'+v+'</span></div>';
+  }).join("");
+  $("#arkadas-alani").innerHTML = ARKADASLAR.map(a=>{
+    const v=S.arkadas[a.k]; const sn = v<25?"dus":(v>65?"yuk":"");
+    return '<div class="grup '+sn+'"><span class="gad">'+a.ik+" "+a.ad+'</span><div class="cubuk"><i style="width:'+v+'%"></i></div><span>'+v+'</span></div>'+
+           '<p class="kucuk-not" style="margin:0 0 8px 96px">'+a.rol+" — "+a.not+'</p>';
+  }).join("");
+  $("#hazine-alani").innerHTML = '<div class="grup"><span class="gad">Altın</span><span style="font-size:1.2rem;color:var(--altin-ac)">'+S.hazine+'</span></div>'+
+    '<p class="kucuk-not">Hazine, kanal açmak, şifahane kurmak ve kuşatmaya dayanmak için gerekir.</p>';
+}
+
+/* ---------- dönem ekranı ---------- */
+function donemCiz(){
+  ustCiz();
+  $("#donem-ust").textContent = yas()+" yaş · "+DONEMLER[donem()]+" · "+S.tur+"/"+SON_TUR;
+  $("#donem-baslik").textContent = DONEMLER[donem()];
+  $("#donem-metin").textContent = DONEM_NOT[donem()] + "\nBu dönemde " + (SECIM_HAK - S.secim) + " faaliyet hakkın kaldı.";
+  $("#sonuc-alani").innerHTML = "";
+  faaliyetCiz();
+}
+
+function gorselKutu(f){
+  const g = f && f.gorsel && GORSEL[f.gorsel];
+  return '<span class="fa-gorsel">'+(g ? '<img src="'+g+'" alt="" loading="lazy">' : (f&&f.ik)||"")+'</span>';
+}
+function faaliyetCiz(){
+  const alan = $("#faaliyet-alani");
+  if(S.secim >= SECIM_HAK){
+    alan.innerHTML = '<button class="dugme ana" data-act="donem-bitir">Dönemi tamamla</button>';
+    return;
+  }
+  const liste = FAALIYET[donem()];
+  const dusuk = S.dinclik < 35;
+  alan.innerHTML = (dusuk ? '<div class="kart uyari"><div class="gozustu">Uyarı</div><p class="kucuk-not">Prenses çok yorgun. Bu hâlde öğrendikleri yarı yarıya kalıyor ve öfkesi artıyor. Dinlenmek de eğitimin parçasıdır.</p></div>' : "")
+   + liste.map((f,i)=>{
+    const dinlen = f.bedel<0;
+    const yeter = dinlen || S.dinclik >= f.bedel;
+    return '<button class="dugme fa" data-act="faaliyet" data-i="'+i+'"'+(yeter?"":" disabled")+'>'+
+      gorselKutu(f)+
+      '<span class="fa-yazi">'+
+        '<span class="fa-ad">'+f.ad+'</span>'+
+        '<span class="not">'+f.not+'</span>'+
+        '<span class="fa-alt">'+
+          '<span class="bedel">'+(dinlen? "+"+(-f.bedel)+" dinçlik" : "−"+f.bedel+" dinçlik")+'</span>'+
+          (f.mini?'<span class="ipucu">'+miniAd(f.mini)+'</span>':"")+
+        '</span>'+
+      '</span>'+
+      '</button>';
+  }).join("");
+}
+
+const MINI_ODUL = {
+  kilic:{guc:1, cesaret:1}, ok:{ceviklik:1, akil:1},
+  bulmaca:{akil:2}, diplomasi:{bilgelik:1, zarafet:1}
+};
+function talimZorluk(){ return yas()<11 ? 1 : (yas()<15 ? 2 : 3); }
+function faaliyetSec(i){
+  const f = FAALIYET[donem()][i];
+  if(f.arkadasSec){ arkadasSecEkrani(f); return; }
+  if(f.mini){
+    const spec = {tip:f.mini, zorluk:talimZorluk(), talim:true,
+      rakip:"Talim ustası", rakipCan: 30 + yas()*3};
+    miniCalistir(spec, (basarili)=>{
+      const ek = basarili ? MINI_ODUL[f.mini] : null;
+      const not = basarili ? "Talim iyi geçti." : "Talim zorlu geçti; yine de bir şeyler öğrendin.";
+      faaliyetUygula(f, not, ek);
+      if(basarili && f.mini==="kilic") uygula({grup:{asker:1}});
+      if(basarili && f.mini==="diplomasi") uygula({grup:{elci:2}});
+    });
+    return;
+  }
+  faaliyetUygula(f);
+}
+function arkadasSecEkrani(f){
+  $("#faaliyet-alani").innerHTML = '<div class="kart"><div class="gozustu">Kiminle?</div>'+
+    (f.gorsel && GORSEL[f.gorsel] ? '<div class="sonuc-gorsel"><img src="'+GORSEL[f.gorsel]+'" alt=""></div><div style="clear:both"></div>' : "")+
+    ARKADASLAR.map((a,i)=>'<button class="dugme" data-act="arkadas-sec" data-i="'+i+'">'+a.ik+" "+a.ad+
+      '<span class="not">'+a.rol+" — yakınlık "+S.arkadas[a.k]+'</span></button>').join("")+
+    '<button class="dugme kucuk" data-act="geri-faaliyet">Vazgeç</button></div>';
+}
+const DOST_SAHNE = {
+  safiye:{oz:"dini", m:"Safiye ile bir sure ezberlediniz, sonra oturup anlamını konuştunuz. Ezberden çok, anlamak yordu."},
+  gulnar:{oz:"guc", m:"Gülnar demirhanede körüğü sana çektirdi. Ellerin karardı, kolların ağrıdı, çok güldünüz."},
+  kerime:{oz:"merhamet", m:"Kerime ile şifalı otları ayırdınız. Hangisi ateşe, hangisi yaraya iyi geliyor öğrendin."},
+  tarik:{oz:"cesaret", m:"Târık seninle talim meydanında yarıştı. İkiniz de yoruldunuz, kimse kazandığını söylemedi."},
+  leyla:{oz:"hitabet", m:"Leylâ komşu ülkenin dilinde bir türkü söyledi. Sen tekrar ettin, o kelimeleri düzeltti."},
+  yakup:{oz:"bilgelik", m:"Yakup köyünü anlattı. Anlattıkça, senin hiç görmediğin bir ülke belirdi."}
+};
+function arkadasIle(i){
+  const a = ARKADASLAR[i];
+  const f = FAALIYET[donem()].find(x=>x.arkadasSec);
+  const d = DOST_SAHNE[a.k];
+  const bonus = {};
+  bonus[d.oz] = 1;
+  const o = {etki:bonus, arkadas:{}, dinclik:-f.bedel};
+  o.arkadas[a.k] = S.arkadas[a.k] > 80 ? 3 : 6;
+  const ozet = uygula(o);
+  const metin = d.m + " " +
+    (S.arkadas[a.k]>80 ? "Artık birbirinizi çok iyi tanıyorsunuz." : "Aranızdaki bağ güçlendi.");
+  const kad = GORSEL["dost_"+a.k] ? "dost_"+a.k : f.gorsel;
+  faaliyetBitir(metin, ozet, {ad:a.ik+" "+a.ad+" ile", gorsel:kad});
+}
+function faaliyetUygula(f, ekMetin, ekEtki){
+  const dusuk = S.dinclik < 35;
+  const o = JSON.parse(JSON.stringify({etki:f.etki||{}, grup:f.grup||{}, nefis:f.nefis||{},
+    arkadas:f.arkadas||{}, hazine:f.hazine||0, arkadasHepsi:f.arkadasHepsi||0}));
+  if(dusuk && f.bedel>0){
+    for(const k in o.etki) o.etki[k] = Math.max(0, Math.floor(o.etki[k]/2));
+    o.nefis.ofke = (o.nefis.ofke||0) + 3;
+  }
+  if(ekEtki) for(const k in ekEtki){ o.etki[k] = (o.etki[k]||0) + ekEtki[k]; }
+  o.dinclik = -f.bedel;
+  const ozet = uygula(o);
+  faaliyetBitir((ekMetin? ekMetin+" " : "") + f.ad + " tamamlandı.", ozet, f);
+}
+function faaliyetBitir(metin, ozet, f){
+  S.secim++;
+  gunluge(metin);
+  kaydet();
+  const g = f && f.gorsel && GORSEL[f.gorsel];
+  $("#sonuc-alani").innerHTML = g
+    ? '<div class="sonuc-sahne">'+
+        '<img src="'+g+'" alt="">'+
+        '<div class="sonuc-ust">'+(f.ad||"Sonuç")+'</div>'+
+        '<div class="sonuc-ic"><p>'+metin+'</p>'+
+        (ozet? '<div class="kazanc">'+ozet+'</div>' : "")+'</div>'+
+      '</div>'
+    : '<div class="kart"><div class="gozustu">Sonuç</div><p>'+metin+'</p>'+
+      (ozet? '<div class="kazanc">'+ozet+'</div>' : "")+'</div>';
+  donemCizKismi();
+}
+function donemCizKismi(){
+  ustCiz();
+  $("#donem-metin").textContent = DONEM_NOT[donem()] + "\nBu dönemde " + Math.max(0,SECIM_HAK - S.secim) + " faaliyet hakkın kaldı.";
+  faaliyetCiz();
+}
+
+/* ---------- dönem sonu ---------- */
+function donemBitir(){
+  const kuyruk = [];
+
+  S.bekleyen = S.bekleyen.filter(g=>{
+    if(g.hedef <= S.tur){ kuyruk.push(g); return false; }
+    return true;
+  });
+
+  const bolum = BOLUMLER.find(b=>b.tur===S.tur);
+  if(bolum) kuyruk.push({bolum:bolum});
+  else if(Math.random()<0.55) kuyruk.push({olay:rastgele(OLAYLAR)});
+
+  kuyrukIsle(kuyruk);
+}
+
+function kuyrukIsle(kuyruk){
+  if(kuyruk.length===0){ ilerle(); return; }
+  const it = kuyruk.shift();
+  if(it.bolum){ bolumAc(it.bolum, ()=>kuyrukIsle(kuyruk)); return; }
+  if(it.olay){
+    const ozet = uygula(it.olay);
+    gunluge(it.olay.m);
+    araEkran("Bu mevsim olanlar", it.olay.m, ozet, ()=>kuyrukIsle(kuyruk));
+    return;
+  }
+  const ozet = uygula(it);
+  gunluge(it.metin);
+  araEkran("Geçmişin sesi", it.metin, ozet, ()=>kuyrukIsle(kuyruk));
+}
+
+function araEkran(baslik, metin, ozet, devam){
+  const alan = $("#faaliyet-alani");
+  $("#donem-ust").textContent = yas()+" yaş · "+DONEMLER[donem()];
+  $("#donem-baslik").textContent = baslik;
+  $("#donem-metin").textContent = "";
+  $("#sonuc-alani").innerHTML = "";
+  alan.innerHTML = '<div class="kart altin"><p class="metin-sol">'+metin+'</p>'+
+    (ozet? '<div class="kazanc">'+ozet+'</div>':"")+'</div>'+
+    '<button class="dugme ana" data-act="devam-akis">Devam et</button>';
+  window._devam = devam;
+  window.scrollTo(0,0);
+}
+
+function ilerle(){
+  S.secim = 0;
+  S.dinclik = sinirla(S.dinclik + 22, 0, 100);
+  S.tur++;
+  if(S.tur > SON_TUR){ finalHesapla(); return; }
+  if(donem()===0){
+    const gelir = Math.max(35, Math.round(95 + (S.grup.tuccar-50)*2.2 + (S.grup.halk-50)*1.4));
+    S.hazine += gelir;
+    gunluge("Yıllık gelir hazineye girdi: "+gelir+" altın. (Ticaret ve halkın hâli bu rakamı belirler.)");
+  }
+  kaydet();
+  donemCiz();
+}
+
+/* =========================================================
+   HİKÂYE BÖLÜMLERİ
+   ========================================================= */
+function bolumAc(b, devam){
+  window._bolumDevam = devam;
+  secilenBolum = b;
+  $("#donem-ust").textContent = b.no+". Bölüm · "+yas()+" yaş";
+  $("#donem-baslik").textContent = b.ad;
+  $("#donem-metin").textContent = b.metin;
+  $("#sonuc-alani").innerHTML = "";
+  let ek = "";
+  if(b.konsey) ek = konseyOzeti();
+  $("#faaliyet-alani").innerHTML = ek + b.sec.map((s,i)=>{
+    let uygun = true, eksik = [];
+    if(s.gerek) for(const k in s.gerek){ if((S.oz[k]||0) < s.gerek[k]){ uygun=false;
+      eksik.push(((OZ.find(x=>x.k===k)||{}).ad||k)+" "+s.gerek[k]); } }
+    return '<button class="dugme" data-act="bolum-sec" data-i="'+i+'"'+(uygun?"":" disabled")+'>'+
+      s.ad + (s.not? '<span class="not">'+s.not+'</span>':"") +
+      (uygun? "" : '<span class="ipucu">Yetersiz: '+eksik.join(", ")+'</span>') +
+      (s.mini? '<span class="ipucu">'+miniAd(s.mini.tip)+'</span>':"") + '</button>';
+  }).join("");
+  window.scrollTo(0,0);
+}
+function miniAd(t){ return {kilic:"Kılıç düellosu", ok:"Okçuluk", bulmaca:"Bulmaca", diplomasi:"Niyet okuma"}[t] || "Mini oyun"; }
+
+function bolumSec(i){
+  const b = secilenBolum, s = b.sec[i];
+  if(b.final){ finalHesapla(i===1); return; }
+  if(s.mini){
+    miniCalistir(s.mini, (basarili)=>{
+      const son = basarili ? s.mini.basari : s.mini.basarisiz;
+      const ozet = uygula(son);
+      gunluge("<b>"+b.ad+"</b> — "+son.sonuc);
+      araEkran(b.ad, son.sonuc, ozet, ()=>{ const d=window._bolumDevam; d&&d(); });
+    });
+    return;
+  }
+  const ozet = uygula(s);
+  gunluge("<b>"+b.ad+"</b> — "+s.ad+". "+s.sonuc);
+  araEkran(b.ad, s.sonuc, ozet, ()=>{ const d=window._bolumDevam; d&&d(); });
+}
+
+function konseyOzeti(){
+  const izler = izleriTopla();
+  return '<div class="kart"><div class="gozustu">Defterden okunanlar</div>'+
+    (izler.length? izler.map(x=>'<p class="kucuk-not">• '+x+'</p>').join("") :
+     '<p class="kucuk-not">Defterde göze çarpan bir şey yok. Bu da bir cevaptır.</p>')+'</div>';
+}
+const IZ_METIN = {
+  masumu_korudu:"Bir hizmetkâr kızı delilsiz suçlamaya karşı çıktın.",
+  masum_cezalandi:"Bir masum senin sessizliğinle saraydan uzaklaştırıldı.",
+  delil_pesinde:"Mühür meselesinde delil peşine düştün.",
+  su_getirdi:"Karaçalı köyüne su getirdin.",
+  koyu_bekletti:"Kurak köyü bir kış daha beklettin.",
+  imece:"Halkla birlikte kürek tuttun.",
+  baskini_durdurdu:"Gece baskınında saldırganın karşısına çıktın.",
+  akilli_davrandi:"Gücünü aşan bir işte muhafızları çağırdın.",
+  arabulucu:"İki arkadaşının arasını, taraf tutmadan buldun.",
+  taraf_tuttu:"Bir arkadaşının lehine taraf tuttun.",
+  gercek_sebep:"Salgının asıl sebebini kuyuda buldun.",
+  sifahane:"Parasız bir şifahane kurdurdun.",
+  fermani_reddetti:"İmzasız fermanı imzalamayı reddettin.",
+  fermani_imzaladi:"Babanın imzası olmayan fermanı imzaladın.",
+  misilleme:"Sınırda iki köye misilleme yaptın.",
+  savasi_onledi:"Sınırda savaşı, tek asker göndermeden önledin.",
+  tepkisiz:"Sınır köyleri saldırıya uğrarken karşılık vermedin.",
+  salgin_yonetildi:"Salgını kapatma ve iaşe ile yönettin.",
+  halki_birakti:"Salgında sarayı taşıyıp halkı bıraktın.",
+  hastalarin_arasinda:"Salgında hastaların arasına girdin.",
+  halka_asker:"Aç kalabalığın üstüne süvari gönderdin.",
+  halkin_icinde:"Ayaklanmanın sebebini kalabalığın içinde araştırdın.",
+  ambar_acildi:"Ayaklanmada ambarları halka açtın.",
+  burcu_savundu:"Kuşatmada doğu burcunu savundun.",
+  kusatma_konusuldu:"Kuşatmayı konuşarak çözdün.",
+  suyu_ayirdi:"Kuşatmada suyu askerlere ayırıp halka kıstın.",
+  muhru_aldi:"Hasta babandan mührü istedin.",
+  babasina_danisti:"Her kararı hasta babanla istişare ettin.",
+  yonetimi_birakti:"Yönetimi divana bıraktın.",
+  toptan_ceza:"Casus meselesinde dördünü birden cezalandırdın.",
+  casus_bulundu:"Casusu delille buldun.",
+  yanlis_suclu:"Casus meselesinde yanlış kişiyi suçladın.",
+  kervan_kurtuldu:"Kayıp kervanın kırk kişisini de kurtardın.",
+  kervan_yarim:"Kayıp kervanın bir kısmını kurtarabildin.",
+  turnuvayi_birakti:"Büyük turnuvada meydanı başkasına bıraktın.",
+  hatasini_kabul:"Konseyde hatalarını açıkça kabul ettin.",
+  hesap_vermedi:"Konseyi dağıtıp hesap vermeyi reddettin."
+};
+function izleriTopla(){
+  return Object.keys(S.bayrak).filter(k=>IZ_METIN[k]).map(k=>IZ_METIN[k]);
+}
+
+/* =========================================================
+   MİNİ OYUNLAR
+   ========================================================= */
+function miniCalistir(spec, bitti){
+  const z = spec.zorluk || 1;
+  if(spec.tip==="kilic") return kilicOyunu(z, spec.rakip||"Talim ustası", spec.rakipCan||55, bitti, spec.talim);
+  if(spec.tip==="ok") return okOyunu(z, bitti);
+  if(spec.tip==="bulmaca") return bulmacaOyunu(z, bitti);
+  if(spec.tip==="diplomasi") return diplomasiOyunu(z, bitti);
+  bitti(true);
+}
+
+/* ---------------- KILIÇ DÜELLOSU ---------------- */
+const ISARETLER = [
+ {k:"sag", m:"Omzunu sağa çeviriyor", ok:"➡", cvp:"sag"},
+ {k:"sol", m:"Ağırlığını sol ayağına veriyor", ok:"⬅", cvp:"sol"},
+ {k:"ust", m:"Kılıcı başının üstüne kaldırıyor", ok:"⬆", cvp:"ust"},
+ {k:"alt", m:"Dizini kırıp aşağı hamle yapıyor", ok:"⬇", cvp:"alt"},
+ {k:"acik", m:"Savunması bir an açılıyor", ok:"✦", cvp:"karsi"},
+ {k:"kalkan", m:"Kalkanını kaldırıp bekliyor", ok:"🛡", cvp:"agir"}
+];
+const DURUSLAR = {
+ muhafiz:{ad:"Muhafız duruşu", not:"Savunma güçlü, vuruşun hafif", sav:0.55, hasar:0.75, sure:1.15},
+ sahin:{ad:"Şahin duruşu", not:"Hızlı ve çevik, darbesi az", sav:0.85, hasar:0.85, sure:1.45},
+ aslan:{ad:"Aslan duruşu", not:"Ağır darbe, az süre", sav:1.15, hasar:1.45, sure:0.82}
+};
+let D = null;
+function kilicOyunu(zorluk, rakipAd, rakipCan, bitti, talim){
+  D = {zorluk, rakipAd, rakipCan, rakipMax:rakipCan, bitti, talim:!!talim,
+       can: 60 + S.oz.guc*2 + S.oz.irade, durus:null, tur:0, kilit:false, zamanlayici:null, raf:null};
+  D.canMax = D.can;
+  $("#donem-baslik").textContent = "Kılıç meydanı";
+  $("#donem-metin").textContent = rakipAd+" karşında. Duruşunu seç: her rakip için doğru duruş farklıdır.";
+  $("#faaliyet-alani").innerHTML = Object.keys(DURUSLAR).map(k=>
+    '<button class="dugme" data-act="durus" data-k="'+k+'">'+DURUSLAR[k].ad+'<span class="not">'+DURUSLAR[k].not+'</span></button>').join("");
+  $("#sonuc-alani").innerHTML = "";
+}
+function durusSec(k){
+  D.durus = DURUSLAR[k];
+  $("#donem-metin").textContent = D.durus.ad+" aldın. Rakibin işaretini oku ve doğru tarafa vur.";
+  $("#faaliyet-alani").innerHTML =
+   '<div class="arena">'+
+    '<div class="can-satir"><span class="etiket">Sen</span><div class="cubuk" id="can-ben"><i style="width:100%"></i></div></div>'+
+    '<div class="can-satir rakip"><span class="etiket">'+D.rakipAd+'</span><div class="cubuk" id="can-rakip"><i style="width:100%"></i></div></div>'+
+    '<div class="isaret" id="isaret-alani"><span>Hazır ol…</span></div>'+
+    '<div class="zaman"><i id="zaman-cubuk"></i></div>'+
+    '<div class="pad" id="kilic-pad">'+
+      '<button data-act="vur" data-v="sol"><span class="simge">⬅</span>Solu savuş</button>'+
+      '<button data-act="vur" data-v="ust"><span class="simge">⬆</span>Üstü karşıla</button>'+
+      '<button data-act="vur" data-v="sag"><span class="simge">➡</span>Sağı savuş</button>'+
+      '<button data-act="vur" data-v="alt"><span class="simge">⬇</span>Alta çök</button>'+
+      '<button data-act="vur" data-v="karsi"><span class="simge">✦</span>Karşı saldırı</button>'+
+      '<button data-act="vur" data-v="agir"><span class="simge">💥</span>Ağır darbe</button>'+
+    '</div>'+
+    '<div class="duello-not" id="duello-not">Rakibin hareketini bekle.</div>'+
+   '</div>';
+  setTimeout(kilicTur, 900);
+}
+function kilicCanCiz(){
+  const a=$("#can-ben"), b=$("#can-rakip");
+  if(a) a.querySelector("i").style.width = Math.max(0,D.can/D.canMax*100)+"%";
+  if(b) b.querySelector("i").style.width = Math.max(0,D.rakipCan/D.rakipMax*100)+"%";
+}
+function kilicTur(){
+  if(!D) return;
+  if(D.rakipCan<=0) return kilicSon(true);
+  if(D.can<=0) return kilicSon(false);
+  D.tur++;
+  if(!D.kilit && D.rakipCan < D.rakipMax*0.45 && D.tur>3){ D.kilit=true; return kilitEkrani(); }
+  D.isaret = rastgele(ISARETLER);
+  D.cevapVerildi = false;
+  const el = $("#isaret-alani");
+  if(!el) return;
+  el.innerHTML = '<span class="ok">'+D.isaret.ok+'</span><span>'+D.isaret.m+'</span>';
+  const sure = Math.max(520, (1650 - D.zorluk*260 + S.oz.ceviklik*38 + S.oz.akil*14) * D.durus.sure);
+  const cubuk = $("#zaman-cubuk");
+  const bas = performance.now();
+  cancelAnimationFrame(D.raf);
+  const adim = ()=>{
+    const g = performance.now()-bas;
+    const o = Math.max(0, 1 - g/sure);
+    if(cubuk) cubuk.style.width = (o*100)+"%";
+    if(o>0 && !D.cevapVerildi) D.raf = requestAnimationFrame(adim);
+  };
+  D.raf = requestAnimationFrame(adim);
+  clearTimeout(D.zamanlayici);
+  D.zamanlayici = setTimeout(()=>{ if(!D.cevapVerildi) kilicCevap(null); }, sure);
+}
+function kilicCevap(v){
+  if(!D || D.cevapVerildi) return;
+  D.cevapVerildi = true;
+  clearTimeout(D.zamanlayici); cancelAnimationFrame(D.raf);
+  const not = $("#duello-not");
+  const dogru = v === D.isaret.cvp;
+  if(dogru){
+    const hasar = Math.round((7 + S.oz.guc*0.8 + S.oz.cesaret*0.3) * D.durus.hasar * (D.isaret.k==="acik"?1.6:1) * (D.isaret.k==="kalkan"?1.35:1));
+    D.rakipCan -= hasar;
+    if(not) not.innerHTML = '<span class="sonuc-iyi">Doğru okudun. '+hasar+' vuruş.</span>';
+  } else {
+    const gelen = Math.round((9 + D.zorluk*4) / D.durus.sav);
+    D.can -= gelen;
+    if(not) not.innerHTML = '<span class="sonuc-kotu">'+(v?"Yanlış taraf.":"Geç kaldın.")+' '+gelen+' darbe aldın.</span>';
+  }
+  kilicCanCiz();
+  setTimeout(kilicTur, 780);
+}
+function kilitEkrani(){
+  const el = $("#isaret-alani");
+  if(el) el.innerHTML = '<span class="ok">⚔</span><span>Kılıçlar kilitlendi</span>';
+  const cubuk=$("#zaman-cubuk"); if(cubuk) cubuk.style.width="100%";
+  $("#duello-not").innerHTML = "Rastgele vurmak işe yaramaz. Nasıl çözersin?";
+  $("#kilic-pad").innerHTML =
+   '<button data-act="kilit" data-k="guc" style="grid-column:span 3">💪 Gücünle it<span class="simge" style="font-size:.72rem;display:block">Güç gerekir</span></button>'+
+   '<button data-act="kilit" data-k="akil" style="grid-column:span 3">🧠 Dengesini boz<span class="simge" style="font-size:.72rem;display:block">Akıl ve zamanlama</span></button>'+
+   '<button data-act="kilit" data-k="ceviklik" style="grid-column:span 3">🌀 Geri çekilip dön<span class="simge" style="font-size:.72rem;display:block">Çeviklik gerekir</span></button>';
+}
+function kilitCoz(k){
+  const deger = S.oz[k] || 0;
+  const basarili = deger + Math.random()*8 > 8 + D.zorluk*3;
+  const not = $("#duello-not");
+  if(basarili){ D.rakipCan -= 22 + deger; if(not) not.innerHTML='<span class="sonuc-iyi">Kilidi çözdün ve boşluğa vurdun.</span>'; }
+  else { D.can -= 12 + D.zorluk*4; if(not) not.innerHTML='<span class="sonuc-kotu">Kilitten sen çıkamadın, o çıktı.</span>'; }
+  kilicCanCiz();
+  $("#kilic-pad").innerHTML =
+    '<button data-act="vur" data-v="sol"><span class="simge">⬅</span>Solu savuş</button>'+
+    '<button data-act="vur" data-v="ust"><span class="simge">⬆</span>Üstü karşıla</button>'+
+    '<button data-act="vur" data-v="sag"><span class="simge">➡</span>Sağı savuş</button>'+
+    '<button data-act="vur" data-v="alt"><span class="simge">⬇</span>Alta çök</button>'+
+    '<button data-act="vur" data-v="karsi"><span class="simge">✦</span>Karşı saldırı</button>'+
+    '<button data-act="vur" data-v="agir"><span class="simge">💥</span>Ağır darbe</button>';
+  setTimeout(kilicTur, 900);
+}
+function kilicSon(kazandi){
+  clearTimeout(D.zamanlayici); cancelAnimationFrame(D.raf);
+  if(!kazandi){ const b=D.bitti; D=null; b(false); return; }
+  if(D.talim){ const b=D.bitti; D=null;
+    araEkran("Talim bitti", "Talim ustası kılıcını indirdi ve başını salladı.", "", ()=>b(true)); return; }
+  $("#donem-baslik").textContent = "Rakip yenildi";
+  $("#donem-metin").textContent = "Kılıcı yerde. Şimdi asıl karar: yenilene ne yaparsın?";
+  $("#faaliyet-alani").innerHTML =
+   '<button class="dugme" data-act="merhamet" data-k="birak">Silahını al ve serbest bırak<span class="not">Bağışlamak zayıflık değildir.</span></button>'+
+   '<button class="dugme" data-act="merhamet" data-k="esir">Esir al, adilce muamele et<span class="not">Güvenlik ile insaf arasında.</span></button>'+
+   '<button class="dugme" data-act="merhamet" data-k="tedavi">Yarasını tedavi ettir<span class="not">Düşman da olsa yaralıdır.</span></button>'+
+   '<button class="dugme" data-act="merhamet" data-k="bilgi">Bilgi iste, sonra karar ver<span class="not">Faydacı ama makul.</span></button>'+
+   '<button class="dugme" data-act="merhamet" data-k="ceza">Öfkeyle cezalandır<span class="not">Meydan bunu ister. Sen de ister misin?</span></button>';
+  $("#sonuc-alani").innerHTML = "";
+}
+function merhametSec(k){
+  const tablo = {
+   birak:{etki:{merhamet:2, iman:1}, nefis:{ofke:-4, kibir:-3}, grup:{ulema:3, halk:2, asker:-1},
+     m:"Kılıcını aldın, elini uzattın. Meydan önce sustu, sonra alkışladı.",
+     gecikme:{tur:9, metin:"Yıllar önce serbest bıraktığın asker, bir sınır kapısında senin kervanına yol verdi.", grup:{asker:3, elci:2}}},
+   esir:{etki:{akil:1, irade:1}, grup:{asker:3, saray:2}, m:"Esir alındı, zincirlenmedi. Kurallara uydun."},
+   tedavi:{etki:{merhamet:3}, nefis:{ofke:-5}, grup:{halk:3, ulema:3, asker:-2}, m:"Hekim çağrıldı. Bazı askerler homurdandı, hekimler konuşmadı."},
+   bilgi:{etki:{akil:2, bilgelik:1}, grup:{asker:2}, m:"Konuştu. Söyledikleri işine yaradı; bakışları içine oturdu."},
+   ceza:{etki:{guc:1}, nefis:{ofke:8, kibir:6}, grup:{asker:2, halk:-4, ulema:-5},
+     m:"Cezalandırdın. O gece uyumakta zorlandın.",
+     gecikme:{tur:10, metin:"Aşağıladığın adamın kardeşi karşı tarafın saflarında görüldü.", grup:{asker:-3}, nefis:{korku:4}}}
+  };
+  const o = tablo[k];
+  const ozet = uygula(o);
+  gunluge(o.m);
+  const b = D.bitti; D=null;
+  araEkran("Meydan", o.m, ozet, ()=>b(true));
+}
+
+/* ---------------- OKÇULUK ---------------- */
+let O = null;
+function okOyunu(zorluk, bitti){
+  O = {zorluk, bitti, ok:0, puan:0, hedefPuan: zorluk===1?14:(zorluk===2?18:22), evre:0, raf:null};
+  $("#donem-baslik").textContent = "Okçuluk meydanı";
+  $("#donem-metin").textContent = "Üç okun var. Önce yayı doğru gerginlikte sabitle, sonra rüzgârı hesaba katarak bırak.";
+  okKur();
+}
+function okKur(){
+  O.evre = 1;
+  O.ruzgar = (Math.random()*2-1);
+  O.gerginlik = 0; O.artis = 1;
+  const tol = 9 + S.oz.akil*0.6 + S.oz.bilgelik*0.3;
+  O.idealMerkez = 45 + Math.random()*30;
+  O.tol = Math.max(6, tol - O.zorluk*2);
+  $("#faaliyet-alani").innerHTML =
+   '<div class="yay-alan">'+
+    '<div class="ruzgar"><span>Ok '+(O.ok+1)+'/3</span><span id="ruzgar-metin"></span><span>Puan '+O.puan+'</span></div>'+
+    '<div class="hedef" id="hedef-alani">'+
+      '<div class="halka h1"></div><div class="halka h2"></div><div class="halka h3"></div>'+
+      '<div class="imlec" id="imlec" style="left:50%"></div>'+
+    '</div>'+
+    '<p class="kucuk-not" id="yay-not">Yayı ger. Kesikli çizgiler arasında sabitlemeye çalış.</p>'+
+    '<div class="gerginlik" id="gerginlik"><i></i><u style="left:'+(O.idealMerkez-O.tol)+'%;right:'+(100-O.idealMerkez-O.tol)+'%"></u></div>'+
+    '<button class="dugme ana" data-act="ok-eylem" id="ok-dugme" style="margin-top:12px">Yayı sabitle</button>'+
+   '</div>';
+  const r = O.ruzgar;
+  $("#ruzgar-metin").textContent = "Rüzgâr: " + (Math.abs(r)<0.2 ? "sakin" : (r<0?"◀ soldan ":"sağdan ▶") + Math.round(Math.abs(r)*10));
+  const bar = $("#gerginlik").querySelector("i");
+  const adim = ()=>{
+    if(!O || O.evre!==1) return;
+    O.gerginlik += O.artis * (1.6 + O.zorluk*0.35);
+    if(O.gerginlik>=100){ O.gerginlik=100; O.artis=-1; }
+    if(O.gerginlik<=0){ O.gerginlik=0; O.artis=1; }
+    bar.style.width = O.gerginlik+"%";
+    O.raf = requestAnimationFrame(adim);
+  };
+  O.raf = requestAnimationFrame(adim);
+}
+function okEylem(){
+  if(!O) return;
+  if(O.evre===1){
+    cancelAnimationFrame(O.raf);
+    O.gerginlikSecim = O.gerginlik;
+    O.gerginlikHata = Math.abs(O.gerginlik - O.idealMerkez);
+    O.evre = 2;
+    $("#yay-not").textContent = O.gerginlikHata <= O.tol ? "Gerginlik yerinde. Şimdi rüzgârı hesaba kat ve bırak." : "Gerginlik biraz kaçtı; ok sapacak. Yine de dene.";
+    $("#ok-dugme").textContent = "Bırak";
+    const imlec = $("#imlec");
+    let x = 8, yon = 1;
+    const hiz = Math.max(0.55, 1.9 + O.zorluk*0.45 - S.oz.ceviklik*0.055);
+    const adim = ()=>{
+      if(!O || O.evre!==2) return;
+      x += yon*hiz;
+      if(x>92){x=92;yon=-1;} if(x<8){x=8;yon=1;}
+      O.imlecX = x;
+      imlec.style.left = x+"%";
+      O.raf = requestAnimationFrame(adim);
+    };
+    O.raf = requestAnimationFrame(adim);
+    return;
+  }
+  cancelAnimationFrame(O.raf);
+  O.evre = 3;
+  const ruzgarEtki = O.ruzgar * (7 - S.oz.ceviklik*0.16) * (1 + O.zorluk*0.2);
+  const gerginlikEtki = (O.gerginlikSecim - O.idealMerkez) * 0.12;
+  const nokta = O.imlecX + ruzgarEtki + gerginlikEtki;
+  const sapma = Math.abs(nokta - 50);
+  let p = 0, m = "";
+  if(sapma < 4){ p = 10; m = "Tam merkez."; }
+  else if(sapma < 9){ p = 7; m = "Merkeze çok yakın."; }
+  else if(sapma < 17){ p = 4; m = "Hedefte, ama dışta."; }
+  else { p = 0; m = "Ok hedefi ıskaladı."; }
+  O.puan += p; O.ok++;
+  const ha = $("#hedef-alani");
+  const iz = document.createElement("div"); iz.className="ok-izi"; iz.style.left = sinirla(nokta,2,96)+"%";
+  ha.appendChild(iz);
+  $("#yay-not").innerHTML = '<span class="'+(p>=7?"sonuc-iyi":(p===0?"sonuc-kotu":""))+'">'+m+" +"+p+" puan</span>";
+  const d = $("#ok-dugme");
+  d.textContent = O.ok>=3 ? "Sonucu gör" : "Sıradaki ok";
+  O.evre = 4;
+}
+function okDevam(){
+  if(O.ok>=3){
+    const basarili = O.puan >= O.hedefPuan;
+    const b = O.bitti, puan = O.puan, hedef = O.hedefPuan;
+    O = null;
+    araEkran("Okçuluk sonucu", "Toplam "+puan+" puan (gereken "+hedef+").", "", ()=>b(basarili));
+    return;
+  }
+  okKur();
+}
+
+/* ---------------- BULMACA ---------------- */
+let B = null;
+function bulmacaOyunu(zorluk, bitti){
+  const havuz = BULMACALAR.slice().sort(()=>Math.random()-0.5);
+  const adet = zorluk===1?2:3;
+  B = {sorular: havuz.slice(0,adet), i:0, dogru:0, bitti, gereken: zorluk===1?2:2};
+  bulmacaCiz();
+}
+function bulmacaCiz(){
+  const s = B.sorular[B.i];
+  const ipucuVar = S.oz.akil >= 11;
+  let secenekler = s.c.map((c,i)=>({c,i}));
+  if(ipucuVar){
+    const yanlislar = secenekler.filter(x=>x.i!==s.d);
+    const eleme = rastgele(yanlislar).i;
+    secenekler = secenekler.filter(x=>x.i!==eleme);
+  }
+  $("#donem-baslik").textContent = "Bulmaca "+(B.i+1)+"/"+B.sorular.length;
+  $("#donem-metin").textContent = s.s;
+  $("#faaliyet-alani").innerHTML =
+    (ipucuVar? '<p class="kucuk-not">Akıl yüksek: bir yanlış seçenek elendi.</p>':"") +
+    secenekler.map(x=>'<button class="dugme" data-act="bulmaca-sec" data-i="'+x.i+'">'+x.c+'</button>').join("");
+  $("#sonuc-alani").innerHTML = "";
+}
+function bulmacaSec(i){
+  const s = B.sorular[B.i];
+  const dogru = i === s.d;
+  if(dogru) B.dogru++;
+  $("#faaliyet-alani").innerHTML =
+    '<div class="kart '+(dogru?"altin":"uyari")+'"><div class="gozustu">'+(dogru?"Doğru":"Yanlış")+'</div><p>'+s.a+'</p></div>'+
+    '<button class="dugme ana" data-act="bulmaca-devam">'+(B.i+1>=B.sorular.length?"Bitir":"Sıradaki soru")+'</button>';
+}
+function bulmacaDevam(){
+  B.i++;
+  if(B.i >= B.sorular.length){
+    const basarili = B.dogru >= B.gereken;
+    const b=B.bitti, d=B.dogru, t=B.sorular.length; B=null;
+    araEkran("Bulmaca sonucu", d+"/"+t+" doğru.", "", ()=>b(basarili));
+    return;
+  }
+  bulmacaCiz();
+}
+
+/* ---------------- DİPLOMASİ ---------------- */
+let P = null;
+function diplomasiOyunu(zorluk, bitti){
+  P = {sahne: rastgele(DIPLOMASI), bitti};
+  const s = P.sahne;
+  const g = S.oz.akil + S.oz.bilgelik;
+  $("#donem-baslik").textContent = "Niyet okuma";
+  $("#donem-metin").textContent = s.kim + ":\n\u201C" + s.soz + "\u201D";
+  $("#faaliyet-alani").innerHTML =
+    '<div class="kart"><div class="gozustu">Gördüklerin</div>'+
+    s.ipuc.map(ip => g >= ip.z*3
+      ? '<div class="ipuc">'+ip.m+'</div>'
+      : '<div class="ipuc kapali">Bir şey var ama seçemiyorsun. (Akıl + Bilgelik '+(ip.z*3)+' gerekir)</div>').join("")+
+    '</div>'+
+    '<p class="kucuk-not">Yüksek akıl sana cevabı vermez; yalnızca daha çok ipucu gösterir.</p>'+
+    s.sec.map((x,i)=>'<button class="dugme" data-act="dip-sec" data-i="'+i+'">'+x.ad+'</button>').join("");
+  $("#sonuc-alani").innerHTML = "";
+}
+function dipSec(i){
+  const x = P.sahne.sec[i];
+  const b = P.bitti; const dg = x.dg; const a = x.a; P = null;
+  araEkran(dg?"Doğru okudun":"Yanlış okudun", a, "", ()=>b(dg));
+}
+
+/* =========================================================
+   YILDIZ DAĞITIMI
+   ========================================================= */
+const BASLANGIC_YILDIZ = 20;
+const ONERILEN = {dini:3, akil:3, guc:3, ceviklik:2, hitabet:2, zarafet:2, merhamet:2, iman:2, irade:1};
+
+function dagitimBaslat(){
+  dagitim = {ad:"Nûr", oz:{}};
+  OZ.forEach(o=>dagitim.oz[o.k]=0);
+  const g = $("#ad-girdi");
+  if(g) g.value = dagitim.ad;
+  dagitimCiz();
+  ekran("dagit");
+}
+function kalanYildiz(){
+  let t=0; for(const k in dagitim.oz) t+=dagitim.oz[k];
+  return BASLANGIC_YILDIZ - t;
+}
+function dagitimCiz(){
+  const kalan = kalanYildiz();
+  $("#kalan-yildiz").textContent = kalan;
+  $("#dagit-liste").innerHTML = OZ.map(o=>
+    '<div class="dagit"><span class="ik">'+o.ik+'</span>'+
+    '<span class="ad">'+o.ad+'<small>'+o.not+'</small></span>'+
+    '<button class="yk" data-act="yildiz" data-k="'+o.k+'" data-y="-1"'+(dagitim.oz[o.k]<=0?" disabled":"")+'>−</button>'+
+    '<span class="say">'+dagitim.oz[o.k]+'</span>'+
+    '<button class="yk" data-act="yildiz" data-k="'+o.k+'" data-y="1"'+((kalan<=0||dagitim.oz[o.k]>=6)?" disabled":"")+'>+</button>'+
+    '</div>').join("");
+  $("#dugme-basla").disabled = kalan !== 0;
+  $("#dugme-basla").textContent = kalan===0 ? "Saraya gir" : kalan+" yıldız dağıtılmadı";
+}
+function yildizVer(k, y){
+  const kalan = kalanYildiz();
+  if(y>0 && (kalan<=0 || dagitim.oz[k]>=6)) return;
+  if(y<0 && dagitim.oz[k]<=0) return;
+  dagitim.oz[k]+=y;
+  dagitimCiz();
+}
+function oyunuBaslat(){
+  S = bosDurum();
+  S.ad = dagitim.ad;
+  OZ.forEach(o=> S.oz[o.k] = dagitim.oz[o.k]);
+  gunluge(S.ad+" adında yedi yaşında bir kız, sarayın kapısından içeri girdi.");
+  ekran("oyun"); sekme("donem"); donemCiz(); kaydet();
+}
+
+/* =========================================================
+   FİNAL
+   ========================================================= */
+function finalHesapla(vazgecti){
+  S.bitti = true;
+  const o = S.oz, g = S.grup, n = S.nefis;
+  const dostOrt = ARKADASLAR.reduce((t,a)=>t+S.arkadas[a.k],0)/ARKADASLAR.length;
+  const nefisOrt = (n.kibir+n.ofke+n.korku+n.haset+n.tamah+n.gosteris)/6;
+  let kod;
+  if(vazgecti) kod = "vazgecen";
+  else if((nefisOrt > 39 && (g.halk < 48 || g.ulema < 45)) || (n.kibir > 55 && g.halk < 40)) kod = "golge";
+  else if(dostOrt < 20) kod = "yalniz";
+  else {
+    const puan = {
+      alim: o.dini*2.0 + o.bilgelik*1.6 + o.akil*1.0 + g.ulema*0.25,
+      halkin: o.merhamet*1.8 + o.iman*1.4 + o.hitabet*1.0 + g.halk*0.35,
+      arabulucu: o.bilgelik*1.5 + o.hitabet*1.4 + o.zarafet*1.0 + g.elci*0.30,
+      demir: o.guc*1.6 + o.cesaret*1.3 + o.ceviklik*1.0 + g.asker*0.35
+    };
+    kod = Object.keys(puan).reduce((a,b)=> puan[a]>=puan[b]?a:b);
+  }
+  S.finalKod = kod;
+  const f = FINALLER.find(x=>x.k===kod);
+  $("#final-muhur").textContent = f.ik;
+  $("#final-unvan").textContent = f.ad;
+  $("#final-metin").textContent = f.m;
+
+  const rozet = [];
+  const it = Math.round((g.ulema+g.asker+g.halk+g.saray)/4);
+  rozet.push("İtibar "+it);
+  rozet.push("Dostluk "+Math.round(dostOrt));
+  rozet.push("Nefis "+Math.round(nefisOrt));
+  rozet.push("Hazine "+S.hazine);
+  const enYuksek = OZ.slice().sort((a,b)=>o[b.k]-o[a.k]).slice(0,3);
+  enYuksek.forEach(x=>rozet.push(x.ik+" "+x.ad+" "+o[x.k]));
+  $("#final-rozet").innerHTML = rozet.map(r=>"<span>"+r+"</span>").join("");
+  $("#final-ozellik").innerHTML = OZ.map(x=>
+    '<div class="oz"><span class="ik">'+x.ik+'</span><span class="ad">'+x.ad+'</span><span class="dg">'+o[x.k]+'</span></div>').join("");
+  const izler = izleriTopla();
+  $("#final-izler").innerHTML = izler.length
+    ? izler.map(x=>'<p class="kucuk-not">• '+x+'</p>').join("")
+    : '<p class="kucuk-not">Büyük kararların çoğunda ortada kaldın. Bu da bir yol.</p>';
+  gunluge("<b>Final:</b> "+f.ad);
+  kaydet();
+  ekran("final");
+}
+
+/* =========================================================
+   KAYIT
+   ========================================================= */
+function kaydet(){
+  if(!S) return false;
+  return Depo.koy(KAYIT, JSON.stringify(S));
+}
+function yukle(){
+  try{
+    const h = Depo.al(KAYIT);
+    if(!h) return null;
+    const d = JSON.parse(h);
+    if(!d || !d.oz || !d.tur) return null;
+    return d;
+  }catch(e){ return null; }
+}
+function devamEtiketi(d){
+  const y = 7 + Math.floor((d.tur-1)/4);
+  const dn = DONEMLER[(d.tur-1)%4];
+  return d.bitti ? "Kayıtlı oyunu aç — final: " + ((FINALLER.find(x=>x.k===d.finalKod)||{}).ad || "bitti")
+                 : "Devam et — " + (d.ad||"Nûr") + ", " + y + " yaş, " + dn;
+}
+let silmeOnay = false;
+function bastanBasla(btn){
+  if(!silmeOnay){
+    silmeOnay = true;
+    if(btn){ btn.dataset.orj = btn.dataset.orj || btn.textContent;
+      btn.textContent = "Emin misin? Silmek için tekrar dokun";
+      btn.classList.add("tehlike"); }
+    setTimeout(()=>{ silmeOnay=false;
+      if(btn && btn.dataset.orj){ btn.textContent = btn.dataset.orj; btn.classList.remove("tehlike"); }
+    }, 5000);
+    return;
+  }
+  silmeOnay = false;
+  Depo.sil(KAYIT);
+  S = null;
+  goster($("#dugme-devam"), false);
+  ekran("giris");
+}
+function kayitPaneli(){
+  const u = $("#depo-uyari");
+  if(u) u.innerHTML = Depo.calisir() ? "" :
+    '<div class="kart uyari" style="margin:0 0 10px"><p class="kucuk-not">Bu tarayıcı sekmesinde kalıcı kayıt kapalı görünüyor (çoğunlukla oyun bir çerçeve içinde açıldığında olur). Oyun çalışmaya devam eder ama sekmeyi kapatınca ilerleme silinir. Kalıcı kayıt için oyunu yeni bir sekmede aç, ya da aşağıdaki kayıt kodunu sakla.</p></div>';
+}
+
+/* =========================================================
+   OLAY YÖNETİMİ
+   ========================================================= */
+document.addEventListener("click", function(e){
+  const b = e.target.closest("[data-act], [data-sekme]");
+  if(!b) return;
+  if(b.disabled) return;
+  const sk = b.dataset.sekme;
+  if(sk){ sekme(sk); return; }
+  const a = b.dataset.act;
+  switch(a){
+    case "yeni": dagitimBaslat(); break;
+    case "devam": {
+      const d = yukle();
+      if(!d) return;
+      S = d;
+      if(S.bitti && S.finalKod){ finalHesapla(S.finalKod==="vazgecen"); break; }
+      ekran("oyun"); sekme("donem"); donemCiz();
+      break;
+    }
+    case "yildiz": yildizVer(b.dataset.k, parseInt(b.dataset.y,10)); break;
+    case "onerilen": OZ.forEach(o=>dagitim.oz[o.k]=ONERILEN[o.k]||0); dagitimCiz(); break;
+    case "sifirla-dagit": OZ.forEach(o=>dagitim.oz[o.k]=0); dagitimCiz(); break;
+    case "basla": if(kalanYildiz()===0) oyunuBaslat(); break;
+    case "faaliyet": faaliyetSec(parseInt(b.dataset.i,10)); break;
+    case "arkadas-sec": arkadasIle(parseInt(b.dataset.i,10)); break;
+    case "geri-faaliyet": faaliyetCiz(); break;
+    case "donem-bitir": donemBitir(); break;
+    case "devam-akis": { const d = window._devam; window._devam=null; if(d) d(); break; }
+    case "bolum-sec": bolumSec(parseInt(b.dataset.i,10)); break;
+    case "durus": durusSec(b.dataset.k); break;
+    case "vur": kilicCevap(b.dataset.v); break;
+    case "kilit": kilitCoz(b.dataset.k); break;
+    case "merhamet": merhametSec(b.dataset.k); break;
+    case "ok-eylem": if(O && O.evre===4) okDevam(); else okEylem(); break;
+    case "bulmaca-sec": bulmacaSec(parseInt(b.dataset.i,10)); break;
+    case "bulmaca-devam": bulmacaDevam(); break;
+    case "dip-sec": dipSec(parseInt(b.dataset.i,10)); break;
+    case "kaydet": {
+      const ok = kaydet();
+      const bl = $("#kayit-bilgi");
+      if(bl) bl.textContent = ok ? "Kaydedildi." : "Kalıcı kayıt yapılamadı; ilerleme yalnızca bu sekmede duruyor. Kayıt kodunu sakla.";
+      break;
+    }
+    case "bastan": bastanBasla(b); break;
+    case "kod-yenile": {
+      const a = $("#kod-alani");
+      if(a && S){ a.value = kodla(JSON.stringify(S)); a.select && a.select();
+        $("#kod-bilgi").textContent = "Kod hazır. Uzun basıp kopyalayabilirsin."; }
+      break;
+    }
+    case "kod-yukle": {
+      const a = $("#kod-alani"), bl = $("#kod-bilgi");
+      try{
+        const d = JSON.parse(kodCoz((a.value||"").trim()));
+        if(!d || !d.oz || !d.tur) throw new Error("gecersiz");
+        S = d; kaydet();
+        bl.textContent = "Kayıt yüklendi.";
+        if(S.bitti && S.finalKod){ finalHesapla(S.finalKod==="vazgecen"); }
+        else { ekran("oyun"); sekme("donem"); donemCiz(); }
+      }catch(err){ if(bl) bl.textContent = "Bu kod okunamadı. Tamamını yapıştırdığından emin ol."; }
+      break;
+    }
+  }
+});
+
+/* =========================================================
+   BAŞLAT
+   ========================================================= */
+document.addEventListener("input", function(e){
+  if(e.target && e.target.id==="ad-girdi" && dagitim){
+    dagitim.ad = e.target.value.trim().slice(0,18) || "Nûr";
+  }
+});
+
+(function(){
+  const d = yukle();
+  if(d){
+    const db = $("#dugme-devam");
+    db.textContent = devamEtiketi(d);
+    db.classList.add("ana");
+    goster(db, true);
+  }
+  kayitPaneli();
+  ekran("giris");
+})();
+</script>
+</body>
+</html>
