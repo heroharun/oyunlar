@@ -196,6 +196,13 @@ function resize(){
   ctx.setTransform(DPR,0,0,DPR,0,0);
   CX = W/2; CY = H/2 + 14;
   AR = Math.min(W,H)*0.36;
+  /* Mobil dikey: tabla daha BÜYÜK ve biraz yukarıda; alt şerit baş parmağa kalır.
+     Koordinatlar ağda AR'a normalize edildiği için multiplayer bozulmaz. */
+  var dokunmatikCihaz = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if (dokunmatikCihaz && H > W){
+    AR = Math.min(W*0.46, H*0.30);
+    CY = H*0.44;
+  }
 }
 addEventListener('resize', resize); resize();
 
@@ -1599,10 +1606,13 @@ requestAnimationFrame(loop);
 #tctl{position:fixed;inset:0;pointer-events:none;z-index:40;display:none}
 #tctl.acik{display:block}
 #padZone{position:absolute;inset:0;pointer-events:auto;touch-action:none}
-#fingerRing{position:absolute;width:64px;height:64px;border-radius:50%;
-  border:2.5px solid rgba(255,209,102,.75);background:rgba(255,209,102,.10);
+#fingerRing{position:absolute;width:96px;height:96px;border-radius:50%;
+  border:2px solid rgba(255,209,102,.5);background:rgba(255,255,255,.05);
+  transform:translate(-50%,-50%);display:none;pointer-events:none}
+#fingerKnob{position:absolute;width:44px;height:44px;border-radius:50%;
+  background:rgba(255,209,102,.65);border:2px solid rgba(255,255,255,.55);
   transform:translate(-50%,-50%);display:none;pointer-events:none;
-  box-shadow:0 0 18px rgba(255,209,102,.35)}
+  box-shadow:0 0 14px rgba(255,209,102,.4)}
 #tHint{position:absolute;left:50%;top:14%;transform:translateX(-50%);
   font:700 13px system-ui;color:rgba(255,255,255,.75);letter-spacing:.5px;
   background:rgba(0,0,0,.35);padding:8px 14px;border-radius:999px;
@@ -1621,9 +1631,9 @@ requestAnimationFrame(loop);
 #tOver button.gri{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#ccc}
 </style>
 <div id="tctl">
-  <div id="padZone"><div id="fingerRing"></div></div>
+  <div id="padZone"><div id="fingerRing"></div><div id="fingerKnob"></div></div>
   <div id="dashBtn">DASH</div>
-  <div id="tHint">Parmağını bas: topacın oraya koşar · Fiske at: DASH!</div>
+  <div id="tHint">Baş parmağını ALT BOŞLUKTA gezdir: yön ver · Fiske at: DASH!</div>
   <div id="tOver">
     <button id="tRetry">🔄 TEKRAR OYNA</button>
     <button id="tMenu" class="gri">ANA MENÜ</button>
@@ -1656,7 +1666,13 @@ requestAnimationFrame(loop);
   new MutationObserver(goster).observe(menuEl, {attributes:true, attributeFilter:['class']});
   goster();
 
-  /* ── Parmağı takip: topaç parmağına koşar ── */
+  /* ── KAYAN ÇAPA: baş parmak EKRANIN HERHANGİ bir yerinde (tercihen alt boşlukta)
+     gezer, tablayı kapatmaz. Yön = parmağın çapaya göre konumu. Parmak uzaklaşırsa
+     çapa peşinden kayar; yön değiştirmek ANINDA etki eder. Fiske = yönlü DASH. ── */
+  var knobEl = document.getElementById('fingerKnob');
+  var MAXR = 48;      // çapa-parmak azami mesafe (px)
+  var OLU  = 10;      // ölü bölge
+
   function myP(){
     if (typeof players === 'undefined' || !players || !players.length) return null;
     return (typeof net !== 'undefined' && net.role === 'guest') ? players[1] : players[0];
@@ -1664,22 +1680,26 @@ requestAnimationFrame(loop);
   function titret(ms){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(err){} }
   function birak(){
     keys['a']=keys['d']=keys['w']=keys['s']=false;
-    ring.style.display='none';
-    touchId=null; samples.length=0;
+    if (ring) ring.style.display='none';
+    if (knobEl) knobEl.style.display='none';
+    touchId=null;
+    if (samples) samples.length=0;
   }
+  var ax=0, ay=0; // çapa
 
-  /* 30 fps: parmağa doğru 8 yönlü sür (fizikteki atalet akıcılığı sağlar) */
-  setInterval(function(){
-    if (touchId === null) return;
-    var p = myP();
-    if (!p || !tctl.classList.contains('acik')) return;
-    var dx = fx - p.x, dy = fy - p.y;
-    var m = Math.hypot(dx, dy);
-    if (m < 26){ keys['a']=keys['d']=keys['w']=keys['s']=false; return; } // parmağa vardı: dur
-    keys['a'] = dx < -0.38*m; keys['d'] = dx > 0.38*m;
-    keys['w'] = dy < -0.38*m; keys['s'] = dy > 0.38*m;
-    if (dashPulse && performance.now() > dashPulse){ keys[' ']=false; dashPulse=0; }
-  }, 33);
+  function yonVer(px, py){
+    var dx = px-ax, dy = py-ay;
+    var m = Math.hypot(dx,dy);
+    if (m > MAXR){ // çapa parmağın peşinden kayar → geri dönüş anında
+      ax = px - dx/m*MAXR; ay = py - dy/m*MAXR;
+      ring.style.left=ax+'px'; ring.style.top=ay+'px';
+      dx = px-ax; dy = py-ay; m = MAXR;
+    }
+    knobEl.style.left=px+'px'; knobEl.style.top=py+'px';
+    if (m < OLU){ keys['a']=keys['d']=keys['w']=keys['s']=false; return; }
+    keys['a'] = dx < -0.34*m; keys['d'] = dx > 0.34*m;
+    keys['w'] = dy < -0.34*m; keys['s'] = dy > 0.34*m;
+  }
 
   function fiskeKontrol(t){
     var now = performance.now();
@@ -1689,14 +1709,14 @@ requestAnimationFrame(loop);
     var dt = now - eski.t;
     if (dt < 30 || dt > 160) return;
     var dx = t.clientX - eski.x, dy = t.clientY - eski.y;
-    var hiz = Math.hypot(dx, dy) / dt;      // px/ms
+    var hiz = Math.hypot(dx, dy) / dt;
     if (hiz > 1.35 && !dashPulse){
-      // Fiske! O yöne dash: yön tuşları + boşluk kısa süre basılı
       var m = Math.hypot(dx, dy);
       keys['a'] = dx < -0.38*m; keys['d'] = dx > 0.38*m;
       keys['w'] = dy < -0.38*m; keys['s'] = dy > 0.38*m;
       keys[' '] = true;
-      dashPulse = performance.now() + 140;
+      dashPulse = 1;
+      setTimeout(function(){ keys[' ']=false; dashPulse=0; }, 140);
       titret(25);
       samples.length = 0;
     }
@@ -1705,19 +1725,20 @@ requestAnimationFrame(loop);
   zone.addEventListener('touchstart', function(e){
     e.preventDefault();
     var t = e.changedTouches[0];
-    touchId = t.identifier; fx = t.clientX; fy = t.clientY;
+    touchId = t.identifier;
+    ax = t.clientX; ay = t.clientY;
     samples.length = 0;
-    ring.style.display = 'block';
-    ring.style.left = fx+'px'; ring.style.top = fy+'px';
-    if (!hintGizle){ hintGizle = 1; setTimeout(function(){ hint.style.opacity = '0'; }, 4000); }
+    ring.style.display='block'; knobEl.style.display='block';
+    ring.style.left=ax+'px'; ring.style.top=ay+'px';
+    knobEl.style.left=ax+'px'; knobEl.style.top=ay+'px';
+    if (!hintGizle){ hintGizle = 1; setTimeout(function(){ hint.style.opacity = '0'; }, 4500); }
   }, {passive:false});
   zone.addEventListener('touchmove', function(e){
     e.preventDefault();
     for (var i=0; i<e.changedTouches.length; i++){
       var t = e.changedTouches[i];
       if (t.identifier !== touchId) continue;
-      fx = t.clientX; fy = t.clientY;
-      ring.style.left = fx+'px'; ring.style.top = fy+'px';
+      yonVer(t.clientX, t.clientY);
       fiskeKontrol(t);
     }
   }, {passive:false});
