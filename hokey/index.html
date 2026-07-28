@@ -3,6 +3,7 @@
 <meta charset="utf-8">
 <title>HAVA HOKEYİ — İki Kişilik Düello</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
   :root{ --bg:#0e1a2b; --ice:#dceffc; --line:#8fc3e8; --p1:#ff5f6d; --p2:#3fa9f5; --ink:#0e1a2b; }
   *{margin:0;padding:0;box-sizing:border-box}
@@ -25,6 +26,13 @@
   .btn.red{background:linear-gradient(180deg,#ff8f99,#ff5f6d);box-shadow:0 5px 0 #b03844;color:#fff}
   .btn.red:active{box-shadow:0 2px 0 #b03844}
   .btn:focus-visible{outline:3px solid #dceffc;outline-offset:3px}
+  .netrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+  .btn.kucuk{font-size:13px;padding:12px 22px}
+  #joinCode{font:800 16px "Avenir Next",system-ui;letter-spacing:.3em;text-transform:uppercase;
+    width:104px;text-align:center;background:rgba(220,239,252,.08);color:#dceffc;
+    border:2px solid rgba(143,195,232,.4);border-radius:12px;padding:12px 8px;outline:none}
+  #netMsg{font-size:13px;font-weight:700;color:#8fc3e8;min-height:18px;letter-spacing:.04em}
+  #netMsg.hata{color:#ff8f99}
 </style>
 
 <canvas id="cv"></canvas>
@@ -34,6 +42,12 @@
   <p>Topu rakip kaleye sok, 7 sayıya ilk ulaşan kazanır. İki kişilik modda telefonu aranıza koyun — herkes kendi yarısından tokmağını sürükler!</p>
   <button class="btn red" id="vsBtn">🤝 2 Kişilik</button>
   <button class="btn" id="aiBtn">🤖 Bilgisayara Karşı</button>
+  <div class="netrow">
+    <button class="btn kucuk" id="hostBtn">🌐 Oda Kur</button>
+    <input id="joinCode" maxlength="4" placeholder="KOD" autocomplete="off">
+    <button class="btn kucuk" id="joinBtn">Katıl</button>
+  </div>
+  <p id="netMsg"></p>
 </div>
 
 <div class="card hidden" id="endcard">
@@ -84,7 +98,8 @@ addEventListener('touchstart',e=>{
   for(const t of e.changedTouches){
     if(t.clientY>H/2) touches[t.identifier]='m1';
     else if(mode==='vs') touches[t.identifier]='m2';
-    else touches[t.identifier]='m1';
+    else if(mode==='ai') touches[t.identifier]='m1';
+    else continue; // online: rakibin yarısına dokunulmaz
     moveTo(t);
   }
 },{passive:true});
@@ -134,7 +149,8 @@ function collideMallet(m){
 function physics(){
   tick++;
   stepMallet(mal1);
-  if(mode==='vs') stepMallet(mal2); else aiStep();
+  if(mode==='vs'||mode==='host') stepMallet(mal2);
+  else if(mode==='ai') aiStep();
   if(freeze>0){ freeze--; return; }
   puck.x+=puck.vx; puck.y+=puck.vy;
   puck.vx*=0.995; puck.vy*=0.995;
@@ -159,6 +175,9 @@ function endMatch(){
   if(mode==='ai'){
     t.innerHTML=w1?'<span class="a">Kazandın!</span> 🏆':'<span class="b">Bilgisayar Kazandı</span> 🤖';
     m.textContent=score1+' – '+score2+(w1?' · İyi bilekmiş!':' · Rövanş?');
+  } else if(mode==='host'||mode==='guest'){
+    t.innerHTML=w1?'<span class="a">Kazandın!</span> 🏆':'<span class="b">Rakip Kazandı</span>';
+    m.textContent=score1+' – '+score2+(w1?' · Süpersin!':' · Rövanş?');
   } else {
     t.innerHTML=w1?'<span class="a">Kırmızı Kazandı!</span>':'<span class="b">Mavi Kazandı!</span>';
     m.textContent=score1+' – '+score2+' · Rövanş şart.';
@@ -217,7 +236,10 @@ function drawMallet(m,col,dark){
   ctx.fillStyle=dark;
   ctx.beginPath(); ctx.arc(m.x,m.y,R_M()*0.28,0,6.28); ctx.fill();
 }
-function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loop); }
+function loop(){
+  if(state==='play'){ if(mode==='guest') guestStep(); else physics(); }
+  draw(); requestAnimationFrame(loop);
+}
 
 function tap(el,fn){ el._fn=fn;
   const fire=e=>{ e.preventDefault(); e.stopPropagation(); if(el._fn)el._fn(); };
@@ -226,11 +248,125 @@ tap(document.getElementById('vsBtn'),()=>{ try{audio();}catch(e){} mode='vs'; ne
   document.getElementById('intro').classList.add('hidden'); });
 tap(document.getElementById('aiBtn'),()=>{ try{audio();}catch(e){} mode='ai'; newMatch();
   document.getElementById('intro').classList.add('hidden'); });
-tap(document.getElementById('againBtn'),()=>{ newMatch();
+tap(document.getElementById('againBtn'),()=>{
+  if(mode==='guest'){ try{ net.conn.send({t:'again'}); }catch(e){} return; }
+  newMatch();
   document.getElementById('endcard').classList.add('hidden'); });
-tap(document.getElementById('menuBtn'),()=>{ state='intro';
+tap(document.getElementById('menuBtn'),()=>{
+  if(mode==='host'||mode==='guest'){ try{ net.conn && net.conn.close(); }catch(e){} location.reload(); return; }
+  state='intro';
   document.getElementById('endcard').classList.add('hidden');
   document.getElementById('intro').classList.remove('hidden'); });
+/* ================= ONLINE (PeerJS, host-otoriter) =================
+   Kasmasın diye: misafirin KENDİ tokmağı tamamen yerel (sıfır gecikme),
+   fizik host'ta; top misafirde ölü-hesapla akar, kar deltasında yumuşak
+   düzeltilir. Koordinatlar ekran oranına normalize, misafir sahayı ayna
+   görür: HERKES kendini ALTTA KIRMIZI oynar. */
+const PEER_ONEK='hokeytr-';
+const net={ peer:null, conn:null, role:null };
+const netMsgEl=document.getElementById('netMsg');
+function netMsg(t,hata){ netMsgEl.textContent=t; netMsgEl.classList.toggle('hata',!!hata); }
+function kodUret(){ const A='ABCDEFGHJKLMNPRSTUVYZ23456789'; let k='';
+  for(let i=0;i<4;i++) k+=A[Math.floor(Math.random()*A.length)]; return k; }
+
+function odaKur(){
+  if(!window.Peer){ netMsg('PeerJS yüklenemedi — internet gerekli', true); return; }
+  audio();
+  const kod=kodUret();
+  netMsg('Kod: '+kod+' — arkadaşın bekleniyor…');
+  net.peer=new Peer(PEER_ONEK+kod);
+  net.peer.on('error', e=>netMsg('Bağlantı hatası: '+e.type, true));
+  net.peer.on('connection', c=>{
+    net.conn=c; net.role='host';
+    c.on('open', ()=>{ netBasla('host'); });
+    c.on('data', d=>{
+      if(d.t==='pos'){ mal2.tx=d.x*W; mal2.ty=Math.min(H/2-R_M(), d.y*H); }
+      else if(d.t==='again' && state==='over'){ newMatch();
+        document.getElementById('endcard').classList.add('hidden'); }
+    });
+    c.on('close', ()=>{ netMsg('Rakip ayrıldı', true); setTimeout(()=>location.reload(), 1200); });
+  });
+}
+function katil(){
+  if(!window.Peer){ netMsg('PeerJS yüklenemedi — internet gerekli', true); return; }
+  audio();
+  const kod=(document.getElementById('joinCode').value||'').trim().toUpperCase();
+  if(kod.length!==4){ netMsg('4 haneli oda kodunu yaz', true); return; }
+  netMsg('Bağlanılıyor…');
+  net.peer=new Peer();
+  net.peer.on('error', e=>netMsg('Bağlantı hatası: '+e.type, true));
+  net.peer.on('open', ()=>{
+    const c=net.peer.connect(PEER_ONEK+kod, {reliable:false});
+    net.conn=c; net.role='guest';
+    c.on('open', ()=>{ netBasla('guest'); });
+    c.on('data', d=>{ if(d.t==='snap') snapAl(d); });
+    c.on('close', ()=>{ netMsg('Bağlantı koptu', true); setTimeout(()=>location.reload(), 1200); });
+  });
+}
+function netBasla(rol){
+  mode=rol; newMatch();
+  document.getElementById('intro').classList.add('hidden');
+  netMsg('');
+}
+
+/* Host → misafir: 30Hz anlık görüntü (host uzayında normalize) */
+setInterval(()=>{
+  if(net.role!=='host' || !net.conn || !net.conn.open) return;
+  net.conn.send({ t:'snap',
+    px:puck.x/W, py:puck.y/H, pvx:puck.vx/W, pvy:puck.vy/H,
+    mx:mal1.x/W, my:mal1.y/H,
+    s1:score1, s2:score2, f:freeze, st:state });
+}, 33);
+/* Misafir → host: 30Hz kendi tokmağı (host uzayına aynalanmış) */
+setInterval(()=>{
+  if(net.role!=='guest' || !net.conn || !net.conn.open) return;
+  net.conn.send({ t:'pos', x:1-mal1.x/W, y:1-mal1.y/H });
+}, 33);
+
+/* Misafir: karı uygula (ayna) + yumuşak düzeltme */
+let sonS1=0, sonS2=0;
+function snapAl(d){
+  // skorlar aynalanır: misafirin "kendi" skoru altta (score1)
+  const yeni1=d.s2, yeni2=d.s1;
+  if(yeni1>sonS1 || yeni2>sonS2){ horn(); buzz([40,60,40]); }
+  sonS1=yeni1; sonS2=yeni2; score1=yeni1; score2=yeni2;
+  freeze=d.f;
+  // top: hedef konum (ayna)
+  const hx=(1-d.px)*W, hy=(1-d.py)*H;
+  const hvx=-d.pvx*W, hvy=-d.pvy*H;
+  const fark=Math.hypot(puck.x-hx, puck.y-hy);
+  if(fark>70){ puck.x=hx; puck.y=hy; }        // büyük sapma: anında düzelt
+  else { puck.x+=(hx-puck.x)*0.35; puck.y+=(hy-puck.y)*0.35; }
+  puck.vx=hvx; puck.vy=hvy;
+  // host tokmağı (misafirde üstte görünür)
+  mal2.tx=(1-d.mx)*W; mal2.ty=(1-d.my)*H;
+  // durum geçişleri
+  if(d.st==='over' && state==='play'){ score1=yeni1; score2=yeni2; endMatch(); }
+  if(d.st==='play' && state==='over'){ state='play';
+    document.getElementById('endcard').classList.add('hidden'); reset(1); }
+}
+
+/* Misafir yerel adımı: kendi tokmağı anında, top ölü-hesap */
+function guestStep(){
+  tick++;
+  stepMallet(mal1);                 // kendi tokmağın: sıfır gecikme
+  mal2.x+=(mal2.tx-mal2.x)*0.4;     // rakip tokmağı yumuşak izler
+  mal2.y+=(mal2.ty-mal2.y)*0.4;
+  if(freeze>0){ freeze--; return; }
+  puck.x+=puck.vx; puck.y+=puck.vy;
+  puck.vx*=0.995; puck.vy*=0.995;
+  const r=R_P();
+  if(puck.x<r){ puck.x=r; puck.vx=Math.abs(puck.vx); }
+  if(puck.x>W-r){ puck.x=W-r; puck.vx=-Math.abs(puck.vx); }
+  if(puck.y<r){ puck.y=r; puck.vy=Math.abs(puck.vy); }
+  if(puck.y>H-r){ puck.y=H-r; puck.vy=-Math.abs(puck.vy); }
+  collideMallet(mal1);              // kendi vuruşun anında hissedilir (ses+sekme)
+}
+
+tap(document.getElementById('hostBtn'), odaKur);
+tap(document.getElementById('joinBtn'), katil);
+document.getElementById('joinCode').addEventListener('touchend', e=>e.stopPropagation());
+
 score1=0;score2=0;reset(1);
 loop();
 </script>
