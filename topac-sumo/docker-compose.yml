@@ -1,0 +1,23 @@
+# Tek komutla ayağa kaldır: docker compose up -d
+# - web:   statik oyun (index.html) → :8080
+# - peer:  kendi PeerJS sinyal sunucumuz → :9000/peer
+# TURN (coturn) host-network gerektirdiği için ayrı kurulur (coturn/turnserver.conf).
+services:
+  web:
+    image: nginx:alpine
+    ports: ["8080:80"]
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    restart: unless-stopped
+
+  peer:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install --no-audit --no-fund && node peerserver.js"
+    environment:
+      PORT: "9000"
+      PEER_PATH: "/peer"
+    ports: ["9000:9000"]
+    volumes:
+      - ./server:/app
+    restart: unless-stopped

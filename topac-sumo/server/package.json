@@ -1,0 +1,7 @@
+{
+  "name": "topac-sumo-peerserver",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": { "start": "node peerserver.js" },
+  "dependencies": { "peer": "^1.0.2" }
+}

@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<!--
+  TOPAÇ SUMO — Arena
+  Özgün oyun fikri ve ilk sürümü: Alameddin Ç. (sumo.alameddinc.com) — teşekkürler!
+  Bu sürüm: kendi altyapımıza taşındı (kendi PeerServer + TURN), multiplayer
+  netcode'a client-side prediction eklendi, 5 yeni add-on (KALKAN/MIKNATIS/ÇAPA/
+  ROKET/BUZ). Uyarlama: Harun.
+-->
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOPAÇ SUMO — 頂 Arena</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rampart+One&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+  :root{
+    --ink:#131a33;
+    --ink2:#1b2547;
+    --sand:#e8c78a;
+    --aka:#e63946;
+    --ao:#4a7cc7;
+    --gold:#f0b429;
+    --paper:#f4ead5;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--ink)}
+  body{
+    font-family:'Chakra Petch',sans-serif;color:var(--paper);
+    background-color:var(--ink);
+    background-image:
+      radial-gradient(circle at 50% 110%, transparent 34%, rgba(240,180,41,.05) 35%, rgba(240,180,41,.05) 38%, transparent 39%),
+      radial-gradient(circle at 0% 110%, transparent 34%, rgba(255,255,255,.04) 35%, rgba(255,255,255,.04) 38%, transparent 39%),
+      radial-gradient(circle at 100% 110%, transparent 34%, rgba(255,255,255,.04) 35%, rgba(255,255,255,.04) 38%, transparent 39%);
+    background-size:90px 60px;
+  }
+  #c{position:fixed;inset:0;display:block}
+
+  /* ---------- HUD ---------- */
+  #hud{position:fixed;top:0;left:0;right:0;padding:18px 26px;display:flex;justify-content:space-between;pointer-events:none;z-index:5}
+  .side{width:38%;display:flex;flex-direction:column;gap:6px}
+  .side.right{align-items:flex-end}
+  .nameline{display:flex;align-items:baseline;gap:12px}
+  .side.right .nameline{flex-direction:row-reverse}
+  .pname{font-family:'Rampart One',cursive;font-size:30px;letter-spacing:2px;line-height:1}
+  .p1 .pname{color:var(--aka);text-shadow:3px 3px 0 rgba(0,0,0,.45)}
+  .p2 .pname{color:#7aa8e0;text-shadow:3px 3px 0 rgba(0,0,0,.45)}
+  .wtag{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;min-height:15px}
+  .hpwrap{width:100%;height:20px;background:rgba(0,0,0,.5);border:2px solid rgba(244,234,213,.25);transform:skewX(-12deg);overflow:hidden}
+  .side.right .hpwrap{transform:skewX(12deg)}
+  .hpbar{height:100%;width:100%;transition:width .15s steps(6);background:linear-gradient(180deg,#ff7b74,var(--aka))}
+  .p2 .hpbar{background:linear-gradient(180deg,#9cc2f0,var(--ao));margin-left:auto}
+  .lives{display:flex;gap:7px}
+  .pip{width:14px;height:14px;border-radius:50%;border:2px solid rgba(244,234,213,.4)}
+  .pip.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(240,180,41,.7)}
+  .dash{font-size:11px;letter-spacing:1px;opacity:.75}
+  .dash b{color:#8ef0a8}
+  .dash b.cd{color:#666}
+
+  /* ---------- Banner ---------- */
+  #banner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:8}
+  #bannerText{font-family:'Rampart One',cursive;font-size:min(11vw,110px);color:var(--gold);
+    text-shadow:5px 5px 0 rgba(0,0,0,.55), -2px -2px 0 rgba(230,57,70,.35);
+    opacity:0;transform:scale(.6) rotate(-4deg);transition:none}
+  #bannerText.show{opacity:1;transform:scale(1) rotate(-4deg);transition:transform .18s cubic-bezier(.2,2.4,.4,1),opacity .1s}
+
+  /* ---------- Menü / Son ekran ---------- */
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+    background:rgba(12,16,36,.85);backdrop-filter:blur(4px);z-index:10;transition:opacity .3s;overflow-y:auto}
+  .overlay.hidden{opacity:0;pointer-events:none}
+  .title{font-family:'Rampart One',cursive;font-size:min(11vw,96px);line-height:.95;text-align:center;color:var(--paper);
+    text-shadow:6px 6px 0 var(--aka), 12px 12px 0 rgba(0,0,0,.4)}
+  .title small{display:block;font-size:.28em;color:var(--gold);letter-spacing:12px;margin-top:12px;text-shadow:3px 3px 0 rgba(0,0,0,.5)}
+  .ctrls{display:flex;gap:60px;font-size:14px}
+  .ctrl h3{font-family:'Rampart One',cursive;font-size:20px;margin-bottom:8px;letter-spacing:2px}
+  .ctrl.c1 h3{color:var(--aka)} .ctrl.c2 h3{color:#7aa8e0}
+  .ctrl p{margin:4px 0;opacity:.85}
+  kbd{display:inline-block;min-width:26px;text-align:center;padding:3px 7px;border:1px solid rgba(244,234,213,.4);
+    border-bottom-width:3px;border-radius:5px;background:rgba(255,255,255,.07);font-family:inherit;font-weight:700;font-size:12px}
+  .rules{font-size:12px;opacity:.7;text-align:center;line-height:1.8;max-width:620px}
+  .rules b{color:var(--gold)}
+  .opts{display:flex;flex-direction:column;gap:9px;align-items:center}
+  .opt{font-size:15px;font-weight:700;letter-spacing:3px;color:var(--paper)}
+  .opt kbd{color:var(--gold);border-color:rgba(240,180,41,.5)}
+  .press{font-size:16px;font-weight:700;letter-spacing:4px;color:var(--gold);animation:blink 1.1s steps(2) infinite}
+  @keyframes blink{50%{opacity:.25}}
+  #winTitle{font-family:'Rampart One',cursive;font-size:min(12vw,96px);text-align:center;text-shadow:5px 5px 0 rgba(0,0,0,.5)}
+
+  /* ---------- Mod kartları ---------- */
+  .modes{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+  .mode{width:240px;min-height:210px;display:flex;flex-direction:column;gap:9px;align-items:center;
+    border:1px solid rgba(240,180,41,.3);padding:16px 14px;border-radius:14px;background:rgba(255,255,255,.04);
+    transition:border-color .15s, transform .15s}
+  .mode:hover{border-color:var(--gold);transform:translateY(-3px)}
+  .micon{font-size:30px;line-height:1}
+  .mode h4{font-family:'Rampart One',cursive;letter-spacing:2px;color:var(--gold);font-size:17px;text-align:center}
+  .mdesc{font-size:12px;opacity:.75;text-align:center;line-height:1.7}
+  .mkey{font-size:11px;opacity:.5;margin-top:auto}
+  .netrow{display:flex;gap:10px;align-items:center}
+  .btn{font-family:'Chakra Petch',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;
+    padding:8px 16px;background:var(--gold);color:var(--ink);border:none;border-radius:6px;cursor:pointer;
+    border-bottom:3px solid #ad7d15}
+  .btn:hover{filter:brightness(1.1)}
+  .btn:disabled{opacity:.4;cursor:default}
+  #joinCode,.nick{width:110px;padding:8px 10px;font-family:'Chakra Petch';font-weight:700;font-size:16px;letter-spacing:6px;
+    text-transform:uppercase;text-align:center;background:rgba(0,0,0,.45);color:var(--paper);
+    border:1px solid rgba(244,234,213,.35);border-radius:6px;outline:none}
+  .nick{width:170px;letter-spacing:1px;font-size:14px;text-transform:none}
+  #netStatus{font-size:13px;letter-spacing:1px;min-height:17px;color:#8ef0a8}
+  #netStatus.err{color:#ff7b74}
+  #netStatus .code{font-size:22px;letter-spacing:8px;color:var(--gold);font-weight:700}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud" style="display:none">
+  <div class="side p1">
+    <div class="nameline"><span class="pname" id="n1">KIRMIZI</span><span class="wtag" id="w1"></span></div>
+    <div class="hpwrap"><div class="hpbar" id="hp1"></div></div>
+    <div class="lives" id="lv1"></div>
+    <div class="dash">DASH <kbd>Boşluk</kbd> <b id="d1">HAZIR</b></div>
+  </div>
+  <div class="side right p2">
+    <div class="nameline"><span class="pname" id="n2">MAVİ</span><span class="wtag" id="w2"></span></div>
+    <div class="hpwrap"><div class="hpbar" id="hp2"></div></div>
+    <div class="lives" id="lv2"></div>
+    <div class="dash"><b id="d2">HAZIR</b> <span id="d2k"><kbd>Enter</kbd> DASH</span></div>
+  </div>
+</div>
+
+<div id="banner"><span id="bannerText"></span></div>
+
+<div class="overlay" id="menu">
+  <div class="title">TOPAÇ<br>SUMO<small>ド ア リ ー ナ</small></div>
+  <input class="nick" id="nick1" maxlength="12" placeholder="ADINI YAZ">
+  <div class="modes">
+    <div class="mode">
+      <div class="micon">🤖</div>
+      <h4>TEK KİŞİLİK</h4>
+      <p class="mdesc">Bota karşı oyna<br>WASD veya oklar + <kbd>Boşluk</kbd></p>
+      <div class="netrow">
+        <button class="btn" id="optBot1">KOLAY</button>
+        <button class="btn" id="optBot2">ZOR</button>
+      </div>
+      <p class="mkey">kısayol: <kbd>1</kbd> <kbd>2</kbd></p>
+    </div>
+    <div class="mode">
+      <div class="micon">👥</div>
+      <h4>YEREL 2 OYUNCU</h4>
+      <p class="mdesc">Aynı klavye<br><b style="color:var(--aka)">WASD</b> + <kbd>Boşluk</kbd> · <b style="color:#7aa8e0">Oklar</b> + <kbd>Enter</kbd></p>
+      <input class="nick" id="nick2" maxlength="12" placeholder="2. OYUNCUNUN ADI">
+      <button class="btn" id="opt2p">BAŞLA</button>
+      <p class="mkey">kısayol: <kbd>Boşluk</kbd></p>
+    </div>
+    <div class="mode">
+      <div class="micon">🌐</div>
+      <h4>ONLINE 2 OYUNCU</h4>
+      <p class="mdesc">İki farklı cihaz, oda koduyla</p>
+      <button class="btn" id="btnHost">ODA KUR</button>
+      <div class="netrow">
+        <input id="joinCode" maxlength="4" placeholder="KOD">
+        <button class="btn" id="btnJoin">KATIL</button>
+      </div>
+      <div id="netStatus"></div>
+    </div>
+  </div>
+  <div class="rules">
+    Rakibini <b>ringden dışarı it</b> ya da canını bitir. Silahsızken sadece itersin. Büyüyen sert iter, küçülen hızlanır.<br>
+    Güçler: <b>KILIÇ</b> · <b>BIÇAK</b> · <b>TABANCA</b> · <b>TARAMALI</b> · <b>ZİNCİR</b> yakala+sürükle · <b>BÜYÜ</b> · <b>KÜÇÜL</b> · <b>KLON</b> · <b>GÖRÜNMEZ</b> · <b>KILIK</b> · <b>ONARIM</b>
+  </div>
+</div>
+
+<div class="overlay hidden" id="gameover">
+  <div id="winTitle">KAZANAN</div>
+  <div class="opt" id="series" style="color:var(--gold);font-size:18px"></div>
+  <div class="press">R — TEKRAR OYNA</div>
+  <div class="opt" style="font-size:13px;opacity:.7">M — ANA MENÜ</div>
+</div>
+
+<script>
+'use strict';
+/* ================= TEMEL ================= */
+const cvs = document.getElementById('c');
+const ctx = cvs.getContext('2d');
+let W=0, H=0, CX=0, CY=0, AR=0, DPR=1;
+
+function resize(){
+  DPR = Math.min(devicePixelRatio||1, 2);
+  W = innerWidth; H = innerHeight;
+  cvs.width = W*DPR; cvs.height = H*DPR;
+  cvs.style.width = W+'px'; cvs.style.height = H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  CX = W/2; CY = H/2 + 14;
+  AR = Math.min(W,H)*0.36;
+}
+addEventListener('resize', resize); resize();
+
+/* ================= SES ================= */
+let AC=null;
+function audio(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+function beep(freq, dur, type='square', gain=0.08, slide=0){
+  try{
+    const ac=audio(), o=ac.createOscillator(), g=ac.createGain();
+    o.type=type; o.frequency.value=freq;
+    if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(30,freq+slide), ac.currentTime+dur);
+    g.gain.setValueAtTime(gain, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime+dur);
+  }catch(e){}
+}
+const sfx = {
+  clash(){ beep(95,0.09,'square',0.1); beep(140,0.06,'sawtooth',0.05); },
+  slash(){ beep(1400,0.08,'sawtooth',0.05,-900); beep(220,0.1,'square',0.08); },
+  shot(){ beep(950,0.06,'square',0.06,-600); },
+  hit(){ beep(500,0.06,'square',0.07,-200); },
+  pickup(){ beep(660,0.07,'sine',0.09); setTimeout(()=>beep(990,0.1,'sine',0.09),70); },
+  latch(){ beep(1250,0.05,'square',0.07,-300); setTimeout(()=>beep(620,0.09,'square',0.08),50); },
+  dash(){ beep(300,0.12,'sine',0.07,300); },
+  ringout(){ beep(320,0.5,'sawtooth',0.12,-260); },
+  ko(){ beep(180,0.35,'square',0.12,-120); },
+  start(){ beep(523,0.1,'square',0.08); setTimeout(()=>beep(784,0.18,'square',0.08),110); }
+};
+
+/* ================= AĞ ================= */
+const net = { role:null, peer:null, conn:null, lock:false, ev:[], sendT:0, seq:0, lastQ:0 };
+const nSt = document.getElementById('netStatus');
+function netMsg(txt, err){ nSt.innerHTML = txt; nSt.classList.toggle('err', !!err); }
+function randCode(){
+  const A='ABCDEFGHJKLMNPRSTUVYZ23456789'; let s='';
+  for(let i=0;i<4;i++) s+=A[Math.floor(Math.random()*A.length)];
+  return s;
+}
+const PEER_PREFIX = 'topacsumo-v1-';
+const GUEST_SELF  = 1;      // misafir her zaman 1 numaralı topaç
+const PREDICT     = true;   // misafir kendi topacını lokal tahmin eder (gecikme hissini yok eder)
+
+/* --- AĞ ALTYAPISI ---------------------------------------------------------
+ * SIGNAL boş ise PeerJS'in ücretsiz public bulutu kullanılır (rate-limitli,
+ * SLA'sız — "arada yavaş/kopuk"un bir sebebi). Kendi PeerServer'ını çalıştırıp
+ * host/port/path'i buraya yaz → bağlantı kurulumu bize ait, hızlı ve stabil.
+ * Örn: { host:'sumo.ornek.com', port:443, secure:true, path:'/peer' }         */
+const SIGNAL = null;   // ← kendi PeerServer bilgini gir (server/ klasörü + README)
+
+/* STUN + kendi TURN sunucumuz (coturn) — NAT/CGNAT arkasında relay garantisi.
+ * ÖNEMLİ: iceTransportPolicy 'all' → önce doğrudan (P2P) dener, olmazsa TURN.
+ * Doğrudan bağlantı relay'den düşük gecikmelidir; TURN yalnızca gerektiğinde. */
+const RTC_CONFIG = { iceTransportPolicy:'all', iceServers: [
+  {urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},
+  {urls:'turn:89.167.89.99:3478',               username:'sumo', credential:'topacSumoTurn2026'},
+  {urls:'turn:89.167.89.99:3478?transport=tcp', username:'sumo', credential:'topacSumoTurn2026'}
+]};
+/* Peer seçenekleri: SIGNAL varsa kendi sunucumuz, yoksa public bulut */
+const peerOpts = (id) => SIGNAL ? {...SIGNAL, config:RTC_CONFIG, ...(id?{}:{})} : {config:RTC_CONFIG};
+
+let connectTimer = null;
+function armConnectTimeout(ms){
+  clearTimeout(connectTimer);
+  connectTimer = setTimeout(()=>{
+    if(net.conn && net.conn.open) return;
+    netMsg('bağlantı kurulamadı (NAT/ağ engeli) — sayfayı yenileyip tekrar dene, mümkünse ikisi de Wi-Fi kullansın', true);
+    try{ net.peer && net.peer.destroy(); }catch(e){}
+    net.peer=null; net.conn=null; net.lock=false;
+  }, ms);
+}
+function watchIce(c, label){
+  const t = setInterval(()=>{
+    const pc = c.peerConnection;
+    if(!pc){ return; }
+    const s = pc.iceConnectionState;
+    if(c.open || s==='connected' || s==='completed'){ clearInterval(t); return; }
+    if(s==='checking') netMsg(label+' — NAT aşılıyor…');
+    if(s==='failed'){ clearInterval(t); netMsg('NAT aşılamadı — farklı ağ dene (ör. biri mobil veriyse Wi-Fi yap)', true); }
+  }, 500);
+}
+
+document.getElementById('btnHost').onclick = ()=>{
+  if(!window.Peer){ netMsg('PeerJS yüklenemedi — internet gerekli', true); return; }
+  if(net.lock) return;
+  net.lock = true;
+  const code = randCode();
+  netMsg('oda açılıyor…');
+  net.peer = new Peer(PEER_PREFIX + code, peerOpts(true));
+  net.peer.on('open', ()=> netMsg('KOD: <span class="code">'+code+'</span><br>rakip bekleniyor…'));
+  net.peer.on('connection', c=>{
+    net.conn = c; net.role = 'host';
+    netMsg('rakip geldi — bağlantı kuruluyor…');
+    armConnectTimeout(20000);
+    watchIce(c, 'bağlantı kuruluyor');
+    c.on('open', ()=>{ clearTimeout(connectTimer); startGame('online'); });
+    c.on('data', d=>{
+      if(!d) return;
+      if(d.t==='input' && players[1]) players[1].netInput = d.k;
+      else if(d.t==='hello'){
+        net.guestName = (d.name||'').slice(0,12) || 'MİSAFİR';
+        game.names[1] = net.guestName;
+        document.getElementById('n2').textContent = net.guestName;
+      }
+      else if(d.t==='rematch' && game.state==='gameover') doRematch();
+    });
+    c.on('close', netDropped);
+    c.on('error', e=> netMsg('bağlantı hatası: '+e.type, true));
+  });
+  net.peer.on('error', e=>{ netMsg('hata: '+e.type, true); net.lock=false; });
+};
+document.getElementById('btnJoin').onclick = ()=>{
+  if(!window.Peer){ netMsg('PeerJS yüklenemedi — internet gerekli', true); return; }
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  if(code.length!==4){ netMsg('4 harfli kodu gir', true); return; }
+  if(net.lock) return;
+  net.lock = true;
+  netMsg('sinyal sunucusuna bağlanılıyor…');
+  armConnectTimeout(25000);
+  net.peer = new Peer(peerOpts(false));
+  net.peer.on('open', ()=>{
+    netMsg('odaya bağlanılıyor…');
+    const c = net.peer.connect(PEER_PREFIX + code, {reliable:false});
+    watchIce(c, 'odaya bağlanılıyor');
+    c.on('open', ()=>{
+      clearTimeout(connectTimer); net.conn=c; net.role='guest';
+      try{ c.send({t:'hello', name: nick1El.value.trim().slice(0,12)||'MİSAFİR'}); }catch(err){}
+      enterGuestMode();
+    });
+    c.on('data', onGuestData);
+    c.on('close', netDropped);
+    c.on('error', e=> netMsg('bağlantı hatası: '+e.type, true));
+  });
+  net.peer.on('error', e=>{ netMsg(e.type==='peer-unavailable' ? 'oda bulunamadı — kodu kontrol et' : 'hata: '+e.type, true); net.lock=false; clearTimeout(connectTimer); });
+};
+function netDropped(){
+  if(game.state==='gameover') return;
+  const wt = document.getElementById('winTitle');
+  wt.textContent = 'BAĞLANTI KOPTU';
+  wt.style.color = '#ff7b74';
+  document.getElementById('gameover').classList.remove('hidden');
+  game.state = 'gameover';
+}
+
+/* koordinat normalize: farklı ekran boyutları için saha birimi */
+const nx = v => Math.round((v-CX)/AR*1000)/1000;
+const ny = v => Math.round((v-CY)/AR*1000)/1000;
+const nv = v => Math.round(v/AR*1000)/1000;
+const dx = v => CX + v*AR;
+const dy = v => CY + v*AR;
+const dv = v => v*AR;
+
+function packPlayer(p){
+  return {x:nx(p.x), y:ny(p.y), vx:nv(p.vx), vy:nv(p.vy), r:nv(p.r), a:Math.round(p.ang*100)/100,
+    hp:p.hp, lv:p.lives, w:p.weapon, wt:Math.ceil(p.weaponT), g:Math.ceil(p.growT), s:Math.ceil(p.shrinkT),
+    dc:Math.round(p.dashCd*10)/10, f:p.falling>0?1:0, fs:Math.round(p.fallScale*100)/100,
+    co:p.chainOn?1:0, cl:nv(p.chainLen),
+    gh:Math.max(0,Math.round(p.ghostT*10)/10), dgt:Math.max(0,Math.round(p.disguiseT*10)/10),
+    sd:Math.max(0,Math.round(p.shieldT*10)/10), mg:Math.max(0,Math.round(p.magnetT*10)/10),
+    an:Math.max(0,Math.round(p.anchorT*10)/10), tb:Math.max(0,Math.round(p.turboT*10)/10),
+    fz:Math.max(0,Math.round(p.frozenT*10)/10),
+    cs:p.clones.map(c=>({x:nx(c.x), y:ny(c.y), vx:nv(c.vx), vy:nv(c.vy), a:Math.round(c.ang*100)/100}))};
+}
+function unpackPlayer(p, d){
+  const X=dx(d.x), Y=dy(d.y);
+  p.vx=dv(d.vx); p.vy=dv(d.vy); p.r=dv(d.r); p.ang=d.a;
+  // yumuşatma: pozisyonu direkt basma, hedef olarak sakla (büyük sıçrama/düşmede anında geç)
+  if(p.sx===undefined || d.f || Math.hypot(X-p.x, Y-p.y)>120){ p.x=X; p.y=Y; }
+  p.sx=X; p.sy=Y;
+  p.hp=d.hp; p.lives=d.lv; p.weapon=d.w; p.weaponT=d.wt; p.growT=d.g; p.shrinkT=d.s;
+  p.dashCd=d.dc; p.falling=d.f; p.fallScale=d.fs;
+  p.chainOn=!!d.co; p.chainLen=dv(d.cl);
+  p.ghostT=d.gh||0; p.disguiseT=d.dgt||0;
+  p.shieldT=d.sd||0; p.magnetT=d.mg||0; p.anchorT=d.an||0; p.turboT=d.tb||0; p.frozenT=d.fz||0;
+  p.clones=(d.cs||[]).map(c=>({x:dx(c.x), y:dy(c.y), vx:dv(c.vx), vy:dv(c.vy), ang:c.a, life:1}));
+}
+function snapshot(){
+  const s = {t:'snap', st:game.state, q:++net.seq,
+    nm: game.names,
+    pl: players.map(packPlayer),
+    pu: powerups.map(p=>({ty:p.type, x:nx(p.x), y:ny(p.y), ttl:Math.round(p.ttl*10)/10, age:Math.round(p.age*10)/10})),
+    bl: bullets.map(b=>({x:nx(b.x), y:ny(b.y), vx:nv(b.vx), vy:nv(b.vy)})),
+    ev: net.ev};
+  net.ev = [];
+  return s;
+}
+function onGuestData(d){
+  if(!d) return;
+  if(d.t==='snap'){
+    if(d.q && d.q <= net.lastQ) return; // geç gelen eski paket — atla (unordered kanal)
+    net.lastQ = d.q || 0;
+    game.state = d.st;
+    if(d.nm && game.names.join('\x1f')!==d.nm.join('\x1f')){
+      game.names = d.nm;
+      document.getElementById('n1').textContent = d.nm[0];
+      document.getElementById('n2').textContent = d.nm[1];
+    }
+    d.pl.forEach((pd,i)=> unpackPlayer(players[i], pd));
+    powerups = d.pu.map(p=>({type:p.ty, label:PU_LABEL[p.ty], x:dx(p.x), y:dy(p.y), ttl:p.ttl, age:p.age}));
+    bullets = d.bl.map(b=>({x:dx(b.x), y:dy(b.y), vx:dv(b.vx), vy:dv(b.vy), ttl:1}));
+    d.ev.forEach(handleNetEvent);
+  }
+}
+function handleNetEvent(e){
+  if(e.e==='s' && sfx[e.k]) sfx[e.k]();
+  else if(e.e==='b') burst(dx(e.x), dy(e.y), e.c, e.n, e.sp);
+  else if(e.e==='f') addFloat(dx(e.x), dy(e.y), e.txt, e.c);
+  else if(e.e==='ban') setBanner(e.txt, e.d);
+  else if(e.e==='shake') game.shake = Math.max(game.shake, e.v);
+  else if(e.e==='over'){
+    const wt = document.getElementById('winTitle');
+    wt.textContent = e.txt; wt.style.color = e.col;
+    if(e.ser) document.getElementById('series').textContent = e.ser;
+    document.getElementById('gameover').classList.remove('hidden');
+  }
+  else if(e.e==='restart'){
+    document.getElementById('gameover').classList.add('hidden');
+  }
+}
+/* host: efektleri hem yerel oynat hem misafire yolla */
+function playSfx(k){ sfx[k](); if(net.role==='host') net.ev.push({e:'s',k}); }
+function fxBurst(x,y,c,n,sp){ burst(x,y,c,n,sp); if(net.role==='host') net.ev.push({e:'b',x:nx(x),y:ny(y),c,n,sp}); }
+function fxFloat(x,y,txt,c){ addFloat(x,y,txt,c); if(net.role==='host') net.ev.push({e:'f',x:nx(x),y:ny(y),txt,c}); }
+function fxShake(v){ game.shake=Math.max(game.shake,v); if(net.role==='host') net.ev.push({e:'shake',v}); }
+function showBanner(txt,d){ setBanner(txt,d); if(net.role==='host') net.ev.push({e:'ban',txt,d}); }
+
+function sendInput(){
+  if(net.role!=='guest' || !net.conn || !net.conn.open) return;
+  net.conn.send({t:'input', k:{
+    up:!!(keys['w']||keys['arrowup']), down:!!(keys['s']||keys['arrowdown']),
+    left:!!(keys['a']||keys['arrowleft']), right:!!(keys['d']||keys['arrowright']),
+    dash:!!(keys[' ']||keys['enter'])
+  }});
+}
+setInterval(sendInput, 45);
+
+function enterGuestMode(){
+  net.lastQ = 0;
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('hud').style.display='flex';
+  document.getElementById('n1').textContent='EV SAHİBİ';
+  document.getElementById('n2').textContent='SEN';
+  document.getElementById('d2k').innerHTML='<kbd>Boşluk</kbd> DASH';
+  players = [makePlayer(0), makePlayer(1)];
+  resetPositions();
+  game.state='ready';
+  setBanner('BAĞLANDI!', 1);
+}
+
+/* ================= GİRİŞ ================= */
+const keys = {};
+addEventListener('keydown', e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','Enter'].includes(e.key)) e.preventDefault();
+  keys[e.key.toLowerCase()] = true;
+  if(game.state==='menu' && !net.lock){
+    if(e.key===' ') startGame('2p');
+    if(e.key==='1') startGame('bot','easy');
+    if(e.key==='2') startGame('bot','hard');
+  }
+  if(e.key.toLowerCase()==='r' && game.state==='gameover'){
+    if(net.role==='guest'){ try{ net.conn.send({t:'rematch'}); }catch(err){} }
+    else if(net.role==='host') doRematch();
+    else startGame(game.mode, game.diff);
+  }
+  if(e.key.toLowerCase()==='m' && game.state==='gameover') location.reload();
+  sendInput();
+});
+addEventListener('keyup', e=>{
+  if(e.target.tagName==='INPUT') return;
+  keys[e.key.toLowerCase()] = false;
+  // Cmd/Meta basılıyken diğer tuşların keyup'ı yutulur — Meta bırakılınca hepsini temizle
+  if(e.key==='Meta' || e.key==='Control') clearKeys();
+  sendInput();
+});
+/* takılı tuş önlemi: odak kaybında hepsini bırak */
+function clearKeys(){
+  for(const k in keys) keys[k] = false;
+  sendInput();
+}
+addEventListener('blur', clearKeys);
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) clearKeys(); });
+
+/* ================= OYUN DURUMU ================= */
+const game = { state:'menu', t:0, shake:0, bannerT:0, frameT:0, soloLocal:false,
+  names:['KIRMIZI','MAVİ'], score:[0,0], games:0, loser:-1 };
+const nick1El = document.getElementById('nick1');
+const nick2El = document.getElementById('nick2');
+try{
+  nick1El.value = localStorage.getItem('nick1')||'';
+  nick2El.value = localStorage.getItem('nick2')||'';
+}catch(e){}
+// isim yazarken Enter/Escape → odaktan çık ki Boşluk/1/2 oyunu başlatabilsin
+for(const el of [nick1El, nick2El, document.getElementById('joinCode')]){
+  el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key==='Escape') el.blur(); });
+}
+document.getElementById('optBot1').onclick = ()=>{ if(game.state==='menu' && !net.lock) startGame('bot','easy'); };
+document.getElementById('optBot2').onclick = ()=>{ if(game.state==='menu' && !net.lock) startGame('bot','hard'); };
+document.getElementById('opt2p').onclick  = ()=>{ if(game.state==='menu' && !net.lock) startGame('2p'); };
+
+const P1_KEYS = {up:'w', down:'s', left:'a', right:'d', dash:' '};
+const P2_KEYS = {up:'arrowup', down:'arrowdown', left:'arrowleft', right:'arrowright', dash:'enter'};
+
+const BOT_DIFFS = {
+  easy:{speed:0.72, jitter:0.5, lead:0, edgeStart:0.6, edgeCare:0.85, dashFoeU:0.65, randDash:0.15, dodge:false},
+  hard:{speed:1.0, jitter:0.14, lead:0.16, edgeStart:0.48, edgeCare:1.4, dashFoeU:0.45, randDash:0.05, dodge:true}
+};
+
+function makePlayer(i){
+  return {
+    i, keys: i? P2_KEYS : P1_KEYS,
+    color: i? '#4a7cc7' : '#e63946',
+    color2: i? '#9cc2f0' : '#ff9a92',
+    dark: i? '#22406e' : '#8f1f28',
+    x:0, y:0, vx:0, vy:0,
+    ang:0, spin:(i?-1:1)*11,
+    baseR:24, r:24,
+    hp:100, lives:3,
+    weapon:null, weaponT:0, fireCd:0, chainOn:false, chainLen:0,
+    growT:0, shrinkT:0, ghostT:0, disguiseT:0, dashCd:0, hitCd:0,
+    shieldT:0, magnetT:0, anchorT:0, turboT:0, frozenT:0,
+    clones:[], aix:0, aiy:0,
+    lastDx: i?-1:1, lastDy:0,
+    falling:0, fallScale:1,
+    bot:false, diffP:null, netInput:null,
+    wanderT:0, wanderA:0
+  };
+}
+let players = [makePlayer(0), makePlayer(1)];
+let powerups = [], particles = [], floats = [], bullets = [];
+let spawnT = 2.5;
+
+function resetPositions(){
+  const [a,b] = players;
+  a.x = CX - AR*0.45; a.y = CY; a.vx=0; a.vy=0;
+  b.x = CX + AR*0.45; b.y = CY; b.vx=0; b.vy=0;
+  for(const p of players){
+    p.hp=100; p.weapon=null; p.weaponT=0; p.growT=0; p.shrinkT=0;
+    p.ghostT=0; p.disguiseT=0; p.clones=[];
+    p.shieldT=0; p.magnetT=0; p.anchorT=0; p.turboT=0; p.frozenT=0;
+    p.hitCd=0; p.dashCd=0; p.fireCd=0; p.chainOn=false; p.chainLen=0;
+    p.falling=0; p.fallScale=1; p.r=p.baseR;
+  }
+  powerups.length=0; bullets.length=0; spawnT=2.5;
+}
+
+function doRematch(){
+  document.getElementById('gameover').classList.add('hidden');
+  net.ev.push({e:'restart'});
+  startGame('online');
+}
+
+function startGame(mode, diff){
+  if(game.state==='menu'){ game.score=[0,0]; game.games=0; } // menüden yeni seri
+  game.mode = mode; game.diff = diff;
+  document.getElementById('gameover').classList.add('hidden');
+  players = [makePlayer(0), makePlayer(1)];
+  game.soloLocal = (mode==='bot' || mode==='online'); // tek yerel oyuncu: WASD + ok tuşları ikisi de
+  const n1v = nick1El.value.trim().slice(0,12);
+  const n2v = nick2El.value.trim().slice(0,12);
+  try{ localStorage.setItem('nick1',n1v); localStorage.setItem('nick2',n2v); }catch(e){}
+  if(mode==='bot'){
+    players[1].bot = true;
+    players[1].diffP = BOT_DIFFS[diff];
+    game.names = [n1v||'SEN', diff==='hard' ? 'BOT ZOR' : 'BOT'];
+    document.getElementById('d2k').textContent='OTO';
+  } else if(mode==='online'){
+    players[1].netInput = {up:0,down:0,left:0,right:0,dash:0};
+    game.names = [n1v||'EV SAHİBİ', net.guestName||'MİSAFİR'];
+    document.getElementById('d2k').textContent='UZAK';
+  } else {
+    game.names = [n1v||'KIRMIZI', n2v||'MAVİ'];
+  }
+  document.getElementById('n1').textContent = game.names[0];
+  document.getElementById('n2').textContent = game.names[1];
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('hud').style.display='flex';
+  resetPositions();
+  playSfx('start');
+  showBanner('DÖVÜŞ!', 0.9);
+  game.state='ready'; game.t=0.9;
+}
+
+function setBanner(txt, dur){
+  const el = document.getElementById('bannerText');
+  el.textContent = txt;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  game.bannerT = dur;
+}
+
+/* ================= GÜÇLER ================= */
+const PU_TYPES = [
+  {type:'sword',    w:3, ttl:9, label:'KILIÇ'},
+  {type:'knife',    w:2, ttl:9, label:'BIÇAK'},
+  {type:'gun',      w:2, ttl:8, label:'TABANCA'},
+  {type:'smg',      w:2, ttl:8, label:'TARAMALI'},
+  {type:'chain',    w:2, ttl:8, label:'ZİNCİR'},
+  {type:'grow',     w:2, ttl:8, label:'BÜYÜ'},
+  {type:'shrink',   w:2, ttl:8, label:'KÜÇÜL'},
+  {type:'clone',    w:2, ttl:8, label:'KLON'},
+  {type:'ghost',    w:2, ttl:8, label:'GÖRÜNMEZ'},
+  {type:'disguise', w:2, ttl:8, label:'KILIK'},
+  {type:'heal',     w:1, ttl:7, label:'ONARIM'},
+  /* --- yeni add-on'lar (Harun) --- */
+  {type:'shield',   w:2, ttl:8, label:'KALKAN'},
+  {type:'magnet',   w:2, ttl:8, label:'MIKNATIS'},
+  {type:'anchor',   w:2, ttl:8, label:'ÇAPA'},
+  {type:'turbo',    w:2, ttl:8, label:'ROKET'},
+  {type:'freeze',   w:2, ttl:8, label:'BUZ'}
+];
+const PU_LABEL = Object.fromEntries(PU_TYPES.map(t=>[t.type,t.label]));
+
+function spawnPowerup(){
+  const total = PU_TYPES.reduce((s,t)=>s+t.w,0);
+  let r = Math.random()*total, def = PU_TYPES[0];
+  for(const t of PU_TYPES){ if((r-=t.w)<=0){ def=t; break; } }
+  const ang = Math.random()*Math.PI*2;
+  const dist = AR*(0.15+Math.random()*0.6);
+  powerups.push({
+    type:def.type, label:def.label,
+    x:CX+Math.cos(ang)*dist, y:CY+Math.sin(ang)*dist,
+    ttl:def.ttl, age:0
+  });
+}
+function applyPowerup(p, pu){
+  if(['sword','knife','gun','smg','chain'].includes(pu.type)){
+    p.weapon=pu.type;
+    p.weaponT = pu.type==='chain' ? 8 : pu.type==='smg' ? 4 : 9;
+    p.fireCd=0.3; p.chainOn=false;
+  }
+  else if(pu.type==='grow'){ p.growT=8; p.shrinkT=0; }
+  else if(pu.type==='shrink'){ p.shrinkT=8; p.growT=0; }
+  else if(pu.type==='clone'){ spawnClones(p); }
+  else if(pu.type==='ghost'){ p.ghostT=5; }
+  else if(pu.type==='disguise'){ p.disguiseT=6; }
+  else if(pu.type==='heal'){ p.hp=Math.min(100,p.hp+30); }
+  /* --- yeni add-on'lar --- */
+  else if(pu.type==='shield'){ p.shieldT=5; }               // itiş + silah hasarına bağışık
+  else if(pu.type==='magnet'){ p.magnetT=4; }               // rakibi kendine çeker
+  else if(pu.type==='anchor'){ p.anchorT=4; }               // yerinden oynamaz (ring-out zor)
+  else if(pu.type==='turbo'){ p.turboT=5; p.dashCd=0; }     // hız + anında dash
+  else if(pu.type==='freeze'){ players[p.i?0:1].frozenT=1.4; } // rakibi dondurur
+  playSfx('pickup');
+  fxFloat(pu.x, pu.y-26, pu.label, '#f0b429');
+  fxBurst(pu.x, pu.y, '#f0b429', 12, 130);
+}
+
+/* ================= PARÇACIK ================= */
+function burst(x,y,color,n,speed){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, s=speed*(0.3+Math.random()*0.7);
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0.4+Math.random()*0.35,maxLife:0.6,color,size:2+Math.random()*3});
+  }
+}
+function addFloat(x,y,txt,color){
+  floats.push({x,y,txt,color,life:1});
+}
+
+/* ================= BOT ================= */
+function botThink(p, dt){
+  const foe = players[0];
+  const D = p.diffP;
+  p.wanderT -= dt;
+  if(p.wanderT<=0){ p.wanderA = Math.random()*Math.PI*2; p.wanderT = 0.3+Math.random()*0.5; }
+
+  // algı: klonlar botu şaşırtır, görünmezlik nişanı bozar
+  let fx=foe.x, fy=foe.y, fvx=foe.vx, fvy=foe.vy;
+  if(foe.clones && foe.clones.length){
+    const cands = [{x:foe.x,y:foe.y,vx:foe.vx,vy:foe.vy}, ...foe.clones];
+    const t = cands[Math.floor(game.frameT/1.4) % cands.length];
+    fx=t.x; fy=t.y; fvx=t.vx||0; fvy=t.vy||0;
+  }
+  if(foe.ghostT>0){
+    fx += Math.sin(game.frameT*2.7)*190;
+    fy += Math.cos(game.frameT*3.3)*190;
+  }
+
+  const cxv = CX-p.x, cyv = CY-p.y;
+  const dC = Math.hypot(cxv,cyv)||1;
+  const u = dC/AR;
+
+  // hedef seç
+  let tx, ty, mode='attack';
+  let best=null, bestScore=-1;
+  for(const pu of powerups){
+    let s = 0;
+    if(pu.type==='heal') s = p.hp<60 ? 3 : 0.5;
+    else if(['sword','knife','gun','smg','chain'].includes(pu.type)) s = p.weapon?0.3:2.2;
+    else if(pu.type==='grow') s = p.growT>0?0.3:1.6;
+    else if(pu.type==='shrink') s = p.shrinkT>0?0.3:1.2;
+    else if(pu.type==='clone') s = p.clones.length?0.3:1.3;
+    else if(pu.type==='ghost') s = p.ghostT>0?0.3:1.2;
+    else s = p.disguiseT>0?0.3:0.8;
+    const d = Math.hypot(pu.x-p.x, pu.y-p.y);
+    s = s/(1+d/200);
+    if(s>bestScore){ bestScore=s; best=pu; }
+  }
+  const foeArmed = foe.weapon && !p.weapon;
+  if(best && (bestScore>1.1 || foeArmed)){ tx=best.x; ty=best.y; mode='collect'; }
+  else if(foeArmed){
+    const away = Math.atan2(p.y-fy, p.x-fx);
+    tx = CX + Math.cos(away)*AR*0.4;
+    ty = CY + Math.sin(away)*AR*0.4;
+    mode='evade';
+  } else if(p.weapon==='chain' && p.chainOn){
+    // rakibi arkasında sürükle: rakipten uzağa, merkez üzerinden
+    const away = Math.atan2(p.y-foe.y, p.x-foe.x);
+    tx = p.x + Math.cos(away)*200;
+    ty = p.y + Math.sin(away)*200;
+  } else if(p.weapon==='gun'){
+    // menzilli: mesafe koru
+    const dF = Math.hypot(fx-p.x, fy-p.y);
+    if(dF<170){
+      const away = Math.atan2(p.y-fy, p.x-fx);
+      tx = CX + Math.cos(away)*AR*0.5;
+      ty = CY + Math.sin(away)*AR*0.5;
+      mode='evade';
+    } else { tx = fx+fvx*D.lead; ty = fy+fvy*D.lead; }
+  } else {
+    tx = fx + fvx*D.lead;
+    ty = fy + fvy*D.lead;
+  }
+
+  let ax = tx-p.x, ay = ty-p.y;
+  let l = Math.hypot(ax,ay)||1; ax/=l; ay/=l;
+
+  // mermi savuşturma (zor bot)
+  if(D.dodge) for(const b of bullets){
+    if(b.o===p.i) continue;
+    const bd = Math.hypot(b.x-p.x, b.y-p.y);
+    if(bd<130){
+      const bl = Math.hypot(b.vx,b.vy)||1;
+      const toward = ((p.x-b.x)*b.vx+(p.y-b.y)*b.vy)/(bl*bd);
+      if(toward>0.85){
+        ax += -b.vy/bl*1.5; ay += b.vx/bl*1.5;
+      }
+    }
+  }
+
+  // kenar güvenliği
+  const w = Math.min(1, Math.max(0,(u-D.edgeStart)/(1-D.edgeStart))**1.4 * D.edgeCare);
+  ax = ax*(1-w) + (cxv/dC)*w;
+  ay = ay*(1-w) + (cyv/dC)*w;
+
+  // gürültü
+  ax += Math.cos(p.wanderA)*D.jitter;
+  ay += Math.sin(p.wanderA)*D.jitter;
+  l = Math.hypot(ax,ay)||1; ax/=l; ay/=l;
+
+  // dash kararı
+  let dash=false;
+  if(p.dashCd<=0){
+    const dxF=fx-p.x, dyF=fy-p.y, dF=Math.hypot(dxF,dyF)||1;
+    const align = (ax*dxF+ay*dyF)/dF;
+    const foeU = Math.hypot(fx-CX,fy-CY)/AR;
+    const px = p.x+ax*180, py = p.y+ay*180;
+    const safe = Math.hypot(px-CX,py-CY) < AR*0.85;
+    if(mode==='attack' && dF<170 && align>0.88 && foeU>D.dashFoeU && safe) dash=true;
+    if(mode==='evade' && u>0.75 && safe) dash=true;
+    if(Math.random()<D.randDash*dt && safe) dash=true;
+  }
+  return {ax:ax*D.speed, ay:ay*D.speed, dash};
+}
+
+/* ================= FİZİK ================= */
+const ACC=1500, MAXV=430, DAMP=1.9;
+
+function speedMulOf(p){
+  return (p.weapon==='knife'?1.3:1) * (p.shrinkT>0?1.3:1) * (p.turboT>0?1.6:1);
+}
+
+function damage(vic, dmg, kx, ky){
+  vic.hp -= dmg;
+  vic.vx += kx; vic.vy += ky;
+  fxFloat(vic.x, vic.y-vic.r-10, '-'+dmg, '#ff5a52');
+  if(vic.hp<=0){
+    vic.hp=0;
+    fxShake(18);
+    playSfx('ko');
+    fxBurst(vic.x, vic.y, vic.color2, 30, 300);
+    vic.falling=0.8;
+    game.loser = vic.i;
+    game.state='ko'; game.t=1.1;
+  }
+}
+
+function updatePlayer(p, dt){
+  if(p.falling>0) return;
+
+  // BUZ: donmuşsa girdi yok, hızla durur
+  if(p.frozenT>0){
+    p.frozenT-=dt;
+    p.vx*=Math.exp(-9*dt); p.vy*=Math.exp(-9*dt);
+    p.x+=p.vx*dt; p.y+=p.vy*dt; p.ang+=p.spin*0.3*dt;
+    if(p.magnetT>0) p.magnetT-=dt;
+    if(p.shieldT>0) p.shieldT-=dt;
+    if(p.anchorT>0) p.anchorT-=dt;
+    if(p.turboT>0) p.turboT-=dt;
+    return;
+  }
+
+  let ax=0, ay=0, wantDash=false;
+  if(p.netInput){
+    const ni=p.netInput;
+    if(ni.up) ay-=1; if(ni.down) ay+=1;
+    if(ni.left) ax-=1; if(ni.right) ax+=1;
+    const len=Math.hypot(ax,ay);
+    if(len>0){ ax/=len; ay/=len; p.lastDx=ax; p.lastDy=ay; }
+    wantDash = !!ni.dash;
+  } else if(p.bot){
+    const o = botThink(p, dt);
+    ax=o.ax; ay=o.ay; wantDash=o.dash;
+    const len=Math.hypot(ax,ay);
+    if(len>0.01){ p.lastDx=ax/len; p.lastDy=ay/len; }
+  } else if(game.soloLocal && p.i===0){
+    // tek yerel oyuncu: iki tuş takımı da geçerli
+    if(keys['w']||keys['arrowup']) ay-=1;
+    if(keys['s']||keys['arrowdown']) ay+=1;
+    if(keys['a']||keys['arrowleft']) ax-=1;
+    if(keys['d']||keys['arrowright']) ax+=1;
+    const len = Math.hypot(ax,ay);
+    if(len>0){ ax/=len; ay/=len; p.lastDx=ax; p.lastDy=ay; }
+    wantDash = !!(keys[' ']||keys['enter']);
+  } else {
+    const k = p.keys;
+    if(keys[k.up]) ay-=1; if(keys[k.down]) ay+=1;
+    if(keys[k.left]) ax-=1; if(keys[k.right]) ax+=1;
+    const len = Math.hypot(ax,ay);
+    if(len>0){ ax/=len; ay/=len; p.lastDx=ax; p.lastDy=ay; }
+    wantDash = !!keys[k.dash];
+  }
+
+  p.aix = ax; p.aiy = ay; // klonlar sahibin girdisini taklit eder
+  const speedMul = speedMulOf(p);
+  p.vx += ax*ACC*speedMul*dt;
+  p.vy += ay*ACC*speedMul*dt;
+
+  // dash
+  p.dashCd = Math.max(0, p.dashCd-dt);
+  if(wantDash && p.dashCd<=0){
+    p.vx += p.lastDx*520; p.vy += p.lastDy*520;
+    p.dashCd = 2;
+    playSfx('dash');
+    fxBurst(p.x - p.lastDx*p.r, p.y - p.lastDy*p.r, p.color2, 8, 90);
+  }
+
+  // sönümleme + hız limiti
+  const d = Math.exp(-DAMP*dt);
+  p.vx*=d; p.vy*=d;
+  const v = Math.hypot(p.vx,p.vy), vmax = MAXV*speedMul;
+  if(v>vmax){ p.vx=p.vx/v*vmax; p.vy=p.vy/v*vmax; }
+
+  p.x += p.vx*dt; p.y += p.vy*dt;
+  p.ang += p.spin*dt;
+
+  // zamanlayıcılar
+  p.hitCd = Math.max(0, p.hitCd-dt);
+  if(p.weaponT>0){ p.weaponT-=dt; if(p.weaponT<=0){ p.weapon=null; p.chainOn=false; } }
+  if(p.growT>0) p.growT-=dt;
+  if(p.shrinkT>0) p.shrinkT-=dt;
+  if(p.ghostT>0) p.ghostT-=dt;
+  if(p.disguiseT>0) p.disguiseT-=dt;
+  // yeni add-on zamanlayıcıları
+  if(p.shieldT>0) p.shieldT-=dt;
+  if(p.anchorT>0) p.anchorT-=dt;
+  if(p.turboT>0){ p.turboT-=dt; p.dashCd=0; }   // ROKET: dash hep hazır
+  if(p.magnetT>0){
+    p.magnetT-=dt;
+    const foe = players[p.i?0:1];               // MIKNATIS: rakibi kendine çeker
+    if(foe.falling<=0 && foe.anchorT<=0){
+      const dxm=p.x-foe.x, dym=p.y-foe.y, dm=Math.hypot(dxm,dym)||1;
+      foe.vx += (dxm/dm)*420*dt; foe.vy += (dym/dm)*420*dt;
+    }
+  }
+  p.r = p.baseR * (p.growT>0 ? 1.45 : p.shrinkT>0 ? 0.72 : 1);
+
+  // tabanca / taramalı: oto-ateş
+  if(p.weapon==='gun' || p.weapon==='smg'){
+    p.fireCd -= dt;
+    const foe = players[p.i?0:1];
+    if(p.fireCd<=0 && foe.falling<=0){
+      const smg = p.weapon==='smg';
+      p.fireCd = smg ? 0.12 : 0.75;
+      let a = Math.atan2(foe.y-p.y, foe.x-p.x);
+      if(smg) a += (Math.random()-0.5)*0.22;              // seken namlu
+      if(foe.ghostT>0) a += (Math.random()-0.5)*0.7;      // görünmez hedefe kör atış
+      const spd = smg ? 620 : 520;
+      bullets.push({x:p.x+Math.cos(a)*(p.r+10), y:p.y+Math.sin(a)*(p.r+10),
+                    vx:Math.cos(a)*spd, vy:Math.sin(a)*spd, o:p.i, ttl:1.4,
+                    dmg: smg ? 4 : 10});
+      playSfx('shot');
+      fxBurst(p.x+Math.cos(a)*(p.r+12), p.y+Math.sin(a)*(p.r+12), '#ffd76e', smg?2:4, 80);
+    }
+  }
+
+  // ring dışı
+  const distC = Math.hypot(p.x-CX, p.y-CY);
+  if(distC > AR){
+    p.falling = 0.8;
+    fxShake(16);
+    playSfx('ringout');
+    game.loser = p.i;
+    game.state='fall'; game.t=1.1;
+  }
+}
+
+function spawnClones(p){
+  p.clones = [];
+  for(let i=0;i<2;i++){
+    const a = Math.random()*Math.PI*2;
+    p.clones.push({x:p.x+Math.cos(a)*55, y:p.y+Math.sin(a)*55,
+                   vx:p.vx, vy:p.vy, ang:p.ang, life:6, wt:0, wa:0});
+  }
+}
+function updateClones(dt){
+  for(const p of players){
+    if(!p.clones.length) continue;
+    const foe = players[p.i?0:1];
+    for(const c of p.clones){
+      c.life -= dt;
+      c.wt -= dt;
+      if(c.wt<=0){ c.wa = Math.random()*Math.PI*2; c.wt = 0.25+Math.random()*0.4; }
+      let ax = p.aix + Math.cos(c.wa)*0.7;
+      let ay = p.aiy + Math.sin(c.wa)*0.7;
+      const dC = Math.hypot(c.x-CX, c.y-CY)||1;
+      if(dC > AR*0.8){ ax += (CX-c.x)/dC*1.8; ay += (CY-c.y)/dC*1.8; }
+      const l = Math.hypot(ax,ay)||1;
+      c.vx += ax/l*ACC*0.85*dt; c.vy += ay/l*ACC*0.85*dt;
+      const dmp = Math.exp(-DAMP*dt); c.vx*=dmp; c.vy*=dmp;
+      const v = Math.hypot(c.vx,c.vy);
+      if(v>MAXV){ c.vx=c.vx/v*MAXV; c.vy=c.vy/v*MAXV; }
+      c.x += c.vx*dt; c.y += c.vy*dt; c.ang += p.spin*dt;
+      // rakip dokununca patlar (sahte olduğu anlaşılır)
+      if(foe.falling<=0 && Math.hypot(foe.x-c.x, foe.y-c.y) < foe.r+p.r*0.9){
+        c.life = 0;
+        fxBurst(c.x, c.y, p.color2, 16, 220);
+        fxFloat(c.x, c.y-20, 'KLON!', '#8ef0a8');
+        playSfx('hit');
+      }
+      if(dC > AR){ c.life = 0; fxBurst(c.x, c.y, p.color2, 10, 150); }
+    }
+    p.clones = p.clones.filter(c=>c.life>0);
+  }
+}
+
+function updateChains(dt){
+  for(const p of players){
+    if(p.weapon!=='chain') continue;
+    const foe = players[p.i?0:1];
+    if(foe.falling>0 || p.falling>0){ p.chainOn=false; continue; }
+    const ddx=foe.x-p.x, ddy=foe.y-p.y;
+    const dist=Math.hypot(ddx,ddy)||1;
+    if(!p.chainOn){
+      if(dist < 240){
+        p.chainOn = true;
+        p.chainLen = Math.max(90, dist);
+        playSfx('latch');
+        fxFloat(foe.x, foe.y-foe.r-12, 'YAKALANDI!', '#f0b429');
+        fxBurst(foe.x, foe.y, '#f0b429', 10, 140);
+      }
+      continue;
+    }
+    // makara: zincir yavaşça kısalır
+    p.chainLen = Math.max(80, p.chainLen - 30*dt);
+    if(dist > p.chainLen){
+      // yay: iki tarafı da kütle oranına göre çeker (Newton 3)
+      const nxv=ddx/dist, nyv=ddy/dist;
+      const pull = Math.min(2600, (dist-p.chainLen)*11);
+      const ma=p.r*p.r, mb=foe.r*foe.r, tot=ma+mb;
+      p.vx += nxv*pull*(mb/tot)*2*dt;
+      p.vy += nyv*pull*(mb/tot)*2*dt;
+      foe.vx -= nxv*pull*(ma/tot)*2*dt;
+      foe.vy -= nyv*pull*(ma/tot)*2*dt;
+    }
+  }
+}
+
+function updateBullets(dt){
+  for(const b of bullets){
+    b.x += b.vx*dt; b.y += b.vy*dt; b.ttl -= dt;
+    for(const p of players){
+      if(p.i===b.o || p.falling>0 || b.ttl<=0) continue;
+      if(Math.hypot(p.x-b.x, p.y-b.y) < p.r+5){
+        const dm = b.dmg||10;
+        damage(p, dm, b.vx*(dm>=10?0.28:0.13), b.vy*(dm>=10?0.28:0.13));
+        fxBurst(b.x, b.y, '#ffd76e', 8, 160);
+        playSfx('hit');
+        b.ttl = 0;
+      }
+    }
+    if(Math.hypot(b.x-CX, b.y-CY) > AR+60) b.ttl = 0;
+  }
+  bullets = bullets.filter(b=>b.ttl>0);
+}
+
+function collide(){
+  const [a,b] = players;
+  if(a.falling>0 || b.falling>0) return;
+  const dxv=b.x-a.x, dyv=b.y-a.y;
+  const dist=Math.hypot(dxv,dyv);
+  const melee = p => p.weapon==='sword'||p.weapon==='knife';
+  const reach = p => p.r + (melee(p) ? 9 : 0);
+  const minD = reach(a)+reach(b) - 8;
+  if(dist>=minD || dist===0) return;
+
+  const nxv=dxv/dist, nyv=dyv/dist;
+  const ma=a.r*a.r, mb=b.r*b.r;
+  const overlap = minD-dist, tot=ma+mb;
+  // ÇAPA: sabit oyuncu itilmez, örtüşmeyi tümüyle diğeri yer
+  const fixA=a.anchorT>0, fixB=b.anchorT>0;
+  const wA=fixA?0:(fixB?1:mb/tot), wB=fixB?0:(fixA?1:ma/tot);
+  a.x -= nxv*overlap*wA; a.y -= nyv*overlap*wA;
+  b.x += nxv*overlap*wB; b.y += nyv*overlap*wB;
+  // KALKAN/ÇAPA: itiş kuvvetine bağışık — çarpışma öncesi hız saklanır
+  const aVx0=a.vx, aVy0=a.vy, bVx0=b.vx, bVy0=b.vy;
+  const kbImmA=a.shieldT>0||a.anchorT>0, kbImmB=b.shieldT>0||b.anchorT>0;
+
+  const rvx=b.vx-a.vx, rvy=b.vy-a.vy;
+  const rel = rvx*nxv+rvy*nyv;
+  if(rel<0){
+    const e=1.15;
+    const j = -(1+e)*rel/(1/ma+1/mb);
+    a.vx -= j*nxv/ma; a.vy -= j*nyv/ma;
+    b.vx += j*nxv/mb; b.vy += j*nyv/mb;
+    // sumo itiş bonusu: kütle oranına göre — büyük olan sert iter, az savrulur
+    const kna = Math.min(160, 60*(mb/ma));
+    const knb = Math.min(160, 60*(ma/mb));
+    a.vx -= nxv*kna; a.vy -= nyv*kna;
+    b.vx += nxv*knb; b.vy += nyv*knb;
+    // itişe bağışık oyuncuların hızını geri al (KALKAN/ÇAPA)
+    if(kbImmA){ a.vx=aVx0; a.vy=aVy0; }
+    if(kbImmB){ b.vx=bVx0; b.vy=bVy0; }
+
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    fxShake(6);
+    fxBurst(mx,my,'#f4ead5',8,150);
+    playSfx('clash');
+
+    // yakın silah hasarı
+    for(const [att,vic,dir] of [[a,b,1],[b,a,-1]]){
+      if(melee(att) && att.hitCd<=0){
+        att.hitCd = 0.55;
+        if(vic.shieldT>0){                       // KALKAN: hasarı blokla
+          fxFloat(vic.x, vic.y-vic.r-6, 'BLOK', '#7fd0ff');
+          fxBurst(mx,my,'#7fd0ff',10,160); playSfx('clash');
+        } else {
+          const dmg = att.weapon==='sword' ? 14 : 8;
+          fxBurst(mx,my, att.weapon==='sword' ? '#ffd76e':'#ff8f6e', 14, 220);
+          playSfx('slash');
+          damage(vic, dmg, nxv*dir*160, nyv*dir*160);
+        }
+      }
+    }
+  }
+}
+
+/* ================= TUR AKIŞI ================= */
+function roundEnd(){
+  // NOT: falling animasyonu tur zamanlayıcısından önce bittiği için falling>0 ile
+  // kaybeden aranmaz — fall/KO anında game.loser işaretlenir
+  const loser = game.loser>=0 ? players[game.loser] : (players.find(p=>p.hp<=0) || players[0]);
+  game.loser = -1;
+  loser.lives--;
+  if(loser.lives<=0){
+    const winner = players[loser.i?0:1];
+    game.score[winner.i]++; game.games++;
+    const seriesTxt = game.names[0]+' '+game.score[0]+' — '+game.score[1]+' '+game.names[1]+' · '+game.games+'. oyun';
+    const wt = document.getElementById('winTitle');
+    const txt = game.names[winner.i]+' KAZANDI! 🏆';
+    let col;
+    if(game.mode==='2p') col = winner.i ? '#7aa8e0' : '#e63946';
+    else col = winner.i===0 ? '#8ef0a8' : '#ff7b74'; // yerel oyuncu = 0 (bot & online host)
+    wt.textContent = txt;
+    wt.style.color = col;
+    document.getElementById('series').textContent = seriesTxt;
+    document.getElementById('gameover').classList.remove('hidden');
+    game.state='gameover';
+    if(net.role==='host'){
+      net.ev.push({e:'over', txt, ser:seriesTxt,
+        col: winner.i===1 ? '#8ef0a8' : '#ff7b74'}); // misafir = 1
+    }
+  } else {
+    resetPositions();
+    showBanner('DÖVÜŞ!', 0.9);
+    game.state='ready'; game.t=0.9;
+    playSfx('start');
+  }
+}
+
+/* ================= GÜNCELLE ================= */
+function update(dt){
+  game.shake = Math.max(0, game.shake - dt*40);
+  if(game.bannerT>0){
+    game.bannerT-=dt;
+    if(game.bannerT<=0) document.getElementById('bannerText').classList.remove('show');
+  }
+  for(const f of floats){ f.y-=40*dt; f.life-=dt; }
+  floats = floats.filter(f=>f.life>0);
+  for(const pt of particles){
+    pt.x+=pt.vx*dt; pt.y+=pt.vy*dt;
+    pt.vx*=0.92; pt.vy*=0.92; pt.life-=dt;
+  }
+  particles = particles.filter(p=>p.life>0);
+
+  /* misafir: kendi topacı lokal tahmin (gecikme hissini yok eder), rakip snapshot yumuşatma */
+  if(net.role==='guest'){
+    for(const p of players){
+      if(p.falling>0){ p.ang += p.spin*3*dt; continue; }
+      if(PREDICT && p.i===GUEST_SELF && game.state==='play' && p.frozenT<=0){
+        // --- client-side prediction: kendi girdinle anında hareket et ---
+        let ax=0, ay=0;
+        if(keys['w']||keys['arrowup']) ay-=1;
+        if(keys['s']||keys['arrowdown']) ay+=1;
+        if(keys['a']||keys['arrowleft']) ax-=1;
+        if(keys['d']||keys['arrowright']) ax+=1;
+        const len=Math.hypot(ax,ay);
+        if(len>0){ ax/=len; ay/=len; p.lastDx=ax; p.lastDy=ay; }
+        p.vx += ax*ACC*dt; p.vy += ay*ACC*dt;
+        p.dashCd=Math.max(0,p.dashCd-dt);
+        if((keys[' ']||keys['enter']) && p.dashCd<=0){ p.vx+=p.lastDx*520; p.vy+=p.lastDy*520; p.dashCd=2; }
+        const dmp=Math.exp(-DAMP*dt); p.vx*=dmp; p.vy*=dmp;
+        const vv=Math.hypot(p.vx,p.vy); if(vv>MAXV){ p.vx=p.vx/vv*MAXV; p.vy=p.vy/vv*MAXV; }
+        p.x += p.vx*dt; p.y += p.vy*dt;
+        // host ile uzlaşma: küçük sapmayı yumuşak düzelt, büyükte anında geç (çarpışma/itiş host'ta)
+        if(p.sx!==undefined){
+          const err=Math.hypot(p.sx-p.x, p.sy-p.y);
+          const k = err>90 ? 1 : Math.min(1, dt*4);
+          p.x += (p.sx-p.x)*k; p.y += (p.sy-p.y)*k;
+        }
+        p.ang += p.spin*dt;
+        continue;
+      }
+      // rakip veya donmuş/oyun-dışı: snapshot yumuşatma
+      if(p.sx!==undefined){
+        p.sx += p.vx*dt; p.sy += p.vy*dt;
+        const k = Math.min(1, dt*14);
+        p.x += (p.sx-p.x)*k; p.y += (p.sy-p.y)*k;
+      } else { p.x+=p.vx*dt; p.y+=p.vy*dt; }
+      p.ang+=p.spin*dt;
+    }
+    for(const b of bullets){ b.x+=b.vx*dt; b.y+=b.vy*dt; }
+    for(const p of players) for(const c of p.clones){ c.x+=c.vx*dt; c.y+=c.vy*dt; c.ang+=p.spin*dt; }
+    for(const pu of powerups) pu.age+=dt;
+    if(game.state!=='menu') updateHud();
+    return;
+  }
+
+  if(game.state==='ready'){
+    game.t-=dt;
+    if(game.t<=0) game.state='play';
+    netFlush(dt);
+    return;
+  }
+  if(game.state==='fall' || game.state==='ko'){
+    for(const p of players) if(p.falling>0){
+      p.falling-=dt;
+      p.fallScale=Math.max(0,p.falling/0.8);
+      p.x+=p.vx*dt; p.y+=p.vy*dt; p.ang+=p.spin*3*dt;
+    }
+    game.t-=dt;
+    if(game.t<=0){
+      showBanner(game.state==='fall' ? 'RING DIŞI!' : 'NAKAVT!', 1);
+      roundEnd();
+    }
+    netFlush(dt);
+    return;
+  }
+  if(game.state!=='play'){ netFlush(dt); return; }
+
+  for(const p of players) updatePlayer(p, dt);
+  updateChains(dt);
+  updateClones(dt);
+  collide();
+  updateBullets(dt);
+
+  spawnT-=dt;
+  if(spawnT<=0 && powerups.length<3){
+    spawnPowerup();
+    spawnT = 3.5+Math.random()*3;
+  }
+  for(const pu of powerups){
+    pu.ttl-=dt; pu.age+=dt;
+    for(const p of players){
+      if(p.falling<=0 && Math.hypot(p.x-pu.x,p.y-pu.y) < p.r+16){
+        applyPowerup(p,pu); pu.ttl=0;
+      }
+    }
+  }
+  powerups = powerups.filter(p=>p.ttl>0);
+  updateHud();
+  netFlush(dt);
+}
+
+function netFlush(dt){
+  if(net.role!=='host' || !net.conn || !net.conn.open) return;
+  net.sendT -= dt;
+  if(net.sendT<=0){
+    net.sendT = 0.033;
+    try{ net.conn.send(snapshot()); }catch(e){}
+  }
+}
+
+/* ================= HUD ================= */
+const WTAG = {sword:'⚔ KILIÇ', knife:'🗡 BIÇAK', gun:'➶ TABANCA', smg:'⋙ TARAMALI', chain:'⛓ ZİNCİR'};
+function updateHud(){
+  for(const p of players){
+    const n = p.i+1;
+    document.getElementById('hp'+n).style.width = Math.max(0,p.hp)+'%';
+    const tags=[];
+    if(p.weapon) tags.push(WTAG[p.weapon]+' '+Math.max(0,Math.ceil(p.weaponT))+'s');
+    if(p.growT>0) tags.push('◉ DEV '+Math.ceil(p.growT)+'s');
+    if(p.shrinkT>0) tags.push('◇ MİNİK '+Math.ceil(p.shrinkT)+'s');
+    if(p.ghostT>0) tags.push('◌ GÖRÜNMEZ '+Math.ceil(p.ghostT)+'s');
+    if(p.disguiseT>0) tags.push('🎭 KILIK '+Math.ceil(p.disguiseT)+'s');
+    if(p.shieldT>0) tags.push('🛡 KALKAN '+Math.ceil(p.shieldT)+'s');
+    if(p.magnetT>0) tags.push('🧲 MIKNATIS '+Math.ceil(p.magnetT)+'s');
+    if(p.anchorT>0) tags.push('⚓ ÇAPA '+Math.ceil(p.anchorT)+'s');
+    if(p.turboT>0) tags.push('🚀 ROKET '+Math.ceil(p.turboT)+'s');
+    if(p.frozenT>0) tags.push('❄ DONDU '+Math.ceil(p.frozenT)+'s');
+    if(p.clones.length) tags.push('⧉ KLON');
+    document.getElementById('w'+n).textContent = tags.join(' · ');
+    const lv = document.getElementById('lv'+n);
+    if(lv.children.length!==3) lv.innerHTML='<div class="pip"></div>'.repeat(3);
+    [...lv.children].forEach((el,idx)=> el.classList.toggle('on', idx<p.lives));
+    const d = document.getElementById('d'+n);
+    if(p.dashCd<=0){ d.textContent='HAZIR'; d.classList.remove('cd'); }
+    else { d.textContent=p.dashCd.toFixed(1); d.classList.add('cd'); }
+  }
+}
+
+/* ================= ÇİZİM ================= */
+function drawArena(){
+  ctx.save();
+  ctx.beginPath(); ctx.arc(CX, CY+10, AR+26, 0, 7);
+  ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fill();
+
+  ctx.beginPath(); ctx.arc(CX, CY, AR+22, 0, 7);
+  const gp = ctx.createRadialGradient(CX,CY-AR*0.4,AR*0.2, CX,CY,AR+22);
+  gp.addColorStop(0,'#caa15f'); gp.addColorStop(1,'#8a6a38');
+  ctx.fillStyle=gp; ctx.fill();
+
+  ctx.beginPath(); ctx.arc(CX, CY, AR+6, 0, 7);
+  const gs = ctx.createRadialGradient(CX,CY-AR*0.3,AR*0.15, CX,CY,AR+6);
+  gs.addColorStop(0,'#f0d9a8'); gs.addColorStop(1,'#d9b678');
+  ctx.fillStyle=gs; ctx.fill();
+
+  ctx.globalAlpha=0.05;
+  for(let i=0;i<40;i++){
+    const a=(i*2.399), d=Math.sqrt(i/40)*AR;
+    ctx.beginPath();
+    ctx.arc(CX+Math.cos(a)*d, CY+Math.sin(a)*d, 6+(i%3)*4, 0, 7);
+    ctx.fillStyle = i%2 ? '#fff':'#7a5c2e'; ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  ctx.beginPath(); ctx.arc(CX, CY, AR, 0, 7);
+  ctx.lineWidth=13; ctx.strokeStyle='#6e4a1f'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(CX, CY, AR, 0, 7);
+  ctx.lineWidth=9; ctx.setLineDash([16,7]);
+  ctx.strokeStyle='#a87d3c'; ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.strokeStyle='rgba(110,74,31,.6)'; ctx.lineWidth=5; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(CX-AR*0.18, CY-30); ctx.lineTo(CX-AR*0.18, CY+30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX+AR*0.18, CY-30); ctx.lineTo(CX+AR*0.18, CY+30); ctx.stroke();
+  ctx.restore();
+}
+
+function topAlpha(p){
+  if(p.ghostT>0 && p.falling<=0){
+    const viewer = net.role==='guest' ? 1 : (net.role==='host' ? 0 : -1);
+    return viewer===-1 ? 0.12 : (viewer===p.i ? 0.35 : 0.07);
+  }
+  return 1;
+}
+function drawTop(p){
+  if(p.fallScale<=0) return;
+  const src = p.disguiseT>0 ? players[p.i?0:1] : p; // kılık: rakip renkleri
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  const sc = p.falling>0 ? p.fallScale : 1;
+  ctx.scale(sc, sc);
+
+  ctx.beginPath(); ctx.ellipse(0, p.r*0.55, p.r*1.05, p.r*0.4, 0, 0, 7);
+  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fill();
+
+  ctx.rotate(p.ang);
+
+  if(p.weapon==='sword' || p.weapon==='knife'){
+    const blades = p.weapon==='sword' ? 3 : 5;
+    const blen = p.weapon==='sword' ? p.r*1.05 : p.r*0.7;
+    ctx.fillStyle = p.weapon==='sword' ? '#d8dde6' : '#aab2bf';
+    for(let i=0;i<blades;i++){
+      ctx.save();
+      ctx.rotate(i*Math.PI*2/blades);
+      ctx.beginPath();
+      ctx.moveTo(p.r*0.5, -5);
+      ctx.lineTo(p.r+blen, 0);
+      ctx.lineTo(p.r*0.5, 5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  ctx.fillStyle = src.dark;
+  for(let i=0;i<8;i++){
+    ctx.save();
+    ctx.rotate(i*Math.PI/4);
+    ctx.beginPath();
+    ctx.moveTo(p.r*0.75,-p.r*0.28);
+    ctx.lineTo(p.r*1.12,0);
+    ctx.lineTo(p.r*0.75,p.r*0.28);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  const g = ctx.createRadialGradient(-p.r*0.3,-p.r*0.3,p.r*0.1, 0,0,p.r);
+  g.addColorStop(0, src.color2); g.addColorStop(1, src.color);
+  ctx.beginPath(); ctx.arc(0,0,p.r*0.92,0,7);
+  ctx.fillStyle=g; ctx.fill();
+  ctx.lineWidth=3; ctx.strokeStyle=src.dark; ctx.stroke();
+
+  ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=2.5;
+  for(let i=0;i<3;i++){
+    ctx.beginPath();
+    ctx.arc(0,0,p.r*0.55, i*2.1, i*2.1+1.3);
+    ctx.stroke();
+  }
+
+  ctx.beginPath(); ctx.arc(0,0,p.r*0.24,0,7);
+  ctx.fillStyle='#f4ead5'; ctx.fill();
+  ctx.lineWidth=2; ctx.strokeStyle=src.dark; ctx.stroke();
+
+  ctx.restore();
+
+  // tabanca/taramalı namlusu (dönmez, rakibe bakar)
+  if((p.weapon==='gun'||p.weapon==='smg') && p.falling<=0){
+    const foe = players[p.i?0:1];
+    const a = Math.atan2(foe.y-p.y, foe.x-p.x);
+    ctx.save();
+    ctx.translate(p.x,p.y); ctx.rotate(a);
+    ctx.fillStyle='#2b2f38';
+    ctx.fillRect(p.r*0.2, -3.5, p.r+14, 7);
+    ctx.fillStyle='#f0b429';
+    ctx.fillRect(p.r+8, -2, 6, 4);
+    ctx.restore();
+  }
+
+  if(p.growT>0 && p.falling<=0){
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.beginPath(); ctx.arc(0,0,p.r+6+Math.sin(game.frameT*6)*3,0,7);
+    ctx.strokeStyle='rgba(240,180,41,.6)'; ctx.lineWidth=3;
+    ctx.setLineDash([8,8]); ctx.lineDashOffset=-game.frameT*40;
+    ctx.stroke();
+    ctx.restore();
+  }
+  if(p.shrinkT>0 && p.falling<=0){
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.beginPath(); ctx.arc(0,0,p.r+5,0,7);
+    ctx.strokeStyle='rgba(140,240,168,.55)'; ctx.lineWidth=2;
+    ctx.setLineDash([4,6]); ctx.lineDashOffset=game.frameT*60;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const distC = Math.hypot(p.x-CX,p.y-CY);
+  if(p.falling<=0 && distC > AR-p.r*1.8){
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    if(Math.sin(game.frameT*18)>0){
+      ctx.beginPath(); ctx.arc(0,0,p.r+10,0,7);
+      ctx.strokeStyle='rgba(230,57,70,.8)'; ctx.lineWidth=3; ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+function drawPowerup(pu){
+  const bob = Math.sin(pu.age*4)*5;
+  const x=pu.x, y=pu.y+bob;
+  ctx.save();
+  ctx.translate(x,y);
+  const blink = pu.ttl<2.5 && Math.sin(pu.age*14)>0;
+  ctx.globalAlpha = blink ? 0.35 : 1;
+
+  ctx.beginPath(); ctx.arc(0,0,20+Math.sin(pu.age*5)*2,0,7);
+  ctx.strokeStyle='rgba(240,180,41,.55)'; ctx.lineWidth=2.5;
+  ctx.setLineDash([5,6]); ctx.lineDashOffset=pu.age*30; ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.beginPath(); ctx.arc(0,0,16,0,7);
+  ctx.fillStyle='rgba(19,26,51,.85)'; ctx.fill();
+  ctx.lineWidth=2; ctx.strokeStyle='#f0b429'; ctx.stroke();
+
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  if(pu.type==='sword'){
+    ctx.rotate(-Math.PI/4);
+    ctx.strokeStyle='#e6ecf5'; ctx.lineWidth=3.4;
+    ctx.beginPath(); ctx.moveTo(0,8); ctx.lineTo(0,-10); ctx.stroke();
+    ctx.strokeStyle='#f0b429'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(-5,6); ctx.lineTo(5,6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,6); ctx.lineTo(0,11); ctx.stroke();
+  } else if(pu.type==='knife'){
+    ctx.rotate(Math.PI/4);
+    ctx.fillStyle='#cdd6e0';
+    ctx.beginPath(); ctx.moveTo(-2.5,-10); ctx.lineTo(3.5,-8); ctx.lineTo(2,2); ctx.lineTo(-2.5,2); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='#8a5a2e'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(-0.5,3); ctx.lineTo(-0.5,10); ctx.stroke();
+  } else if(pu.type==='gun'){
+    ctx.fillStyle='#cdd6e0';
+    ctx.fillRect(-9,-6,17,5);
+    ctx.fillRect(-8,-2,5,9);
+    ctx.fillStyle='#f0b429';
+    ctx.fillRect(6,-6,3,3);
+  } else if(pu.type==='smg'){
+    ctx.fillStyle='#cdd6e0';
+    ctx.fillRect(-10,-3,20,4);
+    ctx.fillRect(-8,1,5,7);
+    ctx.fillRect(3,1,3,5);
+    ctx.fillStyle='#f0b429';
+    ctx.fillRect(-4,-9,2,3); ctx.fillRect(0,-9,2,3); ctx.fillRect(4,-9,2,3);
+  } else if(pu.type==='clone'){
+    ctx.strokeStyle='#8ef0a8'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.arc(-4,-3,6.5,0,7); ctx.stroke();
+    ctx.globalAlpha*=0.55;
+    ctx.beginPath(); ctx.arc(4,4,6.5,0,7); ctx.stroke();
+  } else if(pu.type==='ghost'){
+    ctx.strokeStyle='rgba(244,234,213,.7)'; ctx.lineWidth=2.5;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.arc(0,0,8,0,7); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(244,234,213,.35)';
+    ctx.beginPath(); ctx.arc(0,0,3,0,7); ctx.fill();
+  } else if(pu.type==='disguise'){
+    ctx.beginPath(); ctx.arc(0,0,8,-Math.PI/2,Math.PI/2); ctx.closePath();
+    ctx.fillStyle='#4a7cc7'; ctx.fill();
+    ctx.beginPath(); ctx.arc(0,0,8,Math.PI/2,Math.PI*1.5); ctx.closePath();
+    ctx.fillStyle='#e63946'; ctx.fill();
+  } else if(pu.type==='chain'){
+    ctx.strokeStyle='#c8ccd6'; ctx.lineWidth=2.8;
+    ctx.beginPath(); ctx.ellipse(-4,-3,5.5,3.5,-Math.PI/5,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(3,3,5.5,3.5,-Math.PI/5,0,7); ctx.stroke();
+    ctx.strokeStyle='#f0b429'; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.ellipse(-9,-8,4,3,-Math.PI/5,0,7); ctx.stroke();
+  } else if(pu.type==='grow'){
+    ctx.strokeStyle='#f0b429'; ctx.lineWidth=3;
+    for(const [ddx,ddy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      ctx.beginPath();
+      ctx.moveTo(ddx*3,ddy*3); ctx.lineTo(ddx*10,ddy*10);
+      ctx.moveTo(ddx*10,ddy*10); ctx.lineTo(ddx*10-ddx*4-ddy*3, ddy*10-ddy*4-ddx*3);
+      ctx.moveTo(ddx*10,ddy*10); ctx.lineTo(ddx*10-ddx*4+ddy*3, ddy*10-ddy*4+ddx*3);
+      ctx.stroke();
+    }
+  } else if(pu.type==='shrink'){
+    ctx.strokeStyle='#8ef0a8'; ctx.lineWidth=3;
+    for(const [ddx,ddy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      ctx.beginPath();
+      ctx.moveTo(ddx*10,ddy*10); ctx.lineTo(ddx*3,ddy*3);
+      ctx.moveTo(ddx*3,ddy*3); ctx.lineTo(ddx*3+ddx*4+ddy*3, ddy*3+ddy*4+ddx*3);
+      ctx.moveTo(ddx*3,ddy*3); ctx.lineTo(ddx*3+ddx*4-ddy*3, ddy*3+ddy*4-ddx*3);
+      ctx.stroke();
+    }
+  } else if(pu.type==='shield'){
+    ctx.strokeStyle='#7fd0ff'; ctx.fillStyle='rgba(127,208,255,.22)'; ctx.lineWidth=2.6;
+    ctx.beginPath(); ctx.moveTo(0,-9); ctx.lineTo(8,-4); ctx.lineTo(8,3);
+    ctx.quadraticCurveTo(0,11,0,11); ctx.quadraticCurveTo(-8,3,-8,3); ctx.lineTo(-8,-4); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  } else if(pu.type==='magnet'){
+    ctx.strokeStyle='#ff6b6b'; ctx.lineWidth=3.2;
+    ctx.beginPath(); ctx.arc(0,1,7,Math.PI,Math.PI*2,false); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-7,1); ctx.lineTo(-7,8); ctx.moveTo(7,1); ctx.lineTo(7,8); ctx.stroke();
+    ctx.strokeStyle='#e6ecf5'; ctx.beginPath(); ctx.moveTo(-7,8); ctx.lineTo(-7,10); ctx.moveTo(7,8); ctx.lineTo(7,10); ctx.stroke();
+  } else if(pu.type==='anchor'){
+    ctx.strokeStyle='#cdd6e0'; ctx.lineWidth=2.6;
+    ctx.beginPath(); ctx.arc(0,-7,3,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-4); ctx.lineTo(0,9); ctx.moveTo(-6,-1); ctx.lineTo(6,-1); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0,4,7,0.12*Math.PI,0.88*Math.PI,false); ctx.stroke();
+  } else if(pu.type==='turbo'){
+    ctx.fillStyle='#ffd76e';
+    ctx.beginPath(); ctx.moveTo(-6,-8); ctx.lineTo(4,-8); ctx.lineTo(8,0); ctx.lineTo(4,8); ctx.lineTo(-6,8); ctx.lineTo(-2,0); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='#ff8f3f'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(-10,-4); ctx.lineTo(-5,-4); ctx.moveTo(-10,4); ctx.lineTo(-5,4); ctx.stroke();
+  } else if(pu.type==='freeze'){
+    ctx.strokeStyle='#9fe8ff'; ctx.lineWidth=2.2;
+    for(let i=0;i<3;i++){
+      ctx.rotate(Math.PI/3);
+      ctx.beginPath(); ctx.moveTo(0,-9); ctx.lineTo(0,9); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0,-9); ctx.lineTo(-3,-6); ctx.moveTo(0,-9); ctx.lineTo(3,-6);
+      ctx.moveTo(0,9); ctx.lineTo(-3,6);  ctx.moveTo(0,9); ctx.lineTo(3,6);
+      ctx.stroke();
+    }
+  } else { // heal
+    ctx.strokeStyle='#7ef0a0'; ctx.lineWidth=4.5;
+    ctx.beginPath(); ctx.moveTo(-7,0); ctx.lineTo(7,0); ctx.moveTo(0,-7); ctx.lineTo(0,7); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawChain(p){
+  if(p.weapon!=='chain' || !p.chainOn || p.falling>0) return;
+  const foe = players[p.i?0:1];
+  if(foe.falling>0) return;
+  const ddx=foe.x-p.x, ddy=foe.y-p.y;
+  const dist=Math.hypot(ddx,ddy)||1;
+  const slack = Math.max(0, p.chainLen-dist);
+  const midX=(p.x+foe.x)/2, midY=(p.y+foe.y)/2 + slack*0.5 + 8;
+  const n = Math.max(6, Math.floor(dist/13));
+  ctx.save();
+  for(let i=0;i<=n;i++){
+    const t=i/n, it=1-t;
+    // quadratic bezier örneklemesi (sarkma)
+    const bx = it*it*p.x + 2*it*t*midX + t*t*foe.x;
+    const by = it*it*p.y + 2*it*t*midY + t*t*foe.y;
+    ctx.beginPath(); ctx.arc(bx, by, 3.2, 0, 7);
+    ctx.fillStyle = i%2 ? '#8a8f9c' : '#c8ccd6';
+    ctx.fill();
+    ctx.lineWidth=1; ctx.strokeStyle='rgba(19,26,51,.6)'; ctx.stroke();
+  }
+  // kanca
+  ctx.beginPath(); ctx.arc(foe.x, foe.y, foe.r*0.35, 0, 7);
+  ctx.strokeStyle='#f0b429'; ctx.lineWidth=2.5; ctx.stroke();
+  ctx.restore();
+}
+
+function drawBullet(b){
+  const a = Math.atan2(b.vy, b.vx);
+  ctx.save();
+  ctx.translate(b.x, b.y); ctx.rotate(a);
+  ctx.fillStyle='rgba(240,180,41,.4)';
+  ctx.fillRect(-14,-2,14,4);
+  ctx.fillStyle='#ffd76e';
+  ctx.beginPath(); ctx.arc(0,0,4,0,7); ctx.fill();
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  if(game.shake>0){
+    ctx.translate((Math.random()-0.5)*game.shake, (Math.random()-0.5)*game.shake);
+  }
+
+  drawArena();
+  for(const pu of powerups) drawPowerup(pu);
+
+  for(const p of players) drawChain(p);
+  for(const p of players) for(const c of (p.clones||[])){
+    ctx.save(); ctx.globalAlpha = topAlpha(p);
+    drawTop({...p, x:c.x, y:c.y, ang:c.ang, weapon:null, chainOn:false, falling:0, fallScale:1});
+    ctx.restore();
+  }
+  const ordered = [...players].sort((a,b)=> Math.hypot(a.vx,a.vy)-Math.hypot(b.vx,b.vy));
+  for(const p of ordered){
+    ctx.save(); ctx.globalAlpha = topAlpha(p);
+    drawTop(p);
+    ctx.restore();
+  }
+  for(const b of bullets) drawBullet(b);
+
+  for(const pt of particles){
+    ctx.globalAlpha = Math.max(0, pt.life/pt.maxLife);
+    ctx.fillStyle = pt.color;
+    ctx.fillRect(pt.x-pt.size/2, pt.y-pt.size/2, pt.size, pt.size);
+  }
+  ctx.globalAlpha=1;
+
+  ctx.font="700 17px 'Chakra Petch'";
+  ctx.textAlign='center';
+  for(const f of floats){
+    ctx.globalAlpha = Math.min(1, f.life*2);
+    ctx.fillStyle='#131a33';
+    ctx.fillText(f.txt, f.x+1.5, f.y+1.5);
+    ctx.fillStyle=f.color;
+    ctx.fillText(f.txt, f.x, f.y);
+  }
+  ctx.globalAlpha=1;
+  ctx.restore();
+}
+
+/* ================= DÖNGÜ ================= */
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(0.033, (now-last)/1000);
+  last = now;
+  game.frameT += dt;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+<style>
+/* ── Dokunmatik kumanda (mobil) ── */
+#tctl{position:fixed;inset:0;pointer-events:none;z-index:40;display:none}
+#tctl.acik{display:block}
+#joyZone{position:absolute;left:0;bottom:0;width:55%;height:60%;pointer-events:auto;touch-action:none}
+#joyBase{position:absolute;width:112px;height:112px;border-radius:50%;
+  border:2px solid rgba(255,209,102,.4);background:rgba(255,255,255,.06);
+  transform:translate(-50%,-50%);display:none}
+#joyKnob{position:absolute;width:52px;height:52px;border-radius:50%;
+  background:rgba(255,209,102,.55);border:2px solid rgba(255,255,255,.5);
+  transform:translate(-50%,-50%);display:none}
+#dashBtn{position:absolute;right:18px;bottom:calc(34px + env(safe-area-inset-bottom));
+  width:92px;height:92px;border-radius:50%;pointer-events:auto;touch-action:none;
+  border:2.5px solid rgba(142,240,168,.55);background:rgba(142,240,168,.14);
+  color:#8ef0a8;font:800 15px/92px system-ui;text-align:center;letter-spacing:2px;
+  user-select:none;-webkit-user-select:none}
+#dashBtn.basili{background:rgba(142,240,168,.4)}
+#tOver{position:absolute;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);display:none;gap:14px;pointer-events:auto}
+#tOver.acik{display:flex}
+#tOver button{font:800 14px system-ui;letter-spacing:1px;padding:14px 22px;border-radius:14px;
+  border:2px solid rgba(255,209,102,.5);background:rgba(255,209,102,.15);color:#ffd166}
+#tOver button.gri{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#ccc}
+</style>
+<div id="tctl">
+  <div id="joyZone"><div id="joyBase"></div><div id="joyKnob"></div></div>
+  <div id="dashBtn">DASH</div>
+  <div id="tOver">
+    <button id="tRetry">🔄 TEKRAR OYNA</button>
+    <button id="tMenu" class="gri">ANA MENÜ</button>
+  </div>
+</div>
+<script>
+/* ── Mobil dokunmatik kumanda: joystick→WASD, düğme→Boşluk ──
+   keys sözlüğünü sürdüğü için tek kişilik, yerel P1, host ve misafir
+   modlarının hepsinde çalışır. Yalnızca dokunmatik cihazda ve oyun
+   sırasında görünür. */
+(function(){
+  var dokunmatik = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if(!dokunmatik) return;
+  var tctl = document.getElementById('tctl');
+  var zone = document.getElementById('joyZone');
+  var base = document.getElementById('joyBase');
+  var knob = document.getElementById('joyKnob');
+  var dash = document.getElementById('dashBtn');
+  var menuEl = document.getElementById('menu');
+  var R = 56;
+
+  function goster(){
+    var oyunda = menuEl.classList.contains('hidden');
+    tctl.classList.toggle('acik', oyunda);
+    if(!oyunda) birak();
+  }
+  new MutationObserver(goster).observe(menuEl, {attributes:true, attributeFilter:['class']});
+  goster();
+
+  function tusla(dx, dy){
+    var esik = R*0.30;
+    keys['a'] = dx < -esik; keys['d'] = dx > esik;
+    keys['w'] = dy < -esik; keys['s'] = dy > esik;
+  }
+  function birak(){
+    keys['a']=keys['d']=keys['w']=keys['s']=false;
+    base.style.display=knob.style.display='none';
+    joyId=null;
+  }
+
+  var joyId=null, ox=0, oy=0;
+  zone.addEventListener('touchstart', function(e){
+    e.preventDefault();
+    var t = e.changedTouches[0];
+    joyId = t.identifier; ox=t.clientX; oy=t.clientY;
+    base.style.display=knob.style.display='block';
+    base.style.left=knob.style.left=ox+'px';
+    base.style.top=knob.style.top=oy+'px';
+  }, {passive:false});
+  zone.addEventListener('touchmove', function(e){
+    e.preventDefault();
+    for(var i=0;i<e.changedTouches.length;i++){
+      var t=e.changedTouches[i];
+      if(t.identifier!==joyId) continue;
+      var dx=t.clientX-ox, dy=t.clientY-oy;
+      var m=Math.hypot(dx,dy)||1;
+      var kx=ox+dx*Math.min(1,R/m), ky=oy+dy*Math.min(1,R/m);
+      knob.style.left=kx+'px'; knob.style.top=ky+'px';
+      tusla(dx,dy);
+    }
+  }, {passive:false});
+  function joyEnd(e){
+    for(var i=0;i<e.changedTouches.length;i++){
+      if(e.changedTouches[i].identifier===joyId){ birak(); }
+    }
+  }
+  zone.addEventListener('touchend', joyEnd);
+  zone.addEventListener('touchcancel', joyEnd);
+
+  dash.addEventListener('touchstart', function(e){
+    e.preventDefault();
+    dash.classList.add('basili');
+    keys[' ']=true;
+  }, {passive:false});
+  function dashEnd(e){
+    e.preventDefault();
+    dash.classList.remove('basili');
+    keys[' ']=false;
+  }
+  dash.addEventListener('touchend', dashEnd, {passive:false});
+  dash.addEventListener('touchcancel', dashEnd, {passive:false});
+
+  /* Tur sonu: R/M klavye kısayollarının dokunmatik karşılığı */
+  var over = document.getElementById('tOver');
+  function tus(k){ window.dispatchEvent(new KeyboardEvent('keydown', {key:k, bubbles:true})); }
+  document.getElementById('tRetry').addEventListener('click', function(){ tus('r'); });
+  document.getElementById('tMenu').addEventListener('click', function(){ tus('m'); });
+  setInterval(function(){
+    var acik = tctl.classList.contains('acik') &&
+      typeof game !== 'undefined' && game.state === 'gameover';
+    over.classList.toggle('acik', acik);
+  }, 250);
+})();
+</script>
+</body>
+</html>
