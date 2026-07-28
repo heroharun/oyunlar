@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070A12">
+<title>MİT: ANKA Protokolü — Kurgusal İstihbarat Bilmecesi</title>
+<meta name="description" content="Tamamen kurgusal bir istihbarat ve bilmece oyunu. Odaları ara, bilmeceleri çöz, kanıtları birleştir, köstebeği bul ve vericiyi süre dolmadan sustur.">
+<meta property="og:title" content="MİT: ANKA Protokolü">
+<meta property="og:description" content="Kurgusal bir ajanlık bilmecesi. Dört oda, beş bilmece, tek köstebek ve 20 dakika.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="grid-bg" aria-hidden="true"></div>
+<div class="vignette" id="alarmVignette" aria-hidden="true"></div>
+
+<main id="app">
+
+  <!-- ══════════ 1. AÇILIŞ ══════════ -->
+  <section class="screen is-active" id="screen-title" aria-label="Açılış ekranı">
+    <div class="title-wrap">
+      <p class="eyebrow">Kurgusal Operasyon Dosyası · A-01/04</p>
+      <h1 class="logo">
+        <span class="logo-sm">MİT</span>
+        <span class="logo-lg">ANKA</span>
+        <span class="logo-md">PROTOKOLÜ</span>
+      </h1>
+      <p class="tagline">Bina kapalı. Kayıt tutulmuyor. Kimseye güvenme.</p>
+
+      <div class="btn-col">
+        <button class="btn btn-primary" data-act="goto-name">Göreve Başla</button>
+        <button class="btn" data-act="open-howto">Nasıl Oynanır?</button>
+        <button class="btn" data-act="open-settings">Ayarlar</button>
+      </div>
+
+      <p class="best" id="bestLine" hidden></p>
+
+      <p class="disclaimer">
+        Bu oyun tamamen kurgudur. Gerçek kurum, personel, operasyon, bina veya
+        yöntemlerle hiçbir ilgisi yoktur. Tüm kişiler ve olaylar uydurmadır.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════ 2. AJAN KAYDI ══════════ -->
+  <section class="screen" id="screen-name" aria-label="Ajan kaydı">
+    <div class="panel panel-narrow">
+      <p class="eyebrow">Kayıt</p>
+      <h2 class="h2">Kod adını gir</h2>
+      <p class="muted">Sadece kod adı. Gerçek ad, telefon veya e-posta isteme yok, saklama yok.</p>
+      <label class="sr-only" for="codeName">Ajan kod adı</label>
+      <input class="field" id="codeName" type="text" maxlength="16" autocomplete="off"
+             spellcheck="false" placeholder="ör. KARTAL" aria-describedby="nameHelp">
+      <p class="field-help" id="nameHelp">2–16 karakter.</p>
+      <div class="btn-row">
+        <button class="btn" data-act="goto-title">Geri</button>
+        <button class="btn btn-primary" data-act="goto-brief">Devam</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 3. BRİFİNG ══════════ -->
+  <section class="screen" id="screen-brief" aria-label="Görev brifingi">
+    <div class="panel panel-narrow">
+      <p class="eyebrow">Görev brifingi · <span id="briefName">—</span></p>
+      <pre class="typer" id="briefText" aria-live="polite"></pre>
+      <div class="btn-row">
+        <button class="btn" data-act="skip-brief" id="btnSkipBrief">Metni tamamla</button>
+        <button class="btn btn-primary" data-act="start-op" id="btnStartOp" disabled>Operasyonu Başlat</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 4. OYUN ══════════ -->
+  <section class="screen screen-game" id="screen-game" aria-label="Operasyon ekranı">
+
+    <header class="hud">
+      <div class="hud-left">
+        <span class="hud-mission">ANKA PROTOKOLÜ</span>
+        <span class="hud-agent" id="hudAgent">—</span>
+      </div>
+      <div class="hud-right">
+        <div class="stat" title="Kalan süre">
+          <span class="stat-k">SÜRE</span><span class="stat-v" id="hudTime">20:00</span>
+        </div>
+        <div class="stat" title="Toplam puan">
+          <span class="stat-k">PUAN</span><span class="stat-v" id="hudScore">0</span>
+        </div>
+        <div class="stat stat-alarm" title="Alarm seviyesi">
+          <span class="stat-k">ALARM</span><span class="stat-v" id="hudAlarm">0</span>
+          <span class="alarm-bar"><i id="alarmFill"></i></span>
+        </div>
+        <button class="icon-btn" data-act="toggle-sound" id="btnSound" aria-label="Sesi kapat">🔊</button>
+        <button class="icon-btn" data-act="quit" aria-label="Görevden çık">✕</button>
+      </div>
+    </header>
+
+    <nav class="rooms" id="roomTabs" aria-label="Odalar"></nav>
+
+    <div class="brief-strip" id="riddleStrip">
+      <span class="strip-k" id="riddleWhere">GÖREV</span>
+      <p class="strip-q" id="riddleText">—</p>
+      <button class="btn btn-ghost btn-sm" data-act="hint" id="btnHint">İpucu</button>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stage" id="stage" aria-label="Oda sahnesi"></div>
+      <p class="stage-note" id="stageNote"></p>
+    </div>
+
+    <footer class="dock">
+      <div class="dock-inv">
+        <p class="dock-k">Envanter</p>
+        <ul class="inv" id="inv" aria-label="Envanter"></ul>
+      </div>
+      <div class="dock-actions">
+        <button class="btn btn-sm" data-act="open-log">Görev Günlüğü</button>
+        <button class="btn btn-sm" data-act="open-evidence">Kanıt Panosu <span class="pill" id="evCount">0</span></button>
+        <button class="btn btn-sm" data-act="open-suspects">Şüpheliler</button>
+        <button class="btn btn-sm btn-danger" data-act="open-accuse" id="btnAccuse" disabled>Suçlama</button>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ══════════ 5. FİNAL ══════════ -->
+  <section class="screen" id="screen-final" aria-label="Görev raporu">
+    <div class="panel panel-wide" id="finalPanel"></div>
+  </section>
+
+</main>
+
+<!-- Modal katmanı -->
+<div class="modal-layer" id="modalLayer" hidden>
+  <div class="modal-back" data-act="close-modal"></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modalTitle">—</h3>
+      <button class="icon-btn" data-act="close-modal" aria-label="Pencereyi kapat">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Bildirim katmanı -->
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<!-- Geliştirici paneli (yalnızca DEV_MODE true iken görünür) -->
+<aside class="devbar" id="devbar" hidden></aside>
+
+<script src="riddles.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
