@@ -1,0 +1,2728 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#16123a">
+<title>Nur Bahçesi — Elifba Macerası | Müslim TR</title>
+<meta name="description" content="5-8 yaş çocuklar için Kur'an harfleri macerası. Her harf önce şekliyle, sonra üstün-esre-ötre harekeleriyle öğretilir; yeni harfe geçmeden önce eskiler tekrar edilir. 28 harf, 12 mini oyun, 9 kıssa, anne paneli. Reklamsız, üyeliksiz, ücretsiz.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Nur Bahçesi — Elifba Macerası">
+<meta property="og:description" content="Solan Nur Bahçesi'nin çiçekleri, öğrenilen her harfle yeniden açıyor. 5-8 yaş için Kur'an harfleri oyunu.">
+<meta property="og:locale" content="tr_TR">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+<style>
+:root{
+  --gece:#16123a; --gece2:#251d5c; --gece3:#332a72;
+  --krem:#fff7ea; --altin:#ffd166; --gul:#f4a7c0; --yesil:#8fd694;
+  --su:#7fd3e8; --mor:#b79cff; --metin:#f6efff; --soluk:rgba(246,239,255,.6);
+  --kum:#f3dcae; --kum2:#e6c68b;
+  --ar:"Traditional Arabic","Amiri","Scheherazade New","Noto Naskh Arabic","Geeza Pro","Arabic Typesetting","Times New Roman",serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overscroll-behavior:none}
+body{
+  background:
+    radial-gradient(1000px 600px at 20% -10%,#3a2c7a 0%,transparent 60%),
+    radial-gradient(800px 500px at 90% 110%,#4a2c62 0%,transparent 60%),
+    var(--gece);
+  color:var(--metin);
+  font-family:"Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  user-select:none;-webkit-user-select:none;
+}
+#yildiz-katman{position:fixed;inset:0;pointer-events:none;z-index:0}
+#uygulama{position:relative;z-index:1;min-height:100%;max-width:560px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 8px) 14px calc(env(safe-area-inset-bottom) + 14px)}
+
+.ekran{display:none;flex-direction:column;gap:14px;animation:gir .38s ease both}
+.ekran.aktif{display:flex}
+@keyframes gir{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---------- ortak bileşenler ---------- */
+.ust{display:flex;align-items:center;gap:10px;min-height:44px}
+.ust .bosluk{flex:1}
+.dugme{
+  border:none;cursor:pointer;font-family:inherit;font-weight:800;letter-spacing:.01em;
+  background:linear-gradient(180deg,#ffd977,#f5b93f);color:#3a2a00;
+  border-radius:999px;padding:14px 24px;font-size:16px;
+  box-shadow:0 6px 0 rgba(0,0,0,.22),0 10px 22px rgba(255,209,102,.22);
+  transition:transform .1s ease,box-shadow .1s ease;
+}
+.dugme:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.22)}
+.dugme.sade{background:rgba(255,255,255,.1);color:var(--metin);box-shadow:none;border:1.5px solid rgba(255,255,255,.18);font-weight:700}
+.dugme.kucuk{padding:9px 16px;font-size:14px}
+.dugme.tam{width:100%}
+.ikonbtn{width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.07);color:var(--metin);font-size:19px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-family:inherit}
+.ikonbtn:active{transform:scale(.92)}
+.kart{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:22px;padding:16px}
+.rozetler{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.rozet{background:rgba(255,209,102,.14);border:1px solid rgba(255,209,102,.3);color:var(--altin);
+  border-radius:999px;padding:5px 12px;font-size:11.5px;font-weight:900;letter-spacing:.05em}
+.baslik{font-size:26px;font-weight:900;text-align:center;letter-spacing:.01em;margin:0}
+.altbaslik{text-align:center;color:var(--soluk);font-size:14px;margin:0}
+.gizli{display:none !important}
+
+/* Hüdhüd */
+.hudhud{display:flex;gap:12px;align-items:flex-start}
+.kus{font-size:44px;flex:0 0 auto;animation:sekme 2.4s ease-in-out infinite;filter:drop-shadow(0 0 12px rgba(255,255,255,.35))}
+@keyframes sekme{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+.balon{background:var(--krem);color:#2b2350;border-radius:20px 20px 20px 6px;padding:13px 16px;
+  font-size:15.5px;font-weight:700;line-height:1.55;flex:1;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.balon b{color:#7a4bd0}
+
+/* harf gösterimi */
+.harf-buyuk{font-family:var(--ar);font-size:96px;line-height:1;text-align:center;color:var(--altin);
+  text-shadow:0 0 30px rgba(255,209,102,.5);direction:rtl}
+.harf-orta{font-family:var(--ar);font-size:44px;line-height:1;direction:rtl}
+
+/* splash */
+#e-acilis{align-items:center;justify-content:center;min-height:88vh;text-align:center}
+.logo{font-size:76px;filter:drop-shadow(0 0 26px rgba(255,209,102,.55));animation:sekme 3s ease-in-out infinite}
+
+/* karakter oluşturma */
+.secim-satir{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.renk{width:44px;height:44px;border-radius:50%;border:3px solid transparent;cursor:pointer;flex:0 0 auto}
+.renk.secili{border-color:#fff;box-shadow:0 0 0 3px rgba(255,209,102,.6)}
+.alan-etiket{font-size:12.5px;font-weight:900;letter-spacing:.09em;color:var(--soluk);text-align:center;text-transform:uppercase}
+input[type=text]{width:100%;background:rgba(255,255,255,.09);border:1.5px solid rgba(255,255,255,.2);
+  border-radius:14px;padding:13px 15px;color:var(--metin);font-size:17px;font-family:inherit;text-align:center;font-weight:800}
+input[type=text]:focus{outline:none;border-color:var(--altin)}
+
+/* harita */
+.bolge{display:flex;align-items:center;gap:13px;border-radius:20px;padding:13px 15px;
+  border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);cursor:pointer;position:relative;overflow:hidden}
+.bolge.kilitli{opacity:.42;cursor:default}
+.bolge.acik{border-color:rgba(255,209,102,.45);background:linear-gradient(100deg,rgba(255,209,102,.16),rgba(255,255,255,.05))}
+.bolge .bikon{font-size:32px;flex:0 0 auto;width:46px;text-align:center}
+.bolge .bad{font-weight:900;font-size:16px}
+.bolge .bdur{font-size:12.5px;color:var(--soluk);font-weight:700}
+.bolge .bharfler{font-family:var(--ar);font-size:24px;color:var(--altin);direction:rtl;letter-spacing:2px}
+.ilerleme{height:7px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:6px}
+.ilerleme > i{display:block;height:100%;background:linear-gradient(90deg,var(--altin),var(--gul));border-radius:999px;transition:width .5s ease}
+
+.sayaclar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cins-satir{display:flex;gap:10px;justify-content:center}
+.cins{flex:1;max-width:170px;padding:14px 10px;border-radius:16px;font-size:16px;font-weight:900;
+  color:var(--metin);background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.14);
+  cursor:pointer;transition:.15s}
+.cins.secili{background:rgba(255,209,102,.18);border-color:var(--altin);color:var(--altin)}
+.secici{width:100%;padding:11px 12px;border-radius:12px;font:inherit;font-size:14px;font-weight:800;
+  color:var(--metin);background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.16)}
+.secici option{background:#20204a;color:#fff}
+#haritaSerit:empty{display:none}
+#haritaSerit{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,209,102,.22);
+  border-radius:16px;padding:11px 13px;text-align:center}
+.serit-baslik{font-size:12.5px;font-weight:900;color:var(--soluk);letter-spacing:.4px}
+.serit-govde{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:7px 0 5px;direction:rtl}
+.serit-harf{display:inline-grid;place-items:center;min-width:38px;height:38px;border-radius:11px;
+  font-size:25px;line-height:1;background:rgba(255,209,102,.18);color:var(--altin);
+  border:1.5px solid rgba(255,209,102,.45)}
+.serit-harf.yarim{background:rgba(255,255,255,.05);color:var(--soluk);
+  border-style:dashed;border-color:rgba(255,255,255,.25)}
+.serit-not{font-size:11.5px;color:var(--soluk);font-weight:700;direction:ltr}
+.sayac{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:999px;
+  padding:6px 13px;font-size:13.5px;font-weight:900}
+
+/* oyun alanı */
+#oyunAlan{position:relative;min-height:330px}
+.oyun-basligi{text-align:center;font-weight:900;font-size:17px}
+.oyun-ipucu{text-align:center;color:var(--soluk);font-size:13.5px;font-weight:700;margin-top:-6px}
+.sahne{position:relative;border-radius:22px;overflow:hidden;border:1.5px solid rgba(255,255,255,.13);
+  background:linear-gradient(180deg,rgba(40,30,90,.75),rgba(24,18,60,.9));touch-action:none}
+canvas{display:block;width:100%;touch-action:none}
+
+.ucan{position:absolute;display:flex;align-items:center;justify-content:center;
+  font-family:var(--ar);font-weight:700;cursor:pointer;will-change:transform;direction:rtl}
+.atesbocegi{width:56px;height:56px;border-radius:50%;font-size:27px;color:#3a2a00;
+  background:radial-gradient(circle at 35% 30%,#fff6c2,#ffd166 60%,#e9a72e);
+  box-shadow:0 0 18px rgba(255,209,102,.75)}
+.atesbocegi.gitti{animation:sondu .45s ease forwards;pointer-events:none}
+@keyframes sondu{to{transform:scale(.1);opacity:0}}
+.balon-o{width:62px;height:76px;border-radius:50% 50% 46% 46%;font-size:29px;color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.35)}
+.balon-o::after{content:"";position:absolute;bottom:-16px;left:50%;width:2px;height:16px;background:rgba(255,255,255,.5)}
+.balon-o.patladi{animation:patla .3s ease forwards;pointer-events:none}
+@keyframes patla{to{transform:scale(1.6);opacity:0}}
+
+/* hafıza */
+.hafiza-izgara{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.kart-h{aspect-ratio:3/4;border-radius:16px;background:linear-gradient(160deg,#4a3a9e,#2c2170);
+  border:1.5px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;
+  font-size:30px;cursor:pointer;transition:transform .22s ease,background .22s ease;font-family:var(--ar);color:transparent}
+.kart-h.acik{background:linear-gradient(160deg,#fff3d4,#ffd98a);color:#3a2a00;transform:rotateY(0)}
+.kart-h.eslesti{background:linear-gradient(160deg,#a6e9ae,#6cc97a);color:#123a1a;opacity:.85}
+.kart-h .lat{font-family:inherit;font-size:16px;font-weight:900}
+
+/* yapboz */
+.yapboz-slot{position:absolute;border:2px dashed rgba(255,255,255,.28);border-radius:10px}
+.yapboz-slot.dolu{border-color:transparent}
+.yapboz-parca{position:absolute;border-radius:10px;cursor:grab;touch-action:none;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);background-color:rgba(255,255,255,.06);transition:box-shadow .15s}
+.yapboz-parca.tutuluyor{box-shadow:0 12px 26px rgba(0,0,0,.5);z-index:9}
+.yapboz-parca.yerinde{cursor:default;box-shadow:none}
+
+/* boyama */
+.boya-nokta{position:absolute;border-radius:50%;cursor:pointer;transition:transform .15s ease,background .2s ease;
+  display:flex;align-items:center;justify-content:center;font-size:13px}
+.boya-nokta:active{transform:scale(1.25)}
+.palet{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+
+/* harf avı */
+.av-izgara{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.av-kutu{aspect-ratio:1;border-radius:16px;background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.04));
+  border:1.5px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;
+  font-size:29px;cursor:pointer;transition:transform .18s ease}
+.av-kutu:active{transform:scale(.93)}
+.av-kutu.acildi{font-family:var(--ar);background:linear-gradient(160deg,#fff3d4,#ffd98a);color:#3a2a00}
+.av-kutu.bulundu{background:linear-gradient(160deg,#a6e9ae,#6cc97a);color:#123a1a}
+
+/* bahçe */
+.bahce{position:relative;min-height:270px;border-radius:22px;overflow:hidden;
+  background:linear-gradient(180deg,#2a2168 0%,#3d2f7d 45%,#2f5a3a 46%,#26492f 100%);
+  border:1.5px solid rgba(255,255,255,.13)}
+.bahce-nesne{position:absolute;cursor:pointer;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}
+.bahce-nesne:active{transform:scale(1.2)}
+.envanter{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.env-hucre{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;
+  padding:11px 6px;text-align:center}
+.env-hucre .es{font-size:24px}
+.env-hucre .en{font-size:19px;font-weight:900;color:var(--altin)}
+.env-hucre .et{font-size:11px;color:var(--soluk);font-weight:800;letter-spacing:.05em}
+
+/* hikâye */
+.hikaye-sahne{font-size:64px;text-align:center;min-height:86px;animation:sekme 3s ease-in-out infinite}
+.hikaye-metin{font-size:17px;font-weight:700;text-align:center;line-height:1.65;min-height:80px}
+.nokta-sirasi{display:flex;gap:6px;justify-content:center}
+.nokta-sirasi i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.24)}
+.nokta-sirasi i.a{background:var(--altin);width:20px;border-radius:999px}
+
+/* kutlama */
+#kutlama{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(12,9,34,.9);backdrop-filter:blur(4px);padding:20px}
+#kutlama.aktif{display:flex}
+.kutlama-kutu{max-width:400px;width:100%;text-align:center;background:linear-gradient(180deg,#392d80,#241b5e);
+  border:2px solid rgba(255,209,102,.5);border-radius:28px;padding:26px 20px;
+  box-shadow:0 24px 60px rgba(0,0,0,.55);animation:zipla .5s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes zipla{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.odul-satir{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.odul{background:rgba(255,255,255,.1);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:900;
+  animation:zipla .5s cubic-bezier(.2,1.5,.4,1) both}
+
+/* mola */
+#mola{position:fixed;inset:0;z-index:45;display:none;align-items:center;justify-content:center;
+  background:rgba(12,9,34,.94);padding:20px}
+#mola.aktif{display:flex}
+
+/* anne paneli */
+.satir-ist{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:11px 0;border-bottom:1px solid rgba(255,255,255,.09)}
+.satir-ist:last-child{border-bottom:none}
+.satir-ist .sol{font-weight:800;font-size:14.5px}
+.satir-ist .sag{font-weight:900;color:var(--altin);font-size:15px}
+.mini-bar{height:9px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;width:96px}
+.mini-bar > i{display:block;height:100%;border-radius:999px}
+.tus-izgara{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:250px;margin:0 auto}
+.tus{background:rgba(255,255,255,.09);border:1.5px solid rgba(255,255,255,.16);border-radius:14px;
+  padding:15px 0;font-size:21px;font-weight:900;color:var(--metin);cursor:pointer;font-family:inherit}
+.tus:active{transform:scale(.94)}
+
+.geri-not{text-align:center;font-size:12px;color:var(--soluk);padding:10px 0 0}
+.geri-not a{color:var(--altin);text-decoration:none;font-weight:900}
+.parlak{animation:parla 1.4s ease infinite}
+@keyframes parla{0%,100%{opacity:1}50%{opacity:.45}}
+@media(max-width:360px){.harf-buyuk{font-size:78px}.baslik{font-size:22px}}
+</style>
+</head>
+<body>
+<canvas id="yildiz-katman"></canvas>
+<div id="uygulama">
+
+  <!-- ================= AÇILIŞ ================= -->
+  <section class="ekran aktif" id="e-acilis">
+    <div class="logo">🌸</div>
+    <h1 class="baslik">Nur Bahçesi</h1>
+    <p class="altbaslik">Gökyüzündeki bahçenin çiçekleri solmaya başladı.<br>Onları yeniden açtırmanın tek yolu var:<br><b style="color:var(--altin)">Kur'an harflerini öğrenmek.</b></p>
+    <div class="harf-orta" style="text-align:center;color:var(--altin);opacity:.8">ا ب ت ث ج ح</div>
+    <div class="rozetler">
+      <span class="rozet">5-8 YAŞ</span>
+      <span class="rozet">REKLAMSIZ</span>
+      <span class="rozet">ÇEVRİMDIŞI</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px;margin-top:6px">
+      <button class="dugme tam" data-act="basla">🌟 Maceraya Başla</button>
+      <button class="dugme sade tam gizli" id="devamBtn" data-act="devam">▶ Kaldığım yerden devam</button>
+    </div>
+    <p class="geri-not"><a href="../">← Müslim TR oyunlarına dön</a></p>
+  </section>
+
+  <!-- ================= KARAKTER ================= -->
+  <section class="ekran" id="e-karakter">
+    <div class="ust">
+      <button class="ikonbtn" data-act="acilis">←</button>
+      <div class="bosluk"></div>
+    </div>
+    <h2 class="baslik">Sen kimsin?</h2>
+    <p class="altbaslik">Bahçenin bakıcısı sensin. Kendini seç.</p>
+    <div class="cins-satir">
+      <button class="cins" data-act="cinsSec" data-c="kiz">👧 Kız</button>
+      <button class="cins" data-act="cinsSec" data-c="erkek">👦 Erkek</button>
+    </div>
+    <div id="avatarKutu" style="display:flex;justify-content:center"></div>
+    <input type="text" id="adGiris" maxlength="12" placeholder="Adın (isteğe bağlı)" autocomplete="off">
+    <div class="kart">
+      <div class="alan-etiket">Ten rengi</div>
+      <div class="secim-satir" id="tenSecim"></div>
+      <div class="alan-etiket" style="margin-top:14px" id="basEtiket">Başörtüsü</div>
+      <div class="secim-satir" id="basSecim"></div>
+      <div class="alan-etiket" style="margin-top:14px" id="sacEtiket">Saç rengi</div>
+      <div class="secim-satir" id="sacSecim"></div>
+      <div class="alan-etiket" style="margin-top:14px" id="elbEtiket">Elbise</div>
+      <div class="secim-satir" id="elbSecim"></div>
+    </div>
+    <button class="dugme tam" data-act="karakterTamam">Hazırım 🌸</button>
+  </section>
+
+  <!-- ================= TANIŞMA ================= -->
+  <section class="ekran" id="e-tanisma">
+    <div class="hudhud" style="margin-top:24px">
+      <div class="kus">🕊️</div>
+      <div class="balon" id="tanismaMetin"></div>
+    </div>
+    <div style="flex:1;min-height:40px"></div>
+    <button class="dugme tam" data-act="tanismaIleri" id="tanismaBtn">Devam</button>
+  </section>
+
+  <!-- ================= HARİTA ================= -->
+  <section class="ekran" id="e-harita">
+    <div class="ust">
+      <button class="ikonbtn" data-act="bahce" title="Bahçem">🌷</button>
+      <div class="bosluk" style="text-align:center">
+        <div style="font-weight:900;font-size:17px" id="haritaAd">Nur Bahçesi</div>
+        <div style="font-size:12px;color:var(--soluk);font-weight:800" id="haritaDurum"></div>
+      </div>
+      <button class="ikonbtn" data-act="ayar" title="Ayarlar">⚙️</button>
+    </div>
+    <div class="sayaclar" id="haritaSayac"></div>
+    <div class="kart" style="padding:13px 15px">
+      <div class="hudhud">
+        <div class="kus" style="font-size:34px">🕊️</div>
+        <div class="balon" id="haritaHud" style="font-size:14.5px"></div>
+      </div>
+    </div>
+    <div id="haritaSerit"></div>
+    <div style="display:flex;flex-direction:column;gap:10px" id="bolgeler"></div>
+    <button class="dugme sade tam kucuk" data-act="serbest">🎮 Serbest oyun — istediğim harfle oyna</button>
+    <p class="geri-not"><a href="../">← Müslim TR</a></p>
+  </section>
+
+  <!-- ================= DERS (harf tanıtımı) ================= -->
+  <section class="ekran" id="e-ders">
+    <div class="ust">
+      <button class="ikonbtn" data-act="harita">←</button>
+      <div class="bosluk" style="text-align:center;font-weight:900" id="dersUst"></div>
+      <button class="ikonbtn" data-act="tekrarSes">🔊</button>
+    </div>
+    <div id="dersGovde" style="display:flex;flex-direction:column;gap:14px;flex:1"></div>
+    <button class="dugme tam" data-act="dersIleri" id="dersBtn">Devam</button>
+  </section>
+
+  <!-- ================= OYUN ================= -->
+  <section class="ekran" id="e-oyun">
+    <div class="ust">
+      <button class="ikonbtn" data-act="harita">←</button>
+      <div class="bosluk" style="text-align:center">
+        <div style="font-weight:900;font-size:15px" id="oyunUst"></div>
+        <div style="font-size:11.5px;color:var(--soluk);font-weight:800" id="oyunAdim"></div>
+      </div>
+      <button class="ikonbtn" data-act="tekrarSes">🔊</button>
+    </div>
+    <div id="oyunAlan"></div>
+    <div id="oyunMesaj"></div>
+    <div id="oyunAlt"></div>
+  </section>
+
+  <!-- ================= BAHÇE ================= -->
+  <section class="ekran" id="e-bahce">
+    <div class="ust">
+      <button class="ikonbtn" data-act="harita">←</button>
+      <div class="bosluk" style="text-align:center;font-weight:900">🌷 Bahçem</div>
+      <div style="width:44px"></div>
+    </div>
+    <div class="bahce" id="bahceAlan"></div>
+    <p class="altbaslik" id="bahceNot">Her öğrendiğin harf bir çiçek. Dokunup selam ver 🌸</p>
+    <div class="envanter" id="envanter"></div>
+    <div id="bahceHarfler" class="kart"></div>
+  </section>
+
+  <!-- ================= HİKÂYE ================= -->
+  <section class="ekran" id="e-hikaye">
+    <div class="ust">
+      <div class="bosluk" style="text-align:center;font-weight:900" id="hikayeAd"></div>
+      <button class="ikonbtn" data-act="hikayeAtla">⏭</button>
+    </div>
+    <div class="hikaye-sahne" id="hikayeSahne"></div>
+    <div class="kart"><div class="hikaye-metin" id="hikayeMetin"></div></div>
+    <div class="nokta-sirasi" id="hikayeNokta"></div>
+    <div style="flex:1"></div>
+    <button class="dugme tam" data-act="hikayeIleri">Devam</button>
+  </section>
+
+  <!-- ================= ANNE PANELİ ================= -->
+  <section class="ekran" id="e-anne">
+    <div class="ust">
+      <button class="ikonbtn" data-act="harita">←</button>
+      <div class="bosluk" style="text-align:center;font-weight:900">👩 Anne Paneli</div>
+      <div style="width:44px"></div>
+    </div>
+    <div id="anneKilit">
+      <p class="altbaslik" style="margin-bottom:14px">Bu bölüm büyükler için.<br><b id="anneSoru" style="color:var(--altin);font-size:20px"></b></p>
+      <p style="text-align:center;font-size:26px;font-weight:900;letter-spacing:4px;min-height:36px" id="anneCevap"></p>
+      <div class="tus-izgara" id="anneTuslar"></div>
+    </div>
+    <div id="anneIcerik" class="gizli"></div>
+  </section>
+</div>
+
+<!-- kutlama -->
+<div id="kutlama"><div class="kutlama-kutu" id="kutlamaKutu"></div></div>
+<!-- mola -->
+<div id="mola"><div class="kutlama-kutu" id="molaKutu"></div></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   NUR BAHÇESİ — Elifba Macerası
+   Tek dosya, kütüphanesiz, çevrimdışı. Müslim TR / heroharun
+   ===================================================================== */
+
+/* ---------------------- 1. VERİ: HARFLER ---------------------- */
+/* ses: harfin çıkardığı ses (öğretimde bu kullanılır)
+   ad : harfin adı
+   kisi: harfin "kişiliği" — çocuk harfi ezberlemez, arkadaş edinir */
+const HARFLER = [
+  {i:0, c:"ا", ad:"Elif", ses:"eee", ikon:"🕊️", kisi:"Zarif ve sessiz bir beyaz güvercin. Hep dimdik durur, hiç eğilmez.", cicek:"🌸"},
+  {i:1, c:"ب", ad:"Be",   ses:"be",  ikon:"🐝", kisi:"Çalışkan minik bir arı. Altındaki nokta, taşıdığı bal damlası.", cicek:"🌼"},
+  {i:2, c:"ت", ad:"Te",   ses:"te",  ikon:"🌷", kisi:"Bahçıvan. Üstündeki iki nokta, ektiği iki tohum.", cicek:"🌷"},
+  {i:3, c:"ث", ad:"Se",   ses:"se",  ikon:"🌧️", kisi:"Üç yağmur damlası taşır. Geldiği yere hep bereket düşer.", cicek:"💮"},
+  {i:4, c:"ج", ad:"Cim",  ses:"ce",  ikon:"🥣", kisi:"Cömert bir kâse. İçindekini herkesle paylaşır.", cicek:"🌻"},
+  {i:5, c:"ح", ad:"Ha",   ses:"ha",  ikon:"🌬️", kisi:"Sakin bir rüzgâr. Yaprakları hiç korkutmadan usulca sallar.", cicek:"🏵️"},
+  {i:6, c:"خ", ad:"Hı",   ses:"hı",  ikon:"🪁", kisi:"Uçurtma. Başındaki nokta, gökyüzüne bağlı ipi.", cicek:"🌺"},
+  {i:7, c:"د", ad:"Dal",  ses:"de",  ikon:"🌰", kisi:"Küçük bir fındık. Eğilip herkese selam verir.", cicek:"🌹"},
+  {i:8, c:"ذ", ad:"Zel",  ses:"ze",  ikon:"✨", kisi:"Başında ışık taşır. Karanlıkta yolu o gösterir.", cicek:"🌼"},
+  {i:9, c:"ر", ad:"Ra",   ses:"ra",  ikon:"🌊", kisi:"Kıvrılan bir dalga. Rahmet Nehri'nde yüzmeyi çok sever.", cicek:"🌸"},
+  {i:10,c:"ز", ad:"Ze",   ses:"ze",  ikon:"🐟", kisi:"Dalganın üstünde zıplayan balık. Noktası, çıkardığı kabarcık.", cicek:"💐"},
+  {i:11,c:"س", ad:"Sin",  ses:"se",  ikon:"⛰️", kisi:"Üç tepeli dağ. Sabırla durur, hiç yorulmaz.", cicek:"🌷"},
+  {i:12,c:"ش", ad:"Şın",  ses:"şe",  ikon:"🏔️", kisi:"Karlı dağ. Tepelerinde üç kar tanesi parıldar.", cicek:"❄️"},
+  {i:13,c:"ص", ad:"Sad",  ses:"sa",  ikon:"🦢", kisi:"Göldeki kuğu. Suyun üstünde sessizce süzülür.", cicek:"🪷"},
+  {i:14,c:"ض", ad:"Dad",  ses:"da",  ikon:"🦆", kisi:"Kuğunun en yakın arkadaşı ördek. Başında bir nokta taşır.", cicek:"🌻"},
+  {i:15,c:"ط", ad:"Tı",   ses:"tı",  ikon:"🎏", kisi:"Bayrak direği. Rüzgârda hiç devrilmez.", cicek:"🌺"},
+  {i:16,c:"ظ", ad:"Zı",   ses:"zı",  ikon:"🏮", kisi:"Fener taşıyan bayrak. Gece bahçeyi aydınlatır.", cicek:"🏵️"},
+  {i:17,c:"ع", ad:"Ayn",  ses:"aaa", ikon:"👁️", kisi:"Göz demek. Her güzelliği dikkatle izler, şükreder.", cicek:"🌹"},
+  {i:18,c:"غ", ad:"Gayn", ses:"ğa",  ikon:"☁️", kisi:"Yumuşacık bir bulut. Yağmuru sırtında taşır.", cicek:"💮"},
+  {i:19,c:"ف", ad:"Fe",   ses:"fe",  ikon:"☕", kisi:"Kulplu küçük bir fincan. Misafire ilk o koşar.", cicek:"🌼"},
+  {i:20,c:"ق", ad:"Kaf",  ses:"ka",  ikon:"🫖", kisi:"İki noktalı demlik. Sofrayı hep şenlendirir.", cicek:"🌸"},
+  {i:21,c:"ك", ad:"Kef",  ses:"ke",  ikon:"🤲", kisi:"Açılan bir avuç. Dua ederken hep yukarı bakar.", cicek:"🌷"},
+  {i:22,c:"ل", ad:"Lam",  ses:"le",  ikon:"🌙", kisi:"Uzun boylu. Aya uzanır, hilali selamlar.", cicek:"🌙"},
+  {i:23,c:"م", ad:"Mim",  ses:"me",  ikon:"🍇", kisi:"Yuvarlacık bir üzüm tanesi. Kuyruğundan sallanır.", cicek:"🍇"},
+  {i:24,c:"ن", ad:"Nun",  ses:"ne",  ikon:"🥣", kisi:"İçinde bir inci saklayan kâse. Sırrını kimseye söylemez.", cicek:"🪷"},
+  {i:25,c:"و", ad:"Vav",  ses:"ve",  ikon:"🎈", kisi:"İpi elde tutulan bir balon. Hep gülümser.", cicek:"🎈"},
+  {i:26,c:"ه", ad:"He",   ses:"he",  ikon:"🫧", kisi:"Minik bir baloncuk. Nefes gibi hafif.", cicek:"🤍"},
+  {i:27,c:"ي", ad:"Ye",   ses:"ye",  ikon:"🛶", kisi:"Altında iki nokta olan kayık. Yolculuğun sonuna kadar götürür.", cicek:"⭐"}
+];
+
+/* ---------------------- 1b. VERİ: HAREKELER ---------------------- */
+/* Her harf önce şekliyle, sonra üç harekesiyle öğrenilir.
+   Okunuşlar Türkçe elifba geleneğine göre yazılmıştır
+   (ince harfler e/i/ü, kalın harfler a/ı/u).
+   NOT: Yayına almadan önce bir Kur'an öğreticisine kontrol ettirilmeli. */
+const HRK = [
+  {ad:"Üstün", isaret:"\u064E", ikon:"⤴", renk:"#ffd166",
+   not:"Harfin üstüne konan küçük bir çizgi."},
+  {ad:"Esre",  isaret:"\u0650", ikon:"⤵", renk:"#7ee0c0",
+   not:"Harfin altına konan küçük bir çizgi."},
+  {ad:"Ötre",  isaret:"\u064F", ikon:"🌀", renk:"#f4a7c0",
+   not:"Harfin üstüne konan minik bir vav."}
+];
+const OKUNUS = [
+  ["e","i","ü"],    ["be","bi","bü"],  ["te","ti","tü"],  ["se","si","sü"],
+  ["ce","ci","cü"], ["ha","hı","hu"],  ["ha","hı","hu"],  ["de","di","dü"],
+  ["ze","zi","zü"], ["ra","ri","ru"],  ["ze","zi","zü"],  ["se","si","sü"],
+  ["şe","şi","şü"], ["sa","sı","su"],  ["da","dı","du"],  ["ta","tı","tu"],
+  ["za","zı","zu"], ["a","ı","u"],     ["ğa","ğı","ğu"],  ["fe","fi","fü"],
+  ["ka","kı","ku"], ["ke","ki","kü"],  ["le","li","lü"],  ["me","mi","mü"],
+  ["ne","ni","nü"], ["ve","vi","vü"],  ["he","hi","hü"],  ["ye","yi","yü"]
+];
+function hrkChar(h, k){ return h.c + HRK[k].isaret; }
+function hrkSes(h, k){ return (OKUNUS[h.i] || ["","",""])[k] || h.ses; }
+/* harfin aşaması: 0 hiç, 1 şekli biliyor, 2 harekeleriyle biliyor */
+function asamaAl(i){ return (S.asama && S.asama[String(i)]) || 0; }
+function asamaYaz(i, a){
+  if(!S.asama) S.asama = {};
+  const v = String(i);
+  if((S.asama[v]||0) < a){ S.asama[v] = a; kaydet(); }
+}
+
+/* ---------------------- 2. VERİ: BÖLGELER ---------------------- */
+const BOLGELER = [
+  {ad:"Ev",           ikon:"🏡", not:"Her şey burada başlıyor.",                 odul:{tur:"kus",   es:"🐦", ad:"Serçe"}},
+  {ad:"Bahçe",        ikon:"🌳", not:"Çiçekler ilk burada açıyor.",              odul:{tur:"kelebek",es:"🦋", ad:"Kelebek"}},
+  {ad:"Mescit",       ikon:"🕌", not:"Sessizlik ve huzur yeri.",                 odul:{tur:"esya",  es:"🕯️", ad:"Kandil"}},
+  {ad:"Harf Ormanı",  ikon:"📖", not:"Harfler ağaçların arasında saklı.",         odul:{tur:"agac",  es:"🌳", ad:"Zeytin ağacı"}},
+  {ad:"Rahmet Nehri", ikon:"🌊", not:"Suyun sesi harfleri söylüyor.",            odul:{tur:"kus",   es:"🦆", ad:"Ördek"}},
+  {ad:"Ay Bahçesi",   ikon:"🌙", not:"Gece açan çiçeklerin yurdu.",              odul:{tur:"esya",  es:"🏮", ad:"Fener"}},
+  {ad:"Nur Tepesi",   ikon:"⭐", not:"Bütün yıldızların toplandığı yer.",         odul:{tur:"kelebek",es:"🌟", ad:"Nur Yıldızı"}}
+];
+const BOLGE_HARF = 4; /* her bölgede 4 harf */
+
+/* ---------------------- 3. VERİ: KISSALAR ---------------------- */
+/* Her 3 harfte bir kısa hikâye. Ahlak temalı, kısa cümleli. */
+const HIKAYELER = [
+  {ad:"Kaybolan Yavru Kuş", tema:"Yardımlaşma", sahneler:[
+    {e:"🐣", t:"Bahçenin köşesinde minik bir kuş ağlıyordu. Yuvasını bulamamıştı."},
+    {e:"🕊️", t:"Hüdhüd yanına gitti. \"Korkma\" dedi. \"Ben senin yanındayım.\""},
+    {e:"🌳", t:"Birlikte ağacın tepesine baktılar. Yuva oradaydı, yapraklar arasında."},
+    {e:"🪶", t:"Hüdhüd onu sırtına aldı. Yavaşça yukarı uçtu."},
+    {e:"🪺", t:"Anne kuş sevinçten kanat çırptı. Yavrusuna sarıldı."},
+    {e:"🌸", t:"O gece bahçede yeni bir çiçek açtı. Yardım edenin bahçesi hep açar."}
+  ]},
+  {ad:"Susayan Karınca", tema:"Merhamet", sahneler:[
+    {e:"🐜", t:"Sıcak bir gündü. Küçük bir karınca su arıyordu."},
+    {e:"🍃", t:"Bir yaprağın üstünde tek bir damla kalmıştı. Sadece bir damla."},
+    {e:"🐝", t:"Arı da susamıştı. İkisi de damlaya baktı."},
+    {e:"💧", t:"Arı geri çekildi. \"Önce sen iç\" dedi. \"Sen benden küçüksün.\""},
+    {e:"🌧️", t:"Tam o anda gökten ince bir yağmur düştü. İkisi de kandı."},
+    {e:"🌼", t:"Merhamet eden, hiç susuz kalmaz."}
+  ]},
+  {ad:"Sabreden Tohum", tema:"Sabır", sahneler:[
+    {e:"🌰", t:"Toprağın altına küçük bir tohum düştü. Etrafı karanlıktı."},
+    {e:"⏳", t:"\"Ne zaman çıkacağım?\" diye sordu. Kimse cevap vermedi."},
+    {e:"💧", t:"Yağmur yağdı. Tohum bekledi. Güneş doğdu. Tohum yine bekledi."},
+    {e:"🌱", t:"Bir sabah toprağın üstünde minicik yeşil bir baş göründü."},
+    {e:"🌳", t:"Yıllar sonra o tohum koca bir ağaç oldu. Kuşlar dallarında yuva kurdu."},
+    {e:"⭐", t:"Sabreden, sonunda gölge veren olur."}
+  ]},
+  {ad:"Doğru Söyleyen Çoban", tema:"Doğruluk", sahneler:[
+    {e:"🐑", t:"Küçük bir çoban, sürüsünden bir kuzu kaybetti."},
+    {e:"😟", t:"Korktu. \"Yalan söylesem mi?\" diye düşündü."},
+    {e:"🗣️", t:"Sonra doğruyu söyledi: \"Kuzuyu ben kaybettim.\""},
+    {e:"🤝", t:"Kimse ona kızmadı. Herkes birlikte kuzuyu aramaya çıktı."},
+    {e:"🐑", t:"Kuzu dere kenarında bulundu. Sapasağlamdı."},
+    {e:"🌟", t:"Doğru söyleyen, yalnız kalmaz."}
+  ]},
+  {ad:"İkiye Bölünen Ekmek", tema:"Paylaşma", sahneler:[
+    {e:"🍞", t:"Küçük kızın elinde tek bir ekmek vardı. Karnı çok açtı."},
+    {e:"👦", t:"Kapıda bir çocuk duruyordu. O da açtı."},
+    {e:"✋", t:"Kız ekmeği ikiye böldü. Yarısını uzattı."},
+    {e:"😊", t:"Çocuk gülümsedi. O gülümseme, ekmekten daha çok doyurdu."},
+    {e:"🏡", t:"Ertesi gün kapıya bir sepet meyve bırakılmıştı."},
+    {e:"🌸", t:"Paylaşılan azalmaz. Bereketlenir."}
+  ]},
+  {ad:"Şükreden Bahçıvan", tema:"Şükür", sahneler:[
+    {e:"🌦️", t:"Bahçıvanın bahçesinde sadece üç çiçek açmıştı."},
+    {e:"🙂", t:"Komşusu \"Az\" dedi. Bahçıvan \"Çok\" dedi. \"Üç tane var.\""},
+    {e:"🤲", t:"Her sabah çiçeklere baktı, her akşam şükretti."},
+    {e:"🌻", t:"Ertesi bahar bahçe çiçekle doldu. Sayamadı bile."},
+    {e:"💛", t:"\"Sırrın ne?\" dediler. \"Az'a sevinmek\" dedi."},
+    {e:"🌷", t:"Şükreden, elindekini büyütür."}
+  ]},
+  {ad:"Tertemiz Bahçe", tema:"Temizlik", sahneler:[
+    {e:"🍂", t:"Bahçenin yolunda dallar, taşlar, çöpler vardı."},
+    {e:"🧹", t:"Küçük bir çocuk süpürgeyi aldı. Kimse ondan istememişti."},
+    {e:"✨", t:"Yolu süpürdü. Taşları kenara dizdi."},
+    {e:"👣", t:"Ertesi gün herkes rahatça yürüdü. Kimse takılmadı."},
+    {e:"💧", t:"Sonra ellerini yıkadı, yüzünü yıkadı."},
+    {e:"🌿", t:"Temizlik, bahçeyi de kalbi de aydınlatır."}
+  ]},
+  {ad:"Selam Veren Çocuk", tema:"Selam", sahneler:[
+    {e:"🚶", t:"Yolda yürüyen bir çocuk vardı. Kimseyle konuşmazdı."},
+    {e:"👵", t:"Bir gün yaşlı bir teyzeye \"Selamünaleyküm\" dedi."},
+    {e:"😊", t:"Teyze durdu. Gözleri güldü. \"Aleykümselam yavrum.\""},
+    {e:"🗨️", t:"O günden sonra çocuk herkese selam verdi."},
+    {e:"🏘️", t:"Bütün mahalle onu tanıdı. Kimse ona yabancı kalmadı."},
+    {e:"🕊️", t:"Selam, kapı çalmadan kalbe girmektir."}
+  ]},
+  {ad:"Nur Tepesi'nin Işığı", tema:"İyilik", sahneler:[
+    {e:"⭐", t:"Nur Tepesi'nde bir zamanlar hiç ışık yokmuş."},
+    {e:"🕯️", t:"Biri gelip küçücük bir mum yakmış. Sadece bir mum."},
+    {e:"👣", t:"Onu gören bir başkası da yakmış. Sonra bir başkası."},
+    {e:"✨", t:"Bir gece tepe bütün gökyüzünden daha parlak olmuş."},
+    {e:"🤲", t:"Kimse \"Benim mumum küçük\" dememiş."},
+    {e:"🌟", t:"Küçük iyilikler yan yana gelince, nur olur."}
+  ]}
+];
+
+/* ---------------------- 4. DURUM ---------------------- */
+const KAYIT = "nurbahcesi.v1";
+const varsayilan = () => ({
+  cocuk:{ad:"", cins:"", ten:"#f0c9a6", bas:"#f4a7c0", sac:"#3a2a1e", elbise:"#b79cff"},
+  ogrenilen:[],              /* şekli + harekeleri tamamlanan harf indexleri */
+  asama:{},                  /* harf -> 0 hiç / 1 şekli biliyor / 2 harekeli biliyor */
+  ist:{},                    /* harf -> {d:doğru, y:yanlış, k:kez} */
+  hrkIst:{},                 /* harf -> {d,y} sadece hareke sorularından */
+  tekrarIst:{d:0, y:0},      /* kümülatif tekrar bahçesi başarısı */
+  odul:{yildiz:0, cicek:0, kelebek:0, kus:0, agac:0, esya:0},
+  esyalar:[],                /* kazanılan bölge ödülleri {es,ad} */
+  hikayeler:[],              /* görülen hikâye indexleri */
+  gun:{tarih:"", dk:0, dogru:0, toplam:0, harfler:[]},
+  gecmis:[],                 /* son 7 gün özeti */
+  ayar:{ses:true, mikrofon:false, sesAdi:"", perde:null},
+  ilkGiris:true
+});
+let S = varsayilan();
+let bugunku = null;
+
+function yukle(){
+  try{
+    const ham = localStorage.getItem(KAYIT);
+    if(!ham) return false;
+    const v = JSON.parse(ham);
+    S = Object.assign(varsayilan(), v);
+    S.cocuk = Object.assign(varsayilan().cocuk, v.cocuk||{});
+    S.odul  = Object.assign(varsayilan().odul,  v.odul||{});
+    S.ayar  = Object.assign(varsayilan().ayar,  v.ayar||{});
+    S.gun   = Object.assign(varsayilan().gun,   v.gun||{});
+    S.asama    = v.asama    || {};
+    S.hrkIst   = v.hrkIst   || {};
+    S.tekrarIst= v.tekrarIst|| {d:0, y:0};
+    /* eski kayıt: öğrenilmiş harfler en az 1. aşamada sayılsın */
+    (S.ogrenilen||[]).forEach(i => { if(!S.asama[String(i)]) S.asama[String(i)] = 1; });
+    return true;
+  }catch(e){ return false; }
+}
+function kaydet(){
+  try{ localStorage.setItem(KAYIT, JSON.stringify(S)); }catch(e){}
+}
+function bugun(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function gunKontrol(){
+  const t = bugun();
+  if(S.gun.tarih !== t){
+    if(S.gun.tarih){ S.gecmis.unshift({t:S.gun.tarih, dk:S.gun.dk, d:S.gun.dogru, top:S.gun.toplam}); S.gecmis = S.gecmis.slice(0,7); }
+    S.gun = {tarih:t, dk:0, dogru:0, toplam:0, harfler:[]};
+    kaydet();
+  }
+}
+function istKayit(harfIdx, dogruMu){
+  const k = String(harfIdx);
+  if(!S.ist[k]) S.ist[k] = {d:0, y:0, k:0};
+  S.ist[k].k++;
+  if(dogruMu) S.ist[k].d++; else S.ist[k].y++;
+  gunKontrol();
+  S.gun.toplam++;
+  if(dogruMu) S.gun.dogru++;
+  if(S.gun.harfler.indexOf(harfIdx) < 0) S.gun.harfler.push(harfIdx);
+  kaydet();
+}
+function basari(harfIdx){
+  const k = S.ist[String(harfIdx)];
+  if(!k || !k.k) return null;
+  return Math.round(k.d / k.k * 100);
+}
+
+/* ---------------------- 5. YARDIMCILAR ---------------------- */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.prototype.slice.call(document.querySelectorAll(s));
+function el(tag, sinif, icerik){
+  const d = document.createElement(tag);
+  if(sinif) d.className = sinif;
+  if(icerik != null) d.innerHTML = icerik;
+  return d;
+}
+function ekran(id){
+  $$(".ekran").forEach(x => x.classList.remove("aktif"));
+  const e = document.getElementById(id);
+  if(e) e.classList.add("aktif");
+  window.scrollTo(0,0);
+}
+function karistir(a){
+  const b = a.slice();
+  for(let i=b.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); const t=b[i]; b[i]=b[j]; b[j]=t; }
+  return b;
+}
+function rastgele(a){ return a[Math.floor(Math.random()*a.length)]; }
+function bekle(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+/* --- ses: WebAudio ile küçük melodiler (dosya yok, çevrimdışı) --- */
+let AC = null;
+function ac(){
+  if(!AC){
+    const C = window.AudioContext || window.webkitAudioContext;
+    if(!C) return null;
+    AC = new C();
+  }
+  if(AC.state === "suspended") AC.resume();
+  return AC;
+}
+function ton(frek, sure, gecikme, tip, hacim){
+  const c = ac(); if(!c || !S.ayar.ses) return;
+  const o = c.createOscillator(), g = c.createGain();
+  o.type = tip || "sine"; o.frequency.value = frek;
+  const t0 = c.currentTime + (gecikme||0);
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(hacim||0.16, t0+0.02);
+  g.gain.exponentialRampToValueAtTime(0.001, t0+(sure||0.25));
+  o.connect(g); g.connect(c.destination);
+  o.start(t0); o.stop(t0+(sure||0.25)+0.05);
+}
+const SES = {
+  dogru(){ ton(660,.16,0); ton(880,.2,.1); ton(1320,.35,.2,"sine",.12); },
+  yanlis(){ ton(300,.2,0,"triangle",.1); ton(240,.28,.12,"triangle",.09); },
+  tik(){ ton(880,.07,0,"square",.05); },
+  yildiz(){ [523,659,784,1047,1319].forEach((f,i)=>ton(f,.35,i*.09,"sine",.11)); },
+  cicek(){ [784,988,1175].forEach((f,i)=>ton(f,.4,i*.12,"sine",.1)); },
+  pat(){ ton(500,.09,0,"square",.07); ton(900,.07,.03,"square",.05); }
+};
+
+/* --- konuşma: SpeechSynthesis (Türkçe) --- */
+let sesler = [];
+function seslerYukle(){
+  if(!("speechSynthesis" in window)) return;
+  sesler = window.speechSynthesis.getVoices() || [];
+}
+if("speechSynthesis" in window){
+  seslerYukle();
+  window.speechSynthesis.onvoiceschanged = seslerYukle;
+}
+/* --- anlatıcı sesi: erkek --- */
+const ERKEK_IPUCU = ["tolga","ahmet","emre","burak","mehmet","yunus","onur","kadir","baris","barış",
+                     "erkek","male"," man","murat","cem","serkan","hakan"];
+const KADIN_IPUCU = ["yelda","filiz","seda","emel","aylin","zeynep","gul","gül","female","woman",
+                     "nazan","derya","ayse","ayşe","meltem"];
+function trSesler(){
+  return sesler.filter(v => ((v.lang||"").toLowerCase().replace("_","-")).indexOf("tr") === 0);
+}
+function anlaticiSes(){
+  const t = trSesler();
+  if(!t.length) return null;
+  if(S.ayar.sesAdi){
+    const s = t.filter(v => v.name === S.ayar.sesAdi)[0];
+    if(s) return s;
+  }
+  const erkek = t.filter(v => ERKEK_IPUCU.some(k => (v.name||"").toLowerCase().indexOf(k) >= 0))[0];
+  if(erkek) return erkek;
+  /* erkek ses yoksa: en azından kadın olduğu bilinenleri en sona at */
+  const notr = t.filter(v => !KADIN_IPUCU.some(k => (v.name||"").toLowerCase().indexOf(k) >= 0))[0];
+  return notr || t[0];
+}
+function erkekSesVarMi(){
+  return trSesler().some(v => ERKEK_IPUCU.some(k => (v.name||"").toLowerCase().indexOf(k) >= 0));
+}
+function soyle(metin, hiz){
+  if(!S.ayar.ses || !("speechSynthesis" in window) || !metin) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(metin);
+    u.lang = "tr-TR";
+    u.rate = (hiz || 0.85) * 0.96;
+    const ses = anlaticiSes();
+    if(ses) u.voice = ses;
+    /* erkek ses bulunduysa doğal perde; bulunamadıysa perdeyi indirip
+       kadın tınısını erkeğe yaklaştır */
+    const erkekBulundu = ses && ERKEK_IPUCU.some(k => (ses.name||"").toLowerCase().indexOf(k) >= 0);
+    u.pitch = (S.ayar.perde != null) ? S.ayar.perde : (erkekBulundu ? 0.92 : 0.5);
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function harfSesi(h){ soyle(h.ses, 0.62); }
+
+/* --- glif: harfi canvas'a ortalayıp sığdırarak çizer (font bağımsız) --- */
+const ARFONT = '"Traditional Arabic","Amiri","Scheherazade New","Noto Naskh Arabic","Geeza Pro","Arabic Typesetting","Times New Roman",serif';
+function glifCanvas(karakter, boyut, renk){
+  const t = document.createElement("canvas");
+  t.width = t.height = boyut;
+  const tx = t.getContext("2d");
+  if(!tx) return t;
+  tx.fillStyle = renk || "#000";
+  tx.textAlign = "center"; tx.textBaseline = "middle";
+  tx.font = Math.round(boyut*0.5) + "px " + ARFONT;
+  tx.fillText(karakter, boyut/2, boyut/2);
+
+  /* piksel tabanlı sınır kutusu — hangi font yüklüyse ona göre çalışır */
+  let veri = null;
+  try{ veri = tx.getImageData(0,0,boyut,boyut).data; }catch(e){}
+  if(!veri) return t;
+  let x0=boyut, y0=boyut, x1=-1, y1=-1;
+  for(let y=0;y<boyut;y++){
+    for(let x=0;x<boyut;x++){
+      if(veri[(y*boyut+x)*4+3] > 40){
+        if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+      }
+    }
+  }
+  if(x1 < 0) return t;
+  const gw = x1-x0+1, gh = y1-y0+1;
+  const bosluk = boyut*0.11, kul = boyut - bosluk*2;
+  const olcek = Math.min(kul/gw, kul/gh);
+  const dw = gw*olcek, dh = gh*olcek;
+
+  const son = document.createElement("canvas");
+  son.width = son.height = boyut;
+  const sx = son.getContext("2d");
+  sx.drawImage(t, x0, y0, gw, gh, (boyut-dw)/2, (boyut-dh)/2, dw, dh);
+  return son;
+}
+/* glif üzerindeki dolu piksellerden nokta bulutu */
+function glifNoktalar(cv, adim){
+  const b = cv.width, ctx = cv.getContext("2d");
+  let veri = null;
+  try{ veri = ctx.getImageData(0,0,b,b).data; }catch(e){ return []; }
+  const n = [];
+  const a = adim || 3;
+  for(let y=0;y<b;y+=a){
+    for(let x=0;x<b;x+=a){
+      if(veri[(y*b+x)*4+3] > 90) n.push({x:x, y:y});
+    }
+  }
+  return n;
+}
+
+/* --- avatar --- */
+function avatarSVG(c, boy){
+  const g = boy || 130;
+  return (c.cins === "erkek") ? avatarErkek(c, g) : avatarKiz(c, g);
+}
+function yuzParcalari(){
+  return '<ellipse cx="43" cy="54" rx="2.6" ry="3.4" fill="#2b2350"/>' +
+    '<ellipse cx="57" cy="54" rx="2.6" ry="3.4" fill="#2b2350"/>' +
+    '<circle cx="43.9" cy="52.8" r="0.9" fill="#fff"/><circle cx="57.9" cy="52.8" r="0.9" fill="#fff"/>' +
+    '<ellipse cx="37" cy="61" rx="3.6" ry="2.2" fill="rgba(240,120,150,.35)"/>' +
+    '<ellipse cx="63" cy="61" rx="3.6" ry="2.2" fill="rgba(240,120,150,.35)"/>' +
+    '<path d="M45 63 Q50 68 55 63" stroke="#2b2350" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+}
+function avatarErkek(c, g){
+  const takkeKoyu = golgele(c.bas, -26);
+  const sac = c.sac || "#3a2a1e";
+  return '<svg viewBox="0 0 100 132" width="'+(g*0.76)+'" height="'+g+'" aria-hidden="true">' +
+    '<ellipse cx="50" cy="127" rx="30" ry="5" fill="rgba(0,0,0,.25)"/>' +
+    /* gövde: gömlek */
+    '<path d="M27 98 Q50 90 73 98 L81 126 L19 126 Z" fill="'+c.elbise+'"/>' +
+    '<rect x="14" y="100" width="10" height="22" rx="5" fill="'+c.elbise+'"/>' +
+    '<rect x="76" y="100" width="10" height="22" rx="5" fill="'+c.elbise+'"/>' +
+    /* yaka */
+    '<path d="M43 93 L50 101 L57 93 Z" fill="'+golgele(c.elbise,-18)+'"/>' +
+    /* boyun */
+    '<rect x="45.5" y="70" width="9" height="12" rx="3" fill="'+golgele(c.ten,-14)+'"/>' +
+    /* kulaklar + yüz */
+    '<circle cx="31.5" cy="55" r="4.2" fill="'+c.ten+'"/><circle cx="68.5" cy="55" r="4.2" fill="'+c.ten+'"/>' +
+    '<ellipse cx="50" cy="54" rx="17.5" ry="20" fill="'+c.ten+'"/>' +
+    /* saç: alın bandı ve şakaklar */
+    '<path d="M33 45 Q50 36 67 45 L67 50 Q50 42 33 50 Z" fill="'+sac+'"/>' +
+    '<path d="M33 45 Q31 55 33 60 L36 58 Q34 51 35 46 Z" fill="'+sac+'"/>' +
+    '<path d="M67 45 Q69 55 67 60 L64 58 Q66 51 65 46 Z" fill="'+sac+'"/>' +
+    /* takke */
+    '<path d="M32 44 Q50 23 68 44 Z" fill="'+c.bas+'"/>' +
+    '<rect x="30.5" y="42.5" width="39" height="4.5" rx="2.2" fill="'+takkeKoyu+'"/>' +
+    yuzParcalari() +
+    '</svg>';
+}
+function avatarKiz(c, boy){
+  const g = boy || 130;
+  const koyu = golgele(c.bas, -22);
+  return '<svg viewBox="0 0 100 132" width="'+(g*0.76)+'" height="'+g+'" aria-hidden="true">' +
+    '<ellipse cx="50" cy="127" rx="30" ry="5" fill="rgba(0,0,0,.25)"/>' +
+    '<path d="M50 12 C26 12 20 32 20 52 C20 68 26 80 31 86 L26 106 L74 106 L69 86 C74 80 80 68 80 52 C80 32 74 12 50 12 Z" fill="'+c.bas+'"/>' +
+    '<path d="M24 100 Q50 92 76 100 L84 126 L16 126 Z" fill="'+c.elbise+'"/>' +
+    '<rect x="12" y="102" width="10" height="22" rx="5" fill="'+c.elbise+'"/>' +
+    '<rect x="78" y="102" width="10" height="22" rx="5" fill="'+c.elbise+'"/>' +
+    '<ellipse cx="50" cy="54" rx="16.5" ry="19.5" fill="'+c.ten+'"/>' +
+    '<path d="M50 12 C31 12 23 30 23 48 C29 37 38 32 50 32 C62 32 71 37 77 48 C77 30 69 12 50 12 Z" fill="'+koyu+'"/>' +
+    yuzParcalari() +
+    '</svg>';
+}
+function golgele(hex, miktar){
+  const h = hex.replace("#","");
+  const n = parseInt(h.length===3 ? h.split("").map(x=>x+x).join("") : h, 16);
+  let r=(n>>16)+miktar, g=((n>>8)&255)+miktar, b=(n&255)+miktar;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+/* --- arka plan yıldızları --- */
+(function yildizArka(){
+  const cv = document.getElementById("yildiz-katman");
+  if(!cv || !cv.getContext) return;
+  const cx = cv.getContext("2d");
+  if(!cx) return;
+  let yildizlar = [], gen = 0, yuk = 0;
+  function boyutla(){
+    gen = cv.width = window.innerWidth;
+    yuk = cv.height = window.innerHeight;
+    yildizlar = [];
+    const adet = Math.min(90, Math.round(gen*yuk/14000));
+    for(let i=0;i<adet;i++){
+      yildizlar.push({x:Math.random()*gen, y:Math.random()*yuk, r:Math.random()*1.5+0.4,
+        h:Math.random()*0.6+0.25, f:Math.random()*0.02+0.004, t:Math.random()*6});
+    }
+  }
+  function ciz(){
+    if(!gen) return;
+    cx.clearRect(0,0,gen,yuk);
+    for(let i=0;i<yildizlar.length;i++){
+      const s = yildizlar[i];
+      s.t += s.f;
+      const o = s.h * (0.55 + 0.45*Math.sin(s.t));
+      cx.globalAlpha = o;
+      cx.fillStyle = i%7===0 ? "#ffd166" : "#ffffff";
+      cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, Math.PI*2); cx.fill();
+    }
+    cx.globalAlpha = 1;
+    requestAnimationFrame(ciz);
+  }
+  boyutla();
+  window.addEventListener("resize", boyutla);
+  ciz();
+})();
+
+/* ---------------------- 6. PEDAGOJİ: 5 dk öğren / 2 dk oyun ---------------------- */
+const Ritim = {
+  ogrenmeMs:0, sonDamga:0, molaSuresi:120000, esik:5*60*1000, molaAktif:false,
+  basla(){ this.sonDamga = Date.now(); },
+  dur(){
+    if(!this.sonDamga) return;
+    const gecen = Date.now() - this.sonDamga;
+    this.ogrenmeMs += gecen;
+    gunKontrol();
+    S.gun.dk += gecen/60000;
+    kaydet();
+    this.sonDamga = 0;
+  },
+  gecen(){ return this.ogrenmeMs + (this.sonDamga ? Date.now()-this.sonDamga : 0); },
+  molaGerekli(){ return this.gecen() >= this.esik; },
+  sifirla(){ this.ogrenmeMs = 0; }
+};
+
+function molaGoster(devamFn){
+  Ritim.dur();
+  Ritim.molaAktif = true;
+  const kutu = $("#molaKutu");
+  let kalan = Math.round(Ritim.molaSuresi/1000);
+  const nesneler = ["🦋","🐦","🌸","🌼","🐝","🕊️","🌷","✨"];
+  kutu.innerHTML =
+    '<div style="font-size:52px">🦋</div>' +
+    '<h3 style="margin:8px 0 4px;font-size:21px">Biraz oynayalım mı?</h3>' +
+    '<p style="color:var(--soluk);font-size:14px;margin:0 0 12px">Yeterince çalıştın. Şimdi sadece eğlence.<br>Uçuşanlara dokun 🌸</p>' +
+    '<div id="molaSahne" style="position:relative;height:170px;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,rgba(80,60,160,.4),rgba(50,110,70,.4))"></div>' +
+    '<div style="margin-top:12px;font-weight:900;color:var(--altin)" id="molaSayac"></div>' +
+    '<button class="dugme sade kucuk" style="margin-top:10px" data-act="molaBitir">Devam et</button>';
+  $("#mola").classList.add("aktif");
+  const sahne = $("#molaSahne");
+  const zamanlayicilar = [];
+  for(let i=0;i<9;i++){
+    const n = el("div","bahce-nesne", rastgele(nesneler));
+    n.style.fontSize = (20+Math.random()*16)+"px";
+    n.style.left = (Math.random()*80+5)+"%";
+    n.style.top  = (Math.random()*70+8)+"%";
+    n.style.transition = "left 3s ease-in-out, top 3s ease-in-out, transform .2s";
+    sahne.appendChild(n);
+    n.addEventListener("click", () => { SES.tik(); n.style.transform="scale(1.5)"; setTimeout(()=>n.style.transform="",220); });
+    zamanlayicilar.push(setInterval(() => {
+      n.style.left = (Math.random()*80+5)+"%";
+      n.style.top  = (Math.random()*70+8)+"%";
+    }, 3000 + Math.random()*1500));
+  }
+  const sayacEl = $("#molaSayac");
+  function tik(){
+    kalan--;
+    if(sayacEl) sayacEl.textContent = kalan > 0 ? (kalan + " saniye") : "";
+    if(kalan <= 0) bitir();
+  }
+  const s1 = setInterval(tik, 1000);
+  sayacEl.textContent = kalan + " saniye";
+  function bitir(){
+    clearInterval(s1);
+    zamanlayicilar.forEach(clearInterval);
+    $("#mola").classList.remove("aktif");
+    $("#mola").removeEventListener("click", dinle);
+    Ritim.molaAktif = false;
+    Ritim.sifirla();
+    Ritim.basla();
+    if(devamFn) devamFn();
+  }
+  function dinle(ev){
+    const b = ev.target.closest("[data-act='molaBitir']");
+    if(b) bitir();
+  }
+  $("#mola").addEventListener("click", dinle);
+}
+
+/* Aşama geçişlerinde çağrılır: mola gerekiyorsa araya girer */
+function ritimliGec(fn){
+  if(Ritim.molaGerekli() && !Ritim.molaAktif){ molaGoster(fn); }
+  else fn();
+}
+
+/* ---------------------- 7. AKIŞ: açılış & karakter ---------------------- */
+const TEN   = ["#f7ddc4","#f0c9a6","#dcab7f","#bd8654","#8d5f3c","#6b452a"];
+const BASOR = ["#f4a7c0","#b79cff","#7fd3e8","#8fd694","#ffd166","#ffffff","#f78ca0","#9ad0c2"];
+const TAKKE = ["#ffffff","#f2ead9","#8fd694","#7fd3e8","#b79cff","#ffd166","#d9d9e3","#2f3b52"];
+const SACR  = ["#2b2118","#3a2a1e","#5a3d24","#7a5330","#a9772f","#111111"];
+const ELBISE= ["#b79cff","#f4a7c0","#7fd3e8","#8fd694","#ffd166","#ff9b71","#c3f0ca","#e8dff5"];
+const GOMLEK= ["#7fd3e8","#8fd694","#b79cff","#ffd166","#ff9b71","#e8dff5","#9ad0c2","#5b7fd4"];
+
+function karakterEkraniHazirla(){
+  if(!S.cocuk.cins) S.cocuk.cins = "kiz";
+  if(!S.cocuk.sac) S.cocuk.sac = "#3a2a1e";
+  const erkek = S.cocuk.cins === "erkek";
+
+  document.querySelectorAll(".cins").forEach(b => {
+    b.classList.toggle("secili", b.dataset.c === S.cocuk.cins);
+  });
+  $("#basEtiket").textContent = erkek ? "Takke" : "Başörtüsü";
+  $("#elbEtiket").textContent = erkek ? "Kıyafet" : "Elbise";
+  $("#sacEtiket").parentNode && $("#sacEtiket").classList.toggle("gizli", !erkek);
+  $("#sacSecim").classList.toggle("gizli", !erkek);
+
+  /* cinsiyete uygun paletler; seçili renk palette yoksa ilkine düşer */
+  const basPalet = erkek ? TAKKE : BASOR;
+  const elbPalet = erkek ? GOMLEK : ELBISE;
+  if(basPalet.indexOf(S.cocuk.bas) < 0) S.cocuk.bas = basPalet[0];
+  if(elbPalet.indexOf(S.cocuk.elbise) < 0) S.cocuk.elbise = elbPalet[0];
+
+  const y = (dizi, alan, anahtar) => {
+    const kap = $(alan); kap.innerHTML = "";
+    dizi.forEach(renk => {
+      const d = el("div","renk" + (S.cocuk[anahtar]===renk ? " secili" : ""));
+      d.style.background = renk;
+      d.addEventListener("click", () => {
+        S.cocuk[anahtar] = renk; SES.tik();
+        kap.querySelectorAll(".renk").forEach(x=>x.classList.remove("secili"));
+        d.classList.add("secili");
+        avatarCiz();
+      });
+      kap.appendChild(d);
+    });
+  };
+  y(TEN,"#tenSecim","ten");
+  y(basPalet,"#basSecim","bas");
+  y(SACR,"#sacSecim","sac");
+  y(elbPalet,"#elbSecim","elbise");
+  $("#adGiris").value = S.cocuk.ad || "";
+  avatarCiz();
+}
+function avatarCiz(){ $("#avatarKutu").innerHTML = avatarSVG(S.cocuk, 150); }
+
+/* ---------------------- 8. TANIŞMA (ilk gün) ---------------------- */
+let tanismaAdim = 0;
+const TANISMA = [
+  "Uyandın. Bahçe sessiz... Çiçekler solmuş, yıldızlar sönmüş. 🌙",
+  "Bahçede küçük beyaz bir kuş duruyor. Sana bakıyor.",
+  "<b>\"Merhaba... Ben Hüdhüd.\"</b><br>Korkma. Ben senin arkadaşınım.",
+  "<b>\"Bu bahçenin adı Nur Bahçesi.\"</b><br>Çiçekleri yeniden açtırmanın tek bir yolu var.",
+  "<b>\"Kur'an harflerini öğreneceğiz.\"</b><br>Her harf bir yıldız yakacak. Her yıldız bir çiçek açtıracak. ⭐🌸",
+  "<b>\"Hazırsan, bugün birlikte ilk yıldızı yakalım.\"</b>"
+];
+function tanismaGoster(){
+  const m = TANISMA[tanismaAdim];
+  $("#tanismaMetin").innerHTML = m;
+  soyle(m.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim(), 0.9);
+  $("#tanismaBtn").textContent = tanismaAdim >= TANISMA.length-1 ? "Hadi başlayalım 🌟" : "Devam";
+}
+
+/* ---------------------- 9. HARİTA ---------------------- */
+function bolgeninHarfleri(b){
+  const bas = b*BOLGE_HARF;
+  return HARFLER.slice(bas, bas+BOLGE_HARF);
+}
+function bolgeAcikMi(b){
+  if(b===0) return true;
+  return S.ogrenilen.length >= b*BOLGE_HARF;
+}
+function siradakiHarf(){
+  for(let i=0;i<HARFLER.length;i++){ if(S.ogrenilen.indexOf(i) < 0) return i; }
+  return -1;
+}
+function haritaCiz(){
+  gunKontrol();
+  const ad = S.cocuk.ad ? S.cocuk.ad : "Nur Bahçesi";
+  $("#haritaAd").textContent = ad;
+  $("#haritaDurum").textContent = S.ogrenilen.length + " / 28 harf öğrenildi";
+
+  const o = S.odul;
+  $("#haritaSayac").innerHTML =
+    '<span class="sayac">⭐ '+o.yildiz+'</span>' +
+    '<span class="sayac">🌸 '+o.cicek+'</span>' +
+    '<span class="sayac">🦋 '+o.kelebek+'</span>' +
+    '<span class="sayac">🐦 '+o.kus+'</span>' +
+    '<span class="sayac">🌳 '+o.agac+'</span>';
+
+  const sh = siradakiHarf();
+  const zayif = zayifHarf();
+  const yarim = HARFLER.filter(x => asamaAl(x.i) === 1)[0];
+  let mesaj;
+  if(yarim)
+    mesaj = "<b>"+yarim.ad+"</b> harfinin şeklini biliyorsun. Şimdi üç hâlini öğrenelim: " +
+            HRK.map((x,n) => "<b>"+hrkSes(yarim,n)+"</b>").join(" · ");
+  else if(sh < 0)
+    mesaj = "Bütün harfleri öğrendin! Nur Tepesi ışıl ışıl. İstediğin harfle serbest oynayabilirsin. ⭐";
+  else if(S.ogrenilen.length === 0)
+    mesaj = "Bugün <b>"+HARFLER[sh].ad+"</b> ile tanışacağız. Hazır mısın?";
+  else if(zayif != null && Math.random() < 0.5)
+    mesaj = "Önce bildiklerini tazeleyeceğiz — <b>"+HARFLER[zayif].ad+"</b> biraz utangaç. Sonra <b>"+HARFLER[sh].ad+"</b> ile tanışırız.";
+  else
+    mesaj = "Önce " + S.ogrenilen.length + " arkadaşını tekrar edeceğiz, sonra <b>"+HARFLER[sh].ad+"</b> ile tanışacağız.";
+  $("#haritaHud").innerHTML = mesaj;
+
+  /* biriken harfler: her yeni harf öncekilerin üstüne konur */
+  const serit = $("#haritaSerit");
+  if(serit){
+    if(!S.ogrenilen.length && !yarim){
+      serit.innerHTML = "";
+    }else{
+      const parcalar = HARFLER.filter(x => asamaAl(x.i) >= 1).map(x => {
+        const tam = asamaAl(x.i) >= 2;
+        return '<span class="serit-harf'+(tam ? "" : " yarim")+'" title="'+x.ad+'">'+x.c+'</span>';
+      }).join("");
+      serit.innerHTML =
+        '<div class="serit-baslik">Biriktirdiğin harfler</div>' +
+        '<div class="serit-govde">'+parcalar+'</div>' +
+        '<div class="serit-not">Dolu olanlar üç harekesiyle biliniyor · soluk olan yarım kaldı</div>';
+    }
+  }
+
+  const kap = $("#bolgeler"); kap.innerHTML = "";
+  BOLGELER.forEach((b, bi) => {
+    const harfler = bolgeninHarfleri(bi);
+    const bitmis = harfler.filter(h => S.ogrenilen.indexOf(h.i) >= 0).length;
+    const acik = bolgeAcikMi(bi);
+    const d = el("div","bolge " + (acik ? (bitmis===BOLGE_HARF ? "acik" : "acik") : "kilitli"));
+    d.innerHTML =
+      '<div class="bikon">'+(acik ? b.ikon : "🔒")+'</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="bad">'+b.ad+' <span style="font-size:12px;color:var(--soluk)">'+bitmis+'/'+BOLGE_HARF+'</span></div>' +
+        '<div class="bdur">'+(acik ? b.not : "Önceki bölgeyi tamamla")+'</div>' +
+        '<div class="ilerleme"><i style="width:'+(bitmis/BOLGE_HARF*100)+'%"></i></div>' +
+      '</div>' +
+      '<div class="bharfler">'+harfler.map(h => S.ogrenilen.indexOf(h.i)>=0 ? h.c : "·").join(" ")+'</div>';
+    if(acik){
+      d.addEventListener("click", () => {
+        SES.tik();
+        const hedef = harfler.filter(h => S.ogrenilen.indexOf(h.i) < 0)[0];
+        if(hedef) dersBaslat(hedef.i);
+        else serbestSec(bi);
+      });
+    }
+    kap.appendChild(d);
+  });
+}
+/* uyarlanabilir: en çok zorlanılan öğrenilmiş harf */
+function zayifHarf(){
+  let en = null, enOran = 101;
+  S.ogrenilen.forEach(i => {
+    const o = basari(i);
+    if(o != null && o < enOran){ enOran = o; en = i; }
+  });
+  return (enOran <= 85) ? en : null;
+}
+
+/* ---------------------- 10. DERS (önce ses, sonra şekil) ---------------------- */
+let dersHarf = null, dersAdim = 0;
+function dersBaslat(idx){
+  dersHarf = HARFLER[idx];
+  dersAdim = 0;
+  /* şekliyle zaten tanışmışsa baştan tanıştırmayalım, harekelerine geçelim */
+  if(asamaAl(idx) >= 1){ akisBaslat(idx); return; }
+  Ritim.basla();
+  ekran("e-ders");
+  dersCiz();
+}
+function dersCiz(){
+  const h = dersHarf;
+  $("#dersUst").textContent = "Yeni arkadaş";
+  const g = $("#dersGovde");
+  const btn = $("#dersBtn");
+
+  if(dersAdim === 0){
+    g.innerHTML =
+      '<div class="hudhud" style="margin-top:10px"><div class="kus">🕊️</div>' +
+      '<div class="balon">Bugün yeni bir arkadaşımız var. Önce sesini dinle.<br><b>Gözlerini kapatabilirsin.</b></div></div>' +
+      '<div style="text-align:center;margin-top:22px">' +
+        '<button class="ikonbtn parlak" style="width:110px;height:110px;font-size:44px;margin:0 auto;background:radial-gradient(circle at 35% 30%,#fff6c2,#ffd166 60%,#e9a72e);color:#3a2a00;border:none" data-act="tekrarSes">🔊</button>' +
+        '<div style="margin-top:14px;color:var(--soluk);font-weight:800;font-size:14px">Dokun, sesi dinle</div>' +
+      '</div>';
+    btn.textContent = "Duydum";
+    setTimeout(() => harfSesi(h), 450);
+  }
+  else if(dersAdim === 1){
+    g.innerHTML =
+      '<div class="hudhud" style="margin-top:10px"><div class="kus">🕊️</div>' +
+      '<div class="balon">Kuş kumun üzerine bir şey çizdi.<br><b>Sence bu sese benzeyen ne olabilir?</b><br>İstersen yüksek sesle söyle. Doğrusu yanlışı yok. 🌸</div></div>' +
+      '<div style="text-align:center;font-size:64px;margin-top:18px;opacity:.35;letter-spacing:8px">❓</div>';
+    btn.textContent = "Şekli göster";
+    soyle("Sence bu sese benzeyen ne olabilir?", 0.9);
+  }
+  else if(dersAdim === 2){
+    g.innerHTML =
+      '<div style="text-align:center">' +
+        '<div class="harf-buyuk" id="dersHarfGoster">'+h.c+'</div>' +
+        '<div style="font-size:24px;font-weight:900;margin-top:6px">'+h.ad+'</div>' +
+        '<div style="color:var(--soluk);font-weight:800;font-size:15px">sesi: <b style="color:var(--altin)">'+h.ses+'</b></div>' +
+      '</div>' +
+      '<div class="kart" style="display:flex;gap:13px;align-items:flex-start">' +
+        '<div style="font-size:40px">'+h.ikon+'</div>' +
+        '<div><div style="font-weight:900;font-size:16px;margin-bottom:2px">'+h.ad+' kimdir?</div>' +
+        '<div style="font-size:14.5px;line-height:1.6;color:var(--metin)">'+h.kisi+'</div></div>' +
+      '</div>' +
+      '<p class="altbaslik">Artık '+h.ad+' senin arkadaşın. 🌸</p>';
+    btn.textContent = "Hadi oynayalım 🎮";
+    setTimeout(() => { harfSesi(h); setTimeout(()=>soyle(h.ad + ". " + h.kisi, 0.88), 900); }, 250);
+  }
+}
+
+/* ---------------------- 11. OYUN AKIŞI ---------------------- */
+const OYUN_LISTE = ["kum","ses","atesbocegi","balon","hafiza","yapboz","boyama","harfavi"];
+const OYUN_AD = {
+  kum:"Kum Çizimi", ses:"Ses Taklidi", atesbocegi:"Ateşböceği Yakala", balon:"Balon Patlat",
+  hafiza:"Hafıza Oyunu", yapboz:"Yapboz", boyama:"Boyama", harfavi:"Harf Avı",
+  tekrar:"Tekrar Bahçesi", harekeDers:"Üç Hâl", harekeSec:"Hangi Hâli?", harekeTren:"Hareke Treni"
+};
+let akis = null; /* {harf, sira:[], adim:0, dogru:0, toplam:0, serbest:false} */
+
+/* Akış üst üste binerek ilerler:
+   [bildiklerini tazele] → yeni harfin şekli → aynı harfin üç harekesi → boyama */
+function oyunSirasiUret(harfIdx){
+  const havuz = ["atesbocegi","balon","hafiza","yapboz","harfavi"];
+  const secili = [];
+  for(let k=0;k<2;k++) secili.push(havuz[(harfIdx*3 + k*2) % havuz.length]);
+  const benzersiz = [];
+  secili.forEach(x => { if(benzersiz.indexOf(x)<0) benzersiz.push(x); });
+  havuz.forEach(x => { if(benzersiz.length<2 && benzersiz.indexOf(x)<0) benzersiz.push(x); });
+
+  const sekliBiliyor = asamaAl(harfIdx) >= 1;
+  const sira = [];
+  /* 1) önceki harfleri tazele — her yeni harften önce */
+  if(tekrarHavuzu().length > 0) sira.push("tekrar");
+  /* 2) yeni harfin şekli (yarım kalmışsa kısa bir hatırlatma yeter) */
+  if(sekliBiliyor){
+    sira.push(benzersiz[0]);
+  }else{
+    sira.push("kum", "ses");
+    benzersiz.forEach(x => sira.push(x));
+  }
+  /* 3) aynı harfin harekeleri */
+  sira.push("harekeDers", "harekeSec", "harekeTren");
+  /* 4) kapanış */
+  sira.push("boyama");
+  return sira;
+}
+/* Tekrar havuzu: şekli bilinen harfler, en zayıf olan en önde */
+function tekrarHavuzu(){
+  const havuz = [];
+  HARFLER.forEach(h => { if(asamaAl(h.i) >= 1) havuz.push(h.i); });
+  havuz.sort((a,b) => {
+    const oa = basari(a), ob = basari(b);
+    return (oa == null ? 100 : oa) - (ob == null ? 100 : ob);
+  });
+  return havuz;
+}
+function akisBaslat(harfIdx){
+  akis = {harf:HARFLER[harfIdx], sira:oyunSirasiUret(harfIdx), adim:0, dogru:0, toplam:0, serbest:false};
+  Ritim.basla();
+  ekran("e-oyun");
+  adimCalistir();
+}
+function tekOyun(harfIdx, oyunAdi){
+  akis = {harf:HARFLER[harfIdx], sira:[oyunAdi], adim:0, dogru:0, toplam:0, serbest:true};
+  Ritim.basla();
+  ekran("e-oyun");
+  adimCalistir();
+}
+function adimCalistir(){
+  const a = akis;
+  if(!a) return;
+  if(a.adim >= a.sira.length){ akisBitti(); return; }
+  const oyun = a.sira[a.adim];
+  $("#oyunUst").textContent = a.harf.ad + "  " + a.harf.c;
+  $("#oyunAdim").textContent = a.serbest ? OYUN_AD[oyun] : (OYUN_AD[oyun] + " · " + (a.adim+1) + "/" + a.sira.length);
+  $("#oyunAlt").innerHTML = "";
+  $("#oyunMesaj").innerHTML = "";
+  $("#oyunAlan").innerHTML = "";
+  alanDinle({});
+  OYUNLAR[oyun](a.harf, oyunBitti);
+}
+function oyunBitti(basariliMi){
+  const a = akis;
+  if(!a) return;
+  a.toplam++;
+  if(basariliMi){ a.dogru++; S.odul.yildiz++; }
+  istKayit(a.harf.i, !!basariliMi);
+  kaydet();
+  a.adim++;
+  setTimeout(() => ritimliGec(adimCalistir), 260);
+}
+function akisBitti(){
+  Ritim.dur();
+  const a = akis;
+  if(a.serbest){ haritaCiz(); ekran("e-harita"); return; }
+  const h = a.harf;
+  const yeni = S.ogrenilen.indexOf(h.i) < 0;
+  asamaYaz(h.i, 2);   /* şekil + üç hareke tamamlandı */
+  if(yeni){
+    S.ogrenilen.push(h.i);
+    S.ogrenilen.sort((x,y)=>x-y);
+    S.odul.cicek++;
+  }
+  S.odul.yildiz += 2;
+  kaydet();
+  SES.yildiz();
+
+  /* bölge tamamlandı mı? */
+  const bolgeIdx = Math.floor(h.i / BOLGE_HARF);
+  const bolgeHarfleri = bolgeninHarfleri(bolgeIdx);
+  const bolgeBitti = yeni && bolgeHarfleri.every(x => S.ogrenilen.indexOf(x.i) >= 0);
+  let bolgeOdul = null;
+  if(bolgeBitti){
+    const b = BOLGELER[bolgeIdx];
+    bolgeOdul = b.odul;
+    S.odul[b.odul.tur] = (S.odul[b.odul.tur]||0) + 1;
+    S.esyalar.push({es:b.odul.es, ad:b.odul.ad});
+    kaydet();
+  }
+  kutlamaGoster(h, a, bolgeOdul, bolgeIdx);
+}
+
+function kutlamaGoster(h, a, bolgeOdul, bolgeIdx){
+  const oran = a.toplam ? Math.round(a.dogru/a.toplam*100) : 100;
+  let ic =
+    '<div style="font-size:56px">'+h.cicek+'</div>' +
+    '<h3 style="margin:8px 0 2px;font-size:23px">'+h.ad+' öğrenildi!</h3>' +
+    '<div style="display:flex;gap:10px;justify-content:center;margin:8px 0 2px">' +
+      HRK.map((x,n) =>
+        '<div style="text-align:center">' +
+        '<div style="font-size:40px;color:'+x.renk+';font-family:'+ARFONT.replace(/"/g,"&quot;")+'">'+hrkChar(h,n)+'</div>' +
+        '<div style="font-size:13px;font-weight:900;color:var(--soluk)">'+hrkSes(h,n)+'</div></div>'
+      ).join("") +
+    '</div>' +
+    '<p style="color:var(--soluk);font-size:14px;margin:0">Şeklini ve üç hâlini öğrendin 🌸</p>' +
+    '<div style="margin-top:10px;font-size:13px;color:var(--soluk);font-weight:800">Şimdiye kadar biriktirdiklerin</div>' +
+    '<div style="font-size:26px;letter-spacing:6px;color:var(--altin);font-family:'+ARFONT.replace(/"/g,"&quot;")+'">' +
+      S.ogrenilen.map(i => HARFLER[i].c).join(" ") + '</div>' +
+    '<div class="odul-satir">' +
+      '<span class="odul">⭐ +'+(a.dogru+2)+'</span>' +
+      '<span class="odul" style="animation-delay:.1s">🌸 +1</span>' +
+      '<span class="odul" style="animation-delay:.2s">🎯 %'+oran+'</span>' +
+    '</div>';
+  if(bolgeOdul){
+    ic += '<div class="kart" style="margin-top:6px;border-color:rgba(255,209,102,.5)">' +
+      '<div style="font-size:34px">'+bolgeOdul.es+'</div>' +
+      '<div style="font-weight:900;margin-top:4px">'+BOLGELER[bolgeIdx].ad+' tamamlandı!</div>' +
+      '<div style="font-size:13.5px;color:var(--soluk)">Bahçene bir <b>'+bolgeOdul.ad+'</b> geldi.</div></div>';
+  }
+  ic += '<button class="dugme tam" style="margin-top:14px" data-act="kutlamaKapat">Devam 🌟</button>';
+  $("#kutlamaKutu").innerHTML = ic;
+  $("#kutlama").classList.add("aktif");
+  soyle(h.ad + " öğrenildi. Aferin!", 0.9);
+}
+function kutlamaKapat(){
+  $("#kutlama").classList.remove("aktif");
+  /* her 3 harfte bir kıssa */
+  const say = S.ogrenilen.length;
+  const hidx = Math.floor(say/3) - 1;
+  if(say % 3 === 0 && hidx >= 0 && hidx < HIKAYELER.length && S.hikayeler.indexOf(hidx) < 0){
+    S.hikayeler.push(hidx); kaydet();
+    hikayeBaslat(hidx);
+  }else{
+    haritaCiz(); ekran("e-harita");
+  }
+}
+
+/* ---------------------- 12. MİNİ OYUNLAR ---------------------- */
+const OYUNLAR = {};
+
+function oyunBasligi(baslik, ipucu){
+  return '<div class="oyun-basligi">'+baslik+'</div><div class="oyun-ipucu">'+ipucu+'</div>';
+}
+function altMesaj(metin, tur){
+  const renk = tur==="ok" ? "var(--yesil)" : (tur==="hata" ? "var(--gul)" : "var(--soluk)");
+  const k = $("#oyunMesaj");
+  if(k) k.innerHTML = '<p style="text-align:center;font-weight:900;color:'+renk+';font-size:15px;margin:10px 0 0">'+metin+'</p>';
+}
+/* çocuk dostu geri bildirim — ceza yok */
+const TESVIK = ["Aferin! 🌟","Harika! 🌸","Çok güzel! ✨","Bravo! 🦋","Şahane! 💫"];
+const NAZIK  = ["Gelin tekrar bakalım 🌸","Olsun, bir daha deneyelim ✨","Sorun değil, birlikte yapalım 🕊️"];
+
+/* --- 12.1 KUM ÇİZİMİ --- */
+OYUNLAR.kum = function(h, bitti){
+  const alan = $("#oyunAlan");
+  alan.innerHTML = oyunBasligi("✍️ Kum Çizimi", "Parmağınla harfin üstünden geç") +
+    '<div class="sahne" style="margin-top:10px;background:linear-gradient(180deg,'+
+    'var(--kum),var(--kum2))"><canvas id="kumCv"></canvas></div>';
+  $("#oyunAlt").innerHTML =
+    '<div style="display:flex;gap:9px;margin-top:12px">' +
+      '<button class="dugme sade kucuk" style="flex:1" data-act="kumTemizle">↺ Yeniden</button>' +
+      '<button class="dugme kucuk" style="flex:1" data-act="kumKontrol">Bitti ✓</button>' +
+    '</div>';
+
+  const cv = $("#kumCv");
+  const en = Math.min(alan.clientWidth || 340, 360);
+  const B = Math.round(en);
+  cv.width = B; cv.height = B;
+  cv.style.height = "auto";
+  const ctx = cv.getContext ? cv.getContext("2d") : null;
+  if(!ctx){ setTimeout(() => bitti(true), 600); return; }
+
+  const glif = glifCanvas(h.c, B, "#000");
+  const hedefNoktalar = glifNoktalar(glif, 4);
+  const izgara = {}; const HUC = 14;
+  hedefNoktalar.forEach(p => {
+    const k = Math.floor(p.x/HUC)+","+Math.floor(p.y/HUC);
+    (izgara[k] = izgara[k] || []).push(p);
+  });
+  function yakinMi(x, y, r){
+    const gx = Math.floor(x/HUC), gy = Math.floor(y/HUC);
+    for(let i=-1;i<=1;i++) for(let j=-1;j<=1;j++){
+      const arr = izgara[(gx+i)+","+(gy+j)];
+      if(!arr) continue;
+      for(let k=0;k<arr.length;k++){
+        const dx = arr[k].x-x, dy = arr[k].y-y;
+        if(dx*dx+dy*dy <= r*r) return true;
+      }
+    }
+    return false;
+  }
+
+  let cizilen = [];
+  function zemin(){
+    ctx.clearRect(0,0,B,B);
+    /* kum dokusu */
+    ctx.fillStyle = "rgba(255,255,255,.12)";
+    for(let i=0;i<160;i++){
+      ctx.fillRect(Math.random()*B, Math.random()*B, 1.4, 1.4);
+    }
+    /* soluk harf rehberi */
+    ctx.globalAlpha = 0.26;
+    ctx.drawImage(glif, 0, 0);
+    ctx.globalAlpha = 1;
+    /* başlangıç noktası */
+    if(hedefNoktalar.length){
+      const p = hedefNoktalar[0];
+      ctx.beginPath(); ctx.arc(p.x, p.y, 9, 0, Math.PI*2);
+      ctx.fillStyle = "rgba(255,90,120,.75)"; ctx.fill();
+    }
+  }
+  zemin();
+
+  let ciziyor = false, sonNokta = null;
+  function konum(ev){
+    const r = cv.getBoundingClientRect();
+    const t = (ev.touches && ev.touches[0]) ? ev.touches[0] : ev;
+    return {x:(t.clientX - r.left) * (B/r.width), y:(t.clientY - r.top) * (B/r.height)};
+  }
+  function bas(ev){ ev.preventDefault(); ciziyor = true; sonNokta = konum(ev); cizilen.push(sonNokta); nokta(sonNokta); }
+  function hareket(ev){
+    if(!ciziyor) return;
+    ev.preventDefault();
+    const p = konum(ev);
+    if(sonNokta){
+      const d = Math.hypot(p.x-sonNokta.x, p.y-sonNokta.y);
+      const n = Math.max(1, Math.floor(d/4));
+      for(let i=1;i<=n;i++){
+        const q = {x:sonNokta.x+(p.x-sonNokta.x)*i/n, y:sonNokta.y+(p.y-sonNokta.y)*i/n};
+        cizilen.push(q); nokta(q);
+      }
+    }
+    sonNokta = p;
+  }
+  function birak(){ ciziyor = false; sonNokta = null; }
+  function nokta(p){
+    ctx.beginPath(); ctx.arc(p.x, p.y, B*0.035, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x, p.y, B*0.022, 0, Math.PI*2);
+    ctx.fillStyle = "#fff5cf"; ctx.fill();
+  }
+  if(window.PointerEvent){
+    cv.addEventListener("pointerdown", bas);
+    cv.addEventListener("pointermove", hareket);
+    window.addEventListener("pointerup", birak);
+  }else{
+    cv.addEventListener("mousedown", bas);
+    cv.addEventListener("mousemove", hareket);
+    window.addEventListener("mouseup", birak);
+    cv.addEventListener("touchstart", bas, {passive:false});
+    cv.addEventListener("touchmove", hareket, {passive:false});
+    cv.addEventListener("touchend", birak);
+  }
+
+  let deneme = 0;
+  function temizle(){ cizilen = []; zemin(); altMesaj("",""); }
+  function kontrol(){
+    if(!hedefNoktalar.length){ bitirGuvenli(true); return; }
+    const r = B*0.085;
+    let kapsanan = 0;
+    /* kapsama: harfin kaçta kaçı çizildi */
+    const cizIzgara = {};
+    cizilen.forEach(p => {
+      const k = Math.floor(p.x/HUC)+","+Math.floor(p.y/HUC);
+      (cizIzgara[k] = cizIzgara[k]||[]).push(p);
+    });
+    function cizimYakin(x,y){
+      const gx = Math.floor(x/HUC), gy = Math.floor(y/HUC);
+      for(let i=-1;i<=1;i++) for(let j=-1;j<=1;j++){
+        const arr = cizIzgara[(gx+i)+","+(gy+j)];
+        if(!arr) continue;
+        for(let k=0;k<arr.length;k++){
+          const dx = arr[k].x-x, dy = arr[k].y-y;
+          if(dx*dx+dy*dy <= r*r) return true;
+        }
+      }
+      return false;
+    }
+    hedefNoktalar.forEach(p => { if(cizimYakin(p.x,p.y)) kapsanan++; });
+    const kapsama = kapsanan / hedefNoktalar.length;
+    let isabetli = 0;
+    cizilen.forEach(p => { if(yakinMi(p.x,p.y,r)) isabetli++; });
+    const isabet = cizilen.length ? isabetli/cizilen.length : 0;
+
+    deneme++;
+    if(kapsama >= 0.55 && isabet >= 0.42){
+      isikPatlat();
+      SES.dogru();
+      altMesaj(rastgele(TESVIK), "ok");
+      bitirGuvenli(true);
+    }else if(deneme >= 3){
+      SES.tik();
+      altMesaj("Birlikte yaptık sayılır 🌸 Devam edelim.", "");
+      bitirGuvenli(true);
+    }else{
+      SES.yanlis();
+      altMesaj(rastgele(NAZIK), "hata");
+      soyle("Gelin tekrar bakalım", 0.9);
+      setTimeout(temizle, 900);
+    }
+  }
+  function isikPatlat(){
+    /* kumdan ışık çıkıyor */
+    let k = 0;
+    const zam = setInterval(() => {
+      k++;
+      ctx.globalCompositeOperation = "lighter";
+      hedefNoktalar.filter((_,i)=>i%3===0).forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2+k*0.7, 0, Math.PI*2);
+        ctx.fillStyle = "rgba(255,220,120,.10)";
+        ctx.fill();
+      });
+      ctx.globalCompositeOperation = "source-over";
+      if(k > 14) clearInterval(zam);
+    }, 45);
+  }
+  let bittiMi = false;
+  function bitirGuvenli(v){
+    if(bittiMi) return; bittiMi = true;
+    window.removeEventListener("pointerup", birak);
+    setTimeout(() => bitti(v), 1000);
+  }
+  alanDinle({kumTemizle:temizle, kumKontrol:kontrol});
+  setTimeout(() => soyle("Parmağınla harfin üstünden geç", 0.9), 300);
+};
+
+/* Basit eylem bağlayıcı (inline onclick yok — delege dinleyici) */
+let alanEylemler = {};
+function alanDinle(harita){ alanEylemler = harita || {}; }
+document.addEventListener("change", function(ev){
+  const t = ev.target;
+  if(t && t.id === "sesSecici"){
+    S.ayar.sesAdi = t.value || "";
+    kaydet();
+    const eski = S.ayar.ses; S.ayar.ses = true;
+    soyle("Merhaba, ben Hüdhüd.", 0.86);
+    S.ayar.ses = eski;
+  }
+});
+document.addEventListener("click", function(ev){
+  const t = ev.target.closest("[data-act]");
+  if(!t) return;
+  const act = t.getAttribute("data-act");
+  if(alanEylemler[act]){ alanEylemler[act](t, ev); return; }
+  if(GENEL[act]) GENEL[act](t, ev);
+});
+
+/* --- 12.2 SES TAKLİDİ --- */
+OYUNLAR.ses = function(h, bitti){
+  const alan = $("#oyunAlan");
+  alan.innerHTML = oyunBasligi("🎤 Ses Taklidi", "Önce dinle, sonra sen söyle") +
+    '<div style="text-align:center;margin-top:18px">' +
+      '<div class="harf-buyuk" style="font-size:78px">'+h.c+'</div>' +
+      '<button class="ikonbtn parlak" style="width:96px;height:96px;font-size:38px;margin:14px auto 0;' +
+      'background:radial-gradient(circle at 35% 30%,#fff6c2,#ffd166 60%,#e9a72e);color:#3a2a00;border:none" data-act="sesDinle">🔊</button>' +
+      '<div style="margin-top:10px;font-weight:900;font-size:19px;color:var(--altin)">'+h.ses+'</div>' +
+      '<div id="sesDurum" style="margin-top:16px;color:var(--soluk);font-weight:800;font-size:14.5px">Dokun ve dinle</div>' +
+      '<div id="sesCubuk" style="height:12px;border-radius:999px;background:rgba(255,255,255,.12);margin:14px auto 0;max-width:220px;overflow:hidden">' +
+        '<i id="sesDolgu" style="display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--yesil),var(--altin));border-radius:999px;transition:width .12s"></i></div>' +
+    '</div>';
+  $("#oyunAlt").innerHTML =
+    '<div style="display:flex;gap:9px;margin-top:14px">' +
+      '<button class="dugme sade kucuk" style="flex:1" data-act="sesMikrofon">🎤 Mikrofonla</button>' +
+      '<button class="dugme kucuk" style="flex:1" data-act="sesSoyledim">Söyledim ✓</button>' +
+    '</div>' +
+    '<p class="oyun-ipucu" style="margin-top:9px">Mikrofon zorunlu değil. İstemezsen "Söyledim" de yeter 🌸</p>';
+
+  let akim = null, analiz = null, cerceve = null, bittiMi = false;
+  setTimeout(() => harfSesi(h), 400);
+
+  function tamamla(basariliMi, mesaj){
+    if(bittiMi) return; bittiMi = true;
+    if(cerceve) cancelAnimationFrame(cerceve);
+    if(akim) akim.getTracks().forEach(t => t.stop());
+    altMesaj(mesaj || rastgele(TESVIK), "ok");
+    SES.dogru();
+    setTimeout(() => bitti(basariliMi), 900);
+  }
+  function mikrofon(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      $("#sesDurum").textContent = "Bu cihazda mikrofon yok. \"Söyledim\" diyebilirsin 🌸";
+      return;
+    }
+    $("#sesDurum").textContent = "Şimdi sen söyle: " + h.ses;
+    soyle("Şimdi sen söyle", 0.9);
+    navigator.mediaDevices.getUserMedia({audio:true}).then(s => {
+      akim = s;
+      S.ayar.mikrofon = true; kaydet();
+      const c = ac(); if(!c){ return; }
+      const kaynak = c.createMediaStreamSource(s);
+      analiz = c.createAnalyser();
+      analiz.fftSize = 512;
+      kaynak.connect(analiz);
+      const veri = new Uint8Array(analiz.frequencyBinCount);
+      let yuksekKare = 0;
+      function dongu(){
+        analiz.getByteFrequencyData(veri);
+        let top = 0;
+        for(let i=0;i<veri.length;i++) top += veri[i];
+        const ort = top / veri.length;
+        const yuzde = Math.min(100, ort*2.6);
+        const dolgu = $("#sesDolgu");
+        if(dolgu) dolgu.style.width = yuzde + "%";
+        if(ort > 16) yuksekKare++; else yuksekKare = Math.max(0, yuksekKare-1);
+        if(yuksekKare > 14){ tamamla(true, "Sesini duydum! " + rastgele(TESVIK)); return; }
+        cerceve = requestAnimationFrame(dongu);
+      }
+      dongu();
+    }).catch(() => {
+      $("#sesDurum").textContent = "Mikrofon açılmadı. Sorun değil — \"Söyledim\" de yeter 🌸";
+    });
+  }
+  alanDinle({
+    sesDinle: () => harfSesi(h),
+    sesMikrofon: mikrofon,
+    sesSoyledim: () => tamamla(true, "Duydum bile! " + rastgele(TESVIK))
+  });
+};
+
+/* --- 12.3 ATEŞBÖCEĞİ YAKALA --- */
+OYUNLAR.atesbocegi = function(h, bitti){
+  const alan = $("#oyunAlan");
+  alan.innerHTML = oyunBasligi("🪄 Ateşböceği Yakala",
+    "Sadece <b style='color:var(--altin);font-family:var(--ar)'>"+h.c+"</b> ("+h.ad+") olanlara dokun") +
+    '<div class="sahne" id="abSahne" style="height:330px;margin-top:10px"></div>';
+  const sahne = $("#abSahne");
+  const G = sahne.clientWidth || 330, Y = 330;
+  const HEDEF = 5;
+  const digerler = HARFLER.filter(x => x.i !== h.i);
+  const yakinlar = digerler.slice(Math.max(0,h.i-3), h.i+4).length >= 4
+    ? digerler.slice(Math.max(0,h.i-3), h.i+4) : digerler;
+  let yakalanan = 0, kalanDogru = HEDEF, bittiMi = false;
+  const bocekler = [];
+
+  for(let i=0;i<16;i++){
+    const dogruMu = i < HEDEF;
+    const harf = dogruMu ? h : rastgele(yakinlar);
+    const d = el("div","ucan atesbocegi", harf.c);
+    d.dataset.dogru = dogruMu ? "1" : "0";
+    const durum = {
+      x: Math.random()*(G-60), y: Math.random()*(Y-60),
+      vx: (Math.random()-0.5)*0.9, vy:(Math.random()-0.5)*0.9, d:d
+    };
+    if(!dogruMu){ d.style.background = "radial-gradient(circle at 35% 30%,#d9e6ff,#9fb6e8 60%,#7a92c9)"; d.style.boxShadow="0 0 14px rgba(160,190,240,.5)"; }
+    d.style.transform = "translate("+durum.x+"px,"+durum.y+"px)";
+    sahne.appendChild(d);
+    bocekler.push(durum);
+    d.addEventListener("click", () => {
+      if(bittiMi || d.classList.contains("gitti")) return;
+      if(d.dataset.dogru === "1"){
+        d.classList.add("gitti"); durum.olu = true;
+        yakalanan++; kalanDogru--;
+        SES.dogru(); harfSesi(h);
+        altMesaj(yakalanan + " / " + HEDEF + "  " + rastgele(TESVIK), "ok");
+        if(yakalanan >= HEDEF) tamamla(true);
+      }else{
+        SES.yanlis();
+        altMesaj(rastgele(NAZIK), "hata");
+        d.animate ? d.animate([{transform:d.style.transform+" scale(1)"},{transform:d.style.transform+" scale(1.25)"},{transform:d.style.transform+" scale(1)"}],{duration:320}) : null;
+      }
+    });
+  }
+  altMesaj("0 / " + HEDEF, "");
+  let cerceve;
+  function dongu(){
+    for(let i=0;i<bocekler.length;i++){
+      const b = bocekler[i];
+      if(b.olu) continue;
+      b.x += b.vx; b.y += b.vy;
+      if(b.x < 0 || b.x > G-56) b.vx *= -1;
+      if(b.y < 0 || b.y > Y-56) b.vy *= -1;
+      if(Math.random() < 0.02){ b.vx += (Math.random()-0.5)*0.4; b.vy += (Math.random()-0.5)*0.4; }
+      b.vx = Math.max(-1.3, Math.min(1.3, b.vx)); b.vy = Math.max(-1.3, Math.min(1.3, b.vy));
+      b.d.style.transform = "translate("+b.x+"px,"+b.y+"px)";
+    }
+    cerceve = requestAnimationFrame(dongu);
+  }
+  dongu();
+  function tamamla(v){
+    if(bittiMi) return; bittiMi = true;
+    cancelAnimationFrame(cerceve);
+    setTimeout(() => bitti(v), 850);
+  }
+  setTimeout(() => soyle("Sadece " + h.ad + " olanları yakala", 0.9), 400);
+};
+
+/* --- 12.4 BALON PATLAT --- */
+OYUNLAR.balon = function(h, bitti){
+  const alan = $("#oyunAlan");
+  alan.innerHTML = oyunBasligi("🎈 Balon Patlat",
+    "Sadece <b style='color:var(--altin);font-family:var(--ar)'>"+h.c+"</b> yazan balonları patlat") +
+    '<div class="sahne" id="blSahne" style="height:340px;margin-top:10px"></div>';
+  const sahne = $("#blSahne");
+  const G = sahne.clientWidth || 330, Y = 340;
+  const HEDEF = 6;
+  const renkler = ["#f4a7c0","#b79cff","#7fd3e8","#8fd694","#ffd166","#ff9b71"];
+  const komsu = HARFLER.filter(x => x.i !== h.i).slice(Math.max(0,h.i-2), h.i+5);
+  const havuz = komsu.length >= 3 ? komsu : HARFLER.filter(x=>x.i!==h.i);
+  let patlatilan = 0, bittiMi = false, cerceve;
+  const balonlar = [];
+
+  function balonUret(dogruMu){
+    const harf = dogruMu ? h : rastgele(havuz);
+    const d = el("div","ucan balon-o", harf.c);
+    d.style.background = "radial-gradient(circle at 35% 28%,rgba(255,255,255,.6),"+rastgele(renkler)+")";
+    const b = {x: Math.random()*(G-70), y: Y + Math.random()*160, hiz: 0.5+Math.random()*0.75, d:d,
+      sallanma: Math.random()*6, dogru:dogruMu};
+    d.style.transform = "translate("+b.x+"px,"+b.y+"px)";
+    sahne.appendChild(d);
+    balonlar.push(b);
+    d.addEventListener("click", () => {
+      if(bittiMi || b.olu) return;
+      if(b.dogru){
+        b.olu = true; d.classList.add("patladi"); SES.pat(); harfSesi(h);
+        patlatilan++;
+        altMesaj(patlatilan + " / " + HEDEF + "  " + rastgele(TESVIK), "ok");
+        setTimeout(()=>{ if(d.parentNode) d.parentNode.removeChild(d); }, 320);
+        if(patlatilan >= HEDEF) tamamla(true);
+      }else{
+        SES.yanlis();
+        altMesaj(rastgele(NAZIK), "hata");
+      }
+    });
+  }
+  for(let i=0;i<HEDEF+2;i++) balonUret(true);
+  for(let i=0;i<9;i++) balonUret(false);
+  altMesaj("0 / " + HEDEF, "");
+
+  function dongu(){
+    for(let i=0;i<balonlar.length;i++){
+      const b = balonlar[i];
+      if(b.olu) continue;
+      b.y -= b.hiz; b.sallanma += 0.03;
+      const sx = Math.sin(b.sallanma)*12;
+      if(b.y < -90){ b.y = Y + 40 + Math.random()*120; b.x = Math.random()*(G-70); }
+      b.d.style.transform = "translate("+(b.x+sx)+"px,"+b.y+"px)";
+    }
+    cerceve = requestAnimationFrame(dongu);
+  }
+  dongu();
+  function tamamla(v){
+    if(bittiMi) return; bittiMi = true;
+    cancelAnimationFrame(cerceve);
+    setTimeout(() => bitti(v), 850);
+  }
+  setTimeout(() => soyle("Sadece " + h.ad + " balonlarını patlat", 0.9), 400);
+};
+
+/* --- 12.5 HAFIZA OYUNU --- */
+OYUNLAR.hafiza = function(h, bitti){
+  const alan = $("#oyunAlan");
+  const digerHavuz = HARFLER.filter(x => x.i !== h.i);
+  const secilenler = [h].concat(karistir(digerHavuz).slice(0,3));
+  let kartlar = [];
+  secilenler.forEach(x => {
+    kartlar.push({h:x, tur:"harf"});
+    kartlar.push({h:x, tur:"ad"});
+  });
+  kartlar = karistir(kartlar);
+
+  alan.innerHTML = oyunBasligi("🃏 Hafıza Oyunu", "Harfi, adıyla eşleştir") +
+    '<div class="hafiza-izgara" id="hfIzgara" style="margin-top:12px"></div>';
+  const iz = $("#hfIzgara");
+  let acikKart = null, kilit = false, eslesen = 0, bittiMi = false;
+
+  kartlar.forEach((k, i) => {
+    const d = el("div","kart-h");
+    d.dataset.i = i;
+    d.innerHTML = k.tur === "harf" ? k.h.c : '<span class="lat">'+k.h.ad+'</span>';
+    d.addEventListener("click", () => {
+      if(kilit || bittiMi) return;
+      if(d.classList.contains("acik") || d.classList.contains("eslesti")) return;
+      d.classList.add("acik");
+      SES.tik();
+      soyle(k.h.ad, 0.85);
+      if(!acikKart){ acikKart = {d:d, k:k}; return; }
+      kilit = true;
+      if(acikKart.k.h.i === k.h.i && acikKart.d !== d){
+        setTimeout(() => {
+          acikKart.d.classList.add("eslesti"); d.classList.add("eslesti");
+          acikKart = null; kilit = false; eslesen++;
+          SES.dogru();
+          altMesaj(eslesen + " / 4  " + rastgele(TESVIK), "ok");
+          if(eslesen === 4) tamamla(true);
+        }, 420);
+      }else{
+        setTimeout(() => {
+          acikKart.d.classList.remove("acik"); d.classList.remove("acik");
+          acikKart = null; kilit = false;
+          altMesaj(rastgele(NAZIK), "hata");
+        }, 850);
+      }
+    });
+    iz.appendChild(d);
+  });
+  altMesaj("0 / 4", "");
+  function tamamla(v){
+    if(bittiMi) return; bittiMi = true;
+    setTimeout(() => bitti(v), 850);
+  }
+};
+
+/* --- 12.6 YAPBOZ --- */
+OYUNLAR.yapboz = function(h, bitti){
+  const alan = $("#oyunAlan");
+  alan.innerHTML = oyunBasligi("🧩 Yapboz", "Parçaları yerine sürükle") +
+    '<div class="sahne" id="ypSahne" style="height:400px;margin-top:10px"></div>';
+  const sahne = $("#ypSahne");
+  const G = sahne.clientWidth || 330;
+  const KUT = Math.min(G - 40, 250);
+  const glif = glifCanvas(h.c, KUT, "#ffd166");
+  const PARCA = 3;
+  const ph = Math.floor(KUT / PARCA);
+  const ustX = (G - KUT)/2, ustY = 16;
+  const parcalar = [];
+
+  /* slotlar */
+  for(let i=0;i<PARCA;i++){
+    const s = el("div","yapboz-slot");
+    s.style.left = ustX+"px"; s.style.top = (ustY + i*ph)+"px";
+    s.style.width = KUT+"px"; s.style.height = ph+"px";
+    s.dataset.i = i;
+    sahne.appendChild(s);
+  }
+  /* parçalar (karışık, altta) */
+  const sira = karistir([0,1,2]);
+  sira.forEach((pi, k) => {
+    const c = document.createElement("canvas");
+    c.width = KUT; c.height = ph;
+    const cx = c.getContext ? c.getContext("2d") : null;
+    if(cx) cx.drawImage(glif, 0, pi*ph, KUT, ph, 0, 0, KUT, ph);
+    const p = el("div","yapboz-parca");
+    p.style.width = KUT+"px"; p.style.height = ph+"px";
+    try{ p.style.backgroundImage = "url("+c.toDataURL()+")"; }
+    catch(e){ p.style.background = "rgba(255,209,102,.3)"; }
+    p.style.backgroundSize = "cover";
+    const bx = ustX, by = ustY + PARCA*ph + 18 + k*(ph*0.42);
+    p.style.left = bx+"px"; p.style.top = by+"px";
+    p.style.transform = "scale(.72)";
+    p.dataset.i = pi;
+    sahne.appendChild(p);
+    parcalar.push({d:p, i:pi, bx:bx, by:by, yerinde:false});
+  });
+
+  let aktif = null, kaydirX = 0, kaydirY = 0, yerlesen = 0, bittiMi = false;
+  function sahneKonum(ev){
+    const r = sahne.getBoundingClientRect();
+    const t = (ev.touches && ev.touches[0]) ? ev.touches[0] : ev;
+    return {x:t.clientX - r.left, y:t.clientY - r.top};
+  }
+  function bas(ev){
+    const hedef = ev.target.closest(".yapboz-parca");
+    if(!hedef || hedef.classList.contains("yerinde")) return;
+    ev.preventDefault();
+    const p = parcalar.filter(x => x.d === hedef)[0];
+    if(!p) return;
+    aktif = p;
+    hedef.classList.add("tutuluyor");
+    hedef.style.transform = "scale(1)";
+    const k = sahneKonum(ev);
+    kaydirX = k.x - parseFloat(hedef.style.left);
+    kaydirY = k.y - parseFloat(hedef.style.top);
+    SES.tik();
+  }
+  function hareket(ev){
+    if(!aktif) return;
+    ev.preventDefault();
+    const k = sahneKonum(ev);
+    aktif.d.style.left = (k.x - kaydirX)+"px";
+    aktif.d.style.top  = (k.y - kaydirY)+"px";
+  }
+  function birak(){
+    if(!aktif) return;
+    const p = aktif; aktif = null;
+    p.d.classList.remove("tutuluyor");
+    const hx = ustX, hy = ustY + p.i*ph;
+    const cx = parseFloat(p.d.style.left), cy = parseFloat(p.d.style.top);
+    if(Math.abs(cx-hx) < KUT*0.35 && Math.abs(cy-hy) < ph*0.65){
+      p.d.style.left = hx+"px"; p.d.style.top = hy+"px";
+      p.d.classList.add("yerinde");
+      p.yerinde = true; yerlesen++;
+      SES.dogru();
+      altMesaj(yerlesen + " / 3  " + rastgele(TESVIK), "ok");
+      if(yerlesen === PARCA){
+        harfSesi(h);
+        setTimeout(() => tamamla(true), 500);
+      }
+    }else{
+      p.d.style.left = p.bx+"px"; p.d.style.top = p.by+"px";
+      p.d.style.transform = "scale(.72)";
+      altMesaj(rastgele(NAZIK), "hata");
+    }
+  }
+  if(window.PointerEvent){
+    sahne.addEventListener("pointerdown", bas);
+    sahne.addEventListener("pointermove", hareket);
+    window.addEventListener("pointerup", birak);
+  }else{
+    sahne.addEventListener("mousedown", bas);
+    sahne.addEventListener("mousemove", hareket);
+    window.addEventListener("mouseup", birak);
+    sahne.addEventListener("touchstart", bas, {passive:false});
+    sahne.addEventListener("touchmove", hareket, {passive:false});
+    sahne.addEventListener("touchend", birak);
+  }
+  altMesaj("0 / 3", "");
+  function tamamla(v){
+    if(bittiMi) return; bittiMi = true;
+    window.removeEventListener("pointerup", birak);
+    setTimeout(() => bitti(v), 800);
+  }
+  setTimeout(() => soyle("Parçaları yerine koy", 0.9), 350);
+};
+
+/* --- 12.7 BOYAMA --- */
+OYUNLAR.boyama = function(h, bitti){
+  const alan = $("#oyunAlan");
+  const renkler = ["#f4a7c0","#ffd166","#7fd3e8","#8fd694","#b79cff","#ff9b71","#ffffff"];
+  alan.innerHTML = oyunBasligi("🎨 Boyama", h.ad + " çiçeklerden yapılmış — hepsini boya") +
+    '<div class="sahne" id="bySahne" style="height:340px;margin-top:10px"></div>';
+  $("#oyunAlt").innerHTML =
+    '<div class="palet" id="byPalet" style="margin-top:12px"></div>';
+
+  let secilenRenk = renkler[0];
+  const palet = $("#byPalet");
+  renkler.forEach((r, i) => {
+    const d = el("div","renk" + (i===0 ? " secili" : ""));
+    d.style.background = r;
+    d.addEventListener("click", () => {
+      secilenRenk = r; SES.tik();
+      palet.querySelectorAll(".renk").forEach(x => x.classList.remove("secili"));
+      d.classList.add("secili");
+    });
+    palet.appendChild(d);
+  });
+
+  const sahne = $("#bySahne");
+  const G = sahne.clientWidth || 330, Y = 340;
+  const KUT = Math.min(G, Y) - 20;
+  const glif = glifCanvas(h.c, KUT, "#000");
+  let noktalar = glifNoktalar(glif, 7);
+  /* seyreltme: 26-34 nokta kalsın */
+  const hedefAdet = 30;
+  if(noktalar.length > hedefAdet){
+    const adim = noktalar.length / hedefAdet;
+    const yeni = [];
+    for(let i=0;i<hedefAdet;i++) yeni.push(noktalar[Math.floor(i*adim)]);
+    noktalar = yeni;
+  }
+  const kaydirX = (G-KUT)/2, kaydirY = (Y-KUT)/2;
+  let boyanan = 0, bittiMi = false;
+  const toplam = noktalar.length || 1;
+
+  if(!noktalar.length){
+    /* canvas okunamadıysa (nadiren) düz geç */
+    sahne.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--ar);font-size:120px;color:var(--altin)">'+h.c+'</div>';
+    setTimeout(() => bitti(true), 1200);
+    return;
+  }
+  noktalar.forEach(p => {
+    const d = el("div","boya-nokta","🌸");
+    const boy = 26;
+    d.style.width = boy+"px"; d.style.height = boy+"px";
+    d.style.left = (kaydirX + p.x - boy/2)+"px";
+    d.style.top  = (kaydirY + p.y - boy/2)+"px";
+    d.style.background = "rgba(255,255,255,.13)";
+    d.style.filter = "grayscale(1) opacity(.5)";
+    d.addEventListener("click", () => {
+      if(d.dataset.b === "1") return;
+      d.dataset.b = "1";
+      d.style.background = secilenRenk;
+      d.style.filter = "none";
+      SES.tik();
+      boyanan++;
+      altMesaj(boyanan + " / " + toplam, "");
+      if(boyanan >= toplam) tamamla();
+    });
+    sahne.appendChild(d);
+  });
+  altMesaj("0 / " + toplam, "");
+  function tamamla(){
+    if(bittiMi) return; bittiMi = true;
+    SES.cicek(); harfSesi(h);
+    altMesaj("Çok güzel oldu! " + rastgele(TESVIK), "ok");
+    setTimeout(() => bitti(true), 1100);
+  }
+  setTimeout(() => soyle("Bütün çiçekleri boya", 0.9), 350);
+};
+
+/* --- 12.8 HARF AVI --- */
+OYUNLAR.harfavi = function(h, bitti){
+  const alan = $("#oyunAlan");
+  const nesneler = ["🪨","🍃","🚪","🌳","🌼","🪵","🏺","🕯️","🐚","🍄","🪴","🧺"];
+  const HEDEF = 3;
+  const digerler = HARFLER.filter(x => x.i !== h.i);
+  const gizli = [];
+  for(let i=0;i<12;i++) gizli.push(i < HEDEF ? h : rastgele(digerler));
+  const karisik = karistir(gizli);
+
+  alan.innerHTML = oyunBasligi("🔍 Harf Avı",
+    "Ormanda saklanan <b style='color:var(--altin);font-family:var(--ar)'>"+h.c+"</b> harflerini bul ("+HEDEF+" tane)") +
+    '<div class="av-izgara" id="avIzgara" style="margin-top:12px"></div>';
+  const iz = $("#avIzgara");
+  let bulunan = 0, bittiMi = false;
+
+  karisik.forEach((harf, i) => {
+    const d = el("div","av-kutu", nesneler[i % nesneler.length]);
+    d.addEventListener("click", () => {
+      if(bittiMi || d.dataset.acildi === "1") return;
+      d.dataset.acildi = "1";
+      d.classList.add("acildi");
+      d.textContent = harf.c;
+      if(harf.i === h.i){
+        d.classList.add("bulundu");
+        bulunan++;
+        SES.dogru(); harfSesi(h);
+        altMesaj(bulunan + " / " + HEDEF + "  " + rastgele(TESVIK), "ok");
+        if(bulunan >= HEDEF) tamamla(true);
+      }else{
+        SES.tik();
+        soyle(harf.ad, 0.85);
+        altMesaj("Bu " + harf.ad + ". Aradığımız " + h.ad + " 🌸", "");
+        setTimeout(() => {
+          if(bittiMi) return;
+          d.dataset.acildi = "0";
+          d.classList.remove("acildi");
+          d.textContent = nesneler[i % nesneler.length];
+        }, 1100);
+      }
+    });
+    iz.appendChild(d);
+  });
+  altMesaj("0 / " + HEDEF, "");
+  function tamamla(v){
+    if(bittiMi) return; bittiMi = true;
+    setTimeout(() => bitti(v), 900);
+  }
+  setTimeout(() => soyle(h.ad + " harflerini bul", 0.9), 350);
+};
+
+/* --- 12.9 TEKRAR BAHÇESİ (kümülatif) ---
+   Yeni harfe geçmeden önce, daha önce öğrenilen bütün harfler karışık sorulur.
+   Havuz her yeni harfle büyür; en zayıf harf en çok çıkar. */
+OYUNLAR.tekrar = function(h, bitti){
+  const alan = $("#oyunAlan");
+  const benim = akis;
+  const gecerli = () => akis === benim;
+  const havuz = tekrarHavuzu();
+  if(!havuz.length){ setTimeout(() => bitti(true), 200); return; }
+
+  /* soru listesi: zayıf harfler iki kez, diğerleri bir kez, en fazla 5 soru */
+  const liste = [];
+  havuz.forEach((i, sira) => {
+    liste.push(i);
+    if(sira < 2 && havuz.length > 1) liste.push(i);   /* en zayıf ikisi tekrarlanır */
+  });
+  const sorular = karistir(liste).slice(0, Math.min(5, Math.max(3, havuz.length)));
+
+  let sira = 0, dogru = 0, kilit = false;
+
+  function ciz(){
+    if(!gecerli()) return;
+    if(sira >= sorular.length){
+      const oran = dogru / sorular.length;
+      altMesaj(oran >= 0.6 ? ("Bildiklerini unutmamışsın! " + rastgele(TESVIK))
+                           : "Birlikte tekrar bakarız 🌸", oran >= 0.6 ? "ok" : "");
+      S.tekrarIst = S.tekrarIst || {d:0,y:0};
+      S.tekrarIst.d += dogru; S.tekrarIst.y += (sorular.length - dogru);
+      kaydet();
+      setTimeout(() => bitti(oran >= 0.6), 1100);
+      return;
+    }
+    const hedefI = sorular[sira];
+    const hedef = HARFLER[hedefI];
+    /* harekeleri de öğrendiyse yarı yarıya harekeli sorulur */
+    const harekeli = asamaAl(hedefI) >= 2 && Math.random() < 0.5;
+    const k = Math.floor(Math.random() * 3);
+    const soruSes = harekeli ? hrkSes(hedef, k) : hedef.ses;
+    const dogruMetin = harekeli ? hrkChar(hedef, k) : hedef.c;
+
+    /* çeldiriciler: aynı harfin diğer harekeleri ya da başka harfler */
+    const secenekler = [dogruMetin];
+    if(harekeli){
+      for(let j=0;j<3;j++){
+        if(j !== k && secenekler.length < 3) secenekler.push(hrkChar(hedef, j));
+      }
+      const baska = havuz.filter(x => x !== hedefI);
+      if(baska.length && secenekler.length < 4) secenekler.push(HARFLER[baska[0]].c);
+    }else{
+      const baska = karistir(havuz.filter(x => x !== hedefI));
+      baska.slice(0,2).forEach(x => secenekler.push(HARFLER[x].c));
+      let ek = 0;
+      while(secenekler.length < 3 && ek < HARFLER.length){
+        const c = HARFLER[ek].c;
+        if(secenekler.indexOf(c) < 0) secenekler.push(c);
+        ek++;
+      }
+    }
+    const karisik = karistir(secenekler.slice());
+
+    alan.innerHTML =
+      oyunBasligi("🌿 Tekrar Bahçesi", "Bildiğin harfler seni bekliyor · " + (sira+1) + "/" + sorular.length) +
+      '<div style="text-align:center;margin-top:14px">' +
+        '<button class="ikonbtn parlak" style="width:92px;height:92px;font-size:36px;margin:0 auto;' +
+        'background:radial-gradient(circle at 35% 30%,#fff6c2,#ffd166 60%,#e9a72e);color:#3a2a00;border:none" data-act="tkrDinle">🔊</button>' +
+        '<div style="margin-top:9px;font-weight:900;font-size:20px;color:var(--altin)">' + soruSes + '</div>' +
+        '<div style="margin-top:2px;color:var(--soluk);font-weight:800;font-size:13.5px">Duyduğun hangisi?</div>' +
+      '</div>' +
+      '<div id="tkrSecenek" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px">' +
+        karisik.map((c, n) =>
+          '<button class="dugme sade" data-act="tkrSec" data-n="' + n + '" ' +
+          'style="min-width:88px;padding:16px 10px;font-size:44px;line-height:1.15;font-family:' + ARFONT.replace(/"/g,"&quot;") + '">' + c + '</button>'
+        ).join("") +
+      '</div>';
+    $("#oyunAlt").innerHTML =
+      '<p class="oyun-ipucu" style="margin-top:12px">Yanlış olursa bir şey olmaz, birlikte tekrar dinleriz 🌸</p>';
+
+    setTimeout(() => soyle(soruSes, 0.6), 420);
+
+    alanDinle({
+      tkrDinle(){ soyle(soruSes, 0.6); },
+      tkrSec(t){
+        if(kilit) return;
+        const secilen = karisik[parseInt(t.dataset.n, 10)];
+        if(secilen === dogruMetin){
+          kilit = true;
+          t.style.background = "rgba(126,224,192,.25)";
+          t.style.borderColor = "var(--yesil)";
+          dogru++;
+          istKayit(hedefI, true);
+          if(harekeli) hrkKayit(hedefI, true);
+          SES.dogru();
+          altMesaj(rastgele(TESVIK), "ok");
+          sira++;
+          setTimeout(() => { kilit = false; ciz(); }, 850);
+        }else{
+          istKayit(hedefI, false);
+          if(harekeli) hrkKayit(hedefI, false);
+          SES.yanlis();
+          t.style.opacity = "0.4";
+          altMesaj(rastgele(NAZIK), "hata");
+          soyle(soruSes, 0.55);
+        }
+      }
+    });
+  }
+  ciz();
+};
+function hrkKayit(harfIdx, dogruMu){
+  if(!S.hrkIst) S.hrkIst = {};
+  const k = String(harfIdx);
+  if(!S.hrkIst[k]) S.hrkIst[k] = {d:0, y:0};
+  if(dogruMu) S.hrkIst[k].d++; else S.hrkIst[k].y++;
+  kaydet();
+}
+function hrkBasari(harfIdx){
+  const o = S.hrkIst && S.hrkIst[String(harfIdx)];
+  if(!o || (o.d + o.y) === 0) return null;
+  return Math.round(o.d / (o.d + o.y) * 100);
+}
+
+/* --- 12.10 ÜÇ HÂL (hareke dersi) ---
+   Harfin şekli öğrenildikten sonra: aynı harf, üç ayrı ses. */
+OYUNLAR.harekeDers = function(h, bitti){
+  const alan = $("#oyunAlan");
+  const benim = akis;
+  const gecerli = () => akis === benim;
+  asamaYaz(h.i, 1);           /* şekil kısmı tamamlandı */
+  let k = 0;
+
+  function ciz(){
+    if(!gecerli()) return;
+    const hr = HRK[k];
+    const okunus = hrkSes(h, k);
+    alan.innerHTML =
+      oyunBasligi("🌟 " + h.ad + "'in Üç Hâli", "Aynı harf, üç ayrı ses · " + (k+1) + "/3") +
+      (k === 0
+        ? '<div class="hudhud" style="margin-top:10px"><div class="kus">🕊️</div>' +
+          '<div class="balon"><b>' + h.ad + '</b> artık arkadaşın. Şimdi onun üç hâlini tanıyalım.<br>' +
+          'Harfin kendisi hiç değişmiyor — sadece üstüne ya da altına küçük bir işaret geliyor.</div></div>'
+        : '') +
+      '<div style="text-align:center;margin-top:14px">' +
+        '<div class="harf-buyuk" style="font-size:86px;color:' + hr.renk + '">' + hrkChar(h, k) + '</div>' +
+        '<div style="font-size:21px;font-weight:900;margin-top:4px">' + hr.ikon + ' ' + hr.ad + '</div>' +
+        '<div style="margin-top:4px;color:var(--soluk);font-weight:800;font-size:14px">' + hr.not + '</div>' +
+        '<div style="margin-top:12px;font-size:15px;color:var(--soluk);font-weight:800">okunuşu</div>' +
+        '<div style="font-size:34px;font-weight:900;color:var(--altin);line-height:1.2">' + okunus + '</div>' +
+        '<button class="ikonbtn parlak" style="width:82px;height:82px;font-size:32px;margin:14px auto 0;' +
+        'background:radial-gradient(circle at 35% 30%,#fff6c2,#ffd166 60%,#e9a72e);color:#3a2a00;border:none" data-act="hdDinle">🔊</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;justify-content:center;margin-top:16px">' +
+        HRK.map((x, n) =>
+          '<div style="flex:1;text-align:center;padding:10px 6px;border-radius:14px;' +
+          'background:' + (n === k ? "rgba(255,209,102,.18)" : "rgba(255,255,255,.05)") + ';' +
+          'border:2px solid ' + (n <= k ? x.renk : "transparent") + ';opacity:' + (n <= k ? 1 : .45) + '">' +
+          '<div style="font-size:30px;font-family:' + ARFONT.replace(/"/g,"&quot;") + '">' + hrkChar(h, n) + '</div>' +
+          '<div style="font-size:12.5px;font-weight:900;margin-top:3px">' + (n <= k ? hrkSes(h, n) : "?") + '</div></div>'
+        ).join("") +
+      '</div>';
+    $("#oyunAlt").innerHTML =
+      '<button class="dugme tam" style="margin-top:14px" data-act="hdIleri">' +
+      (k < 2 ? "Sıradaki hâli göster" : "Üçünü de tanıdım ✓") + '</button>';
+
+    setTimeout(() => {
+      soyle(okunus, 0.55);
+      setTimeout(() => soyle(h.ad + " " + hr.ad + ", " + okunus, 0.85), 800);
+    }, 350);
+
+    alanDinle({
+      hdDinle(){ soyle(okunus, 0.55); },
+      hdIleri(){
+        SES.tik();
+        if(k < 2){ k++; ciz(); }
+        else { altMesaj("Üç hâlini de gördün 🌟", "ok"); setTimeout(() => bitti(true), 500); }
+      }
+    });
+  }
+  ciz();
+};
+
+/* --- 12.11 HANGİ HÂLİ? (hareke ayırt etme) --- */
+OYUNLAR.harekeSec = function(h, bitti){
+  const alan = $("#oyunAlan");
+  const benim = akis;
+  const gecerli = () => akis === benim;
+  const sorular = karistir([0,1,2]).concat([Math.floor(Math.random()*3)]);
+  let sira = 0, dogru = 0, kilit = false;
+
+  function ciz(){
+    if(!gecerli()) return;
+    if(sira >= sorular.length){
+      const basarili = dogru >= 3;
+      altMesaj(basarili ? ("Harekeleri ayırt ediyorsun! " + rastgele(TESVIK)) : "Yarın tekrar bakarız 🌸",
+               basarili ? "ok" : "");
+      setTimeout(() => bitti(basarili), 1000);
+      return;
+    }
+    const k = sorular[sira];
+    const okunus = hrkSes(h, k);
+    const secim = karistir([0,1,2]);
+
+    alan.innerHTML =
+      oyunBasligi("👂 Hangi Hâli?", h.ad + " üç türlü okunuyor · " + (sira+1) + "/" + sorular.length) +
+      '<div style="text-align:center;margin-top:14px">' +
+        '<button class="ikonbtn parlak" style="width:92px;height:92px;font-size:36px;margin:0 auto;' +
+        'background:radial-gradient(circle at 35% 30%,#fff6c2,#ffd166 60%,#e9a72e);color:#3a2a00;border:none" data-act="hsDinle">🔊</button>' +
+        '<div style="margin-top:9px;font-size:30px;font-weight:900;color:var(--altin)">' + okunus + '</div>' +
+        '<div style="color:var(--soluk);font-weight:800;font-size:13.5px">Bunu hangisi söylüyor?</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;justify-content:center;margin-top:16px">' +
+        secim.map((n, p) =>
+          '<button class="dugme sade" data-act="hsSec" data-n="' + p + '" ' +
+          'style="flex:1;padding:18px 8px;font-size:46px;line-height:1.1;font-family:' + ARFONT.replace(/"/g,"&quot;") + '">' +
+          hrkChar(h, n) + '</button>'
+        ).join("") +
+      '</div>';
+    $("#oyunAlt").innerHTML =
+      '<p class="oyun-ipucu" style="margin-top:12px">İşaret üstteyse üstün, alttaysa esre, minik vav ise ötre 🌸</p>';
+
+    setTimeout(() => soyle(okunus, 0.55), 400);
+
+    alanDinle({
+      hsDinle(){ soyle(okunus, 0.55); },
+      hsSec(t){
+        if(kilit) return;
+        const secilen = secim[parseInt(t.dataset.n, 10)];
+        if(secilen === k){
+          kilit = true; dogru++;
+          t.style.background = "rgba(126,224,192,.25)";
+          t.style.borderColor = "var(--yesil)";
+          istKayit(h.i, true); hrkKayit(h.i, true);
+          SES.dogru();
+          altMesaj(HRK[k].ad + "! " + rastgele(TESVIK), "ok");
+          sira++;
+          setTimeout(() => { kilit = false; ciz(); }, 850);
+        }else{
+          istKayit(h.i, false); hrkKayit(h.i, false);
+          SES.yanlis();
+          t.style.opacity = "0.4";
+          altMesaj(rastgele(NAZIK), "hata");
+          soyle(okunus, 0.5);
+        }
+      }
+    });
+  }
+  ciz();
+};
+
+/* --- 12.12 HAREKE TRENİ (sıralama) --- */
+OYUNLAR.harekeTren = function(h, bitti){
+  const alan = $("#oyunAlan");
+  const benim = akis;
+  const gecerli = () => akis === benim;
+  const tur = [karistir([0,1,2]), karistir([0,1,2])];
+  let t = 0;
+
+  function ciz(){
+    if(!gecerli()) return;
+    if(t >= tur.length){
+      altMesaj("Tren yola çıktı! " + rastgele(TESVIK), "ok");
+      setTimeout(() => bitti(true), 1000);
+      return;
+    }
+    const hedef = tur[t];
+    let adim = 0;
+
+    alan.innerHTML =
+      oyunBasligi("🚂 Hareke Treni", "Söylediğim sırayla dokun · " + (t+1) + "/" + tur.length) +
+      '<div style="text-align:center;margin-top:12px">' +
+        '<div id="htSiralama" style="font-size:26px;font-weight:900;color:var(--altin);letter-spacing:1px">' +
+          hedef.map(n => hrkSes(h, n)).join("  ·  ") + '</div>' +
+        '<button class="dugme sade kucuk" style="margin-top:10px" data-act="htDinle">🔊 Tekrar dinle</button>' +
+      '</div>' +
+      '<div id="htVagon" style="display:flex;gap:10px;justify-content:center;margin-top:18px">' +
+        [0,1,2].map(n =>
+          '<button class="dugme sade" data-act="htSec" data-n="' + n + '" ' +
+          'style="flex:1;padding:18px 8px;font-size:44px;line-height:1.1;font-family:' + ARFONT.replace(/"/g,"&quot;") + '">' +
+          hrkChar(h, n) + '</button>'
+        ).join("") +
+      '</div>' +
+      '<div id="htRay" style="text-align:center;margin-top:14px;font-size:30px;letter-spacing:4px;min-height:40px">🚂</div>';
+    $("#oyunAlt").innerHTML =
+      '<p class="oyun-ipucu" style="margin-top:10px">Sırayı unutursan tekrar dinleyebilirsin 🌸</p>';
+
+    function anlat(){
+      let g = 0;
+      (function sonraki(){
+        if(g >= hedef.length) return;
+        soyle(hrkSes(h, hedef[g]), 0.5);
+        g++;
+        setTimeout(sonraki, 950);
+      })();
+    }
+    setTimeout(anlat, 400);
+
+    alanDinle({
+      htDinle(){ anlat(); },
+      htSec(el2){
+        const n = parseInt(el2.dataset.n, 10);
+        if(n === hedef[adim]){
+          adim++;
+          el2.style.background = "rgba(126,224,192,.25)";
+          el2.style.borderColor = "var(--yesil)";
+          el2.style.pointerEvents = "none";
+          const ray = $("#htRay");
+          if(ray) ray.textContent = "🚂" + "🚃".repeat(adim);
+          istKayit(h.i, true); hrkKayit(h.i, true);
+          SES.dogru();
+          if(adim >= hedef.length){
+            altMesaj("Sıra tamam! 🚂", "ok");
+            t++;
+            setTimeout(ciz, 1000);
+          }
+        }else{
+          istKayit(h.i, false); hrkKayit(h.i, false);
+          SES.yanlis();
+          altMesaj("Şimdi <b>" + hrkSes(h, hedef[adim]) + "</b> arıyoruz 🌸", "hata");
+          soyle(hrkSes(h, hedef[adim]), 0.5);
+        }
+      }
+    });
+  }
+  ciz();
+};
+
+/* ---------------------- 13. BAHÇE ---------------------- */
+function bahceCiz(){
+  const alan = $("#bahceAlan");
+  alan.innerHTML = "";
+  const say = S.ogrenilen.length;
+  /* ay ve yıldızlar */
+  const ay = el("div","bahce-nesne","🌙");
+  ay.style.fontSize = "34px"; ay.style.right = "18px"; ay.style.top = "14px";
+  alan.appendChild(ay);
+
+  /* öğrenilen harflerin çiçekleri */
+  S.ogrenilen.forEach((hi, k) => {
+    const h = HARFLER[hi];
+    const d = el("div","bahce-nesne", h.cicek);
+    d.style.fontSize = (24 + (k%3)*6) + "px";
+    d.style.left = (4 + (k*13) % 88) + "%";
+    d.style.bottom = (4 + (k%4)*13) + "%";
+    d.title = h.ad;
+    d.addEventListener("click", () => {
+      SES.cicek(); harfSesi(h);
+      $("#bahceNot").innerHTML = "<b style='color:var(--altin)'>"+h.ad+"</b> "+h.ikon+" — "+h.kisi;
+      d.style.transform = "scale(1.4)";
+      setTimeout(()=>d.style.transform="", 260);
+    });
+    alan.appendChild(d);
+  });
+  /* kazanılan eşyalar */
+  S.esyalar.forEach((e, k) => {
+    const d = el("div","bahce-nesne", e.es);
+    d.style.fontSize = "30px";
+    d.style.left = (10 + k*14) % 80 + "%";
+    d.style.top = (26 + (k%3)*12) + "%";
+    d.addEventListener("click", () => { SES.tik(); $("#bahceNot").textContent = e.ad; });
+    alan.appendChild(d);
+  });
+  if(say === 0){
+    alan.appendChild(el("div","", '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);font-weight:800;text-align:center;padding:20px">Bahçen henüz boş.<br>İlk harfi öğrenince ilk çiçeğin açacak 🌱</div>'));
+  }
+  /* avatar */
+  const av = el("div","", avatarSVG(S.cocuk, 92));
+  av.style.position = "absolute"; av.style.left = "50%"; av.style.bottom = "4px";
+  av.style.transform = "translateX(-50%)"; av.style.pointerEvents = "none";
+  alan.appendChild(av);
+
+  const o = S.odul;
+  $("#envanter").innerHTML =
+    envHucre("⭐", o.yildiz, "Yıldız") + envHucre("🌸", o.cicek, "Çiçek") + envHucre("🦋", o.kelebek, "Kelebek") +
+    envHucre("🐦", o.kus, "Kuş") + envHucre("🌳", o.agac, "Ağaç") + envHucre("🏮", o.esya, "Eşya");
+
+  const hk = $("#bahceHarfler");
+  if(!S.ogrenilen.length){
+    hk.innerHTML = '<p class="altbaslik" style="margin:0">Henüz harf arkadaşın yok.</p>';
+  }else{
+    hk.innerHTML = '<div class="alan-etiket" style="margin-bottom:10px">Harf arkadaşlarım ('+S.ogrenilen.length+')</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">' +
+      S.ogrenilen.map(i => {
+        const h = HARFLER[i];
+        const b = basari(i);
+        return '<div class="sayac" style="cursor:pointer" data-act="harfBilgi" data-i="'+i+'">' +
+          '<span style="font-family:var(--ar);font-size:19px">'+h.c+'</span> '+h.ad+
+          (b!=null ? ' <span style="color:var(--soluk);font-size:11px">%'+b+'</span>' : '') + '</div>';
+      }).join("") + '</div>';
+  }
+}
+function envHucre(es, sayi, ad){
+  return '<div class="env-hucre"><div class="es">'+es+'</div><div class="en">'+(sayi||0)+'</div><div class="et">'+ad+'</div></div>';
+}
+
+/* ---------------------- 14. HİKÂYE ---------------------- */
+let hikayeIdx = 0, sahneIdx = 0;
+function hikayeBaslat(i){
+  hikayeIdx = i; sahneIdx = 0;
+  ekran("e-hikaye");
+  hikayeCiz();
+}
+function hikayeCiz(){
+  const hk = HIKAYELER[hikayeIdx];
+  if(!hk){ haritaCiz(); ekran("e-harita"); return; }
+  const s = hk.sahneler[sahneIdx];
+  $("#hikayeAd").innerHTML = hk.ad + ' <span style="font-size:11px;color:var(--altin)">· '+hk.tema+'</span>';
+  $("#hikayeSahne").textContent = s.e;
+  $("#hikayeMetin").textContent = s.t;
+  $("#hikayeNokta").innerHTML = hk.sahneler.map((_,i) => '<i class="'+(i===sahneIdx?"a":"")+'"></i>').join("");
+  soyle(s.t, 0.88);
+}
+function hikayeIleri(){
+  sahneIdx++;
+  if(sahneIdx >= HIKAYELER[hikayeIdx].sahneler.length){
+    SES.yildiz();
+    S.odul.kelebek++;
+    kaydet();
+    haritaCiz(); ekran("e-harita");
+  }else hikayeCiz();
+}
+
+/* ---------------------- 15. SERBEST OYUN ---------------------- */
+function serbestSec(bolgeIdx){
+  const uygun = (S.ogrenilen.length ? S.ogrenilen : [0]).map(i => HARFLER[i]);
+  const kutu = $("#kutlamaKutu");
+  kutu.innerHTML =
+    '<h3 style="margin:0 0 4px;font-size:20px">🎮 Serbest Oyun</h3>' +
+    '<p style="color:var(--soluk);font-size:13.5px;margin:0 0 12px">Önce harfi seç</p>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-height:180px;overflow:auto">' +
+      uygun.map(h => '<button class="dugme sade kucuk" data-act="serbestHarf" data-i="'+h.i+'">' +
+        '<span style="font-family:var(--ar);font-size:19px">'+h.c+'</span> '+h.ad+'</button>').join("") +
+    '</div>' +
+    '<button class="dugme sade tam kucuk" style="margin-top:14px" data-act="kutlamaIptal">Vazgeç</button>';
+  $("#kutlama").classList.add("aktif");
+}
+function serbestOyunSec(harfIdx){
+  const kutu = $("#kutlamaKutu");
+  const h = HARFLER[harfIdx];
+  kutu.innerHTML =
+    '<h3 style="margin:0 0 4px;font-size:20px">'+h.ikon+' '+h.ad+'</h3>' +
+    '<div class="harf-orta" style="color:var(--altin);font-size:44px;margin:4px 0 12px">'+h.c+'</div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">' +
+      OYUN_LISTE.map(o => '<button class="dugme sade kucuk" data-act="serbestOyna" data-o="'+o+'" data-i="'+harfIdx+'">'+OYUN_AD[o]+'</button>').join("") +
+    '</div>' +
+    '<button class="dugme sade tam kucuk" style="margin-top:14px" data-act="kutlamaIptal">Vazgeç</button>';
+}
+
+/* ---------------------- 16. ANNE PANELİ ---------------------- */
+let anneHedef = 0, anneGirilen = "";
+function anneKilitHazirla(){
+  const a = 3 + Math.floor(Math.random()*7), b = 4 + Math.floor(Math.random()*6);
+  anneHedef = a*b; anneGirilen = "";
+  $("#anneSoru").textContent = a + " × " + b + " = ?";
+  $("#anneCevap").textContent = "";
+  $("#anneKilit").classList.remove("gizli");
+  $("#anneIcerik").classList.add("gizli");
+  const t = $("#anneTuslar"); t.innerHTML = "";
+  ["1","2","3","4","5","6","7","8","9","←","0","✓"].forEach(x => {
+    const d = el("button","tus",x);
+    d.addEventListener("click", () => {
+      SES.tik();
+      if(x === "←") anneGirilen = anneGirilen.slice(0,-1);
+      else if(x === "✓"){
+        if(parseInt(anneGirilen,10) === anneHedef) anneAc();
+        else { anneGirilen = ""; $("#anneCevap").textContent = "✗"; SES.yanlis(); setTimeout(()=>{$("#anneCevap").textContent="";},700); return; }
+      }
+      else if(anneGirilen.length < 3) anneGirilen += x;
+      $("#anneCevap").textContent = anneGirilen;
+    });
+    t.appendChild(d);
+  });
+}
+function anneAc(){
+  gunKontrol();
+  $("#anneKilit").classList.add("gizli");
+  const k = $("#anneIcerik");
+  k.classList.remove("gizli");
+
+  const dk = Math.round(S.gun.dk);
+  const oran = S.gun.toplam ? Math.round(S.gun.dogru/S.gun.toplam*100) : 0;
+  const bugunHarfler = S.gun.harfler.map(i => HARFLER[i].ad).join(", ") || "—";
+  const sh = siradakiHarf();
+  const zayif = zayifHarf();
+  let oneri;
+  if(sh < 0) oneri = "Bütün harfler tamamlandı. Serbest oyunla tekrar önerilir.";
+  else if(zayif != null) oneri = HARFLER[zayif].ad + " harfi tekrar edilecek, ardından " + HARFLER[sh].ad + " öğretilecek.";
+  else oneri = "Yarın " + HARFLER[sh].ad + " harfi öneriliyor.";
+
+  let harfListe = "";
+  const kapsam = HARFLER.filter(x => asamaAl(x.i) >= 1).map(x => x.i);
+  const sirali = kapsam.slice().sort((a,b) => (basari(a)||0) - (basari(b)||0));
+  sirali.forEach(i => {
+    const h = HARFLER[i], b = basari(i), hb = hrkBasari(i);
+    const renk = b >= 85 ? "var(--yesil)" : (b >= 60 ? "var(--altin)" : "var(--gul)");
+    const asama = asamaAl(i) >= 2
+      ? '<span style="color:var(--yesil)">şekil + hareke</span>'
+      : '<span style="color:var(--altin)">yalnız şekil</span>';
+    harfListe += '<div class="satir-ist"><div class="sol"><span style="font-family:var(--ar);font-size:19px;color:var(--altin)">'+h.c+'</span> '+h.ad+
+      ' <span style="font-size:11.5px;font-weight:800">· '+asama+'</span>' +
+      (hb != null ? ' <span style="font-size:11.5px;color:var(--soluk);font-weight:800">· hareke %'+hb+'</span>' : '') +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:9px">' +
+      '<div class="mini-bar"><i style="width:'+(b||0)+'%;background:'+renk+'"></i></div>' +
+      '<div class="sag" style="min-width:44px;text-align:right">%'+(b||0)+'</div></div></div>';
+  });
+  const ti = S.tekrarIst || {d:0,y:0};
+  const tekrarOran = (ti.d + ti.y) ? Math.round(ti.d/(ti.d+ti.y)*100) : null;
+
+  let gecmisHtml = "";
+  S.gecmis.slice(0,5).forEach(g => {
+    gecmisHtml += '<div class="satir-ist"><div class="sol">'+g.t+'</div><div class="sag">'+Math.round(g.dk)+' dk · %'+(g.top?Math.round(g.d/g.top*100):0)+'</div></div>';
+  });
+
+  k.innerHTML =
+    '<div class="kart">' +
+      '<div class="alan-etiket" style="text-align:left;margin-bottom:6px">Bugün</div>' +
+      '<div class="satir-ist"><div class="sol">✔ Öğrenilen / çalışılan harfler</div><div class="sag">'+bugunHarfler+'</div></div>' +
+      '<div class="satir-ist"><div class="sol">✔ Doğruluk</div><div class="sag">%'+oran+'</div></div>' +
+      '<div class="satir-ist"><div class="sol">✔ Çalışma süresi</div><div class="sag">'+dk+' dk</div></div>' +
+      '<div class="satir-ist"><div class="sol">✔ Zorlanma</div><div class="sag">'+(oran>=80?"Az":(oran>=55?"Orta":"Biraz fazla"))+'</div></div>' +
+      '<div class="satir-ist"><div class="sol">✔ Eski harflerin tekrarı</div><div class="sag">'+(tekrarOran!=null?("%"+tekrarOran):"—")+'</div></div>' +
+      '<div class="satir-ist"><div class="sol">✔ Yarın için öneri</div><div class="sag" style="font-size:13px;text-align:right;max-width:190px">'+oneri+'</div></div>' +
+    '</div>' +
+    '<div class="kart" style="margin-top:12px">' +
+      '<div class="alan-etiket" style="text-align:left;margin-bottom:6px">Nasıl ilerliyor?</div>' +
+      '<p class="altbaslik" style="margin:0;text-align:left;line-height:1.65">' +
+      'Her harf iki aşamada öğretilir: önce <b>şekli ve sesi</b>, hemen ardından <b>üç harekesi</b> ' +
+      '(üstün · esre · ötre). Yeni bir harfe geçilmeden önce çocuk, o güne kadar öğrendiği ' +
+      '<b>bütün harfleri</b> Tekrar Bahçesi\'nde karışık olarak görür; en çok zorlandığı harf en sık çıkar. ' +
+      'Böylece bilgi üst üste birikir, eskisi unutulmaz.<br><br>' +
+      '<b>Not:</b> Harekeli okunuşlar Türkçe elifba geleneğine göre yazılmıştır. ' +
+      'Yayına almadan önce bir Kur\'an öğreticisine kontrol ettirilmesi önerilir.</p>' +
+    '</div>' +
+    '<div class="kart" style="margin-top:12px">' +
+      '<div class="alan-etiket" style="text-align:left;margin-bottom:6px">Harf harf durum</div>' +
+      (harfListe || '<p class="altbaslik" style="margin:0">Henüz harf tamamlanmadı.</p>') +
+    '</div>' +
+    (gecmisHtml ? '<div class="kart" style="margin-top:12px"><div class="alan-etiket" style="text-align:left;margin-bottom:6px">Son günler</div>'+gecmisHtml+'</div>' : "") +
+    '<div class="kart" style="margin-top:12px">' +
+      '<div class="alan-etiket" style="text-align:left;margin-bottom:10px">Ayarlar</div>' +
+      '<div class="satir-ist"><div class="sol">Sesli anlatım ve müzik</div>' +
+      '<button class="dugme kucuk '+(S.ayar.ses?"":"sade")+'" data-act="sesAcKapa">'+(S.ayar.ses?"Açık":"Kapalı")+'</button></div>' +
+      '<div class="satir-ist" style="align-items:flex-start"><div class="sol">Anlatıcı sesi<br>' +
+        '<span style="font-size:11.5px;color:var(--soluk);font-weight:700">' +
+        (erkekSesVarMi()
+          ? "Cihazda erkek Türkçe ses bulundu, o kullanılıyor."
+          : "Cihazda erkek Türkçe ses yok. Ses kalın perdeye indirildi. Telefonun ayarlarından Türkçe erkek ses paketi (ör. Tolga / Ahmet) yüklenirse otomatik seçilir.") +
+        '</span></div>' +
+        '<button class="dugme sade kucuk" data-act="sesDene">🔊 Dinle</button></div>' +
+      (trSesler().length > 1
+        ? '<div style="margin-top:8px"><select id="sesSecici" class="secici">' +
+            '<option value="">Otomatik (erkek sesi ara)</option>' +
+            trSesler().map(v => '<option value="'+v.name.replace(/"/g,"")+'"'+(S.ayar.sesAdi===v.name?" selected":"")+'>'+v.name+'</option>').join("") +
+          '</select></div>'
+        : "") +
+      '<div class="satir-ist"><div class="sol">Ses kalınlığı</div>' +
+        '<div style="display:flex;gap:6px">' +
+        [["Çok kalın",0.4],["Kalın",0.6],["Normal",0.9]].map(x =>
+          '<button class="dugme kucuk '+(((S.ayar.perde!=null?S.ayar.perde:0.6)===x[1])?"":"sade")+'" data-act="perdeSec" data-p="'+x[1]+'">'+x[0]+'</button>'
+        ).join("") + '</div></div>' +
+      '<div class="satir-ist"><div class="sol">Her şeyi sıfırla</div>' +
+      '<button class="dugme sade kucuk" data-act="sifirla">Sıfırla</button></div>' +
+    '</div>' +
+    '<div class="kart" style="margin-top:12px">' +
+      '<div class="alan-etiket" style="text-align:left;margin-bottom:8px">Nasıl çalışır?</div>' +
+      '<p style="font-size:13.5px;line-height:1.7;color:var(--soluk);margin:0">' +
+      'Oyun <b>5 dakika öğrenme / 2 dakika serbest oyun</b> döngüsüne göre kurgulandı; 5 dakika dolunca çocuk otomatik molaya alınır. ' +
+      'Yanlış cevapta ceza yoktur, sadece nazik bir yönlendirme yapılır. ' +
+      'Çocuğun en çok zorlandığı harf takip edilir ve ertesi oturumda oyunlar o harfin üzerine kurulur. ' +
+      'Hiçbir veri cihazdan dışarı çıkmaz; her şey tarayıcıda saklanır. Reklam, satın alma ve üyelik yoktur.</p>' +
+    '</div>';
+}
+
+/* ---------------------- 17. GENEL EYLEMLER ---------------------- */
+const GENEL = {
+  basla(){ ac(); SES.tik(); karakterEkraniHazirla(); ekran("e-karakter"); },
+  devam(){ ac(); SES.tik(); haritaCiz(); ekran("e-harita"); },
+  acilis(){ ekran("e-acilis"); },
+  cinsSec(t){
+    SES.tik();
+    S.cocuk.cins = t.dataset.c;
+    kaydet();
+    karakterEkraniHazirla();
+  },
+  karakterTamam(){
+    S.cocuk.ad = ($("#adGiris").value || "").trim().slice(0,12);
+    S.ilkGiris = false;
+    kaydet(); SES.dogru();
+    if(S.ogrenilen.length === 0){ tanismaAdim = 0; ekran("e-tanisma"); tanismaGoster(); }
+    else { haritaCiz(); ekran("e-harita"); }
+  },
+  tanismaIleri(){
+    SES.tik();
+    tanismaAdim++;
+    if(tanismaAdim >= TANISMA.length){
+      const s = siradakiHarf();
+      dersBaslat(s < 0 ? 0 : s);
+    }else tanismaGoster();
+  },
+  harita(){ Ritim.dur(); akis = null; haritaCiz(); ekran("e-harita"); },
+  bahce(){ SES.tik(); bahceCiz(); ekran("e-bahce"); },
+  ayar(){ SES.tik(); anneKilitHazirla(); ekran("e-anne"); },
+  dersIleri(){
+    SES.tik();
+    dersAdim++;
+    if(dersAdim > 2){ akisBaslat(dersHarf.i); }
+    else dersCiz();
+  },
+  tekrarSes(){ if(dersHarf && $("#e-ders").classList.contains("aktif")) harfSesi(dersHarf); else if(akis) harfSesi(akis.harf); },
+  kutlamaKapat(){ SES.tik(); kutlamaKapat(); },
+  kutlamaIptal(){ $("#kutlama").classList.remove("aktif"); },
+  serbest(){ SES.tik(); serbestSec(0); },
+  serbestHarf(t){ SES.tik(); serbestOyunSec(parseInt(t.dataset.i,10)); },
+  serbestOyna(t){
+    SES.tik();
+    $("#kutlama").classList.remove("aktif");
+    tekOyun(parseInt(t.dataset.i,10), t.dataset.o);
+  },
+  hikayeIleri(){ SES.tik(); hikayeIleri(); },
+  hikayeAtla(){ SES.tik(); haritaCiz(); ekran("e-harita"); },
+  harfBilgi(t){
+    const h = HARFLER[parseInt(t.dataset.i,10)];
+    if(!h) return;
+    harfSesi(h);
+    $("#bahceNot").innerHTML = "<b style='color:var(--altin)'>"+h.ad+"</b> "+h.ikon+" — "+h.kisi;
+  },
+  sesAcKapa(){
+    S.ayar.ses = !S.ayar.ses; kaydet();
+    if(S.ayar.ses) SES.tik();
+    anneAc();
+  },
+  sesDene(){
+    const s = $("#sesSecici");
+    if(s) { S.ayar.sesAdi = s.value || ""; kaydet(); }
+    const eski = S.ayar.ses;
+    S.ayar.ses = true;
+    soyle("Merhaba, ben Hüdhüd. Bugün birlikte harfleri öğreneceğiz.", 0.86);
+    S.ayar.ses = eski;
+  },
+  perdeSec(t){
+    S.ayar.perde = parseFloat(t.dataset.p);
+    kaydet(); SES.tik();
+    const eski = S.ayar.ses; S.ayar.ses = true;
+    soyle("Elif, be, te", 0.7);
+    S.ayar.ses = eski;
+    anneAc();
+  },
+  sifirla(){
+    const kutu = $("#kutlamaKutu");
+    kutu.innerHTML =
+      '<div style="font-size:44px">⚠️</div>' +
+      '<h3 style="margin:8px 0 4px;font-size:20px">Emin misiniz?</h3>' +
+      '<p style="color:var(--soluk);font-size:14px;margin:0 0 14px">Bütün harfler, yıldızlar ve bahçe silinecek. Geri alınamaz.</p>' +
+      '<div style="display:flex;gap:9px">' +
+        '<button class="dugme sade kucuk" style="flex:1" data-act="kutlamaIptal">Vazgeç</button>' +
+        '<button class="dugme kucuk" style="flex:1" data-act="sifirlaOnay">Evet, sil</button></div>';
+    $("#kutlama").classList.add("aktif");
+  },
+  sifirlaOnay(){
+    try{ localStorage.removeItem(KAYIT); }catch(e){}
+    S = varsayilan();
+    $("#kutlama").classList.remove("aktif");
+    $("#devamBtn").classList.add("gizli");
+    ekran("e-acilis");
+  }
+};
+
+/* ---------------------- 18. BAŞLAT ---------------------- */
+(function baslat(){
+  const vardi = yukle();
+  gunKontrol();
+  if(vardi && (S.ogrenilen.length > 0 || !S.ilkGiris)){
+    $("#devamBtn").classList.remove("gizli");
+  }
+  /* sayfa kapanırken süreyi yaz */
+  window.addEventListener("visibilitychange", () => {
+    if(document.hidden){ Ritim.dur(); kaydet(); }
+    else if(!document.hidden && akis) Ritim.basla();
+  });
+  window.addEventListener("beforeunload", () => { Ritim.dur(); kaydet(); });
+  /* ilk dokunuşta ses motorunu uyandır (mobil politika) */
+  document.addEventListener("pointerdown", function ilk(){ ac(); document.removeEventListener("pointerdown", ilk); });
+})();
+
+/* test/otomasyon için */
+window.NurBahcesi = {
+  HARFLER:HARFLER, BOLGELER:BOLGELER, HIKAYELER:HIKAYELER,
+  durum:() => S, kaydet:kaydet, ekran:ekran, glifCanvas:glifCanvas,
+  oyunSirasiUret:oyunSirasiUret, dersBaslat:dersBaslat, akisBaslat:akisBaslat,
+  siradakiHarf:siradakiHarf, zayifHarf:zayifHarf, bolgeAcikMi:bolgeAcikMi, Ritim:Ritim
+};
+</script>
+</body>
+</html>
