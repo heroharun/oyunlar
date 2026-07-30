@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minik Çiçekçi: Buket Atölyesi</title>
+<meta name="description" content="Çocuklar için ücretsiz, reklamsız çiçekçi oyunu. Müşterileri dinle, çiçekleri seç, buketini hazırla!">
+<meta name="theme-color" content="#ffd9e8">
+<style>
+/* ============================================================
+   MİNİK ÇİÇEKÇİ: BUKET ATÖLYESİ  —  STİL BÖLÜMÜ
+   Tema: pastel kağıt çiçekçi dükkânı, kalın konturlu sticker çizimler
+   ============================================================ */
+:root{
+  --pembe:#ffd6e8; --pembe2:#ff9ec4; --lila:#e4dbff; --lila2:#a68cff;
+  --sari:#fff2c2; --sari2:#ffcf4d; --yesil:#d8f3d8; --yesil2:#6fc47a;
+  --mavi:#d9ecff; --mavi2:#6fb6f2; --krem:#fff8f2; --kagit:#f6e6d2;
+  --murekkep:#4a3652; --murekkep-yumusak:#7b6a86;
+  --kart:#ffffff; --golge:0 6px 0 rgba(74,54,82,.10), 0 10px 24px rgba(74,54,82,.12);
+  --golge-kucuk:0 3px 0 rgba(74,54,82,.10);
+  --yuvarlak:22px; --yuvarlak-buyuk:32px;
+  --font-baslik:"Comic Sans MS","Chalkboard SE","Trebuchet MS",system-ui,sans-serif;
+  --font-govde:"Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:var(--font-govde); color:var(--murekkep); font-size:17px; line-height:1.45;
+  background:
+    radial-gradient(circle at 12% 8%, #fff6fb 0%, transparent 40%),
+    radial-gradient(circle at 88% 12%, #f2fbff 0%, transparent 42%),
+    linear-gradient(180deg,#fdf1f7 0%, #f4f0ff 45%, #eefaf1 100%);
+  background-attachment:fixed;
+  -webkit-tap-highlight-color:transparent;
+  overflow-x:hidden;
+}
+h1,h2,h3,.baslik{font-family:var(--font-baslik); letter-spacing:.2px; margin:0 0 8px}
+button{font-family:var(--font-baslik); cursor:pointer}
+:focus-visible{outline:4px solid var(--lila2); outline-offset:3px; border-radius:14px}
+
+/* ---------- Genel buton ---------- */
+.btn{
+  border:3px solid var(--murekkep); background:var(--kart); color:var(--murekkep);
+  padding:12px 18px; min-height:52px; min-width:52px; border-radius:18px; font-size:18px;
+  box-shadow:0 5px 0 var(--murekkep); transition:transform .12s, box-shadow .12s, background .2s;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; text-align:center;
+}
+.btn:hover{background:#fff6fa}
+.btn:active{transform:translateY(4px); box-shadow:0 1px 0 var(--murekkep)}
+.btn.p{background:var(--pembe2); color:#fff}
+.btn.s{background:var(--sari2)}
+.btn.y{background:var(--yesil2); color:#fff}
+.btn.m{background:var(--lila2); color:#fff}
+.btn.b{background:var(--mavi2); color:#fff}
+.btn.kucuk{padding:8px 12px; min-height:46px; font-size:16px; border-radius:14px}
+.btn.genis{width:100%}
+.btn[disabled]{opacity:.45; box-shadow:0 5px 0 rgba(74,54,82,.4); cursor:not-allowed}
+
+/* ---------- Ekranlar ---------- */
+.ekran{display:none; min-height:100dvh; padding:14px 14px 30px; max-width:1180px; margin:0 auto}
+.ekran.aktif{display:block; animation:girisFade .35s ease}
+@keyframes girisFade{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
+
+/* ---------- Ana menü ---------- */
+#menu{display:none; text-align:center}
+#menu.aktif{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px}
+.logo-kutu{position:relative; padding:14px 10px 4px; width:100%}
+.logo{
+  font-family:var(--font-baslik); font-size:clamp(30px,7vw,54px); line-height:1.05;
+  color:#fff; -webkit-text-stroke:3px var(--murekkep); paint-order:stroke fill;
+  text-shadow:0 6px 0 rgba(74,54,82,.18); margin-bottom:2px;
+}
+.logo .satir2{display:block; font-size:.62em; color:var(--sari2)}
+.slogan{font-size:16px; color:var(--murekkep-yumusak); margin-bottom:10px}
+.menu-cicekler{display:flex; justify-content:center; gap:2px; flex-wrap:wrap; margin-bottom:6px}
+.menu-cicekler svg{animation:sallan 3.4s ease-in-out infinite; transform-origin:50% 90%}
+.menu-cicekler span:nth-child(2n) svg{animation-delay:.5s}
+.menu-cicekler span:nth-child(3n) svg{animation-delay:1.1s}
+@keyframes sallan{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.menu-butonlar{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; width:100%; max-width:660px; margin-top:6px}
+.menu-butonlar .btn{width:100%}
+
+/* ---------- Üst bilgi paneli ---------- */
+.ustbar{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:space-between;
+  background:var(--kart); border:3px solid var(--murekkep); border-radius:var(--yuvarlak);
+  padding:8px 10px; box-shadow:var(--golge-kucuk); margin-bottom:12px; position:sticky; top:6px; z-index:30;
+}
+.sayaclar{display:flex; gap:6px; flex-wrap:wrap}
+.sayac{
+  display:inline-flex; align-items:center; gap:6px; background:var(--sari); border:2px solid var(--murekkep);
+  border-radius:14px; padding:5px 10px; font-family:var(--font-baslik); font-size:16px; white-space:nowrap;
+}
+.sayac.yildiz{background:var(--lila)} .sayac.kalp{background:var(--pembe)} .sayac.bolum{background:var(--mavi)}
+.sayac .rakam{font-weight:bold}
+.ustbar-arac{display:flex; gap:6px}
+
+/* ---------- Oyun düzeni ---------- */
+.oyun-alan{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr) minmax(0,1.15fr); gap:12px; align-items:start}
+@media (max-width:980px){ .oyun-alan{grid-template-columns:1fr 1fr} .sutun-raf{grid-column:1/-1} }
+@media (max-width:680px){ .oyun-alan{grid-template-columns:1fr} }
+.panel{
+  background:var(--kart); border:3px solid var(--murekkep); border-radius:var(--yuvarlak);
+  padding:12px; box-shadow:var(--golge); position:relative;
+}
+.panel-baslik{font-family:var(--font-baslik); font-size:18px; margin:0 0 8px; display:flex; align-items:center; gap:8px}
+
+/* ---------- Müşteri ---------- */
+.musteri-sahne{display:flex; align-items:flex-end; gap:8px; min-height:150px}
+.musteri-gorsel{flex:0 0 auto; animation:musteriGir .6s ease}
+@keyframes musteriGir{from{transform:translateX(-40px) scale(.85); opacity:0}to{transform:none; opacity:1}}
+.balon{
+  position:relative; background:var(--sari); border:3px solid var(--murekkep); border-radius:18px;
+  padding:10px 12px; font-size:16px; flex:1; min-width:0;
+}
+.balon:after{content:""; position:absolute; left:-13px; bottom:22px; width:0; height:0;
+  border:10px solid transparent; border-right-color:var(--murekkep)}
+.balon:before{content:""; position:absolute; left:-8px; bottom:22px; width:0; height:0; z-index:1;
+  border:10px solid transparent; border-right-color:var(--sari)}
+.musteri-ad{font-family:var(--font-baslik); font-size:15px; text-align:center; margin-top:4px}
+
+/* ---------- Sipariş kartı ---------- */
+.siparis-kart{background:var(--kagit); border:3px dashed var(--murekkep); border-radius:18px; padding:10px; margin-top:10px}
+.siparis-liste{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px}
+.siparis-liste li{
+  display:flex; align-items:center; gap:8px; background:#fff; border:2px solid var(--murekkep);
+  border-radius:14px; padding:6px 8px; font-size:15px;
+}
+.siparis-liste li .durum{margin-left:auto; font-size:18px}
+.siparis-liste li.tamam{background:var(--yesil)}
+.siparis-liste li.eksik.parla{animation:parlaAnim 1s ease-in-out 3; background:#fff6d8}
+@keyframes parlaAnim{0%,100%{box-shadow:0 0 0 0 rgba(255,207,77,0)}50%{box-shadow:0 0 0 8px rgba(255,207,77,.7)}}
+.siparis-liste li .mini{display:flex; gap:2px; align-items:center}
+
+/* ---------- Çiçek rafı ---------- */
+.raf-sekme{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px}
+.raf-sekme .btn{padding:6px 10px; min-height:42px; font-size:15px; box-shadow:0 3px 0 var(--murekkep)}
+.raf-sekme .btn[aria-pressed="true"]{background:var(--lila2); color:#fff}
+.raf{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:8px;
+  max-height:min(46vh,430px); overflow-y:auto; padding:4px; background:linear-gradient(180deg,#fff,#fdf6ff);
+  border:2px dashed var(--lila2); border-radius:16px;
+}
+.cicek-kart{
+  background:#fff; border:2px solid var(--murekkep); border-radius:16px; padding:4px; text-align:center;
+  min-height:104px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  box-shadow:0 3px 0 rgba(74,54,82,.15); transition:transform .12s; touch-action:none; user-select:none;
+}
+.cicek-kart:hover{transform:translateY(-3px); background:#fffaff}
+.cicek-kart:active{transform:scale(.95)}
+.cicek-kart .ad{font-size:12px; font-family:var(--font-baslik); line-height:1.1}
+.cicek-kart .renk-etiket{font-size:10px; color:var(--murekkep-yumusak); display:flex; align-items:center; gap:3px}
+.renk-nokta{width:10px; height:10px; border-radius:50%; border:1.5px solid var(--murekkep); display:inline-block}
+.cicek-kart.secili{border-color:var(--yesil2); background:var(--yesil); box-shadow:0 0 0 3px var(--yesil2)}
+.rozet-say{position:absolute}
+
+/* ---------- Buket tezgâhı ---------- */
+.tezgah{
+  position:relative; min-height:250px; border-radius:20px; padding:8px;
+  background:repeating-linear-gradient(135deg,#fff,#fff 12px,#fffaf4 12px,#fffaf4 24px);
+  border:3px solid var(--murekkep);
+}
+.tezgah.hedef{background:var(--yesil); box-shadow:inset 0 0 0 4px var(--yesil2)}
+.buket-sahne{display:flex; align-items:center; justify-content:center; min-height:236px}
+.bos-ipucu{text-align:center; color:var(--murekkep-yumusak); font-size:15px; padding:20px 8px}
+.buket-cicek{cursor:pointer; transition:transform .15s}
+.buket-cicek:hover{transform:scale(1.12)}
+.yeni-cicek{animation:cicekUc .45s cubic-bezier(.2,1.4,.5,1)}
+@keyframes cicekUc{from{transform:scale(.2) rotate(-25deg); opacity:0}to{transform:none; opacity:1}}
+.sayi-rozet{
+  display:inline-flex; align-items:center; gap:6px; background:var(--lila); border:2px solid var(--murekkep);
+  border-radius:14px; padding:4px 10px; font-family:var(--font-baslik); font-size:15px;
+}
+.secim-satir{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
+.secenek{
+  width:46px; height:46px; border-radius:14px; border:3px solid var(--murekkep); position:relative;
+  display:flex; align-items:center; justify-content:center; font-size:11px; font-family:var(--font-baslik);
+  box-shadow:0 3px 0 rgba(74,54,82,.2); cursor:pointer; overflow:hidden; padding:0;
+}
+.secenek[aria-pressed="true"]:after{
+  content:"✓"; position:absolute; right:-2px; bottom:-4px; font-size:20px; color:#fff;
+  text-shadow:0 0 3px var(--murekkep),0 0 3px var(--murekkep),0 0 3px var(--murekkep);
+}
+.secenek .isim{position:absolute; bottom:1px; left:0; right:0; font-size:8px; background:rgba(255,255,255,.85); line-height:1.2}
+.arac-satir{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+.arac-satir .btn{flex:1 1 auto}
+
+/* ---------- Modal ---------- */
+.modal-ortu{
+  position:fixed; inset:0; background:rgba(74,54,82,.55); display:none; align-items:center; justify-content:center;
+  padding:14px; z-index:100; backdrop-filter:blur(2px);
+}
+.modal-ortu.acik{display:flex; animation:girisFade .25s ease}
+.modal{
+  background:var(--krem); border:4px solid var(--murekkep); border-radius:var(--yuvarlak-buyuk);
+  padding:16px; max-width:640px; width:100%; max-height:88dvh; overflow:auto; box-shadow:0 12px 0 rgba(74,54,82,.2);
+  text-align:center; position:relative;
+}
+.modal h2{font-size:24px}
+.modal .kapat{position:absolute; top:8px; right:8px; width:44px; height:44px; border-radius:50%; padding:0; font-size:20px}
+.modal-butonlar{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px}
+
+/* ---------- Lila (yardımcı karakter) ---------- */
+.lila-kutu{display:flex; align-items:center; gap:10px; background:var(--lila); border:3px solid var(--murekkep);
+  border-radius:20px; padding:10px; margin-bottom:12px}
+.lila-soz{font-size:16px; text-align:left}
+.lila-soz b{font-family:var(--font-baslik)}
+
+/* ---------- Albüm / rozet / dükkân ızgaraları ---------- */
+.izgara{display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px}
+.izgara.genis{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.albüm-kart{
+  background:var(--kart); border:3px solid var(--murekkep); border-radius:18px; padding:8px; text-align:center;
+  box-shadow:var(--golge-kucuk); transition:transform .15s;
+}
+.albüm-kart:hover{transform:translateY(-4px) scale(1.03)}
+.albüm-kart.kilitli{background:#efeaf2; color:var(--murekkep-yumusak)}
+.albüm-kart.kilitli svg{filter:grayscale(1) brightness(.55) opacity(.5)}
+.albüm-kart .ad{font-family:var(--font-baslik); font-size:15px}
+.albüm-kart .alt{font-size:12px; color:var(--murekkep-yumusak)}
+.nadir{display:inline-block; font-size:11px; padding:1px 8px; border-radius:10px; border:2px solid var(--murekkep); margin-top:3px}
+.nadir.n1{background:var(--yesil)} .nadir.n2{background:var(--mavi)} .nadir.n3{background:var(--lila)} .nadir.n4{background:var(--sari)}
+.rozet-kart{background:var(--kart); border:3px solid var(--murekkep); border-radius:18px; padding:10px; text-align:center}
+.rozet-kart.pasif{opacity:.5; background:#efeaf2}
+.rozet-daire{width:64px; height:64px; margin:0 auto 6px; border-radius:50%; border:3px solid var(--murekkep);
+  background:var(--sari); display:flex; align-items:center; justify-content:center; font-size:30px}
+.fiyat{display:inline-flex; align-items:center; gap:4px; font-family:var(--font-baslik)}
+
+/* ---------- Dükkân sahnesi ---------- */
+.dukkan-sahne{position:relative; height:190px; border:3px solid var(--murekkep); border-radius:20px; overflow:hidden;
+  background:linear-gradient(180deg,#ffeef6 0%,#fff9ef 62%,#f3e2cd 62%,#f0dcc2 100%); margin-bottom:12px}
+.dukkan-sahne .obje{position:absolute; animation:girisFade .5s ease}
+
+/* ---------- Mini oyun ---------- */
+.mini-alan{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:10px 0}
+.sepet{width:120px; min-height:110px; border:3px dashed var(--murekkep); border-radius:18px; display:flex;
+  flex-wrap:wrap; gap:2px; align-items:center; justify-content:center; padding:6px; background:#fff}
+.sepet.hedef{box-shadow:0 0 0 4px var(--yesil2)}
+.hafiza-izgara{display:grid; gap:8px; justify-content:center; margin:10px auto}
+.hafiza-kart{width:74px; height:88px; border:3px solid var(--murekkep); border-radius:14px; background:var(--lila2);
+  display:flex; align-items:center; justify-content:center; padding:0; box-shadow:0 4px 0 rgba(74,54,82,.25)}
+.hafiza-kart .yuz{display:none}
+.hafiza-kart.acik{background:#fff} .hafiza-kart.acik .yuz{display:block} .hafiza-kart.acik .arka{display:none}
+.hafiza-kart.eslesti{background:var(--yesil); border-color:var(--yesil2)}
+.sayi-btn{width:66px; height:66px; font-size:26px; border-radius:20px}
+
+/* ---------- Efektler ---------- */
+#efekt-katman{position:fixed; inset:0; pointer-events:none; z-index:200; overflow:hidden}
+.yaprak{position:absolute; top:-40px; animation:yagmur linear forwards}
+@keyframes yagmur{to{transform:translateY(105vh) rotate(720deg); opacity:.2}}
+.ucan{position:absolute; animation:ucus 1.5s ease-out forwards; font-size:26px}
+@keyframes ucus{from{transform:translateY(0) scale(.5); opacity:1}to{transform:translateY(-160px) scale(1.3); opacity:0}}
+.suruklenen{position:fixed; z-index:300; pointer-events:none; transform:translate(-50%,-50%) scale(1.15); filter:drop-shadow(0 6px 6px rgba(74,54,82,.35))}
+.gizli{display:none !important}
+.orta{text-align:center}
+.kucuk-not{font-size:13px; color:var(--murekkep-yumusak)}
+.geri-satir{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap}
+.bilgi-serit{background:var(--mavi); border:3px solid var(--murekkep); border-radius:18px; padding:10px; margin-bottom:12px; font-size:15px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*:before,*:after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+<!-- ============================================================
+     EKRANLAR
+     ============================================================ -->
+<div id="efekt-katman" aria-hidden="true"></div>
+
+<!-- ---------- ANA MENÜ ---------- -->
+<main id="menu" class="ekran aktif" aria-label="Ana menü">
+  <div class="logo-kutu">
+    <div class="menu-cicekler" id="menuCicekler" aria-hidden="true"></div>
+    <h1 class="logo">Minik Çiçekçi<span class="satir2">Buket Atölyesi</span></h1>
+    <p class="slogan">Müşterileri dinle, çiçekleri seç, buketini süsle 🌸</p>
+  </div>
+  <div class="lila-kutu" style="max-width:660px">
+    <span id="menuLila" aria-hidden="true"></span>
+    <p class="lila-soz"><b>Çiçekçi Lila:</b> Merhaba Minik Çiçekçi! Müşterilerimizi dinleyelim, en güzel çiçekleri seçelim ve rengârenk buketler hazırlayalım!</p>
+  </div>
+  <nav class="menu-butonlar">
+    <button class="btn p" data-git="oyun">🌷 Oyuna Başla</button>
+    <button class="btn m" data-git="serbest">🎨 Serbest Buket Tasarla</button>
+    <button class="btn y" data-git="album">📖 Çiçek Albümüm</button>
+    <button class="btn s" data-git="rozet">🏅 Rozetlerim</button>
+    <button class="btn b" data-git="dukkan">🏠 Dükkânımı Süsle</button>
+    <button class="btn" data-git="nasil">❓ Nasıl Oynanır?</button>
+    <button class="btn" data-act="ses" id="menuSesBtn">🔊 Ses Açık</button>
+    <button class="btn" data-act="sifirla">♻️ Oyunu Sıfırla</button>
+  </nav>
+  <p class="kucuk-not" style="margin-top:14px">Reklamsız · Ücretsiz · İnternetsiz oynanır · Kişisel bilgi istemez</p>
+</main>
+
+<!-- ---------- OYUN ---------- -->
+<main id="oyun" class="ekran" aria-label="Oyun ekranı">
+  <div class="ustbar">
+    <div class="sayaclar">
+      <span class="sayac bolum">🎬 <span id="ustBolum">Bölüm 1</span> · <span id="ustMusteri">1/5</span></span>
+      <span class="sayac">🪙 <span class="rakam" id="ustAltin">0</span></span>
+      <span class="sayac yildiz">⭐ <span class="rakam" id="ustYildiz">0</span></span>
+      <span class="sayac kalp">💖 <span class="rakam" id="ustMutluluk">0</span></span>
+    </div>
+    <div class="ustbar-arac">
+      <button class="btn kucuk" data-act="ipucu">💡 İpucu</button>
+      <button class="btn kucuk" data-act="ses" id="oyunSesBtn" aria-label="Sesi aç veya kapat">🔊</button>
+      <button class="btn kucuk" data-git="menu">🏠 Menü</button>
+    </div>
+  </div>
+
+  <div class="oyun-alan">
+    <!-- Müşteri + sipariş -->
+    <section class="panel">
+      <h2 class="panel-baslik">🧍 Müşterimiz</h2>
+      <div class="musteri-sahne">
+        <div><div class="musteri-gorsel" id="musteriGorsel"></div><div class="musteri-ad" id="musteriAd"></div></div>
+        <div class="balon" id="musteriBalon"></div>
+      </div>
+      <div class="siparis-kart">
+        <h3 class="panel-baslik" style="font-size:16px">📋 Sipariş Kartı</h3>
+        <ul class="siparis-liste" id="siparisListe"></ul>
+      </div>
+      <div class="lila-kutu" style="margin-top:10px">
+        <span id="oyunLila" aria-hidden="true"></span>
+        <p class="lila-soz"><b>Lila:</b> <span id="lilaSoz">Hadi başlayalım!</span></p>
+      </div>
+    </section>
+
+    <!-- Buket tezgâhı -->
+    <section class="panel">
+      <h2 class="panel-baslik">💐 Buket Tezgâhı</h2>
+      <div class="tezgah" id="tezgah">
+        <div class="buket-sahne" id="buketSahne"></div>
+      </div>
+      <div class="secim-satir" style="justify-content:space-between; align-items:center">
+        <span class="sayi-rozet">🌸 <span id="buketSayi">0</span>/<span id="buketMax">5</span> çiçek</span>
+        <span class="sayi-rozet" style="background:var(--yesil)">🌿 <span id="decoSayi">0</span> süs</span>
+      </div>
+      <div id="ambalajBolum" class="gizli">
+        <h3 class="panel-baslik" style="font-size:15px; margin-top:10px">🎁 Ambalaj</h3>
+        <div class="secim-satir" id="ambalajSatir"></div>
+        <h3 class="panel-baslik" style="font-size:15px; margin-top:10px">🎀 Kurdele</h3>
+        <div class="secim-satir" id="kurdeleSatir"></div>
+      </div>
+      <div class="arac-satir">
+        <button class="btn y" data-act="tamamla">✅ Siparişi Tamamla</button>
+        <button class="btn kucuk" data-act="temizle">🧹 Buketi Temizle</button>
+      </div>
+    </section>
+
+    <!-- Raf -->
+    <section class="panel sutun-raf">
+      <h2 class="panel-baslik">🪴 Çiçek Rafı</h2>
+      <p class="kucuk-not" style="margin:0 0 6px">Çiçeğe dokun ya da bukete sürükle.</p>
+      <div class="raf-sekme" id="rafSekme">
+        <button class="btn kucuk" data-sekme="cicek" aria-pressed="true">🌸 Çiçekler</button>
+        <button class="btn kucuk" data-sekme="deco" aria-pressed="false">🌿 Süslemeler</button>
+      </div>
+      <div class="raf" id="raf"></div>
+    </section>
+  </div>
+</main>
+
+<!-- ---------- SERBEST TASARIM ---------- -->
+<main id="serbest" class="ekran" aria-label="Serbest buket tasarlama">
+  <div class="geri-satir">
+    <button class="btn kucuk" data-git="menu">🏠 Ana Menü</button>
+    <button class="btn kucuk s" data-act="rastgeleBuket">🎲 Rastgele Buket</button>
+    <button class="btn kucuk" data-act="temizle">🧹 Yeniden Düzenle</button>
+    <button class="btn kucuk m" data-act="buketAdiVer">🏷️ Buketime İsim Ver</button>
+  </div>
+  <div class="oyun-alan" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)">
+    <section class="panel">
+      <h2 class="panel-baslik">💐 Buketin</h2>
+      <div class="tezgah" id="tezgahSerbest"><div class="buket-sahne" id="buketSahneSerbest"></div></div>
+      <p class="orta" style="font-family:var(--font-baslik); font-size:18px; margin:8px 0 0" id="serbestAd">Buket Adı: —</p>
+      <div class="secim-satir" style="justify-content:space-between">
+        <span class="sayi-rozet">🌸 <span id="serbestSayi">0</span>/12</span>
+        <span class="sayi-rozet" style="background:var(--yesil)">🌿 <span id="serbestDeco">0</span></span>
+      </div>
+      <h3 class="panel-baslik" style="font-size:15px; margin-top:10px">🎁 Ambalaj</h3>
+      <div class="secim-satir" id="ambalajSatirS"></div>
+      <h3 class="panel-baslik" style="font-size:15px; margin-top:10px">🎀 Kurdele</h3>
+      <div class="secim-satir" id="kurdeleSatirS"></div>
+    </section>
+    <section class="panel">
+      <h2 class="panel-baslik">🪴 Açtığın Çiçekler</h2>
+      <div class="raf-sekme" id="rafSekmeS">
+        <button class="btn kucuk" data-sekme="cicek" aria-pressed="true">🌸 Çiçekler</button>
+        <button class="btn kucuk" data-sekme="deco" aria-pressed="false">🌿 Süslemeler</button>
+      </div>
+      <div class="raf" id="rafSerbest"></div>
+    </section>
+  </div>
+</main>
+
+<!-- ---------- ALBÜM ---------- -->
+<main id="album" class="ekran" aria-label="Çiçek albümü">
+  <div class="geri-satir"><button class="btn kucuk" data-git="menu">🏠 Ana Menü</button></div>
+  <h2>📖 Çiçek Albümüm <span class="kucuk-not" id="albumSayac"></span></h2>
+  <div class="bilgi-serit">🌼 Gerçek çiçekleri koklamak ve incelemek çok eğlencelidir. Bilmediğin bitkilere dokunmadan önce bir büyüğüne danışmayı unutma.</div>
+  <div class="izgara" id="albumIzgara"></div>
+</main>
+
+<!-- ---------- ROZETLER ---------- -->
+<main id="rozet" class="ekran" aria-label="Rozetler">
+  <div class="geri-satir"><button class="btn kucuk" data-git="menu">🏠 Ana Menü</button></div>
+  <h2>🏅 Rozetlerim <span class="kucuk-not" id="rozetSayac"></span></h2>
+  <div class="izgara genis" id="rozetIzgara"></div>
+</main>
+
+<!-- ---------- DÜKKÂN ---------- -->
+<main id="dukkan" class="ekran" aria-label="Dükkânımı süsle">
+  <div class="geri-satir">
+    <button class="btn kucuk" data-git="menu">🏠 Ana Menü</button>
+    <span class="sayac">🪙 <span class="rakam" id="dukkanAltin">0</span> altın</span>
+  </div>
+  <h2>🏠 Dükkânımı Süsle</h2>
+  <div class="dukkan-sahne" id="dukkanSahne"></div>
+  <p class="kucuk-not">Süslemeler yalnızca dükkânını güzelleştirir, oyunu kolaylaştırmaz.</p>
+  <div class="izgara genis" id="dukkanIzgara"></div>
+</main>
+
+<!-- ---------- NASIL OYNANIR ---------- -->
+<main id="nasil" class="ekran" aria-label="Nasıl oynanır">
+  <div class="geri-satir"><button class="btn kucuk" data-git="menu">🏠 Ana Menü</button></div>
+  <h2>❓ Nasıl Oynanır?</h2>
+  <div class="panel" id="nasilIcerik"></div>
+</main>
+
+<!-- ---------- MODALLAR ---------- -->
+<div class="modal-ortu" id="modalOrtu" role="dialog" aria-modal="true" aria-labelledby="modalBaslik">
+  <div class="modal">
+    <button class="btn kucuk kapat" data-act="modalKapat" aria-label="Pencereyi kapat">✕</button>
+    <h2 id="modalBaslik"></h2>
+    <div id="modalIcerik"></div>
+    <div class="modal-butonlar" id="modalButonlar"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   1) SVG ÇİZİM YARDIMCILARI
+   Her çiçek -50..50 kutusuna çizilir. Gövde (sap) altta, taç yapraklar üstte.
+   ============================================================ */
+function svgKutu(ic, boy, ek){ return '<svg viewBox="-50 -50 100 100" width="'+boy+'" height="'+boy+'" '+(ek||'')+' aria-hidden="true" focusable="false">'+ic+'</svg>'; }
+function P(d,f,st,sw){ return '<path d="'+d+'" fill="'+f+'" stroke="'+(st||'rgba(74,54,82,.35)')+'" stroke-width="'+(sw||1.4)+'" stroke-linejoin="round"/>'; }
+function C(cx,cy,r,f,st,sw){ return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+f+'" stroke="'+(st||'rgba(74,54,82,.35)')+'" stroke-width="'+(sw||1.4)+'"/>'; }
+function E(cx,cy,rx,ry,f,st){ return '<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" fill="'+f+'" stroke="'+(st||'rgba(74,54,82,.3)')+'" stroke-width="1.3"/>'; }
+/* n adet taç yaprağı daire biçiminde dizer */
+function halka(n,d,f,st,dondur,olcek){
+  var s='',i,a; for(i=0;i<n;i++){ a=(dondur||0)+i*360/n;
+    s+='<g transform="rotate('+a.toFixed(1)+')'+(olcek?' scale('+olcek+')':'')+'">'+P(d,f,st)+'</g>'; }
+  return s;
+}
+/* Fırfırlı (dalgalı kenarlı) daire — karanfil, nergis vb. için */
+function firfirDaire(icR,disR,n){
+  var d='',i,a1,a2;
+  for(i=0;i<n;i++){
+    a1=i*2*Math.PI/n; a2=(i+0.5)*2*Math.PI/n;
+    d+=(i?'L':'M')+(icR*Math.cos(a1)).toFixed(1)+','+(icR*Math.sin(a1)).toFixed(1)
+      +'L'+(disR*Math.cos(a2)).toFixed(1)+','+(disR*Math.sin(a2)).toFixed(1);
+  }
+  return d+'Z';
+}
+/* Taç yaprak biçimleri — her çiçek farklı bir biçim ailesi kullanır */
+var PET={
+  oval:      "M0,-4 C-11,-12 -12,-34 0,-44 C12,-34 11,-12 0,-4Z",
+  ince:      "M0,-4 C-5,-16 -5,-36 0,-46 C5,-36 5,-16 0,-4Z",
+  yuvarlak:  "M0,-2 C-17,-8 -19,-32 0,-40 C19,-32 17,-8 0,-2Z",
+  sivri:     "M0,-2 C-9,-14 -7,-32 0,-48 C7,-32 9,-14 0,-2Z",
+  kalp:      "M0,-4 C-15,-10 -17,-32 -7,-40 C-3,-43 -1,-37 0,-34 C1,-37 3,-43 7,-40 C17,-32 15,-10 0,-4Z",
+  firfir:    "M0,-4 C-13,-10 -15,-24 -9,-34 C-6,-29 -4,-36 0,-40 C4,-36 6,-29 9,-34 C15,-24 13,-10 0,-4Z",
+  kasik:     "M0,-6 C-9,-14 -11,-30 0,-40 C11,-30 9,-14 0,-6Z",
+  uzunince:  "M0,-4 C-4,-18 -7,-38 0,-50 C7,-38 4,-18 0,-4Z",
+  damla:     "M0,-2 C-8,-10 -10,-26 0,-34 C10,-26 8,-10 0,-2Z"
+};
+/* Gövde + yaprak */
+function sap(renk,uzun){
+  var r=renk||'#5aa85f', y=(uzun===false?34:48);
+  return '<path d="M0,2 Q4,'+(y/2)+' 0,'+y+'" stroke="'+r+'" stroke-width="6" fill="none" stroke-linecap="round"/>'
+       + P("M0,22 C-15,15 -20,29 -2,31",r,'rgba(74,54,82,.28)')
+       + P("M2,32 C16,26 21,39 4,40",r,'rgba(74,54,82,.28)');
+}
+function tac(ic,olcek,kaydir){ return '<g transform="translate(0,'+(kaydir||-8)+') scale('+(olcek||0.8)+')">'+ic+'</g>'; }
+
+/* ============================================================
+   2) ÇİÇEK ÇİZİMLERİ (30 farklı biçim)
+   ============================================================ */
+function gulCiz(dis,orta,ic,cizgi,adet){
+  return halka(adet||5,PET.yuvarlak,dis)
+    +'<g transform="scale(.74) rotate(36)">'+halka(5,PET.yuvarlak,orta)+'</g>'
+    +'<g transform="scale(.48) rotate(18)">'+halka(5,PET.yuvarlak,ic)+'</g>'
+    +'<path d="M-7,-4 C-7,-14 8,-14 8,-4 C8,3 -3,5 -3,-3 C-3,-8 3,-8 3,-3" fill="none" stroke="'+cizgi+'" stroke-width="3" stroke-linecap="round"/>';
+}
+var CIZ={
+  gulKirmizi: function(){ return sap()+tac(gulCiz('#e2445c','#f05a72','#ff8095','#a52a41')); },
+  gulPembe:   function(){ return sap()+tac(gulCiz('#f79ac0','#ffb3d2','#ffd0e4','#d16a97')); },
+  gulBeyaz:   function(){ return sap()+tac(gulCiz('#f4f1ef','#ffffff','#fffdf7','#c9bfd0',6)); },
+  gulSari:    function(){ return sap()+tac(gulCiz('#ffc93c','#ffdc6b','#fff0ad','#d99b12')); },
+  lale: function(){
+    return sap()+tac(
+      P("M-19,-2 C-25,-24 -16,-40 -5,-44 C-11,-30 -14,-14 -8,0Z",'#d63b52')
+      +P("M19,-2 C25,-24 16,-40 5,-44 C11,-30 14,-14 8,0Z",'#d63b52')
+      +P("M-11,0 C-14,-24 -6,-40 0,-46 C6,-40 14,-24 11,0 C5,4 -5,4 -11,0Z",'#f8536c')
+      +P("M-4,-6 C-5,-24 -2,-36 0,-42 C2,-36 5,-24 4,-6Z",'#ff8296','rgba(0,0,0,0)')
+    ,0.82);
+  },
+  papatya: function(){ return sap()+tac(halka(13,PET.ince,'#ffffff','#e0d6e8')+C(0,0,12,'#ffd23f')+C(0,0,7,'#ffb703','rgba(0,0,0,.12)')); },
+  aycicegi: function(){
+    return sap('#4f9d55')+tac(halka(16,PET.sivri,'#ffb302')+'<g transform="rotate(11)">'+halka(16,PET.sivri,'#ffcb3d',null,0,0.78)+'</g>'
+      +C(0,0,17,'#7a4a22')+C(0,0,12,'#5e3517','rgba(0,0,0,.1)')
+      +C(-6,-4,2,'#8f5a2a','rgba(0,0,0,0)')+C(5,-5,2,'#8f5a2a','rgba(0,0,0,0)')+C(2,5,2,'#8f5a2a','rgba(0,0,0,0)')+C(-5,6,2,'#8f5a2a','rgba(0,0,0,0)'),0.78);
+  },
+  orkide: function(){
+    return sap('#6aa06f')+tac(halka(5,PET.oval,'#c48bf0',null,180)
+      +P("M0,2 C-16,4 -19,26 0,32 C19,26 16,4 0,2Z",'#f3e2ff','#a86fd0')
+      +C(0,6,6,'#ffe08a')+C(-6,14,2.2,'#8b46c9','rgba(0,0,0,0)')+C(6,14,2.2,'#8b46c9','rgba(0,0,0,0)')+C(0,20,2.2,'#8b46c9','rgba(0,0,0,0)'),0.8);
+  },
+  karanfil: function(){
+    return sap()+tac(P(firfirDaire(16,34,14),'#e0405a')+P(firfirDaire(12,26,12),'#f56b80')
+      +P(firfirDaire(7,17,10),'#ff9aa8')+C(0,0,4,'#ffd3d9'),0.92);
+  },
+  gerbera: function(){
+    return sap()+tac(halka(22,PET.ince,'#ff8a3d')+'<g transform="rotate(8) scale(.72)">'+halka(20,PET.ince,'#ffb066')+'</g>'
+      +C(0,0,13,'#7c3f1d')+C(0,0,8,'#a85a2b','rgba(0,0,0,.1)')+C(0,0,3.5,'#ffd9a1','rgba(0,0,0,0)'),0.8);
+  },
+  sakayik: function(){
+    return sap()+tac(halka(8,PET.firfir,'#f792b8')+'<g transform="rotate(22) scale(.78)">'+halka(8,PET.firfir,'#ffb0cd')+'</g>'
+      +'<g transform="rotate(11) scale(.5)">'+halka(7,PET.firfir,'#ffd3e4')+'</g>'+C(0,0,5,'#fff0b3'),0.86);
+  },
+  zambak: function(){
+    var st='',i; for(i=0;i<6;i++){ var a=i*60-90, x=Math.cos(a*Math.PI/180)*16, y=Math.sin(a*Math.PI/180)*16;
+      st+='<line x1="0" y1="0" x2="'+x.toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="#d9b26a" stroke-width="2"/>'+C(x,y,3,'#c98a2e','rgba(0,0,0,0)'); }
+    return sap()+tac(halka(6,PET.sivri,'#fffaf4','#e3d8ea')+'<g transform="rotate(30) scale(.92)">'+halka(6,PET.sivri,'#ffffff','#e3d8ea')+'</g>'
+      +st+C(0,0,5,'#ffe9a8'),0.78);
+  },
+  sumbul: function(){
+    var s='<path d="M0,-30 L0,48" stroke="#4f9d55" stroke-width="6" stroke-linecap="round"/>'+P("M0,26 C-16,20 -20,34 -2,35",'#4f9d55'),i,j;
+    for(i=0;i<7;i++){ for(j=0;j<2;j++){
+      var y=-42+i*10, x=(j?1:-1)*(11-i*0.9);
+      s+='<g transform="translate('+x.toFixed(1)+','+y+') scale(.19)">'+halka(6,PET.sivri,i%2?'#a76bdd':'#8f4fd0')+C(0,0,8,'#ddc0f7')+'</g>';
+    }}
+    for(i=0;i<6;i++){ s+='<g transform="translate(0,'+(-38+i*10)+') scale(.17)">'+halka(6,PET.sivri,'#c396ef')+'</g>'; }
+    return s;
+  },
+  nergis: function(){
+    return sap()+tac(halka(6,PET.sivri,'#fff4c9','#e6d59a')+P(firfirDaire(10,15,12),'#ff9e2c')
+      +C(0,0,10,'#ffb444')+C(0,0,6,'#ff8a1a','rgba(0,0,0,.1)'),0.8);
+  },
+  menekse: function(){
+    return sap()+tac(
+      '<g transform="rotate(-38) scale(.8)">'+P(PET.yuvarlak,'#7b52c9')+'</g>'
+      +'<g transform="rotate(38) scale(.8)">'+P(PET.yuvarlak,'#7b52c9')+'</g>'
+      +'<g transform="rotate(-105) scale(.95)">'+P(PET.yuvarlak,'#9a6fe0')+'</g>'
+      +'<g transform="rotate(105) scale(.95)">'+P(PET.yuvarlak,'#9a6fe0')+'</g>'
+      +'<g transform="rotate(180) scale(1.05)">'+P(PET.yuvarlak,'#b98cf5')+'</g>'
+      +C(0,2,6,'#ffd23f')
+      +'<path d="M0,4 L-8,16 M0,4 L0,18 M0,4 L8,16" stroke="#4a2c78" stroke-width="1.6" fill="none"/>',0.72);
+  },
+  lavanta: function(){
+    var s='<path d="M0,-34 L0,48" stroke="#5aa85f" stroke-width="5" stroke-linecap="round"/>',i;
+    for(i=0;i<9;i++){ var y=-42+i*9, r=3.4+i*0.35;
+      s+=E(-6+ (i%2?1:-1)*1.5, y, r, r*1.5, i%2?'#9a6fe0':'#8455d6')
+        +E(6 + (i%2?-1:1)*1.5, y+4, r, r*1.5, i%2?'#8455d6':'#a87ff0'); }
+    s+=P("M0,26 C-16,20 -20,34 -2,35",'#5aa85f');
+    return s;
+  },
+  ortanca: function(){
+    var s=sap('#4f9d55'),i,yer=[[0,-24],[-16,-16],[16,-16],[-24,-2],[24,-2],[-9,-6],[9,-6],[0,6],[-17,10],[17,10],[0,-8],[-8,-20],[8,-20]];
+    var renkler=['#7fb6ee','#a3cbf5','#6aa3e8','#bcdcfa'];
+    for(i=0;i<yer.length;i++){
+      s+='<g transform="translate('+yer[i][0]+','+(yer[i][1]-6)+') scale(.9)">'
+        +halka(4,PET.yuvarlak,renkler[i%4],null,i*18,0.22)+C(0,0,2.2,'#f4faff','rgba(0,0,0,0)')+'</g>';
+    }
+    return s;
+  },
+  anemon: function(){
+    return sap()+tac(halka(8,PET.oval,'#e8455f')+'<g transform="rotate(22) scale(.86)">'+halka(8,PET.oval,'#f26b80')+'</g>'
+      +C(0,0,13,'#3b2a45')+C(0,0,7,'#241a2b','rgba(0,0,0,0)')
+      +halka(12,"M0,-11 L1.6,-19 L-1.6,-19Z",'#5c4b6b','rgba(0,0,0,0)'),0.82);
+  },
+  krizantem: function(){
+    return sap()+tac(halka(24,PET.uzunince,'#ff9c3d')+'<g transform="rotate(7) scale(.76)">'+halka(20,PET.uzunince,'#ffb75e')+'</g>'
+      +'<g transform="rotate(14) scale(.5)">'+halka(16,PET.uzunince,'#ffd08f')+'</g>'+C(0,0,5,'#ffeec9'),0.78);
+  },
+  frezya: function(){
+    var s='<path d="M-2,48 C-6,20 4,4 22,-6" stroke="#5aa85f" stroke-width="5" fill="none" stroke-linecap="round"/>',i;
+    var yer=[[-2,10],[6,-6],[18,-20],[30,-32]];
+    for(i=0;i<yer.length;i++){
+      s+='<g transform="translate('+yer[i][0]+','+yer[i][1]+') rotate('+(-20-i*8)+') scale('+(0.34+i*0.04)+')">'
+        +P("M-9,10 C-14,-6 -8,-16 0,-18 C8,-16 14,-6 9,10Z",'#ffd95e')
+        +halka(5,PET.damla,'#ffe985',null,180)+C(0,0,5,'#fff6c9')+'</g>';
+    }
+    return s+P("M-4,30 C-20,24 -24,38 -6,39",'#5aa85f');
+  },
+  iris: function(){
+    return sap('#4f9d55')+tac(
+      '<g transform="rotate(0)">'+P(PET.oval,'#5a63c9')+'</g>'
+      +'<g transform="rotate(-52) scale(.9)">'+P(PET.oval,'#5a63c9')+'</g>'
+      +'<g transform="rotate(52) scale(.9)">'+P(PET.oval,'#5a63c9')+'</g>'
+      +'<g transform="rotate(180) scale(1.05)">'+P(PET.yuvarlak,'#7b84e8')+'</g>'
+      +'<g transform="rotate(126) scale(.95)">'+P(PET.yuvarlak,'#6b74d8')+'</g>'
+      +'<g transform="rotate(-126) scale(.95)">'+P(PET.yuvarlak,'#6b74d8')+'</g>'
+      +P("M-4,6 C-4,22 4,22 4,6Z",'#ffd23f','rgba(0,0,0,0)')+C(0,0,6,'#c9cdf7'),0.76);
+  },
+  kamelya: function(){
+    return sap('#3f8f4c')+tac(halka(8,PET.yuvarlak,'#f27fa8')+'<g transform="rotate(22) scale(.74)">'+halka(8,PET.yuvarlak,'#ff9cbf')+'</g>'
+      +'<g transform="rotate(11) scale(.46)">'+halka(6,PET.yuvarlak,'#ffc2d8')+'</g>'
+      +halka(9,"M0,-7 L2,-13 L-2,-13Z",'#ffd23f','rgba(0,0,0,0)')+C(0,0,4,'#ffe9a8'),0.8);
+  },
+  gelincik: function(){
+    return sap()+tac(halka(4,PET.yuvarlak,'#ef3b3b',null,45,1.18)+'<g transform="rotate(0) scale(.9)">'+halka(4,PET.yuvarlak,'#ff5c4d')+'</g>'
+      +C(0,0,11,'#2f2436')+halka(14,"M0,-10 L1.4,-17 L-1.4,-17Z",'#4b3a55','rgba(0,0,0,0)')+C(0,0,5,'#5c4b6b','rgba(0,0,0,0)'),0.84);
+  },
+  manolya: function(){
+    return sap('#6c8f5a')+tac(halka(9,PET.kasik,'#fdf6f2','#e6d2dd',null,1.24)
+      +'<g transform="rotate(20) scale(.8)">'+halka(7,PET.kasik,'#ffe9f0','#e6d2dd')+'</g>'
+      +C(0,0,7,'#f6c9a0')+C(0,0,3,'#d99b6c','rgba(0,0,0,0)'),0.76);
+  },
+  gardenya: function(){
+    var s='',i; for(i=0;i<9;i++){ s+='<g transform="rotate('+(i*40)+') skewX(-22)">'+P(PET.yuvarlak,i%2?'#fffdf6':'#f6efe6','#ded2c8')+'</g>'; }
+    return sap('#3f8f4c')+tac(s+'<g transform="scale(.55) rotate(20)">'+halka(6,PET.yuvarlak,'#fffef9','#ded2c8')+'</g>'+C(0,0,5,'#fff3c4'),0.8);
+  },
+  begonya: function(){
+    return sap('#7a5a6a')+tac(halka(4,PET.yuvarlak,'#ff7a3d',null,45,1.15)
+      +'<g transform="rotate(24) scale(.82)">'+halka(5,PET.firfir,'#ff9a5c')+'</g>'
+      +'<g transform="rotate(48) scale(.52)">'+halka(6,PET.firfir,'#ffc08a')+'</g>'+C(0,0,5,'#ffe08a'),0.84);
+  },
+  petunya: function(){
+    var v='',i; for(i=0;i<10;i++){ var a=i*36*Math.PI/180;
+      v+='<line x1="0" y1="0" x2="'+(Math.cos(a)*34).toFixed(1)+'" y2="'+(Math.sin(a)*34).toFixed(1)+'" stroke="#5b2a86" stroke-width="1.5" opacity=".55"/>'; }
+    return sap()+tac(halka(5,PET.yuvarlak,'#9a5fd6',null,0,1.12)+C(0,0,26,'#a86fe0','rgba(74,54,82,.25)')
+      +v+C(0,0,11,'#5b2a86')+C(0,0,5,'#f0dcff','rgba(0,0,0,0)'),0.82);
+  },
+  dahlia: function(){
+    return sap()+tac(halka(14,PET.sivri,'#ec5f9b')+'<g transform="rotate(13) scale(.74)">'+halka(12,PET.sivri,'#ff86bb')+'</g>'
+      +'<g transform="rotate(26) scale(.48)">'+halka(10,PET.sivri,'#ffb3d6')+'</g>'+C(0,0,5,'#fff0b3'),0.8);
+  },
+  yasemin: function(){
+    var s=sap('#3f8f4c'),i,yer=[[-14,-20],[13,-24],[0,-2]];
+    for(i=0;i<3;i++){ s+='<g transform="translate('+yer[i][0]+','+yer[i][1]+') rotate('+(i*24)+') scale(.42)">'
+      +halka(5,PET.oval,'#fffdf7','#ded2c8')+C(0,0,7,'#ffe98a')+'</g>'; }
+    return s;
+  },
+  antoryum: function(){
+    return sap('#3f8f4c')+tac(
+      P("M0,10 C-32,0 -32,-36 -11,-40 C-4,-42 -1,-35 0,-31 C1,-35 4,-42 11,-40 C32,-36 32,0 0,10Z",'#e8395a','#b02341')
+      +P("M0,4 C-18,-2 -19,-26 -7,-30 C-2,-32 0,-27 0,-24 C0,-27 2,-32 7,-30 C19,-26 18,-2 0,4Z",'#ff6b83','rgba(0,0,0,0)')
+      +P("M3,-26 C12,-30 15,-6 5,0",'#ffe08a','#d9b26a',2.4),0.82);
+  }
+};
+
+/* ============================================================
+   3) ÇİÇEK VERİLERİ  (30 gerçek çiçek — süsleme yeşillikleri dahil DEĞİL)
+   ============================================================ */
+var RENKLER={
+  kirmizi:{ad:'kırmızı',kod:'#e2445c',simge:'🔴'}, pembe:{ad:'pembe',kod:'#ff9ec4',simge:'🌸'},
+  beyaz:{ad:'beyaz',kod:'#fffdf7',simge:'⚪'},     sari:{ad:'sarı',kod:'#ffcf4d',simge:'🟡'},
+  mor:{ad:'mor',kod:'#9a6fe0',simge:'🟣'},         turuncu:{ad:'turuncu',kod:'#ff9040',simge:'🟠'},
+  mavi:{ad:'mavi',kod:'#6fb6f2',simge:'🔵'}
+};
+var NADIR=['Yaygın','Sevimli','Nadir','Efsane'];
+
+function cicek(id,ad,renk,nadirlik,bolum,bilgi){ return {id:id,ad:ad,renk:renk,nadirlik:nadirlik,bolum:bolum,bilgi:bilgi,ciz:CIZ[id]}; }
+var CICEKLER_DIZI=[
+  cicek('gulKirmizi','Kırmızı Gül','kirmizi',2,1,'Katmerli taç yaprakları vardır ve mis gibi kokar.'),
+  cicek('gulPembe','Pembe Gül','pembe',1,1,'Yumuşacık pembe yapraklarıyla en sevilen güllerden biridir.'),
+  cicek('papatya','Papatya','beyaz',1,1,'Ortası sapsarı, yaprakları incecik ve bembeyazdır.'),
+  cicek('lale','Lale','kirmizi',1,1,'Bardak biçimindeki üç büyük yaprağıyla tanınır.'),
+  cicek('aycicegi','Ayçiçeği','sari',2,1,'Kocaman kahverengi ortasıyla güneşe döner.'),
+  cicek('gerbera','Gerbera','turuncu',1,2,'Işın gibi uzayan ince yapraklarıyla neşe saçar.'),
+  cicek('karanfil','Karanfil','kirmizi',1,2,'Dantel gibi kıvrımlı, fırfırlı yaprakları vardır.'),
+  cicek('menekse','Menekşe','mor',2,2,'Minicik mor yaprakları ve sarı bir kalbi vardır.'),
+  cicek('lavanta','Lavanta','mor',2,2,'Başak biçiminde dizilen kokulu minik çiçeklerdir.'),
+  cicek('gelincik','Gelincik','kirmizi',2,2,'Dört ince kırmızı yaprağı rüzgârda dalgalanır.'),
+  cicek('orkide','Orkide','mor',3,3,'Alt dudağı benekli, çok zarif bir çiçektir.'),
+  cicek('sakayik','Şakayık','pembe',3,3,'Yüzlerce fırfırlı yaprağıyla top gibi görünür.'),
+  cicek('zambak','Zambak','beyaz',3,3,'Altı sivri yaprağı ve uzun sarı ipçikleri vardır.'),
+  cicek('frezya','Frezya','sari',3,3,'Dalın ucunda sıra sıra açan huni çiçeklerdir.'),
+  cicek('iris','İris','mavi',3,3,'Üç yaprağı yukarı, üç yaprağı aşağı bakar.'),
+  cicek('sumbul','Sümbül','mor',2,4,'Bir sopa üzerinde yıldız gibi açan minik çiçeklerdir.'),
+  cicek('nergis','Nergis','sari',2,4,'Ortasındaki turuncu borusuyla hemen tanınır.'),
+  cicek('ortanca','Ortanca','mavi',3,4,'Yüzlerce küçük çiçekten top gibi bir küme oluşur.'),
+  cicek('anemon','Anemon','kirmizi',3,4,'Simsiyah ortasıyla göz kırpar gibidir.'),
+  cicek('krizantem','Krizantem','turuncu',2,4,'Işınlar gibi uzayan yüzlerce ince yaprağı vardır.'),
+  cicek('kamelya','Kamelya','pembe',3,5,'Yaprakları pergel gibi düzgün sıralanır.'),
+  cicek('manolya','Manolya','beyaz',4,5,'Kaşık biçiminde kocaman yaprakları vardır.'),
+  cicek('gardenya','Gardenya','beyaz',4,5,'Yaprakları fırıldak gibi sarmal dizilir.'),
+  cicek('begonya','Begonya','turuncu',2,5,'Katlı ve dalgalı yapraklarıyla ışıl ışıldır.'),
+  cicek('petunya','Petunya','mor',2,5,'Huni gibi açılır, üzerinde ince damarlar vardır.'),
+  cicek('dahlia','Dahlia (Yıldız Çiçeği)','pembe',3,6,'Sivri uçlu yaprakları yıldız gibi dizilir.'),
+  cicek('yasemin','Yasemin','beyaz',3,6,'Küçük beyaz yıldızlar hâlinde küme küme açar.'),
+  cicek('antoryum','Antoryum','kirmizi',4,6,'Parlak kalp biçimli yaprağı ve sarı çubuğu vardır.'),
+  cicek('gulBeyaz','Beyaz Gül','beyaz',3,6,'Bembeyaz katmerli yapraklarıyla çok zariftir.'),
+  cicek('gulSari','Sarı Gül','sari',3,6,'Güneş sarısı yapraklarıyla dostluğun simgesidir.')
+];
+var CICEKLER={}; CICEKLER_DIZI.forEach(function(f){ CICEKLER[f.id]=f; });
+/* ============================================================
+   4) SÜSLEME MALZEMELERİ  (çiçek sayısına DAHİL DEĞİLDİR)
+   ============================================================ */
+var SUSLER_DIZI=[
+  {id:'cipso',ad:'Cipso',tur:'yesillik',ciz:function(){ var s='',i,yer=[[0,-20],[-14,-8],[13,-10],[-6,-30],[8,-28],[-18,-22],[18,-20],[0,-4],[-9,-16],[9,-16]];
+    for(i=0;i<yer.length;i++){ s+=C(yer[i][0],yer[i][1],4.4,'#fffdf7','#dcd2e2')+C(yer[i][0],yer[i][1],1.6,'#ffe98a','rgba(0,0,0,0)'); }
+    return '<path d="M0,46 L0,-6 M0,20 L-16,-6 M0,20 L16,-8" stroke="#8ab98e" stroke-width="2.4" fill="none"/>'+s; }},
+  {id:'okaliptus',ad:'Okaliptus',tur:'yesillik',ciz:function(){ var s='<path d="M2,48 C-4,20 -2,-8 0,-34" stroke="#7fa88a" stroke-width="3" fill="none"/>',i;
+    for(i=0;i<6;i++){ var y=-30+i*13; s+=E(-9,y,8,6.5,'#9dc3a5','#6d9678')+E(9,y+6,8,6.5,'#b6d4ba','#6d9678'); } return s; }},
+  {id:'ruskus',ad:'Ruskus',tur:'yesillik',ciz:function(){ var s='<path d="M0,48 L0,-36" stroke="#3f8f4c" stroke-width="3" fill="none"/>',i;
+    for(i=0;i<6;i++){ var y=-32+i*13; s+=P("M0,"+y+" C-16,"+(y-4)+" -18,"+(y+8)+" 0,"+(y+9)+"Z",'#4f9d55')+P("M0,"+(y+3)+" C16,"+(y-1)+" 18,"+(y+11)+" 0,"+(y+12)+"Z",'#5fae66'); } return s; }},
+  {id:'egrelti',ad:'Eğrelti Otu',tur:'yesillik',ciz:function(){ var s='<path d="M0,48 C-2,16 -1,-14 0,-40" stroke="#3f8f4c" stroke-width="2.6" fill="none"/>',i;
+    for(i=0;i<9;i++){ var y=-36+i*9, u=13-i*0.6; s+='<path d="M0,'+y+' L-'+u+','+(y+7)+'" stroke="#57a55e" stroke-width="3.2" stroke-linecap="round"/>'
+      +'<path d="M0,'+y+' L'+u+','+(y+7)+'" stroke="#57a55e" stroke-width="3.2" stroke-linecap="round"/>'; } return s; }},
+  {id:'salal',ad:'Salal Yaprağı',tur:'yesillik',ciz:function(){ return '<path d="M0,48 L-2,4" stroke="#3f8f4c" stroke-width="3" fill="none"/>'
+      +P("M-2,6 C-30,-6 -26,-38 -2,-40 C22,-38 26,-6 -2,6Z",'#57a55e')+P("M-2,4 L-2,-36",'none','#2f6b38',2)
+      +P("M14,10 C-6,4 -4,-20 16,-22 C34,-20 34,4 14,10Z",'#6fbd76'); }},
+  {id:'palmiye',ad:'Palmiye Yaprağı',tur:'yesillik',ciz:function(){ var s='<path d="M0,48 L0,4" stroke="#3f8f4c" stroke-width="3.4" fill="none"/>',i;
+    for(i=0;i<7;i++){ var a=-78+i*26; s+='<g transform="translate(0,4) rotate('+a+')">'+P("M0,0 C-7,-14 -6,-30 0,-42 C6,-30 7,-14 0,0Z",i%2?'#4f9d55':'#6fbd76')+'</g>'; } return s; }},
+  {id:'dallar',ad:'İnce Dallar',tur:'yesillik',ciz:function(){ return '<path d="M0,48 L-2,-6 M-2,10 L-20,-14 M-2,0 L18,-22 M-2,-6 L-14,-32 M-2,-6 L12,-38" stroke="#a98263" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
+      +C(-20,-14,3.2,'#c9a882')+C(18,-22,3.2,'#c9a882')+C(-14,-32,3.2,'#c9a882')+C(12,-38,3.2,'#c9a882'); }},
+  {id:'kalp',ad:'Kalp Süsü',tur:'sus',ciz:function(){ return '<path d="M0,44 L0,0" stroke="#c9a882" stroke-width="2.6" fill="none"/>'
+      +P("M0,4 C-26,-10 -22,-40 -8,-36 C-3,-35 0,-29 0,-26 C0,-29 3,-35 8,-36 C22,-40 26,-10 0,4Z",'#ff6b9d','#d1467a'); }},
+  {id:'yildiz',ad:'Yıldız Süsü',tur:'sus',ciz:function(){ var d='',i; for(i=0;i<10;i++){ var r=i%2?12:28, a=(i*36-90)*Math.PI/180;
+      d+=(i?'L':'M')+(Math.cos(a)*r).toFixed(1)+','+(Math.sin(a)*r-14).toFixed(1); }
+      return '<path d="M0,44 L0,10" stroke="#c9a882" stroke-width="2.6" fill="none"/>'+P(d+'Z','#ffd23f','#d99b12'); }},
+  {id:'kelebek',ad:'Minik Kelebek',tur:'sus',ciz:function(){ return '<path d="M0,44 L0,6" stroke="#c9a882" stroke-width="2.4" fill="none"/>'
+      +P("M0,-6 C-26,-30 -34,-2 -4,2Z",'#8fd0f5','#4f9cd6')+P("M0,-6 C26,-30 34,-2 4,2Z",'#8fd0f5','#4f9cd6')
+      +P("M0,-4 C-18,-16 -22,4 -3,6Z",'#c9a2f5','#8b6bd6')+P("M0,-4 C18,-16 22,4 3,6Z",'#c9a2f5','#8b6bd6')
+      +E(0,-4,3,12,'#4a3652')+'<path d="M0,-14 L-7,-24 M0,-14 L7,-24" stroke="#4a3652" stroke-width="2" fill="none"/>'; }},
+  {id:'ugurbocegi',ad:'Uğur Böceği',tur:'sus',ciz:function(){ return P("M-4,40 C-14,20 -14,-6 -2,-10",'none','#4f9d55',3)
+      +C(0,-18,20,'#ef3b3b','#a52a2a')+'<path d="M0,-38 L0,2" stroke="#3b2a45" stroke-width="2.4"/>'
+      +C(0,-34,8,'#3b2a45','rgba(0,0,0,0)')+C(-9,-22,4,'#3b2a45','rgba(0,0,0,0)')+C(9,-22,4,'#3b2a45','rgba(0,0,0,0)')
+      +C(-7,-9,3.4,'#3b2a45','rgba(0,0,0,0)')+C(7,-9,3.4,'#3b2a45','rgba(0,0,0,0)'); }},
+  {id:'kart',ad:'Tebrik Kartı',tur:'sus',ciz:function(){ return '<path d="M0,44 L4,8" stroke="#c9a882" stroke-width="2.4" fill="none"/>'
+      +P("M-24,-32 L24,-28 L20,10 L-28,6Z",'#fffaf2','#c9bfd0')
+      +'<path d="M-18,-20 L14,-17 M-19,-11 L13,-8 M-20,-2 L4,0" stroke="#b8a8c4" stroke-width="2.4" stroke-linecap="round"/>'
+      +P("M-4,-26 C-12,-32 -14,-22 -4,-18 C6,-22 4,-32 -4,-26Z",'#ff6b9d','rgba(0,0,0,0)'); }}
+];
+var SUSLER={}; SUSLER_DIZI.forEach(function(s){ SUSLER[s.id]=s; });
+
+/* ============================================================
+   5) AMBALAJLAR VE KURDELELER
+   ============================================================ */
+var AMBALAJLAR=[
+  {id:'pembe',ad:'Pembe',renk:'#ffb3d2'},{id:'sari',ad:'Sarı',renk:'#ffdf8a'},
+  {id:'mavi',ad:'Açık Mavi',renk:'#a9d8ff'},{id:'mor',ad:'Mor',renk:'#c9b3ff'},
+  {id:'beyaz',ad:'Beyaz',renk:'#fffdf7'},{id:'yesil',ad:'Yeşil',renk:'#b7e8bd'},
+  {id:'turuncu',ad:'Turuncu',renk:'#ffc08a'},
+  {id:'puantiye',ad:'Puantiyeli',renk:'#ffe3ef',desen:'nokta'},
+  {id:'yildizli',ad:'Yıldızlı',renk:'#d8e6ff',desen:'yildiz'},
+  {id:'gokkusagi',ad:'Gökkuşağı',renk:'#ffd6e8',desen:'gokkusagi'},
+  {id:'kraft',ad:'Kraft Kâğıt',renk:'#e3c9a6',desen:'cizgi'},
+  {id:'parlak',ad:'Şeffaf Parıltılı',renk:'#eaf7ff',desen:'parilti'}
+];
+var KURDELELER=[
+  {id:'kirmizi',ad:'Kırmızı',renk:'#e2445c'},{id:'pembe',ad:'Pembe',renk:'#ff9ec4'},
+  {id:'sari',ad:'Sarı',renk:'#ffcf4d'},{id:'mavi',ad:'Mavi',renk:'#6fb6f2'},
+  {id:'mor',ad:'Mor',renk:'#9a6fe0'},{id:'yesil',ad:'Yeşil',renk:'#6fc47a'},
+  {id:'beyaz',ad:'Beyaz',renk:'#fffdf7'},{id:'turuncu',ad:'Turuncu',renk:'#ff9040'},
+  {id:'gokkusagi',ad:'Gökkuşağı',renk:'url(#gkk)'}
+];
+var AMB={}; AMBALAJLAR.forEach(function(a){AMB[a.id]=a;});
+var KUR={}; KURDELELER.forEach(function(k){KUR[k.id]=k;});
+
+/* ============================================================
+   6) KARAKTER ÇİZİMİ — Çiçekçi Lila ve müşteriler
+   ============================================================ */
+function yuz(ifade,x,y){
+  var g='';
+  if(ifade==='sasiran'){ g+=C(x-9,y,4.5,'#fff','#4a3652',2)+C(x+9,y,4.5,'#fff','#4a3652',2)+C(x-9,y,2.2,'#4a3652','rgba(0,0,0,0)')+C(x+9,y,2.2,'#4a3652','rgba(0,0,0,0)')
+    +E(x,y+13,5,6,'#a5486b','#4a3652'); }
+  else if(ifade==='dusunen'){ g+='<path d="M'+(x-14)+','+(y-2)+' q5,-5 10,0 M'+(x+4)+','+(y-2)+' q5,-5 10,0" stroke="#4a3652" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
+    +'<path d="M'+(x-5)+','+(y+13)+' q6,3 12,-2" stroke="#4a3652" stroke-width="2.6" fill="none" stroke-linecap="round"/>'; }
+  else { g+=C(x-9,y,3.4,'#4a3652','rgba(0,0,0,0)')+C(x+9,y,3.4,'#4a3652','rgba(0,0,0,0)')
+    +'<path d="M'+(x-8)+','+(y+9)+' q8,9 16,0" stroke="#4a3652" stroke-width="2.8" fill="none" stroke-linecap="round"/>'; }
+  g+=C(x-17,y+8,5,'#ffb3c9','rgba(0,0,0,0)')+C(x+17,y+8,5,'#ffb3c9','rgba(0,0,0,0)');
+  return g;
+}
+/* Çiçekçi Lila — ifadeler: mutlu, dusunen, alkis, ipucu, sasiran */
+function lilaCiz(ifade,boy){
+  var el = (ifade==='alkis')
+    ? C(28,86,9,'#f6cfa8','#4a3652')+C(72,86,9,'#f6cfa8','#4a3652')+'<path d="M34,78 L44,70 M66,78 L56,70" stroke="#ffd23f" stroke-width="3"/>'
+    : C(24,96,9,'#f6cfa8','#4a3652')+C(76,96,9,'#f6cfa8','#4a3652');
+  var ekstra = (ifade==='ipucu')
+    ? '<g transform="translate(80,18) scale(.9)">'+C(0,0,11,'#ffd23f','#d99b12')+'<path d="M-4,10 h8 M-3,14 h6" stroke="#4a3652" stroke-width="2.4"/></g>' : '';
+  var ic='<ellipse cx="50" cy="118" rx="34" ry="26" fill="#a68cff" stroke="#4a3652" stroke-width="3"/>'
+    +'<path d="M28,104 q22,20 44,0 l0,30 l-44,0Z" fill="#fff3f8" stroke="#4a3652" stroke-width="3"/>'
+    +'<path d="M42,108 q8,8 16,0" stroke="#ff9ec4" stroke-width="3" fill="none"/>'
+    +el
+    +C(50,60,30,'#f6cfa8','#4a3652',3)
+    +'<path d="M20,58 C18,26 82,26 80,58 C80,40 68,32 50,32 C32,32 20,40 20,58Z" fill="#7b52c9" stroke="#4a3652" stroke-width="3"/>'
+    +'<path d="M18,54 C10,74 16,86 20,88 C14,72 20,62 22,58Z" fill="#7b52c9" stroke="#4a3652" stroke-width="3"/>'
+    +'<path d="M82,54 C90,74 84,86 80,88 C86,72 80,62 78,58Z" fill="#7b52c9" stroke="#4a3652" stroke-width="3"/>'
+    +'<g transform="translate(76,40) scale(.5)">'+halka(6,PET.oval,'#ff9ec4')+C(0,0,10,'#ffd23f')+'</g>'
+    +yuz(ifade==='alkis'?'mutlu':(ifade||'mutlu'),50,58)+ekstra;
+  return '<svg viewBox="0 0 100 145" width="'+(boy||70)+'" height="'+((boy||70)*1.45)+'" aria-hidden="true">'+ic+'</svg>';
+}
+/* Müşteri çizimi */
+function musteriCiz(m,boy){
+  var ic='',ten=m.ten||'#f6cfa8', kiy=m.kiyafet||'#6fb6f2', sac=m.sac||'#5b4033';
+  ic+='<ellipse cx="50" cy="120" rx="33" ry="25" fill="'+kiy+'" stroke="#4a3652" stroke-width="3"/>';
+  ic+=C(22,104,8.5,ten,'#4a3652',3)+C(78,104,8.5,ten,'#4a3652',3);
+  if(m.tip==='robot'){
+    ic+='<rect x="22" y="34" width="56" height="52" rx="14" fill="'+ten+'" stroke="#4a3652" stroke-width="3"/>'
+      +'<line x1="50" y1="34" x2="50" y2="18" stroke="#4a3652" stroke-width="3"/>'+C(50,14,6,'#ff6b9d','#4a3652',3)
+      +'<rect x="34" y="52" width="10" height="12" rx="4" fill="#4a3652"/><rect x="56" y="52" width="10" height="12" rx="4" fill="#4a3652"/>'
+      +'<path d="M40,74 q10,8 20,0" stroke="#4a3652" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  } else {
+    ic+=C(50,60,28,ten,'#4a3652',3);
+    if(m.tip==='kedi'){
+      ic+=P("M24,42 L20,16 L44,32Z",ten,'#4a3652',3)+P("M76,42 L80,16 L56,32Z",ten,'#4a3652',3)
+        +P("M28,20 L26,32 L38,32Z",'#ffb3c9','rgba(0,0,0,0)')+P("M72,20 L74,32 L62,32Z",'#ffb3c9','rgba(0,0,0,0)')
+        +'<path d="M22,62 h-12 M22,68 h-13 M78,62 h12 M78,68 h13" stroke="#4a3652" stroke-width="2" fill="none"/>'
+        +P("M44,68 L56,68 L50,74Z",'#ff9ec4','#4a3652',2);
+    } else if(m.tip==='kopek'){
+      ic+=E(20,58,11,20,'#8a5a3c','#4a3652')+E(80,58,11,20,'#8a5a3c','#4a3652')
+        +E(50,74,13,10,'#fff0e2','#4a3652')+E(50,70,6,4.5,'#4a3652','rgba(0,0,0,0)');
+    } else {
+      if(m.sacStil==='uzun') ic+='<path d="M20,58 C18,24 82,24 80,58 C80,88 90,96 88,100 C74,86 76,60 68,44 C58,58 34,54 26,44 C20,60 22,86 12,100 C10,96 20,88 20,58Z" fill="'+sac+'" stroke="#4a3652" stroke-width="3"/>';
+      else if(m.sacStil==='topuz') ic+=C(50,26,13,sac,'#4a3652',3)+'<path d="M20,58 C18,26 82,26 80,58 C80,42 68,34 50,34 C32,34 20,42 20,58Z" fill="'+sac+'" stroke="#4a3652" stroke-width="3"/>';
+      else if(m.sacStil==='kabarik') ic+='<path d="M18,56 C10,20 90,20 82,56 C86,34 60,26 50,26 C40,26 14,34 18,56Z" fill="'+sac+'" stroke="#4a3652" stroke-width="3"/>'+C(26,42,11,sac,'#4a3652',3)+C(74,42,11,sac,'#4a3652',3);
+      else if(m.sacStil!=='yok') ic+='<path d="M20,58 C18,26 82,26 80,58 C80,40 68,32 50,32 C32,32 20,40 20,58Z" fill="'+sac+'" stroke="#4a3652" stroke-width="3"/>';
+    }
+    ic+=yuz(m.ifade||'mutlu',50,60);
+  }
+  if(m.aksesuar==='gozluk') ic+=C(38,58,11,'rgba(255,255,255,.5)','#4a3652',3)+C(62,58,11,'rgba(255,255,255,.5)','#4a3652',3)+'<line x1="49" y1="58" x2="51" y2="58" stroke="#4a3652" stroke-width="3"/>';
+  if(m.aksesuar==='sapka') ic+=P("M14,34 L86,34 L74,10 L26,10Z",m.aksRenk||'#ef3b3b','#4a3652',3)+'<rect x="10" y="30" width="80" height="8" rx="4" fill="'+(m.aksRenk||'#ef3b3b')+'" stroke="#4a3652" stroke-width="3"/>';
+  if(m.aksesuar==='tac') ic+=P("M28,30 L36,14 L50,26 L64,14 L72,30Z",'#ffd23f','#4a3652',3)+C(50,22,4,'#ff6b9d','rgba(0,0,0,0)');
+  if(m.aksesuar==='kask') ic+=P("M18,40 A32,32 0 0 1 82,40 L82,30 A32,32 0 0 0 18,30Z",'#c9d6e8','#4a3652',3)+C(50,8,5,'#ff6b9d','#4a3652',2)+'<path d="M22,44 A30,26 0 0 0 78,44" fill="rgba(200,235,255,.45)" stroke="#4a3652" stroke-width="2.5"/>';
+  if(m.aksesuar==='korsan') ic+=P("M14,32 C26,10 74,10 86,32Z",'#3b2a45','#4a3652',3)+C(38,58,7,'#3b2a45','rgba(0,0,0,0)')+'<path d="M31,54 L76,50" stroke="#3b2a45" stroke-width="3"/>';
+  if(m.aksesuar==='bere') ic+=P("M18,38 C22,12 78,12 82,38Z",m.aksRenk||'#6fc47a','#4a3652',3)+C(50,12,6,'#fff','#4a3652',2.5);
+  if(m.aksesuar==='firca') ic+='<g transform="translate(84,96) rotate(20)"><rect x="-2" y="-24" width="5" height="26" fill="#c9a882" stroke="#4a3652" stroke-width="2"/><rect x="-4" y="-32" width="9" height="10" rx="3" fill="#ff6b9d" stroke="#4a3652" stroke-width="2"/></g>';
+  return '<svg viewBox="0 0 100 148" width="'+(boy||92)+'" height="'+((boy||92)*1.48)+'" aria-hidden="true">'+ic+'</svg>';
+}
+var MUSTERILER=[
+  {id:'elif',ad:'Öğretmen Elif',sac:'#4a3226',sacStil:'topuz',kiyafet:'#7b52c9',aksesuar:'gozluk',sevdigiRenk:'mor',sevdigiCicek:'papatya',tesekkur:'Çok teşekkür ederim, sınıfım bayılacak!'},
+  {id:'efe',ad:'Minik Efe',sac:'#6b4a2f',sacStil:'kisa',kiyafet:'#6fb6f2',aksesuar:'sapka',aksRenk:'#ff6b9d',sevdigiRenk:'sari',sevdigiCicek:'aycicegi',tesekkur:'Vay canına! Süper oldu!'},
+  {id:'ayse',ad:'Ayşe Teyze',sac:'#d8d2dd',sacStil:'topuz',kiyafet:'#ff9ec4',sevdigiRenk:'pembe',sevdigiCicek:'gulPembe',tesekkur:'Ellerine sağlık yavrum, çok güzel olmuş.'},
+  {id:'can',ad:'Bahçıvan Can',ten:'#e0b184',sac:'#3b2a20',sacStil:'kisa',kiyafet:'#6fc47a',aksesuar:'sapka',aksRenk:'#8a5a3c',sevdigiRenk:'yesil',sevdigiCicek:'lale',tesekkur:'Bahçemin yanına tam yakıştı!'},
+  {id:'deniz',ad:'Ressam Deniz',sac:'#a86fe0',sacStil:'kabarik',kiyafet:'#ffcf4d',aksesuar:'firca',sevdigiRenk:'turuncu',sevdigiCicek:'gerbera',tesekkur:'Bu buketi hemen resmedeceğim!'},
+  {id:'zeynep',ad:'Veteriner Zeynep',ten:'#c98f5f',sac:'#2f2028',sacStil:'uzun',kiyafet:'#b7e8bd',sevdigiRenk:'beyaz',sevdigiCicek:'papatya',tesekkur:'Kliniğimi şenlendirdin, teşekkürler!'},
+  {id:'melis',ad:'Pastacı Melis',sac:'#c96b3c',sacStil:'topuz',kiyafet:'#ffb3d2',aksesuar:'bere',aksRenk:'#fffdf7',sevdigiRenk:'pembe',sevdigiCicek:'sakayik',tesekkur:'Pastalarım kadar tatlı olmuş!'},
+  {id:'arda',ad:'Müzisyen Arda',sac:'#3b2a45',sacStil:'kabarik',kiyafet:'#5a63c9',sevdigiRenk:'mavi',sevdigiCicek:'iris',tesekkur:'Bu bukete bir şarkı yazacağım!'},
+  {id:'ada',ad:'Astronot Ada',sac:'#c96b3c',sacStil:'kisa',kiyafet:'#c9d6e8',aksesuar:'kask',sevdigiRenk:'mavi',sevdigiCicek:'ortanca',tesekkur:'Uzayda bile böyle güzeli yok!'},
+  {id:'cem',ad:'Kitapçı Cem',ten:'#e8c39a',sac:'#4a3226',sacStil:'kisa',kiyafet:'#e3c9a6',aksesuar:'gozluk',sevdigiRenk:'kirmizi',sevdigiCicek:'gulKirmizi',tesekkur:'Kitaplığımın yanına koyacağım, sağ ol!'},
+  {id:'defne',ad:'Doktor Defne',sac:'#2f2028',sacStil:'uzun',kiyafet:'#fffdf7',sevdigiRenk:'beyaz',sevdigiCicek:'zambak',tesekkur:'Hastalarım çok sevinecek, teşekkürler!'},
+  {id:'riko',ad:'Robot Riko',tip:'robot',ten:'#c9d6e8',kiyafet:'#9a6fe0',sevdigiRenk:'mor',sevdigiCicek:'petunya',tesekkur:'BİP BİP! Mutluluk seviyem yüzde yüz!'},
+  {id:'baris',ad:'Postacı Barış',ten:'#e0b184',sac:'#3b2a20',sacStil:'kisa',kiyafet:'#6fc47a',aksesuar:'sapka',aksRenk:'#3f8f4c',sevdigiRenk:'yesil',sevdigiCicek:'krizantem',tesekkur:'Bunu sevdiğime götürüyorum, teşekkürler!'},
+  {id:'mira',ad:'Prenses Mira',sac:'#ffd23f',sacStil:'uzun',kiyafet:'#c9b3ff',aksesuar:'tac',sevdigiRenk:'mor',sevdigiCicek:'orkide',tesekkur:'Sarayımın en güzel buketi bu!'},
+  {id:'pati',ad:'Korsan Pati',ten:'#e8c39a',sac:'#3b2a20',sacStil:'kisa',kiyafet:'#ef3b3b',aksesuar:'korsan',sevdigiRenk:'kirmizi',sevdigiCicek:'gelincik',tesekkur:'Hazinemden bile değerli, arr!'},
+  {id:'mirmir',ad:'Kedi Mırmır',tip:'kedi',ten:'#f6d9a8',kiyafet:'#ffcf4d',sevdigiRenk:'pembe',sevdigiCicek:'papatya',tesekkur:'Miyav! Mırmır teşekkür eder.'},
+  {id:'kopuk',ad:'Köpek Köpük',tip:'kopek',ten:'#e8c39a',kiyafet:'#6fb6f2',sevdigiRenk:'sari',sevdigiCicek:'nergis',tesekkur:'Hav hav! Kuyruğum duramıyor!'}
+];
+
+/* ============================================================
+   7) MÜŞTERİ GÖREVLERİ (42 farklı sipariş)
+   req alanları: flowers(çiçek adedi) | colors(renk adedi) | grup | total | distinct | unique | wrap | ribbon | deco
+   ============================================================ */
+var GRUPLAR={ gul:['gulKirmizi','gulPembe','gulBeyaz','gulSari'] };
+var GRUP_AD={ gul:'gül' };
+var GOREVLER=[
+  {id:1,text:'Anneme 2 pembe gül ve 1 beyaz gül hazırlamak istiyorum.',req:{flowers:{gulPembe:2,gulBeyaz:1}}},
+  {id:2,text:'Doğum günüm için 3 sarı çiçek istiyorum.',req:{colors:{sari:3}}},
+  {id:3,text:'Öğretmenime 2 papatya ve mor bir kurdele hazırlayalım.',req:{flowers:{papatya:2},ribbon:'mor'}},
+  {id:4,text:'Neşeli bir buket için ayçiçeği ve gerbera istiyorum.',req:{flowers:{aycicegi:1,gerbera:1}}},
+  {id:5,text:'Büyükanneme lavanta ve beyaz gül hazırlayalım.',req:{flowers:{lavanta:1,gulBeyaz:1}}},
+  {id:6,text:'Buketimde 1 lale, 1 papatya ve 1 pembe gül olsun.',req:{flowers:{lale:1,papatya:1,gulPembe:1}}},
+  {id:7,text:'Kırmızı çiçeklerden küçük bir buket istiyorum.',req:{colors:{kirmizi:3}}},
+  {id:8,text:'Beyaz ambalajlı, pembe çiçekli bir buket istiyorum.',req:{colors:{pembe:3},wrap:'beyaz'}},
+  {id:9,text:'Buketimde tam 4 çiçek olsun, hepsi sana kalmış!',req:{total:4}},
+  {id:10,text:'Mor ve beyaz çiçekleri birlikte kullanalım.',req:{colors:{mor:2,beyaz:2}}},
+  {id:11,text:'Bir ayçiçeği ve iki papatyadan güneşli bir buket hazırla.',req:{flowers:{aycicegi:1,papatya:2}}},
+  {id:12,text:'Orkide ve beyaz kurdeleli zarif bir buket istiyorum.',req:{flowers:{orkide:2},ribbon:'beyaz'}},
+  {id:13,text:'Üç farklı renkte çiçek kullan lütfen.',req:{total:3,distinct:3}},
+  {id:14,text:'Pembe ambalajlı bir şakayık buketi hazırla.',req:{flowers:{sakayik:3},wrap:'pembe'}},
+  {id:15,text:'Kedim için oyuncak sayılacak sembolik bir buket hazırlar mısın? Papatya ve lale olsun.',req:{flowers:{papatya:2,lale:1}}},
+  {id:16,text:'Sarı gül ve kırmızı lale kullan.',req:{flowers:{gulSari:1,lale:1}}},
+  {id:17,text:'İki karanfil ve bir frezya ekle.',req:{flowers:{karanfil:2,frezya:1}}},
+  {id:18,text:'Üç çiçekli buketimde mavi ambalaj ve sarı kurdele olsun.',req:{total:3,wrap:'mavi',ribbon:'sari'}},
+  {id:19,text:'Bir yıldız süsü eklenmiş rengârenk buket hazırla.',req:{total:4,distinct:3,deco:'yildiz'}},
+  {id:20,text:'Cipso süslemesi olan 3 güllü bir buket hazırla.',req:{grup:{gul:3},deco:'cipso'}},
+  {id:21,text:'İki beyaz çiçek ve bir mor çiçek kullan.',req:{colors:{beyaz:2,mor:1}}},
+  {id:22,text:'Ortanca ve papatyadan bahar buketi hazırla.',req:{flowers:{ortanca:1,papatya:2}}},
+  {id:23,text:'Gelincik ve papatyayla kır havası oluştur.',req:{flowers:{gelincik:2,papatya:1}}},
+  {id:24,text:'Bir orkide, bir lale ve bir gül seç.',req:{flowers:{orkide:1,lale:1},grup:{gul:1}}},
+  {id:25,text:'Buketimde hiçbir çiçek aynı renkte olmasın.',req:{total:3,unique:true}},
+  {id:26,text:'Tam 5 çiçekli büyük bir doğum günü buketi hazırla.',req:{total:5}},
+  {id:27,text:'Yasemin ve gardenyadan beyaz bir buket hazırla.',req:{flowers:{yasemin:2,gardenya:1}}},
+  {id:28,text:'Kırmızı gül, beyaz gül ve pembe gül kullan.',req:{flowers:{gulKirmizi:1,gulBeyaz:1,gulPembe:1}}},
+  {id:29,text:'Kelebek süslü, mor tonlu bir buket hazırla.',req:{colors:{mor:3},deco:'kelebek'}},
+  {id:30,text:'Sarı, turuncu ve kırmızı çiçeklerden gün batımı buketi oluştur.',req:{colors:{sari:1,turuncu:1,kirmizi:1}}},
+  {id:31,text:'Üç papatyadan sade bir buket lütfen.',req:{flowers:{papatya:3}}},
+  {id:32,text:'İki lale ve bir papatya istiyorum.',req:{flowers:{lale:2,papatya:1}}},
+  {id:33,text:'Tam iki pembe çiçek yeter bana.',req:{total:2,colors:{pembe:2}}},
+  {id:34,text:'İki ayçiçeği çok mutlu eder beni!',req:{flowers:{aycicegi:2}}},
+  {id:35,text:'İki kırmızı gül ve bir papatya hazırlayalım.',req:{flowers:{gulKirmizi:2,papatya:1}}},
+  {id:36,text:'Kırmızı, beyaz ve sarı birer çiçek olsun.',req:{colors:{kirmizi:1,beyaz:1,sari:1}}},
+  {id:37,text:'İki gerbera ve bir karanfil istiyorum.',req:{flowers:{gerbera:2,karanfil:1}}},
+  {id:38,text:'İki menekşe ve bir lavanta ile mor bir buket olsun.',req:{flowers:{menekse:2,lavanta:1}}},
+  {id:39,text:'Bir iris ve iki zambakla çok zarif olsun.',req:{flowers:{iris:1,zambak:2}}},
+  {id:40,text:'İki nergis ve bir sümbülle bahar gelsin!',req:{flowers:{nergis:2,sumbul:1}}},
+  {id:41,text:'Mor ambalajlı, iki kamelya ve bir petunyalı buket hazırla.',req:{flowers:{kamelya:2,petunya:1},wrap:'mor'}},
+  {id:42,text:'İki dahlia, bir antoryum ve kırmızı kurdele istiyorum.',req:{flowers:{dahlia:2,antoryum:1},ribbon:'kirmizi'}}
+];
+
+/* ============================================================
+   8) BÖLÜMLER
+   ============================================================ */
+var BOLUMLER=[
+  {no:1,ad:'İlk Buketim',kapasite:5},
+  {no:2,ad:'Renklerin Dansı',kapasite:5},
+  {no:3,ad:'Zarif Çiçekler',kapasite:5},
+  {no:4,ad:'Bahar Bahçesi',kapasite:7},
+  {no:5,ad:'Özel Tasarımlar',kapasite:7},
+  {no:6,ad:'Büyük Çiçek Festivali',kapasite:9}
+];
+var BUKET_ADLARI=['Güneş Gülüşü','Pembe Bulut','Bahar Neşesi','Renkli Rüya','Minik Mutluluk','Ay Işığı Buketi','Gökkuşağı Bahçesi','Şeker Pembesi','Sabah Çiği','Kelebek Dansı','Bal Rengi Bahar','Mor Rüzgâr','Papatya Şenliği','Bulut Tarlası','Neşe Demeti'];
+
+/* ============================================================
+   9) ROZETLER
+   ============================================================ */
+var ROZETLER=[
+  {id:'ilkBuket',ad:'İlk Buketim',simge:'💐',aciklama:'İlk siparişini tamamladın!',kontrol:function(s){return s.tamamlanan.length>=1;}},
+  {id:'gulUstasi',ad:'Gül Ustası',simge:'🌹',aciklama:'Toplam 10 gül kullandın.',kontrol:function(s){return GRUPLAR.gul.reduce(function(t,i){return t+(s.kullanim[i]||0);},0)>=10;}},
+  {id:'papatyaDostu',ad:'Papatya Dostu',simge:'🌼',aciklama:'8 kez papatya kullandın.',kontrol:function(s){return (s.kullanim.papatya||0)>=8;}},
+  {id:'renkSihirbazi',ad:'Renk Sihirbazı',simge:'🎨',aciklama:'Renk karıştırma mini oyununu kazandın.',kontrol:function(s){return s.miniBitti.indexOf('renk')>=0;}},
+  {id:'besCicek',ad:'Beş Çiçekli Buket',simge:'🖐️',aciklama:'5 çiçekli bir buket hazırladın.',kontrol:function(s){return s.enBuyukBuket>=5;}},
+  {id:'onMusteri',ad:'On Mutlu Müşteri',simge:'😊',aciklama:'10 müşteriyi mutlu ettin.',kontrol:function(s){return s.mutluMusteri>=10;}},
+  {id:'zarifTasarimci',ad:'Zarif Tasarımcı',simge:'✨',aciklama:'Ambalaj ve kurdeleli bir siparişi tamamladın.',kontrol:function(s){return s.zarifSiparis>=1;}},
+  {id:'cicekHafizasi',ad:'Çiçek Hafızası',simge:'🧠',aciklama:'Hafıza mini oyununu bitirdin.',kontrol:function(s){return s.miniBitti.indexOf('hafiza')>=0;}},
+  {id:'suslemeUstasi',ad:'Süsleme Ustası',simge:'🌿',aciklama:'10 kez süsleme malzemesi kullandın.',kontrol:function(s){return s.susKullanim>=10;}},
+  {id:'baharBahcivani',ad:'Bahar Bahçıvanı',simge:'🌱',aciklama:'4. bölümü tamamladın.',kontrol:function(s){return s.bolum>4;}},
+  {id:'yirmiCicek',ad:'Yirmi Çiçeği Keşfettim',simge:'🔎',aciklama:'20 çiçeğin kilidini açtın.',kontrol:function(s){return s.acikCicekler.length>=20;}},
+  {id:'tumCicekler',ad:'Tüm Çiçekleri Keşfettim',simge:'🏆',aciklama:'30 çiçeğin hepsini açtın.',kontrol:function(s){return s.acikCicekler.length>=30;}},
+  {id:'dukkanTasarimcisi',ad:'Dükkân Tasarımcısı',simge:'🏠',aciklama:'5 dükkân süsü satın aldın.',kontrol:function(s){return s.dukkanEsya.length>=5;}},
+  {id:'buyukCicekci',ad:'Büyük Çiçekçi',simge:'👑',aciklama:'25 sipariş tamamladın.',kontrol:function(s){return s.tamamlanan.length>=25;}},
+  {id:'festivalSampiyonu',ad:'Çiçek Festivali Şampiyonu',simge:'🎉',aciklama:'6. bölümü bitirdin!',kontrol:function(s){return s.oyunBitti;}}
+];
+
+/* ============================================================
+   10) DÜKKÂN SÜSLERİ (yalnızca görsel)
+   ============================================================ */
+function dukkanObje(ic,w,h){ return '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" aria-hidden="true">'+ic+'</svg>'; }
+var DUKKAN_ESYA=[
+  {id:'tabela',ad:'Renkli Tabela',fiyat:40,yer:{left:'50%',top:'4px',transform:'translateX(-50%)'},ciz:function(){return dukkanObje('<rect x="2" y="2" width="150" height="34" rx="12" fill="#ff9ec4" stroke="#4a3652" stroke-width="3"/><text x="77" y="26" font-size="16" font-family="Comic Sans MS,sans-serif" text-anchor="middle" fill="#4a3652">Minik Çiçekçi</text>',156,40);}},
+  {id:'raf',ad:'Büyük Çiçek Rafı',fiyat:60,yer:{left:'6px',bottom:'6px'},ciz:function(){return dukkanObje('<rect x="2" y="2" width="86" height="60" rx="8" fill="#e3c9a6" stroke="#4a3652" stroke-width="3"/><line x1="2" y1="32" x2="88" y2="32" stroke="#4a3652" stroke-width="3"/>'+'<g transform="translate(22,22) scale(.28)">'+CIZ.gulPembe()+'</g><g transform="translate(66,22) scale(.28)">'+CIZ.papatya()+'</g><g transform="translate(22,54) scale(.28)">'+CIZ.lale()+'</g><g transform="translate(66,54) scale(.28)">'+CIZ.aycicegi()+'</g>',92,66);}},
+  {id:'masa',ad:'Pembe Çalışma Masası',fiyat:45,yer:{left:'50%',bottom:'6px',transform:'translateX(-50%)'},ciz:function(){return dukkanObje('<rect x="2" y="2" width="110" height="14" rx="6" fill="#ffb3d2" stroke="#4a3652" stroke-width="3"/><rect x="10" y="16" width="10" height="30" fill="#ff9ec4" stroke="#4a3652" stroke-width="3"/><rect x="94" y="16" width="10" height="30" fill="#ff9ec4" stroke="#4a3652" stroke-width="3"/>',116,50);}},
+  {id:'isik',ad:'Vitrin Işıkları',fiyat:35,yer:{left:'0',top:'0',width:'100%'},ciz:function(){var s='',i;for(i=0;i<9;i++){s+='<circle cx="'+(14+i*24)+'" cy="'+(10+(i%2?6:0))+'" r="6" fill="'+['#ffd23f','#ff9ec4','#8fd0f5'][i%3]+'" stroke="#4a3652" stroke-width="2"/>';}return dukkanObje('<path d="M0,4 Q110,26 220,4" stroke="#4a3652" stroke-width="2.5" fill="none"/>'+s,224,24);}},
+  {id:'kedi',ad:'Dükkân Kedisi',fiyat:70,yer:{right:'10px',bottom:'6px'},ciz:function(){return dukkanObje(musteriCiz({tip:'kedi',ten:'#f6d9a8',kiyafet:'#ffcf4d'},44).replace('<svg','<svg x="0" y="0"'),48,72);}},
+  {id:'kelebekDuvar',ad:'Kelebekli Duvar Süsü',fiyat:30,yer:{right:'12px',top:'34px'},ciz:function(){return dukkanObje('<g transform="translate(20,20) scale(.42)">'+SUSLER.kelebek.ciz()+'</g><g transform="translate(48,10) scale(.3)">'+SUSLER.kelebek.ciz()+'</g>',70,50);}},
+  {id:'paspas',ad:'Gökkuşağı Paspas',fiyat:25,yer:{left:'50%',bottom:'2px',transform:'translateX(-50%)'},ciz:function(){var s='',i,r=['#ef3b3b','#ff9040','#ffd23f','#6fc47a','#6fb6f2','#9a6fe0'];for(i=0;i<6;i++){s+='<rect x="'+(4+i*16)+'" y="4" width="16" height="14" fill="'+r[i]+'"/>';}return dukkanObje(s+'<rect x="4" y="4" width="96" height="14" rx="6" fill="none" stroke="#4a3652" stroke-width="3"/>',104,22);}},
+  {id:'cesme',ad:'Küçük Çeşme',fiyat:80,yer:{left:'10px',top:'46px'},ciz:function(){return dukkanObje('<ellipse cx="30" cy="46" rx="26" ry="10" fill="#a9d8ff" stroke="#4a3652" stroke-width="3"/><rect x="26" y="16" width="8" height="30" fill="#c9d6e8" stroke="#4a3652" stroke-width="3"/><ellipse cx="30" cy="14" rx="16" ry="7" fill="#d8ecff" stroke="#4a3652" stroke-width="3"/>',60,58);}},
+  {id:'saat',ad:'Duvar Saati',fiyat:30,yer:{left:'46%',top:'40px'},ciz:function(){return dukkanObje('<circle cx="22" cy="22" r="19" fill="#fffdf7" stroke="#4a3652" stroke-width="3"/><path d="M22,22 L22,10 M22,22 L31,26" stroke="#4a3652" stroke-width="3" stroke-linecap="round"/>',44,44);}},
+  {id:'onluk',ad:'Çiçek Desenli Önlük',fiyat:40,yer:{right:'70px',top:'44px'},ciz:function(){return dukkanObje('<path d="M8,4 L34,4 L40,44 L2,44Z" fill="#ffe3ef" stroke="#4a3652" stroke-width="3"/><g transform="translate(21,24) scale(.16)">'+CIZ.papatya()+'</g>',44,50);}},
+  {id:'radyo',ad:'Minik Radyo',fiyat:35,yer:{right:'12px',bottom:'80px'},ciz:function(){return dukkanObje('<rect x="2" y="8" width="44" height="28" rx="6" fill="#ffcf4d" stroke="#4a3652" stroke-width="3"/><circle cx="16" cy="22" r="7" fill="#4a3652"/><line x1="38" y1="8" x2="44" y2="0" stroke="#4a3652" stroke-width="3"/>',50,40);}},
+  {id:'sarkan',ad:'Tavandan Sarkan Süsler',fiyat:45,yer:{left:'30%',top:'0'},ciz:function(){var s='',i;for(i=0;i<4;i++){s+='<line x1="'+(12+i*22)+'" y1="0" x2="'+(12+i*22)+'" y2="'+(16+i%2*10)+'" stroke="#4a3652" stroke-width="2"/><g transform="translate('+(12+i*22)+','+(24+i%2*10)+') scale(.2)">'+[CIZ.gulPembe,CIZ.papatya,CIZ.lale,CIZ.aycicegi][i]()+'</g>';}return dukkanObje(s,90,60);}},
+  {id:'saksilar',ad:'Renkli Saksılar',fiyat:30,yer:{left:'96px',bottom:'6px'},ciz:function(){var s='',i,r=['#ff9ec4','#ffcf4d','#8fd0f5'];for(i=0;i<3;i++){s+='<path d="M'+(4+i*26)+',22 L'+(22+i*26)+',22 L'+(19+i*26)+',40 L'+(7+i*26)+',40Z" fill="'+r[i]+'" stroke="#4a3652" stroke-width="3"/><g transform="translate('+(13+i*26)+',14) scale(.15)">'+[CIZ.lale,CIZ.papatya,CIZ.menekse][i]()+'</g>';}return dukkanObje(s,84,44);}},
+  {id:'fanus',ad:'Cam Fanus',fiyat:55,yer:{right:'86px',bottom:'6px'},ciz:function(){return dukkanObje('<ellipse cx="22" cy="42" rx="18" ry="6" fill="#e3c9a6" stroke="#4a3652" stroke-width="3"/><path d="M6,42 A18,26 0 1 1 38,42Z" fill="rgba(200,235,255,.55)" stroke="#4a3652" stroke-width="3"/><g transform="translate(22,30) scale(.2)">'+CIZ.gulKirmizi()+'</g>',44,50);}},
+  {id:'araba',ad:'Çiçek Arabası',fiyat:90,yer:{left:'50%',bottom:'20px',transform:'translateX(-50%)'},ciz:function(){return dukkanObje('<rect x="6" y="14" width="76" height="26" rx="8" fill="#b7e8bd" stroke="#4a3652" stroke-width="3"/><circle cx="22" cy="44" r="9" fill="#4a3652"/><circle cx="66" cy="44" r="9" fill="#4a3652"/><g transform="translate(28,10) scale(.2)">'+CIZ.gulPembe()+'</g><g transform="translate(58,10) scale(.2)">'+CIZ.aycicegi()+'</g>',90,56);}}
+];
+/* ============================================================
+   11) OYUN DURUMU VE KAYIT
+   ============================================================ */
+var KAYIT_ANAHTAR='minikCicekci_v1';
+var durum;
+function yeniDurum(){
+  return {
+    altin:0, yildiz:0, mutluMusteri:0, bolum:1, musteriIndex:0,
+    acikCicekler:CICEKLER_DIZI.filter(function(f){return f.bolum===1;}).map(function(f){return f.id;}),
+    acikAmbalaj:['pembe','sari','mavi','mor','beyaz','yesil','turuncu'],
+    acikKurdele:['kirmizi','pembe','sari','mavi','mor','yesil','beyaz','turuncu'],
+    rozetler:[], dukkanEsya:[], ses:true, tamamlanan:[], kullanim:{}, susKullanim:0,
+    enBuyukBuket:0, zarifSiparis:0, miniBitti:[], ogreticiGoruldu:false, oyunBitti:false,
+    sonGorevler:[], serbestAd:'', denemeSayisi:0
+  };
+}
+function kaydet(){ try{ localStorage.setItem(KAYIT_ANAHTAR, JSON.stringify(durum)); }catch(e){} }
+function yukle(){
+  var v=null; try{ v=localStorage.getItem(KAYIT_ANAHTAR); }catch(e){}
+  durum=yeniDurum();
+  if(v){ try{ var o=JSON.parse(v); for(var k in o){ if(Object.prototype.hasOwnProperty.call(durum,k)) durum[k]=o[k]; } }catch(e){} }
+}
+
+/* Geçerli buketler */
+var buket={cicekler:[],susler:[],ambalaj:null,kurdele:null};
+var serbest={cicekler:[],susler:[],ambalaj:'pembe',kurdele:'pembe',ad:''};
+var aktifGorev=null, aktifMusteri=null, aktifEkran='menu', rafSekmesi='cicek', rafSekmesiS='cicek';
+
+/* ============================================================
+   12) SES (Web Audio API — harici dosya yok)
+   ============================================================ */
+var sesCtx=null;
+function ton(frekans,sure,tip,ses){
+  if(!durum.ses) return;
+  try{
+    if(!sesCtx) sesCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(sesCtx.state==='suspended') sesCtx.resume();
+    var o=sesCtx.createOscillator(), g=sesCtx.createGain();
+    o.type=tip||'sine'; o.frequency.value=frekans;
+    g.gain.setValueAtTime(0.0001,sesCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(ses||0.12,sesCtx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,sesCtx.currentTime+sure);
+    o.connect(g); g.connect(sesCtx.destination); o.start(); o.stop(sesCtx.currentTime+sure+0.02);
+  }catch(e){}
+}
+function sesCal(tur){
+  switch(tur){
+    case 'tik': ton(520,0.09,'triangle',0.09); break;
+    case 'cicekEkle': ton(660,0.12,'sine',0.1); setTimeout(function(){ton(880,0.12,'sine',0.08);},70); break;
+    case 'cicekCikar': ton(420,0.1,'sine',0.08); break;
+    case 'dogru': [523,659,784,1047].forEach(function(f,i){setTimeout(function(){ton(f,0.18,'sine',0.11);},i*90);}); break;
+    case 'yildiz': [880,1175].forEach(function(f,i){setTimeout(function(){ton(f,0.2,'triangle',0.08);},i*110);}); break;
+    case 'rozet': [659,784,988,1319].forEach(function(f,i){setTimeout(function(){ton(f,0.25,'triangle',0.1);},i*120);}); break;
+    case 'ambalaj': ton(300,0.16,'sine',0.08); break;
+    case 'kurdele': ton(740,0.14,'triangle',0.08); break;
+    case 'bolum': [523,587,659,784,1047].forEach(function(f,i){setTimeout(function(){ton(f,0.28,'sine',0.11);},i*130);}); break;
+    case 'yumusakUyari': ton(392,0.18,'sine',0.07); setTimeout(function(){ton(330,0.2,'sine',0.06);},120); break;
+  }
+}
+
+/* ============================================================
+   13) EFEKTLER
+   ============================================================ */
+var efektKatman;
+function yaprakYagmuru(adet){
+  var i, renkler=['#ff9ec4','#ffd23f','#c9b3ff','#8fd0f5','#b7e8bd','#ffb3d2'];
+  for(i=0;i<(adet||18);i++){
+    (function(i){ setTimeout(function(){
+      var d=document.createElement('div'); d.className='yaprak';
+      d.style.left=(Math.random()*100)+'%';
+      d.style.animationDuration=(2.4+Math.random()*2)+'s';
+      d.innerHTML=svgKutu(P(PET.oval,renkler[i%renkler.length]),18+Math.random()*16);
+      efektKatman.appendChild(d);
+      setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); },5200);
+    },i*70); })(i);
+  }
+}
+function ucanSimge(simge,x,y){
+  var d=document.createElement('div'); d.className='ucan'; d.textContent=simge;
+  d.style.left=x+'px'; d.style.top=y+'px'; efektKatman.appendChild(d);
+  setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); },1600);
+}
+function kutlamaSimgeleri(){
+  var i; for(i=0;i<10;i++){ (function(i){ setTimeout(function(){
+    ucanSimge(['⭐','💖','✨','🌸'][i%4], window.innerWidth*(0.2+Math.random()*0.6), window.innerHeight*0.6);
+  },i*110); })(i); }
+}
+
+/* ============================================================
+   14) EKRAN YÖNETİMİ
+   ============================================================ */
+function ekranGoster(id){
+  var e=document.querySelectorAll('.ekran'),i;
+  for(i=0;i<e.length;i++) e[i].classList.toggle('aktif', e[i].id===id);
+  aktifEkran=id; window.scrollTo(0,0);
+  if(id==='album') albumCiz();
+  if(id==='rozet') rozetCiz();
+  if(id==='dukkan') dukkanCiz();
+  if(id==='serbest') serbestCiz();
+  if(id==='nasil') nasilCiz();
+  if(id==='oyun') oyunCiz();
+  if(id==='menu') menuCiz();
+}
+function modalAc(baslik,icerik,butonlar,kapatilabilir){
+  document.getElementById('modalBaslik').innerHTML=baslik;
+  document.getElementById('modalIcerik').innerHTML=icerik;
+  var b=document.getElementById('modalButonlar'); b.innerHTML='';
+  (butonlar||[{ad:'Tamam',sinif:'p',act:'modalKapat'}]).forEach(function(x){
+    var el=document.createElement('button'); el.className='btn '+(x.sinif||'');
+    el.innerHTML=x.ad; el.setAttribute('data-act',x.act||'modalKapat');
+    if(x.veri) el.setAttribute('data-veri',x.veri);
+    b.appendChild(el);
+  });
+  document.querySelector('#modalOrtu .kapat').style.display=(kapatilabilir===false?'none':'');
+  document.getElementById('modalOrtu').classList.add('acik');
+}
+function modalKapat(){ document.getElementById('modalOrtu').classList.remove('acik'); }
+
+/* ============================================================
+   15) BUKET ÇİZİMİ
+   ============================================================ */
+function ambalajDesen(a){
+  var s='',i;
+  if(!a) return '';
+  if(a.desen==='nokta'){ for(i=0;i<14;i++){ s+=C(62+(i%5)*22+(i%2?6:0), 130+Math.floor(i/5)*20, 4, '#ff9ec4','rgba(0,0,0,0)'); } }
+  if(a.desen==='yildiz'){ for(i=0;i<8;i++){ s+='<text x="'+(66+(i%4)*24)+'" y="'+(138+Math.floor(i/4)*24)+'" font-size="14" fill="#ffd23f">★</text>'; } }
+  if(a.desen==='cizgi'){ for(i=0;i<6;i++){ s+='<line x1="'+(58+i*16)+'" y1="118" x2="'+(88+i*10)+'" y2="196" stroke="#c9a882" stroke-width="2" opacity=".7"/>'; } }
+  if(a.desen==='parilti'){ for(i=0;i<12;i++){ s+='<text x="'+(60+(i%4)*26)+'" y="'+(134+Math.floor(i/4)*22)+'" font-size="12" fill="#ffffff">✦</text>'; } }
+  if(a.desen==='gokkusagi'){ var r=['#ef3b3b','#ff9040','#ffd23f','#6fc47a','#6fb6f2','#9a6fe0'];
+    for(i=0;i<6;i++){ s+='<path d="M'+(56+i*3)+',114 C'+(50+i*4)+',150 '+(86+i*2)+',192 110,199" stroke="'+r[i]+'" stroke-width="7" fill="none" opacity=".75"/>'; } }
+  return s;
+}
+function kurdeleCiz(k){
+  if(!k) return '';
+  var r=k.renk;
+  return '<g transform="translate(110,168)">'
+    +P("M0,0 C-30,-16 -40,10 -8,6Z",r,'#4a3652',2)
+    +P("M0,0 C30,-16 40,10 8,6Z",r,'#4a3652',2)
+    +P("M-4,4 L-18,32 L-4,26Z",r,'#4a3652',2)+P("M4,4 L18,32 L4,26Z",r,'#4a3652',2)
+    +C(0,2,7,r,'#4a3652',2)+'</g>';
+}
+function buketSVG(b,yukseklik){
+  var n=b.cicekler.length, sc = n>6?0.40:(n>4?0.46:0.54), i, s='';
+  s+='<defs><linearGradient id="gkk" x1="0" y1="0" x2="1" y2="0">'
+   +'<stop offset="0%" stop-color="#ef3b3b"/><stop offset="25%" stop-color="#ffd23f"/>'
+   +'<stop offset="50%" stop-color="#6fc47a"/><stop offset="75%" stop-color="#6fb6f2"/>'
+   +'<stop offset="100%" stop-color="#9a6fe0"/></linearGradient>'
+   +'<clipPath id="ambOn"><path d="M64,122 C62,158 86,196 110,203 C134,196 158,158 156,122 C142,138 78,138 64,122Z"/></clipPath></defs>';
+  /* süslemeler arkada */
+  for(i=0;i<b.susler.length;i++){
+    var a1=(-70+i*(140/Math.max(1,b.susler.length-1)))*Math.PI/180;
+    if(b.susler.length===1) a1=-25*Math.PI/180;
+    var sx=110+Math.sin(a1)*74, sy=104-Math.cos(a1)*34;
+    s+='<g transform="translate('+sx.toFixed(1)+','+sy.toFixed(1)+') rotate('+(a1*180/Math.PI*0.5).toFixed(1)+') scale(0.5)">'
+      +SUSLER[b.susler[i]].ciz()+'</g>';
+  }
+  /* ambalaj konisi */
+  var amb=b.ambalaj?AMB[b.ambalaj]:null;
+  if(amb){
+    s+=P("M46,104 C34,150 78,198 110,202 C142,198 186,150 174,104 C146,132 74,132 46,104Z",amb.renk,'#4a3652',3);
+  }
+  /* çiçekler */
+  for(i=0;i<n;i++){
+    var yay = n===1?0 : (-1+2*i/(n-1));
+    var acikSpread = Math.min(76, 26+n*8);
+    var ang = yay*acikSpread*Math.PI/180;
+    var x=110+Math.sin(ang)*(n===1?0:62), y=100-Math.cos(ang)*38 - (i%2?8:0);
+    s+='<g class="buket-cicek" data-bindex="'+i+'" transform="translate('+x.toFixed(1)+','+y.toFixed(1)+') rotate('+(yay*14).toFixed(1)+') scale('+sc+')" tabindex="0" role="button" aria-label="'+CICEKLER[b.cicekler[i]].ad+' — çıkarmak için dokun">'
+      +CICEKLER[b.cicekler[i]].ciz()+'</g>';
+  }
+  /* ambalajın ön katı — sapların alt kısmını kapatır */
+  if(amb){
+    s+=P("M64,122 C62,158 86,196 110,203 C134,196 158,158 156,122 C142,138 78,138 64,122Z",amb.renk,'#4a3652',3)
+      +P("M64,122 C62,158 86,196 110,203 C134,196 158,158 156,122 C142,138 78,138 64,122Z",'rgba(74,54,82,.10)','rgba(0,0,0,0)')
+      +'<g clip-path="url(#ambOn)">'+ambalajDesen(amb)+'</g>';
+  }
+  s+=kurdeleCiz(b.kurdele?KUR[b.kurdele]:null);
+  return '<svg viewBox="0 0 220 210" width="100%" height="'+(yukseklik||220)+'" style="max-width:100%">'+s+'</svg>';
+}
+
+/* ============================================================
+   16) ÇİÇEK RAFI
+   ============================================================ */
+function cicekKartHTML(f,secili){
+  return '<button class="cicek-kart'+(secili?' secili':'')+'" data-cicek="'+f.id+'" aria-label="'+f.ad+', '+RENKLER[f.renk].ad+' çiçek, bukete ekle">'
+    +svgKutu(f.ciz(),48)+'<span class="ad">'+f.ad.replace(' (Yıldız Çiçeği)','')+'</span>'
+    +'<span class="renk-etiket"><i class="renk-nokta" style="background:'+RENKLER[f.renk].kod+'"></i>'+RENKLER[f.renk].ad+'</span></button>';
+}
+function susKartHTML(s){
+  return '<button class="cicek-kart" data-sus="'+s.id+'" aria-label="'+s.ad+' süslemesi, bukete ekle">'
+    +svgKutu(s.ciz(),48)+'<span class="ad">'+s.ad+'</span>'
+    +'<span class="renk-etiket">'+(s.tur==='yesillik'?'🌿 yeşillik':'✨ süs')+'</span></button>';
+}
+function rafCiz(hedefId,sekme,serbestMi){
+  var el=document.getElementById(hedefId), h='';
+  if(sekme==='cicek'){
+    durum.acikCicekler.forEach(function(id){ if(CICEKLER[id]) h+=cicekKartHTML(CICEKLER[id],false); });
+  } else {
+    if(durum.bolum<4 && !serbestMi && !durum.oyunBitti){
+      h='<p class="kucuk-not" style="padding:14px">Süsleme malzemeleri 4. bölümde açılıyor. 🌿</p>';
+    } else {
+      SUSLER_DIZI.forEach(function(s){ h+=susKartHTML(s); });
+    }
+  }
+  el.innerHTML=h;
+}
+
+/* ============================================================
+   17) SİPARİŞ KOŞULLARI
+   ============================================================ */
+function toplamGerek(req){
+  if(req.total) return req.total;
+  var t=0,k;
+  if(req.flowers) for(k in req.flowers) t+=req.flowers[k];
+  if(req.grup) for(k in req.grup) t+=req.grup[k];
+  if(req.colors) for(k in req.colors) t+=req.colors[k];
+  return t;
+}
+function gerekListe(req){
+  var L=[],k;
+  if(req.flowers) for(k in req.flowers){ (function(k){ L.push({tur:'cicek',id:k,adet:req.flowers[k],
+    etiket:req.flowers[k]+' × '+CICEKLER[k].ad, gorsel:svgKutu(CICEKLER[k].ciz(),26)}); })(k); }
+  if(req.grup) for(k in req.grup){ (function(k){ L.push({tur:'grup',id:k,adet:req.grup[k],
+    etiket:req.grup[k]+' × '+GRUP_AD[k], gorsel:svgKutu(CICEKLER[GRUPLAR[k][0]].ciz(),26)}); })(k); }
+  if(req.colors) for(k in req.colors){ (function(k){ L.push({tur:'renk',id:k,adet:req.colors[k],
+    etiket:req.colors[k]+' × '+RENKLER[k].ad+' çiçek', gorsel:'<i class="renk-nokta" style="background:'+RENKLER[k].kod+';width:18px;height:18px"></i> '+RENKLER[k].simge}); })(k); }
+  L.push({tur:'toplam',adet:toplamGerek(req),etiket:'Toplam '+toplamGerek(req)+' çiçek',gorsel:'🔢'});
+  if(req.distinct) L.push({tur:'farkli',adet:req.distinct,etiket:req.distinct+' farklı renk',gorsel:'🌈'});
+  if(req.unique) L.push({tur:'benzersiz',etiket:'Hiçbir çiçek aynı renkte olmasın',gorsel:'🎯'});
+  if(req.wrap) L.push({tur:'ambalaj',id:req.wrap,etiket:AMB[req.wrap].ad+' ambalaj',gorsel:'🎁'});
+  if(req.ribbon) L.push({tur:'kurdele',id:req.ribbon,etiket:KUR[req.ribbon].ad+' kurdele',gorsel:'🎀'});
+  if(req.deco) L.push({tur:'sus',id:req.deco,etiket:SUSLER[req.deco].ad+' süslemesi',gorsel:svgKutu(SUSLER[req.deco].ciz(),26)});
+  return L;
+}
+function buketSayimlar(b){
+  var say={},renk={},i,f;
+  for(i=0;i<b.cicekler.length;i++){ f=CICEKLER[b.cicekler[i]];
+    say[f.id]=(say[f.id]||0)+1; renk[f.renk]=(renk[f.renk]||0)+1; }
+  return {say:say,renk:renk};
+}
+function kontrolEt(req,b){
+  var L=gerekListe(req), c=buketSayimlar(b), i, k, sonuc=[];
+  for(i=0;i<L.length;i++){
+    var g=L[i], ok=false;
+    if(g.tur==='cicek') ok=(c.say[g.id]||0)===g.adet;
+    else if(g.tur==='grup'){ var t=0; GRUPLAR[g.id].forEach(function(x){ t+=(c.say[x]||0); }); ok=(t===g.adet); }
+    else if(g.tur==='renk') ok=(c.renk[g.id]||0)===g.adet;
+    else if(g.tur==='toplam') ok=b.cicekler.length===g.adet;
+    else if(g.tur==='farkli') ok=Object.keys(c.renk).length>=g.adet;
+    else if(g.tur==='benzersiz'){ ok=true; for(k in c.renk){ if(c.renk[k]>1) ok=false; } }
+    else if(g.tur==='ambalaj') ok=b.ambalaj===g.id;
+    else if(g.tur==='kurdele') ok=b.kurdele===g.id;
+    else if(g.tur==='sus') ok=b.susler.indexOf(g.id)>=0;
+    g.ok=ok; sonuc.push(g);
+  }
+  return sonuc;
+}
+
+/* ============================================================
+   18) GÖREV SEÇİMİ
+   ============================================================ */
+function gorevUygunMu(g){
+  var req=g.req,k,i,acik=durum.acikCicekler, kap=BOLUMLER[durum.bolum-1].kapasite;
+  if(toplamGerek(req)>kap) return false;
+  if(req.flowers) for(k in req.flowers){ if(acik.indexOf(k)<0) return false; }
+  if(req.grup) for(k in req.grup){ var v=false; GRUPLAR[k].forEach(function(x){ if(acik.indexOf(x)>=0) v=true; }); if(!v) return false; }
+  if(req.colors) for(k in req.colors){ var vr=false; for(i=0;i<acik.length;i++){ if(CICEKLER[acik[i]].renk===k) vr=true; } if(!vr) return false; }
+  var renkSayisi={}; acik.forEach(function(x){ renkSayisi[CICEKLER[x].renk]=1; });
+  var farkliVar=Object.keys(renkSayisi).length;
+  if(req.distinct && farkliVar<req.distinct) return false;
+  if(req.unique && farkliVar<(req.total||3)) return false;
+  if((req.wrap||req.ribbon) && durum.bolum<3) return false;
+  if(req.deco && durum.bolum<4) return false;
+  return true;
+}
+function gorevSec(){
+  var uygun=GOREVLER.filter(gorevUygunMu);
+  var taze=uygun.filter(function(g){ return durum.sonGorevler.indexOf(g.id)<0; });
+  var havuz = taze.length?taze : uygun;
+  if(!havuz.length) havuz=GOREVLER.filter(function(g){ return toplamGerek(g.req)<=BOLUMLER[durum.bolum-1].kapasite; });
+  var g=havuz[Math.floor(Math.random()*havuz.length)];
+  durum.sonGorevler.push(g.id); if(durum.sonGorevler.length>8) durum.sonGorevler.shift();
+  return g;
+}
+function musteriSec(){
+  var m; do{ m=MUSTERILER[Math.floor(Math.random()*MUSTERILER.length)]; }
+  while(aktifMusteri && m.id===aktifMusteri.id && MUSTERILER.length>1);
+  return m;
+}
+
+/* ============================================================
+   19) OYUN EKRANI ÇİZİMİ
+   ============================================================ */
+function ustbarGuncelle(){
+  document.getElementById('ustBolum').textContent='Bölüm '+durum.bolum+': '+BOLUMLER[durum.bolum-1].ad;
+  document.getElementById('ustMusteri').textContent=(durum.musteriIndex+1)+'/5';
+  document.getElementById('ustAltin').textContent=durum.altin;
+  document.getElementById('ustYildiz').textContent=durum.yildiz;
+  document.getElementById('ustMutluluk').textContent=durum.mutluMusteri;
+  var s=durum.ses?'🔊':'🔇';
+  document.getElementById('oyunSesBtn').textContent=s;
+  document.getElementById('menuSesBtn').textContent=s+' Ses '+(durum.ses?'Açık':'Kapalı');
+}
+function lilaSoyle(metin,ifade){
+  document.getElementById('lilaSoz').textContent=metin;
+  document.getElementById('oyunLila').innerHTML=lilaCiz(ifade||'mutlu',64);
+}
+function siparisCiz(parlat){
+  var L=kontrolEt(aktifGorev.req,buket), h='';
+  L.forEach(function(g,i){
+    h+='<li class="'+(g.ok?'tamam':'eksik')+(parlat&&!g.ok?' parla':'')+'" data-gerek="'+i+'">'
+      +'<span class="mini">'+(g.gorsel||'')+'</span><span>'+g.etiket+'</span>'
+      +'<span class="durum">'+(g.ok?'✅':'⬜')+'</span></li>';
+  });
+  document.getElementById('siparisListe').innerHTML=h;
+}
+function buketCiz(){
+  var alan=document.getElementById('buketSahne');
+  if(!buket.cicekler.length && !buket.susler.length && !buket.ambalaj && !buket.kurdele){
+    alan.innerHTML='<p class="bos-ipucu">Buket boş 🌸<br>Raftan bir çiçeğe dokun ya da buraya sürükle!</p>';
+  } else { alan.innerHTML=buketSVG(buket,230); }
+  document.getElementById('buketSayi').textContent=buket.cicekler.length;
+  document.getElementById('buketMax').textContent=BOLUMLER[durum.bolum-1].kapasite;
+  document.getElementById('decoSayi').textContent=buket.susler.length;
+  siparisCiz(false);
+}
+function secenekSatir(hedefId,liste,acikListe,seciliId,tip){
+  var h='';
+  liste.forEach(function(x){
+    if(acikListe.indexOf(x.id)<0) return;
+    var arka = (x.renk==='url(#gkk)')?'linear-gradient(90deg,#ef3b3b,#ffd23f,#6fc47a,#6fb6f2,#9a6fe0)':x.renk;
+    h+='<button class="secenek" data-'+tip+'="'+x.id+'" aria-pressed="'+(seciliId===x.id)+'" aria-label="'+x.ad+' '+(tip==='ambalaj'?'ambalaj':'kurdele')+'" title="'+x.ad+'" style="background:'+arka+'">'
+      +'<span class="isim">'+x.ad.split(' ')[0]+'</span></button>';
+  });
+  document.getElementById(hedefId).innerHTML=h;
+}
+function ambalajBolumGuncelle(){
+  var goster = durum.bolum>=3 || durum.oyunBitti;
+  document.getElementById('ambalajBolum').classList.toggle('gizli',!goster);
+  if(goster){
+    secenekSatir('ambalajSatir',AMBALAJLAR,durum.acikAmbalaj,buket.ambalaj,'ambalaj');
+    secenekSatir('kurdeleSatir',KURDELELER,durum.acikKurdele,buket.kurdele,'kurdele');
+  }
+}
+function yeniMusteri(){
+  aktifGorev=gorevSec(); aktifMusteri=musteriSec();
+  buket={cicekler:[],susler:[],ambalaj:null,kurdele:null};
+  durum.denemeSayisi=0;
+  document.getElementById('musteriGorsel').innerHTML=musteriCiz(aktifMusteri,92);
+  document.getElementById('musteriAd').textContent=aktifMusteri.ad;
+  document.getElementById('musteriBalon').textContent=aktifGorev.text;
+  lilaSoyle('Siparişi birlikte okuyalım, sonra çiçekleri seçelim!','mutlu');
+  ambalajBolumGuncelle(); buketCiz(); ustbarGuncelle();
+  rafCiz('raf',rafSekmesi,false);
+  kaydet();
+}
+function oyunCiz(){
+  ustbarGuncelle();
+  if(!aktifGorev){ yeniMusteri(); }
+  else { buketCiz(); ambalajBolumGuncelle(); rafCiz('raf',rafSekmesi,false);
+    document.getElementById('musteriGorsel').innerHTML=musteriCiz(aktifMusteri,92);
+    document.getElementById('musteriAd').textContent=aktifMusteri.ad;
+    document.getElementById('musteriBalon').textContent=aktifGorev.text;
+    document.getElementById('oyunLila').innerHTML=lilaCiz('mutlu',64); }
+}
+
+/* ============================================================
+   20) BUKETE EKLEME / ÇIKARMA
+   ============================================================ */
+function hedefBuket(){ return aktifEkran==='serbest'?serbest:buket; }
+function maxCicek(){ return aktifEkran==='serbest'?12:BOLUMLER[durum.bolum-1].kapasite; }
+function yenile(){ if(aktifEkran==='serbest') serbestBuketCiz(); else buketCiz(); }
+function cicekEkle(id){
+  var b=hedefBuket();
+  if(b.cicekler.length>=maxCicek()){
+    lilaUyari('Buket doldu! Önce bir çiçeği çıkaralım. 🌸'); sesCal('yumusakUyari'); return;
+  }
+  b.cicekler.push(id); durum.kullanim[id]=(durum.kullanim[id]||0)+1;
+  sesCal('cicekEkle'); yenile(); kaydet();
+  var son=document.querySelector('[data-bindex="'+(b.cicekler.length-1)+'"]');
+  if(son) son.classList.add('yeni-cicek');
+}
+function susEkle(id){
+  var b=hedefBuket(), s=SUSLER[id];
+  if(b.susler.indexOf(id)>=0){ b.susler.splice(b.susler.indexOf(id),1); sesCal('cicekCikar'); yenile(); return; }
+  if(s.tur==='yesillik'){
+    var yesillikSay=b.susler.filter(function(x){return SUSLER[x].tur==='yesillik';}).length;
+    if(yesillikSay>=2){ lilaUyari('Bir bukette en fazla 2 çeşit yeşillik olabilir. 🌿'); sesCal('yumusakUyari'); return; }
+  }
+  if(b.susler.length>=4){ lilaUyari('Süslemeler yeterli, buketimiz çok şık! ✨'); sesCal('yumusakUyari'); return; }
+  b.susler.push(id); durum.susKullanim++; sesCal('cicekEkle'); yenile(); kaydet();
+}
+function buketCikar(i){
+  var b=hedefBuket();
+  if(i>=0 && i<b.cicekler.length){ b.cicekler.splice(i,1); sesCal('cicekCikar'); yenile(); }
+}
+function lilaUyari(metin){
+  if(aktifEkran==='oyun') lilaSoyle(metin,'ipucu');
+}
+
+/* ============================================================
+   21) SÜRÜKLE–BIRAK (dokunmatik + fare) ve TIKLAMA
+   ============================================================ */
+var surukle={aktif:false,el:null,id:null,tur:null,x:0,y:0,tasindi:false,zaman:0};
+function surukleBaslat(e,kart){
+  var id=kart.getAttribute('data-cicek')||kart.getAttribute('data-sus');
+  surukle={aktif:true,el:null,id:id,tur:kart.getAttribute('data-cicek')?'cicek':'sus',
+    x:e.clientX,y:e.clientY,tasindi:false,zaman:Date.now(),kaynak:kart};
+}
+function surukleHareket(e){
+  if(!surukle.aktif) return;
+  var dx=e.clientX-surukle.x, dy=e.clientY-surukle.y;
+  if(!surukle.tasindi && Math.sqrt(dx*dx+dy*dy)<10) return;
+  if(!surukle.tasindi){
+    surukle.tasindi=true;
+    var d=document.createElement('div'); d.className='suruklenen';
+    d.innerHTML = surukle.tur==='cicek'? svgKutu(CICEKLER[surukle.id].ciz(),70) : svgKutu(SUSLER[surukle.id].ciz(),70);
+    document.body.appendChild(d); surukle.el=d;
+  }
+  if(surukle.el){ surukle.el.style.left=e.clientX+'px'; surukle.el.style.top=e.clientY+'px'; }
+  var tz=document.getElementById(aktifEkran==='serbest'?'tezgahSerbest':'tezgah');
+  if(tz){ var r=tz.getBoundingClientRect();
+    tz.classList.toggle('hedef', e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom); }
+  if(e.cancelable) e.preventDefault();
+}
+function surukleBitir(e){
+  if(!surukle.aktif) return;
+  var tz=document.getElementById(aktifEkran==='serbest'?'tezgahSerbest':'tezgah');
+  if(tz) tz.classList.remove('hedef');
+  if(surukle.el && surukle.el.parentNode) surukle.el.parentNode.removeChild(surukle.el);
+  var ekle=false;
+  if(!surukle.tasindi){ ekle=true; }
+  else if(tz){ var r=tz.getBoundingClientRect();
+    ekle = e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom; }
+  if(ekle){ if(surukle.tur==='cicek') cicekEkle(surukle.id); else susEkle(surukle.id); }
+  sonPointer=Date.now();
+  surukle={aktif:false,el:null,id:null,tur:null,x:0,y:0,tasindi:false,zaman:0};
+}
+var sonPointer=0;
+/* ============================================================
+   22) SİPARİŞİ TAMAMLAMA VE ÖDÜLLER
+   ============================================================ */
+var rozetKuyruk=[], sonrakiAdim=null;
+function rozetKontrol(){
+  var yeni=[];
+  ROZETLER.forEach(function(r){
+    if(durum.rozetler.indexOf(r.id)<0 && r.kontrol(durum)){ durum.rozetler.push(r.id); yeni.push(r); }
+  });
+  if(yeni.length) kaydet();
+  rozetKuyruk=rozetKuyruk.concat(yeni);
+  return yeni;
+}
+function rozetGoster(){
+  var r=rozetKuyruk.shift();
+  sesCal('rozet'); yaprakYagmuru(14);
+  modalAc('🏅 Yeni Rozet!',
+    '<div class="rozet-daire" style="width:96px;height:96px;font-size:46px">'+r.simge+'</div>'
+    +'<h3 style="margin:6px 0">'+r.ad+'</h3><p>'+r.aciklama+'</p>',
+    [{ad:'Devam ▶',sinif:'p',act:'devam'}], false);
+}
+function devamEt(){
+  modalKapat();
+  if(rozetKuyruk.length){ rozetGoster(); return; }
+  var f=sonrakiAdim; sonrakiAdim=null; if(f) f();
+}
+function siparisTamamla(){
+  var L=kontrolEt(aktifGorev.req,buket), eksik=L.filter(function(g){return !g.ok;});
+  durum.denemeSayisi++;
+  if(eksik.length){
+    sesCal('yumusakUyari');
+    var ilk=eksik[0], mesaj='Buketimiz çok güzel! ';
+    if(ilk.tur==='cicek') mesaj+='Müşterimiz '+ilk.adet+' tane '+CICEKLER[ilk.id].ad+' istemişti. Ekleyip tekrar deneyelim.';
+    else if(ilk.tur==='grup') mesaj+='Müşterimiz '+ilk.adet+' tane '+GRUP_AD[ilk.id]+' istemişti.';
+    else if(ilk.tur==='renk') mesaj+='Müşterimiz '+ilk.adet+' tane '+RENKLER[ilk.id].ad+' çiçek istemişti.';
+    else if(ilk.tur==='toplam') mesaj+='Sipariş kartındaki çiçek sayısını birlikte sayalım: '+ilk.adet+' olmalı.';
+    else if(ilk.tur==='farkli') mesaj+=ilk.adet+' farklı renk kullanmalıyız.';
+    else if(ilk.tur==='benzersiz') mesaj+='Her çiçek farklı renkte olmalı.';
+    else if(ilk.tur==='ambalaj') mesaj+=AMB[ilk.id].ad+' ambalajı seçmeyi unutmayalım.';
+    else if(ilk.tur==='kurdele') mesaj+=KUR[ilk.id].ad+' kurdeleyi bağlayalım.';
+    else if(ilk.tur==='sus') mesaj+=SUSLER[ilk.id].ad+' eklemeyi unutmayalım.';
+    lilaSoyle(mesaj,'ipucu');
+    siparisCiz(durum.denemeSayisi>=2);
+    return;
+  }
+  /* --- Doğru sipariş --- */
+  var altin=10, yildiz=1, ekstra=[];
+  if(durum.denemeSayisi===1){ altin+=5; ekstra.push('İlk denemede doğru: +5 🪙'); }
+  var yesillik=buket.susler.filter(function(x){return SUSLER[x].tur==='yesillik';}).length;
+  if(buket.susler.length>0 && yesillik<=2){ altin+=3; ekstra.push('Uyumlu süsleme: +3 🪙'); }
+  if(buket.ambalaj && buket.ambalaj===aktifMusteri.sevdigiRenk){ altin+=2; ekstra.push(aktifMusteri.ad+' bu ambalaja bayıldı: +2 🪙'); }
+  durum.altin+=altin; durum.yildiz+=yildiz; durum.mutluMusteri++;
+  if(buket.cicekler.length>durum.enBuyukBuket) durum.enBuyukBuket=buket.cicekler.length;
+  if(buket.ambalaj && buket.kurdele) durum.zarifSiparis++;
+  if(durum.tamamlanan.indexOf(aktifGorev.id)<0) durum.tamamlanan.push(aktifGorev.id);
+  var ad=BUKET_ADLARI[Math.floor(Math.random()*BUKET_ADLARI.length)];
+  sesCal('dogru'); setTimeout(function(){sesCal('yildiz');},500);
+  yaprakYagmuru(20); kutlamaSimgeleri();
+  document.getElementById('musteriGorsel').innerHTML=musteriCiz(aktifMusteri,92);
+  lilaSoyle('Harika iş çıkardın! Alkışlıyorum! 👏','alkis');
+  kaydet(); rozetKontrol();
+  sonrakiAdim=sonrakiMusteri;
+  modalAc('🎉 Buket Hazır: “'+ad+'”',
+    '<div style="max-width:280px;margin:0 auto">'+buketSVG(buket,240)+'</div>'
+    +'<div class="lila-kutu" style="margin-top:10px"><span>'+lilaCiz('alkis',56)+'</span>'
+    +'<p class="lila-soz"><b>'+aktifMusteri.ad+':</b> '+aktifMusteri.tesekkur+'</p></div>'
+    +'<p style="font-family:var(--font-baslik);font-size:20px">+'+altin+' 🪙 &nbsp; +'+yildiz+' ⭐ &nbsp; +1 💖</p>'
+    +(ekstra.length?'<p class="kucuk-not">'+ekstra.join('<br>')+'</p>':''),
+    [{ad:'Devam ▶',sinif:'y',act:'devam'}], false);
+}
+function sonrakiMusteri(){
+  durum.musteriIndex++;
+  if(durum.musteriIndex>=5){ bolumTamamla(); return; }
+  kaydet();
+  if(durum.musteriIndex===2 || durum.musteriIndex===4){
+    var sira=['renkAyir','yaprak','hafiza','say','renkKaristir'];
+    miniOyunBaslat(sira[(durum.bolum*2+durum.musteriIndex)%5]);
+    return;
+  }
+  yeniMusteri();
+}
+function bolumTamamla(){
+  var eskiBolum=durum.bolum;
+  durum.altin+=20;
+  var yeniCicekler=[];
+  if(durum.bolum<6){
+    durum.bolum++; durum.musteriIndex=0;
+    CICEKLER_DIZI.forEach(function(f){ if(f.bolum===durum.bolum && durum.acikCicekler.indexOf(f.id)<0){ durum.acikCicekler.push(f.id); yeniCicekler.push(f); } });
+  } else {
+    durum.oyunBitti=true; durum.musteriIndex=0;
+  }
+  /* Dükkâna hediye süs */
+  var hediye=null;
+  for(var i=0;i<DUKKAN_ESYA.length;i++){ if(durum.dukkanEsya.indexOf(DUKKAN_ESYA[i].id)<0){ hediye=DUKKAN_ESYA[i]; durum.dukkanEsya.push(hediye.id); break; } }
+  sesCal('bolum'); yaprakYagmuru(32); kutlamaSimgeleri();
+  kaydet(); rozetKontrol();
+  var h='<p style="font-size:19px">Bölüm '+eskiBolum+' tamamlandı! <b>+20 🪙</b> ve özel rozet kazandın.</p>';
+  if(yeniCicekler.length){
+    h+='<p><b>Yeni çiçeklerin kilidi açıldı:</b></p><div class="izgara" style="grid-template-columns:repeat(auto-fill,minmax(96px,1fr))">';
+    yeniCicekler.forEach(function(f){ h+='<div class="albüm-kart">'+svgKutu(f.ciz(),58)+'<div class="ad">'+f.ad+'</div></div>'; });
+    h+='</div>';
+  }
+  if(durum.bolum===3 && eskiBolum===2) h+='<div class="bilgi-serit">🎁 Ambalaj ve 🎀 kurdele bölümü açıldı!</div>';
+  if(durum.bolum===4 && eskiBolum===3) h+='<div class="bilgi-serit">🌿 Süsleme yeşillikleri ve süsler açıldı!</div>';
+  if(hediye) h+='<p>🏠 Dükkânına hediye: <b>'+hediye.ad+'</b></p>';
+  if(durum.oyunBitti) h+='<div class="bilgi-serit">🎉 Büyük Çiçek Festivali\'ni tamamladın! Artık dilediğin kadar sipariş hazırlayabilirsin.</div>';
+  sonrakiAdim=yeniMusteri;
+  modalAc('🎊 '+(durum.oyunBitti?'Festival Şampiyonu!':'Bölüm Tamamlandı!'),h,[{ad:'Devam ▶',sinif:'y',act:'devam'}],false);
+}
+function ipucuVer(){
+  var L=kontrolEt(aktifGorev.req,buket), eksik=L.filter(function(g){return !g.ok;});
+  sesCal('tik');
+  if(!eksik.length){ lilaSoyle('Her şey tamam görünüyor! “Siparişi Tamamla”ya basabilirsin. ✅','mutlu'); return; }
+  var g=eksik[Math.floor(Math.random()*eksik.length)], m='';
+  if(g.tur==='cicek'){
+    var f=CICEKLER[g.id];
+    m='Aradığımız çiçek '+RENKLER[f.renk].ad+' renkte. '+f.bilgi+' ('+g.adet+' tane)';
+  }
+  else if(g.tur==='grup') m='Rafta '+GRUP_AD[g.id]+' arayalım, '+g.adet+' tane gerekiyor.';
+  else if(g.tur==='renk') m=g.adet+' tane '+RENKLER[g.id].ad+' çiçek seçmeliyiz. '+RENKLER[g.id].simge;
+  else if(g.tur==='toplam') m='Sipariş kartındaki çiçek sayısını tekrar sayalım: '+g.adet+' olmalı, şu an '+buket.cicekler.length+' tane var.';
+  else if(g.tur==='farkli') m='Farklı renklerden seçmeliyiz: en az '+g.adet+' renk.';
+  else if(g.tur==='benzersiz') m='Aynı renkten iki çiçek olmasın, her biri farklı olsun.';
+  else if(g.tur==='ambalaj') m='Ambalaj rengini kontrol etmeyi unutma: '+AMB[g.id].ad+'.';
+  else if(g.tur==='kurdele') m='Kurdele rengini kontrol etmeyi unutma: '+KUR[g.id].ad+'.';
+  else if(g.tur==='sus') m='Süsleme rafından '+SUSLER[g.id].ad+' ekleyelim.';
+  lilaSoyle(m,'ipucu');
+  siparisCiz(durum.denemeSayisi>=2);
+}
+
+/* ============================================================
+   23) ALBÜM
+   ============================================================ */
+function albumCiz(){
+  var h='';
+  CICEKLER_DIZI.forEach(function(f){
+    var acik=durum.acikCicekler.indexOf(f.id)>=0;
+    h+='<button class="albüm-kart'+(acik?'':' kilitli')+'" data-album="'+f.id+'" aria-label="'+(acik?f.ad:'Kilitli çiçek')+'">'
+      +svgKutu(f.ciz(),72)
+      +'<div class="ad">'+(acik?f.ad:'🔒 ???')+'</div>'
+      +(acik?'<div class="alt"><i class="renk-nokta" style="background:'+RENKLER[f.renk].kod+'"></i> '+RENKLER[f.renk].ad+'</div>'
+        +'<div class="nadir n'+f.nadirlik+'">'+NADIR[f.nadirlik-1]+'</div>':'<div class="alt">Bölüm '+f.bolum+'\'de açılır</div>')
+      +'</button>';
+  });
+  document.getElementById('albumIzgara').innerHTML=h;
+  document.getElementById('albumSayac').textContent='('+durum.acikCicekler.length+'/'+CICEKLER_DIZI.length+' çiçek)';
+}
+function albumKartAc(id){
+  var f=CICEKLER[id];
+  if(durum.acikCicekler.indexOf(id)<0){
+    modalAc('🔒 Henüz Kilitli',svgKutu(f.ciz(),110,'style="filter:grayscale(1) brightness(.5) opacity(.5)"')
+      +'<p>Bu çiçek <b>Bölüm '+f.bolum+'</b> tamamlandığında açılıyor. Oyuna devam et! 🌱</p>');
+    return;
+  }
+  sesCal('tik');
+  modalAc('🌸 '+f.ad, svgKutu(f.ciz(),140)
+    +'<p><b>Rengi:</b> <i class="renk-nokta" style="background:'+RENKLER[f.renk].kod+'"></i> '+RENKLER[f.renk].ad+'</p>'
+    +'<p>'+f.bilgi+'</p>'
+    +'<p class="kucuk-not">Nadirlik: '+NADIR[f.nadirlik-1]+' · '+(durum.kullanim[f.id]||0)+' kez kullandın · Bölüm '+f.bolum+'\'de açıldı</p>');
+}
+
+/* ============================================================
+   24) ROZET EKRANI
+   ============================================================ */
+function rozetCiz(){
+  var h='';
+  ROZETLER.forEach(function(r){
+    var v=durum.rozetler.indexOf(r.id)>=0;
+    h+='<div class="rozet-kart'+(v?'':' pasif')+'"><div class="rozet-daire">'+(v?r.simge:'🔒')+'</div>'
+      +'<div class="ad" style="font-family:var(--font-baslik)">'+r.ad+'</div><div class="kucuk-not">'+r.aciklama+'</div></div>';
+  });
+  document.getElementById('rozetIzgara').innerHTML=h;
+  document.getElementById('rozetSayac').textContent='('+durum.rozetler.length+'/'+ROZETLER.length+')';
+}
+
+/* ============================================================
+   25) DÜKKÂN
+   ============================================================ */
+function dukkanCiz(){
+  var sahne=document.getElementById('dukkanSahne'), h='';
+  DUKKAN_ESYA.forEach(function(e){
+    if(durum.dukkanEsya.indexOf(e.id)<0) return;
+    var st=''; for(var k in e.yer) st+=k.replace(/[A-Z]/g,function(m){return '-'+m.toLowerCase();})+':'+e.yer[k]+';';
+    h+='<div class="obje" style="'+st+'">'+e.ciz()+'</div>';
+  });
+  if(!h) h='<p class="kucuk-not" style="padding:20px;text-align:center">Dükkânın şimdilik bomboş. Aşağıdan süsler alabilirsin! 🪴</p>';
+  sahne.innerHTML=h;
+  var g='';
+  DUKKAN_ESYA.forEach(function(e){
+    var var_=durum.dukkanEsya.indexOf(e.id)>=0;
+    g+='<div class="albüm-kart"><div style="height:64px;display:flex;align-items:center;justify-content:center;overflow:hidden">'+e.ciz()+'</div>'
+      +'<div class="ad">'+e.ad+'</div>'
+      +(var_?'<div class="nadir n1">✅ Dükkânda</div>'
+        :'<button class="btn kucuk s" data-satinal="'+e.id+'"'+(durum.altin<e.fiyat?' disabled':'')+'>🪙 '+e.fiyat+'</button>')
+      +'</div>';
+  });
+  document.getElementById('dukkanIzgara').innerHTML=g;
+  document.getElementById('dukkanAltin').textContent=durum.altin;
+}
+function satinAl(id){
+  var e=null; DUKKAN_ESYA.forEach(function(x){ if(x.id===id) e=x; });
+  if(!e || durum.dukkanEsya.indexOf(id)>=0) return;
+  if(durum.altin<e.fiyat){ sesCal('yumusakUyari'); return; }
+  durum.altin-=e.fiyat; durum.dukkanEsya.push(id);
+  sesCal('yildiz'); yaprakYagmuru(10); kaydet(); rozetKontrol();
+  dukkanCiz();
+  if(rozetKuyruk.length){ sonrakiAdim=null; rozetGoster(); }
+}
+
+/* ============================================================
+   26) SERBEST BUKET TASARLAMA
+   ============================================================ */
+function serbestBuketCiz(){
+  var alan=document.getElementById('buketSahneSerbest');
+  if(!serbest.cicekler.length && !serbest.susler.length && !serbest.ambalaj && !serbest.kurdele){
+    alan.innerHTML='<p class="bos-ipucu">Boş tuval! 🎨<br>İstediğin çiçeklere dokun ya da buraya sürükle.</p>';
+  } else { alan.innerHTML=buketSVG(serbest,230); }
+  document.getElementById('serbestSayi').textContent=serbest.cicekler.length;
+  document.getElementById('serbestDeco').textContent=serbest.susler.length;
+  document.getElementById('serbestAd').textContent='Buket Adı: '+(serbest.ad||'—');
+}
+function serbestCiz(){
+  rafCiz('rafSerbest',rafSekmesiS,true);
+  secenekSatir('ambalajSatirS',AMBALAJLAR,durum.acikAmbalaj,serbest.ambalaj,'ambalaj');
+  secenekSatir('kurdeleSatirS',KURDELELER,durum.acikKurdele,serbest.kurdele,'kurdele');
+  serbestBuketCiz();
+}
+function rastgeleBuket(){
+  var acik=durum.acikCicekler.slice(), n=3+Math.floor(Math.random()*4), i;
+  serbest.cicekler=[]; serbest.susler=[];
+  for(i=0;i<n;i++) serbest.cicekler.push(acik[Math.floor(Math.random()*acik.length)]);
+  var yesillikler=SUSLER_DIZI.filter(function(s){return s.tur==='yesillik';});
+  var susler=SUSLER_DIZI.filter(function(s){return s.tur==='sus';});
+  serbest.susler.push(yesillikler[Math.floor(Math.random()*yesillikler.length)].id);
+  if(Math.random()<0.6) serbest.susler.push(susler[Math.floor(Math.random()*susler.length)].id);
+  serbest.ambalaj=durum.acikAmbalaj[Math.floor(Math.random()*durum.acikAmbalaj.length)];
+  serbest.kurdele=durum.acikKurdele[Math.floor(Math.random()*durum.acikKurdele.length)];
+  serbest.ad=BUKET_ADLARI[Math.floor(Math.random()*BUKET_ADLARI.length)];
+  sesCal('cicekEkle'); yaprakYagmuru(8); serbestCiz();
+}
+function buketAdiVer(){
+  var h='<div class="izgara" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">';
+  BUKET_ADLARI.forEach(function(a){ h+='<button class="btn kucuk" data-buketad="'+a+'">'+a+'</button>'; });
+  h+='</div>';
+  modalAc('🏷️ Buketine bir isim seç',h,[{ad:'Kapat',act:'modalKapat'}]);
+}
+
+/* ============================================================
+   27) MİNİ OYUNLAR
+   ============================================================ */
+var mini={tur:null,veri:null};
+function miniOyunBaslat(tur){
+  mini={tur:tur,veri:{}};
+  if(tur==='renkAyir') miniRenkAyir();
+  else if(tur==='yaprak') miniYaprak();
+  else if(tur==='hafiza') miniHafiza();
+  else if(tur==='say') miniSay();
+  else miniRenkKaristir();
+}
+function miniBitir(basari,mesaj,anahtar){
+  if(basari){
+    durum.altin+=5; sesCal('dogru'); yaprakYagmuru(14);
+    if(anahtar && durum.miniBitti.indexOf(anahtar)<0) durum.miniBitti.push(anahtar);
+  }
+  kaydet(); rozetKontrol(); ustbarGuncelle();
+  sonrakiAdim=yeniMusteri;
+  modalAc(basari?'🎉 Mini Oyun Tamam!':'🌼 Mini Oyun',(mesaj||'')+(basari?'<p style="font-family:var(--font-baslik);font-size:19px">+5 🪙</p>':''),
+    [{ad:'Devam ▶',sinif:'y',act:'devam'}],false);
+}
+/* Mini 1 — Çiçekleri renklerine ayır */
+function miniRenkAyir(){
+  var acik=durum.acikCicekler, hedefRenk, renkler={};
+  acik.forEach(function(id){ renkler[CICEKLER[id].renk]=(renkler[CICEKLER[id].renk]||0)+1; });
+  var secenek=Object.keys(renkler);
+  hedefRenk=secenek[Math.floor(Math.random()*secenek.length)];
+  var hedefSayi=3, liste=[],i;
+  for(i=0;i<3;i++){ var uy=acik.filter(function(id){return CICEKLER[id].renk===hedefRenk;});
+    liste.push(uy[Math.floor(Math.random()*uy.length)]); }
+  for(i=0;i<5;i++){ var dg=acik.filter(function(id){return CICEKLER[id].renk!==hedefRenk;});
+    if(dg.length) liste.push(dg[Math.floor(Math.random()*dg.length)]); }
+  liste.sort(function(){return Math.random()-0.5;});
+  mini.veri={renk:hedefRenk,hedef:hedefSayi,konan:0,liste:liste};
+  miniRenkAyirCiz();
+}
+function miniRenkAyirCiz(){
+  var v=mini.veri, h='<p>'+v.hedef+' tane <b>'+RENKLER[v.renk].ad+'</b> çiçeği '+RENKLER[v.renk].simge+' sepete koy!</p>';
+  h+='<div class="sepet" style="margin:8px auto;background:'+RENKLER[v.renk].kod+'33" id="miniSepet">';
+  h+='<span class="kucuk-not">'+v.konan+'/'+v.hedef+'</span></div><div class="mini-alan">';
+  v.liste.forEach(function(id,i){ if(id===null) return;
+    h+='<button class="cicek-kart" data-minirenk="'+i+'" style="width:88px">'+svgKutu(CICEKLER[id].ciz(),46)
+      +'<span class="ad">'+CICEKLER[id].ad+'</span><span class="renk-etiket"><i class="renk-nokta" style="background:'+RENKLER[CICEKLER[id].renk].kod+'"></i>'+RENKLER[CICEKLER[id].renk].ad+'</span></button>'; });
+  h+='</div>';
+  modalAc('🎨 Mini Oyun: Çiçekleri Renklerine Ayır',h,[{ad:'Atla',act:'miniAtla'}],false);
+}
+function miniRenkSec(i){
+  var v=mini.veri, id=v.liste[i];
+  if(id===null) return;
+  if(CICEKLER[id].renk===v.renk){ v.konan++; v.liste[i]=null; sesCal('cicekEkle');
+    if(v.konan>=v.hedef){ miniBitir(true,'<p>Tüm '+RENKLER[v.renk].ad+' çiçekleri buldun! 👏</p>','renkAyir'); return; }
+  } else { sesCal('yumusakUyari'); }
+  miniRenkAyirCiz();
+  if(CICEKLER[id] && CICEKLER[id].renk!==v.renk){
+    document.getElementById('modalIcerik').insertAdjacentHTML('afterbegin','<p class="kucuk-not">Bu çiçek çok güzel ama biz '+RENKLER[v.renk].ad+' arıyoruz. Bir kez daha deneyelim! 🌼</p>');
+  }
+}
+/* Mini 2 — Eksik yaprağı tamamla */
+var YAPRAK_AILE={papatya:'ince',gulPembe:'yuvarlak',aycicegi:'sivri',lale:'kasik',krizantem:'uzunince',gerbera:'ince',sakayik:'firfir',menekse:'yuvarlak'};
+function miniYaprak(){
+  var uygun=Object.keys(YAPRAK_AILE).filter(function(id){return durum.acikCicekler.indexOf(id)>=0;});
+  if(!uygun.length) uygun=['papatya'];
+  var id=uygun[Math.floor(Math.random()*uygun.length)], dogru=YAPRAK_AILE[id];
+  var hepsi=['ince','yuvarlak','sivri','kasik','firfir','uzunince'].filter(function(x){return x!==dogru;});
+  hepsi.sort(function(){return Math.random()-0.5;});
+  var secenekler=[dogru,hepsi[0],hepsi[1]]; secenekler.sort(function(){return Math.random()-0.5;});
+  mini.veri={id:id,dogru:dogru,secenekler:secenekler};
+  miniYaprakCiz('');
+}
+function miniYaprakCiz(not){
+  var v=mini.veri, f=CICEKLER[v.id];
+  var h=not+'<p><b>'+f.ad+'</b> çiçeğinin bir taç yaprağı eksik. Doğru şekli seç!</p>'
+    +'<div style="position:relative;display:inline-block">'+svgKutu(f.ciz(),150)
+    +'<div style="position:absolute;left:50%;top:6px;transform:translateX(-50%);width:44px;height:52px;border:3px dashed #4a3652;border-radius:50% 50% 40% 40%;background:rgba(255,255,255,.75)">❓</div></div>'
+    +'<div class="mini-alan">';
+  v.secenekler.forEach(function(s){
+    h+='<button class="cicek-kart" data-miniyaprak="'+s+'" style="width:88px">'+svgKutu('<g transform="translate(0,20)">'+P(PET[s],'#ff9ec4')+'</g>',52)+'<span class="ad">Şekil</span></button>';
+  });
+  h+='</div>';
+  modalAc('🧩 Mini Oyun: Eksik Yaprağı Tamamla',h,[{ad:'Atla',act:'miniAtla'}],false);
+}
+function miniYaprakSec(s){
+  if(s===mini.veri.dogru){ miniBitir(true,'<p>Çiçeğimiz tamamlandı! 🌸</p>','yaprak'); }
+  else { sesCal('yumusakUyari'); miniYaprakCiz('<p class="kucuk-not">Bu şekil başka bir çiçeğe ait. Bir kez daha deneyelim! 🌼</p>'); }
+}
+/* Mini 3 — Çiçek hafızası */
+function miniHafiza(){
+  var kartSayisi = durum.bolum>=3?8:6, cift=kartSayisi/2;
+  var havuz=durum.acikCicekler.slice().sort(function(){return Math.random()-0.5;}).slice(0,cift);
+  var kartlar=havuz.concat(havuz).sort(function(){return Math.random()-0.5;});
+  mini.veri={kartlar:kartlar,acik:[],eslesen:[],kilit:false};
+  miniHafizaCiz();
+}
+function miniHafizaCiz(){
+  var v=mini.veri, sutun=v.kartlar.length===8?4:3, h='<p>Aynı iki çiçeği eşleştir! 🧠</p>'
+    +'<div class="hafiza-izgara" style="grid-template-columns:repeat('+sutun+',auto)">';
+  v.kartlar.forEach(function(id,i){
+    var acik=v.acik.indexOf(i)>=0, es=v.eslesen.indexOf(i)>=0;
+    h+='<button class="hafiza-kart'+((acik||es)?' acik':'')+(es?' eslesti':'')+'" data-minihafiza="'+i+'" aria-label="Kart '+(i+1)+'">'
+      +'<span class="yuz">'+svgKutu(CICEKLER[id].ciz(),56)+'</span>'
+      +'<span class="arka" style="font-size:26px">🌸</span></button>';
+  });
+  h+='</div>';
+  modalAc('🧠 Mini Oyun: Çiçek Hafızası',h,[{ad:'Atla',act:'miniAtla'}],false);
+}
+function miniHafizaSec(i){
+  var v=mini.veri;
+  if(v.kilit || v.acik.indexOf(i)>=0 || v.eslesen.indexOf(i)>=0) return;
+  v.acik.push(i); sesCal('tik'); miniHafizaCiz();
+  if(v.acik.length===2){
+    v.kilit=true;
+    var a=v.acik[0], b=v.acik[1];
+    if(v.kartlar[a]===v.kartlar[b]){
+      setTimeout(function(){ v.eslesen.push(a,b); v.acik=[]; v.kilit=false; sesCal('cicekEkle'); miniHafizaCiz();
+        if(v.eslesen.length===v.kartlar.length) setTimeout(function(){ miniBitir(true,'<p>Bütün çiçekleri eşleştirdin! 🎈</p>','hafiza'); },400);
+      },520);
+    } else {
+      setTimeout(function(){ v.acik=[]; v.kilit=false; miniHafizaCiz(); },900);
+    }
+  }
+}
+/* Mini 4 — Buketi say */
+function miniSay(){
+  var acik=durum.acikCicekler, n=4+Math.floor(Math.random()*4), liste=[],i;
+  for(i=0;i<n;i++) liste.push(acik[Math.floor(Math.random()*acik.length)]);
+  var hedef=liste[Math.floor(Math.random()*liste.length)];
+  var dogru=liste.filter(function(x){return x===hedef;}).length;
+  mini.veri={liste:liste,hedef:hedef,dogru:dogru};
+  miniSayCiz('');
+}
+function miniSayCiz(not){
+  var v=mini.veri, h=not+'<p>Bu bukette kaç tane <b>'+CICEKLER[v.hedef].ad+'</b> var?</p>'
+    +'<div style="max-width:260px;margin:0 auto">'+buketSVG({cicekler:v.liste,susler:[],ambalaj:'sari',kurdele:'pembe'},200)+'</div>'
+    +'<div class="mini-alan">';
+  for(var i=1;i<=6;i++) h+='<button class="btn s sayi-btn" data-minisay="'+i+'">'+i+'</button>';
+  h+='</div>';
+  modalAc('🔢 Mini Oyun: Buketi Say',h,[{ad:'Atla',act:'miniAtla'}],false);
+}
+function miniSaySec(n){
+  if(n===mini.veri.dogru){ miniBitir(true,'<p>Doğru saydın: '+n+' tane! 🎯</p>','say'); }
+  else { sesCal('yumusakUyari'); miniSayCiz('<p class="kucuk-not">Birlikte yeniden sayalım, acele yok! 🌼</p>'); }
+}
+/* Mini 5 — Renk karıştırma */
+var KARISIM=[
+  {a:'sari',b:'mavi',sonuc:'Yeşil',renk:'#6fc47a'},
+  {a:'kirmizi',b:'sari',sonuc:'Turuncu',renk:'#ff9040'},
+  {a:'kirmizi',b:'mavi',sonuc:'Mor',renk:'#9a6fe0'},
+  {a:'kirmizi',b:'beyaz',sonuc:'Pembe',renk:'#ff9ec4'},
+  {a:'mavi',b:'beyaz',sonuc:'Açık Mavi',renk:'#a9d8ff'}
+];
+function miniRenkKaristir(){ mini.veri={secili:[]}; miniRenkKaristirCiz(''); }
+function miniRenkKaristirCiz(not){
+  var v=mini.veri, temel=['kirmizi','sari','mavi','beyaz'], h=not+'<p>İki rengi karıştır, ne çıkacak? 🎨</p><div class="mini-alan">';
+  temel.forEach(function(r){
+    h+='<button class="btn" data-minikarisim="'+r+'" style="background:'+RENKLER[r].kod+';min-width:110px"'
+      +(v.secili.indexOf(r)>=0?' aria-pressed="true"':'')+'>'+RENKLER[r].simge+' '+RENKLER[r].ad+'</button>';
+  });
+  h+='</div><p class="kucuk-not">Seçilen: '+(v.secili.map(function(r){return RENKLER[r].ad;}).join(' + ')||'—')+'</p>';
+  modalAc('🌈 Mini Oyun: Renk Karıştırma',h,[{ad:'Atla',act:'miniAtla'}],false);
+}
+function miniKarisimSec(r){
+  var v=mini.veri;
+  if(v.secili.indexOf(r)>=0){ v.secili.splice(v.secili.indexOf(r),1); miniRenkKaristirCiz(''); return; }
+  v.secili.push(r); sesCal('tik');
+  if(v.secili.length<2){ miniRenkKaristirCiz(''); return; }
+  var bulunan=null;
+  KARISIM.forEach(function(k){
+    if((k.a===v.secili[0]&&k.b===v.secili[1])||(k.b===v.secili[0]&&k.a===v.secili[1])) bulunan=k;
+  });
+  if(!bulunan){ v.secili=[]; sesCal('yumusakUyari');
+    miniRenkKaristirCiz('<p class="kucuk-not">Bu ikili yeni bir renk vermedi. Başka bir çift deneyelim! 🌼</p>'); return; }
+  /* Yeni ambalaj veya kurdele aç */
+  var odul='';
+  var kilitliAmb=AMBALAJLAR.filter(function(a){return durum.acikAmbalaj.indexOf(a.id)<0;});
+  var kilitliKur=KURDELELER.filter(function(k){return durum.acikKurdele.indexOf(k.id)<0;});
+  if(kilitliAmb.length){ durum.acikAmbalaj.push(kilitliAmb[0].id); odul='<p>🎁 Yeni ambalaj açıldı: <b>'+kilitliAmb[0].ad+'</b>!</p>'; }
+  else if(kilitliKur.length){ durum.acikKurdele.push(kilitliKur[0].id); odul='<p>🎀 Yeni kurdele açıldı: <b>'+kilitliKur[0].ad+'</b>!</p>'; }
+  miniBitir(true,'<p style="font-size:20px">'+RENKLER[v.secili[0]].ad+' + '+RENKLER[v.secili[1]].ad+' = <b style="color:'+bulunan.renk+'">'+bulunan.sonuc+'</b></p>'
+    +'<div style="width:70px;height:70px;margin:8px auto;border-radius:50%;border:3px solid #4a3652;background:'+bulunan.renk+'"></div>'+odul,'renk');
+}
+
+/* ============================================================
+   28) ÖĞRETİCİ VE NASIL OYNANIR
+   ============================================================ */
+var OGRETICI=[
+  {b:'1. Müşterini dinle',m:'Müşteri ne istediğini söyler. Sipariş kartında da simgelerle görürsün.',g:'🧍💬'},
+  {b:'2. Raftan çiçek seç',g:'🪴',m:'Sağdaki raftan istenen çiçeklere dokun.'},
+  {b:'3. Çiçekleri bukete ekle',g:'💐',m:'Dokunarak ya da sürükleyerek ekle. Yanlış olursa çiçeğe tekrar dokunup çıkarabilirsin.'},
+  {b:'4. Ambalaj ve kurdele seç',g:'🎁🎀',m:'3. bölümden sonra buketini paketleyip kurdele bağlayabilirsin.'},
+  {b:'5. Siparişi tamamla',g:'✅',m:'“Siparişi Tamamla” butonuna bas. Eksik varsa Lila nazikçe hatırlatır, puanın azalmaz.'},
+  {b:'6. Yıldız kazan!',g:'⭐🌸',m:'Altın ve yıldız topla, yeni çiçeklerin kilidini aç, dükkânını süsle.'}
+];
+var ogreticiIndex=0;
+function ogreticiGoster(){
+  var o=OGRETICI[ogreticiIndex];
+  var h='<div style="font-size:44px">'+o.g+'</div><h3>'+o.b+'</h3><p>'+o.m+'</p>'
+    +'<p class="kucuk-not">Adım '+(ogreticiIndex+1)+'/'+OGRETICI.length+'</p>';
+  if(ogreticiIndex===0){
+    h='<div class="lila-kutu"><span>'+lilaCiz('mutlu',60)+'</span><p class="lila-soz"><b>Çiçekçi Lila:</b> Hoş geldin Minik Çiçekçi! Müşterimizi dinle, istediği çiçekleri seç, buketi süsle ve mutluluk dağıt. Yanlış seçim yaparsan üzülme, birlikte yeniden deneriz!</p></div>'+h;
+  }
+  modalAc('📚 Nasıl Oynanır?',h,[
+    {ad:(ogreticiIndex<OGRETICI.length-1?'İleri ▶':'Hadi başlayalım! 🌸'),sinif:'p',act:'ogreticiIleri'},
+    {ad:'Atla',act:'ogreticiAtla'}
+  ],false);
+}
+function nasilCiz(){
+  var h='<div class="lila-kutu"><span>'+lilaCiz('mutlu',60)+'</span><p class="lila-soz"><b>Çiçekçi Lila:</b> Merhaba! Oyunu birlikte öğrenelim.</p></div><div class="izgara genis">';
+  OGRETICI.forEach(function(o){ h+='<div class="albüm-kart"><div style="font-size:34px">'+o.g+'</div><div class="ad">'+o.b+'</div><div class="kucuk-not">'+o.m+'</div></div>'; });
+  h+='</div><div class="bilgi-serit" style="margin-top:12px">💡 <b>İpucu butonu</b> her zaman ücretsizdir, puanın azalmaz. Süre sınırı yoktur, acele etmene gerek yok!</div>'
+   +'<div class="bilgi-serit">🌿 Cipso, okaliptus, eğrelti gibi yeşillikler <b>çiçek sayılmaz</b>; buketi güzelleştirip bonus altın kazandırır. Bir bukette en fazla 2 çeşit yeşillik kullanılır.</div>';
+  document.getElementById('nasilIcerik').innerHTML=h;
+}
+function menuCiz(){
+  var h='',i, ornek=['gulPembe','papatya','lale','aycicegi','orkide','gerbera','lavanta'];
+  for(i=0;i<ornek.length;i++) h+='<span>'+svgKutu(CICEKLER[ornek[i]].ciz(),46)+'</span>';
+  document.getElementById('menuCicekler').innerHTML=h;
+  document.getElementById('menuLila').innerHTML=lilaCiz('mutlu',64);
+  document.getElementById('menuSesBtn').textContent=(durum.ses?'🔊':'🔇')+' Ses '+(durum.ses?'Açık':'Kapalı');
+}
+
+/* ============================================================
+   29) OLAY DİNLEYİCİLERİ
+   ============================================================ */
+function tiklama(e){
+  var t=e.target, el;
+  el=t.closest('[data-git]');
+  if(el){ sesCal('tik');
+    var hedef=el.getAttribute('data-git');
+    if(hedef==='oyun' && !durum.ogreticiGoruldu){ ogreticiIndex=0; ogreticiGoster(); return; }
+    ekranGoster(hedef); return; }
+  el=t.closest('[data-act]');
+  if(el){ eylem(el.getAttribute('data-act'),el); return; }
+  el=t.closest('[data-cicek]');
+  if(el){ if(Date.now()-sonPointer<600) return; cicekEkle(el.getAttribute('data-cicek')); return; }
+  el=t.closest('[data-sus]');
+  if(el){ if(Date.now()-sonPointer<600) return; susEkle(el.getAttribute('data-sus')); return; }
+  el=t.closest('[data-bindex]');
+  if(el){ buketCikar(parseInt(el.getAttribute('data-bindex'),10)); return; }
+  el=t.closest('[data-ambalaj]');
+  if(el){ var b=hedefBuket(); b.ambalaj=el.getAttribute('data-ambalaj'); sesCal('ambalaj');
+    if(aktifEkran==='serbest') serbestCiz(); else { ambalajBolumGuncelle(); buketCiz(); } kaydet(); return; }
+  el=t.closest('[data-kurdele]');
+  if(el){ var b2=hedefBuket(); b2.kurdele=el.getAttribute('data-kurdele'); sesCal('kurdele');
+    if(aktifEkran==='serbest') serbestCiz(); else { ambalajBolumGuncelle(); buketCiz(); } kaydet(); return; }
+  el=t.closest('[data-sekme]');
+  if(el){ var s=el.getAttribute('data-sekme'); sesCal('tik');
+    if(el.closest('#rafSekmeS')){ rafSekmesiS=s; rafCiz('rafSerbest',s,true);
+      Array.prototype.forEach.call(document.querySelectorAll('#rafSekmeS [data-sekme]'),function(x){x.setAttribute('aria-pressed',x.getAttribute('data-sekme')===s);});
+    } else { rafSekmesi=s; rafCiz('raf',s,false);
+      Array.prototype.forEach.call(document.querySelectorAll('#rafSekme [data-sekme]'),function(x){x.setAttribute('aria-pressed',x.getAttribute('data-sekme')===s);}); }
+    return; }
+  el=t.closest('[data-album]'); if(el){ albumKartAc(el.getAttribute('data-album')); return; }
+  el=t.closest('[data-satinal]'); if(el){ satinAl(el.getAttribute('data-satinal')); return; }
+  el=t.closest('[data-buketad]'); if(el){ serbest.ad=el.getAttribute('data-buketad'); modalKapat(); sesCal('yildiz'); serbestBuketCiz(); return; }
+  el=t.closest('[data-minirenk]'); if(el){ miniRenkSec(parseInt(el.getAttribute('data-minirenk'),10)); return; }
+  el=t.closest('[data-miniyaprak]'); if(el){ miniYaprakSec(el.getAttribute('data-miniyaprak')); return; }
+  el=t.closest('[data-minihafiza]'); if(el){ miniHafizaSec(parseInt(el.getAttribute('data-minihafiza'),10)); return; }
+  el=t.closest('[data-minisay]'); if(el){ miniSaySec(parseInt(el.getAttribute('data-minisay'),10)); return; }
+  el=t.closest('[data-minikarisim]'); if(el){ miniKarisimSec(el.getAttribute('data-minikarisim')); return; }
+  if(t.id==='modalOrtu') modalKapat();
+}
+function eylem(a,el){
+  if(a==='ses'){ durum.ses=!durum.ses; kaydet(); ustbarGuncelle(); menuCiz(); if(durum.ses) sesCal('tik'); return; }
+  if(a==='modalKapat'){ modalKapat(); return; }
+  if(a==='devam'){ devamEt(); return; }
+  if(a==='ipucu'){ ipucuVer(); return; }
+  if(a==='tamamla'){ sesCal('tik'); siparisTamamla(); return; }
+  if(a==='temizle'){ var b=hedefBuket(); b.cicekler=[]; b.susler=[]; sesCal('cicekCikar');
+    if(aktifEkran==='serbest'){ serbest.ad=''; serbestCiz(); } else buketCiz(); kaydet(); return; }
+  if(a==='rastgeleBuket'){ rastgeleBuket(); return; }
+  if(a==='buketAdiVer'){ buketAdiVer(); return; }
+  if(a==='miniAtla'){ sonrakiAdim=yeniMusteri; devamEt(); return; }
+  if(a==='ogreticiIleri'){ ogreticiIndex++;
+    if(ogreticiIndex>=OGRETICI.length){ durum.ogreticiGoruldu=true; kaydet(); modalKapat(); ekranGoster('oyun'); }
+    else ogreticiGoster(); return; }
+  if(a==='ogreticiAtla'){ durum.ogreticiGoruldu=true; kaydet(); modalKapat(); ekranGoster('oyun'); return; }
+  if(a==='sifirla'){
+    modalAc('♻️ Oyunu Sıfırla',
+      '<p>Tüm yıldızların, çiçeklerin ve süslerin baştan başlayacak. Oyunu gerçekten sıfırlamak istiyor musun?</p>',
+      [{ad:'Evet, Baştan Başla',sinif:'p',act:'sifirlaOnay'},{ad:'Hayır, Geri Dön',sinif:'y',act:'modalKapat'}]);
+    return; }
+  if(a==='sifirlaOnay'){
+    durum=yeniDurum(); aktifGorev=null; aktifMusteri=null; buket={cicekler:[],susler:[],ambalaj:null,kurdele:null};
+    serbest={cicekler:[],susler:[],ambalaj:'pembe',kurdele:'pembe',ad:''};
+    kaydet(); modalKapat(); ekranGoster('menu'); yaprakYagmuru(12); return; }
+}
+function klavye(e){
+  if(e.key==='Escape'){
+    var m=document.getElementById('modalOrtu');
+    if(m.classList.contains('acik') && document.querySelector('#modalOrtu .kapat').style.display!=='none') modalKapat();
+  }
+  if((e.key==='Enter'||e.key===' ') && e.target.getAttribute && e.target.getAttribute('data-bindex')!==null && e.target.getAttribute('data-bindex')!==undefined){
+    var i=e.target.getAttribute('data-bindex');
+    if(i!==null){ e.preventDefault(); buketCikar(parseInt(i,10)); }
+  }
+}
+
+/* ============================================================
+   30) BAŞLAT
+   ============================================================ */
+function baslat(){
+  efektKatman=document.getElementById('efekt-katman');
+  yukle();
+  document.addEventListener('click',tiklama);
+  document.addEventListener('keydown',klavye);
+  document.addEventListener('pointerdown',function(e){
+    var k=e.target.closest && e.target.closest('.cicek-kart');
+    if(k && (aktifEkran==='oyun'||aktifEkran==='serbest') && (k.getAttribute('data-cicek')||k.getAttribute('data-sus'))
+       && !document.getElementById('modalOrtu').classList.contains('acik')) surukleBaslat(e,k);
+  });
+  document.addEventListener('pointermove',surukleHareket,{passive:false});
+  document.addEventListener('pointerup',surukleBitir);
+  document.addEventListener('pointercancel',function(){ 
+    if(surukle.el && surukle.el.parentNode) surukle.el.parentNode.removeChild(surukle.el);
+    surukle={aktif:false,el:null,id:null,tur:null,x:0,y:0,tasindi:false,zaman:0}; });
+  ekranGoster('menu');
+  ustbarGuncelle();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',baslat); else baslat();
+
+</script>
+</body>
+</html>
