@@ -1,0 +1,19 @@
+{
+  "name": "Kelime Yörüngesi",
+  "short_name": "Kelime Yörüngesi",
+  "description": "Harfleri birleştir, dünyanı canlandır. Reklamsız, üyeliksiz Türkçe kelime bulmacası.",
+  "lang": "tr",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0C1230",
+  "theme_color": "#0C1230",
+  "categories": ["games", "education", "word"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
