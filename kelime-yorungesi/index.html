@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0C1230">
+<meta name="description" content="Kelime Yörüngesi — harfleri birleştir, dünyanı canlandır. Ücretsiz, reklamsız, üyeliksiz Türkçe kelime bulmaca oyunu.">
+<meta property="og:title" content="Kelime Yörüngesi">
+<meta property="og:description" content="Harfleri Birleştir, Dünyanı Canlandır">
+<meta property="og:type" content="website">
+<title>Kelime Yörüngesi — Harfleri Birleştir, Dünyanı Canlandır</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <header class="hud">
+    <button class="icon-btn" id="btnMenu" aria-label="Bölümler">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+    </button>
+
+    <div class="hud-title">
+      <span class="eyebrow" id="lvNo">Bölüm 01</span>
+      <h1 id="lvTitle">Kuru Bahçe</h1>
+    </div>
+
+    <div class="hud-stats">
+      <span class="stat stat--coin" id="statCoin" title="Yıldız tozu">0</span>
+      <span class="stat stat--score" id="statScore" title="Puan">0</span>
+    </div>
+
+    <button class="icon-btn" id="btnSound" aria-label="Sesi aç veya kapat">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9H5z"/><path class="wave" d="M17 9.5a4 4 0 0 1 0 5"/></svg>
+    </button>
+  </header>
+
+  <section class="scene" id="scene"></section>
+
+  <div class="ribbon">
+    <div class="track"><i id="bar"></i></div>
+    <span class="ribbon-text" id="ribbonText">Dünyan uyanmayı bekliyor</span>
+  </div>
+
+  <section class="slots" id="slots" aria-label="Bulunacak kelimeler"></section>
+
+  <div class="bonus" id="bonus" hidden>
+    <span class="bonus-label">Bonus</span>
+    <span class="bonus-list" id="bonusList"></span>
+  </div>
+
+  <section class="orbit">
+    <div class="current" id="current" aria-live="polite"></div>
+    <div class="wheel-wrap">
+      <canvas id="wheel" width="320" height="320"></canvas>
+      <button class="shuffle" id="btnShuffle" aria-label="Harfleri karıştır">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l8 10h4M4 17h4l3-4M16 7h4M18 5l2 2-2 2M18 15l2 2-2 2"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <nav class="tools" id="tools" aria-label="İpuçları">
+    <button class="tool" data-hint="letter"><span class="tool-name">Harf aç</span><span class="tool-cost" data-cost="letter">25</span></button>
+    <button class="tool" data-hint="target"><span class="tool-name">Işık tut</span><span class="tool-cost" data-cost="target">40</span></button>
+    <button class="tool" data-hint="word"><span class="tool-name">Kelimeyi aç</span><span class="tool-cost" data-cost="word">80</span></button>
+  </nav>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sheet" id="sheet" hidden></div>
+
+<script src="dictionary.js"></script>
+<script src="levels.js"></script>
+<script src="scenes.js"></script>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+<script>
+  // Çevrimdışı oynanabilmesi için; file:// ile açıldığında atlanır.
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('service-worker.js').catch(function () { });
+    });
+  }
+</script>
+</body>
+</html>
