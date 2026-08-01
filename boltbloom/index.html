@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#241D3A">
+<meta name="description" content="Bolt Bloom — renkli vidalari sok, kutulara yerlestir, mekanik yaratiklari onar.">
+<title>Bolt Bloom — Vida Atolyesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-state="BOOT" data-theme="workshop">
+
+<div id="frame">
+<div id="app" class="app">
+
+  <!-- ============ ACILIS ============ -->
+  <section class="screen active" data-screen="boot">
+    <div class="boot-inner">
+      <div class="logo">
+        <svg viewBox="-60 -60 120 120" aria-hidden="true">
+          <g class="logo-bolt">
+            <circle r="46" fill="#F2A03D" stroke="#241D3A" stroke-width="6"/>
+            <path d="M-46 0a46 46 0 0 1 92 0" fill="#FFD08A"/>
+            <circle r="30" fill="#FFF8EE" stroke="#241D3A" stroke-width="5"/>
+            <path d="M-18 -5h36v10h-36z M-5 -18h10v36h-10z" fill="#241D3A"/>
+          </g>
+        </svg>
+      </div>
+      <h1 class="brand">Bolt<span>Bloom</span></h1>
+      <p class="tagline">Sihirli tamir atolyesine hos geldin.</p>
+      <button class="btn primary big" data-act="boot">Atolyeyi ac</button>
+      <p class="fineprint">Reklamsiz, kayitsiz, cevrimdisi calisir.</p>
+    </div>
+  </section>
+
+  <!-- ============ ANA MENU ============ -->
+  <section class="screen" data-screen="menu">
+    <header class="topbar">
+      <span class="brand small">Bolt<span>Bloom</span></span>
+      <span class="coinpill"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14z"/></svg><b data-coins>0</b></span>
+    </header>
+    <div class="menu-body">
+      <div id="menuLast" class="menu-last"></div>
+      <button class="btn primary huge" data-act="continue">Oyna</button>
+      <div class="menu-grid">
+        <button class="tile" data-nav="map"><span class="tile-ic">🗺️</span>Bolumler</button>
+        <button class="tile" data-nav="collection"><span class="tile-ic">🧩</span>Koleksiyon</button>
+        <button class="tile" data-nav="shop"><span class="tile-ic">🛠️</span>Magaza</button>
+        <button class="tile" data-nav="daily"><span class="tile-ic">🎁</span>Gunluk odul</button>
+        <button class="tile" data-nav="settings"><span class="tile-ic">⚙️</span>Ayarlar</button>
+      </div>
+      <p class="menu-stars">Toplam yildiz: <b id="menuStars">0</b></p>
+    </div>
+  </section>
+
+  <!-- ============ BOLUM HARITASI ============ -->
+  <section class="screen" data-screen="map">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="menu" aria-label="Geri">‹</button>
+      <h2>Atolye yolu</h2>
+      <span class="coinpill"><b data-coins>0</b></span>
+    </header>
+    <div id="mapScroll" class="map-scroll"></div>
+  </section>
+
+  <!-- ============ OYUN ============ -->
+  <section class="screen" data-screen="game">
+    <header class="hud">
+      <button class="iconbtn" data-act="pause" aria-label="Duraklat">❚❚</button>
+      <div class="hud-mid">
+        <strong id="hudLevel">Bolum 1</strong>
+        <small id="hudSub"></small>
+      </div>
+      <span id="hudTimer" class="timer">0:00</span>
+      <span class="coinpill small"><b data-coins>0</b></span>
+    </header>
+
+    <div class="boxzone">
+      <div id="boxRow" class="boxrow"></div>
+      <div class="nextwrap"><span class="nextlabel">sirada</span><div id="nextBoxes" class="nextboxes"></div></div>
+    </div>
+
+    <div id="stageWrap" class="stage-wrap">
+      <svg id="stage" viewBox="-210 -230 420 460" preserveAspectRatio="xMidYMid meet" aria-label="Puzzle nesnesi">
+        <defs id="stageDefs"></defs>
+        <g id="objRoot"></g>
+      </svg>
+      <div id="trayWarn" class="tray-warn" aria-hidden="true"></div>
+      <div id="pipBox" class="pip">
+        <div class="pip-bubble"></div>
+        <div class="pip-body">
+          <svg viewBox="-30 -34 60 64" aria-hidden="true">
+            <rect x="-2" y="-32" width="4" height="9" rx="2" fill="#241D3A"/>
+            <circle cx="0" cy="-33" r="4.5" fill="#F2A03D" stroke="#241D3A" stroke-width="2"/>
+            <circle cx="0" cy="4" r="21" fill="#8FD8E8" stroke="#241D3A" stroke-width="3"/>
+            <circle cx="0" cy="0" r="14" fill="#FFF8EE" stroke="#241D3A" stroke-width="2.5"/>
+            <circle cx="-5" cy="-1" r="3" fill="#241D3A"/><circle cx="5" cy="-1" r="3" fill="#241D3A"/>
+            <path d="M-5 7q5 4 10 0" stroke="#241D3A" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="trayzone">
+      <span class="traylabel">bekleme yuvalari</span>
+      <div id="tray" class="tray"></div>
+    </div>
+
+    <div class="bottombar">
+      <div id="boosterRow" class="boosters"></div>
+      <div class="camctl">
+        <button class="iconbtn tiny" data-cam="out" aria-label="Uzaklastir">−</button>
+        <button class="iconbtn tiny" data-cam="reset" aria-label="Kamerayi sifirla">⌖</button>
+        <button class="iconbtn tiny" data-cam="in" aria-label="Yakinlastir">+</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ KOLEKSIYON ============ -->
+  <section class="screen" data-screen="collection">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="menu" aria-label="Geri">‹</button>
+      <h2>Koleksiyon</h2>
+      <span class="coinpill"><b id="collCount">0</b></span>
+    </header>
+    <div id="collGrid" class="coll-grid"></div>
+  </section>
+
+  <!-- ============ MAGAZA ============ -->
+  <section class="screen" data-screen="shop">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="menu" aria-label="Geri">‹</button>
+      <h2>Magaza</h2>
+      <span class="coinpill"><b data-coins>0</b></span>
+    </header>
+    <div id="shopGrid" class="shop-grid"></div>
+  </section>
+
+  <!-- ============ GUNLUK ODUL ============ -->
+  <section class="screen" data-screen="daily">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="menu" aria-label="Geri">‹</button>
+      <h2>Gunluk odul</h2>
+      <span class="coinpill"><b data-coins>0</b></span>
+    </header>
+    <div class="daily-body">
+      <div id="dailyGrid" class="daily-grid"></div>
+      <p id="dailyNote" class="daily-note"></p>
+      <button id="dailyClaim" class="btn primary" data-act="claimDaily">Odulu al</button>
+    </div>
+  </section>
+
+  <!-- ============ AYARLAR ============ -->
+  <section class="screen" data-screen="settings">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="menu" aria-label="Geri">‹</button>
+      <h2>Ayarlar</h2>
+      <span class="coinpill"><b data-coins>0</b></span>
+    </header>
+    <div id="settingsList" class="settings-list"></div>
+  </section>
+
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div id="flyLayer" aria-hidden="true"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="modalRoot" class="modal-root"></div>
+  <div id="tutorialRoot" class="tut-root"></div>
+  <div id="debugPanel"></div>
+</div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/objects.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/render.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
