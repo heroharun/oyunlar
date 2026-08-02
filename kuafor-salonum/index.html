@@ -282,6 +282,12 @@ body[data-theme="midnight"] .stg.done{color:var(--gold)}
 #char{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none}
 #fx{position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none}
 #hitLayer{position:absolute; inset:0; touch-action:none; cursor:crosshair}
+#brushRing{position:absolute; width:0; height:0; pointer-events:none; z-index:5;
+  border-radius:50%; border:2.5px solid rgba(255,255,255,.9);
+  box-shadow:0 0 0 2px rgba(0,0,0,.14), inset 0 0 22px rgba(255,255,255,.30);
+  transition:width .12s ease, height .12s ease, margin .12s ease}
+#brushRing.hidden{display:none}
+#brushRing.on{border-color:rgba(255,255,255,1); box-shadow:0 0 0 2px rgba(0,0,0,.2), inset 0 0 26px rgba(255,255,255,.5), 0 0 16px rgba(255,255,255,.5)}
 #coach{position:absolute; width:0; height:0; pointer-events:none; z-index:6}
 #coach.hidden{display:none}
 #coach i{position:absolute; left:-38px; top:-38px; width:76px; height:76px; border-radius:50%;
@@ -438,6 +444,11 @@ body[data-theme="midnight"] .reward{background:rgba(255,255,255,.08)}
 
 /* ---------- Mobil düzen ---------- */
 @media (max-width:860px){
+  .tool{min-height:74px; font-size:13px; padding:10px 8px}
+  .tool svg{width:30px;height:30px}
+  .chip{padding:11px 15px; font-size:14px}
+  .bstrand{padding:16px 10px; font-size:15px}
+  .acc-item{width:64px;height:64px}
   #stageRail{
     position:absolute; top:0; left:0; right:0; width:auto; z-index:15;
     flex-direction:row; gap:6px; padding:4px 10px; overflow-x:auto; overflow-y:hidden;
@@ -554,6 +565,7 @@ body[data-theme="midnight"] #panelHandle::before{background:rgba(255,255,255,.28
           <svg id="char" viewBox="76 104 448 616" preserveAspectRatio="xMidYMid meet" aria-label="Müşteri"></svg>
           <canvas id="fx"></canvas>
           <div class="salon-vignette"></div>
+          <div id="brushRing" class="hidden"></div>
           <div id="coach" class="hidden"><i></i><b></b></div>
           <div id="hitLayer"></div>
           <div class="scene-top" id="sceneTop"></div>
@@ -1227,66 +1239,109 @@ function buildHead(){
   var g=G.head; g.innerHTML='';
   var face=svgEl('g',{id:'faceGroup'});
 
-  /* yüz ovali */
-  face.appendChild(svgEl('path',{id:'faceShape', d:
-    'M300,156 C354,156 386,198 390,256 C393,302 382,346 356,384 C338,412 316,440 300,440 '+
-    'C284,440 262,412 244,384 C218,346 207,302 210,256 C214,198 246,156 300,156 Z',
-    fill:'url(#skin)'}));
+  /* ---- yüz: uzun, dar, sivri çeneli (referans anime oranı) ---- */
+  var FACE='M300,150 C356,150 383,194 386,250 C388,298 379,340 361,375 '+
+           'C345,406 320,442 300,452 C280,442 255,406 239,375 '+
+           'C221,340 212,298 214,250 C217,194 244,150 300,150 Z';
+  face.appendChild(svgEl('path',{id:'faceShape', d:FACE, fill:'url(#skin)'}));
+
   /* kulaklar */
-  face.appendChild(svgEl('path',{d:'M211,284 C199,280 191,290 193,304 C195,320 205,330 215,328', fill:'url(#skin)', stroke:'#e0b4a3','stroke-width':'1.6'}));
-  face.appendChild(svgEl('path',{d:'M389,284 C401,280 409,290 407,304 C405,320 395,330 385,328', fill:'url(#skin)', stroke:'#e0b4a3','stroke-width':'1.6'}));
-  /* yumuşak yanak gölgesi */
-  face.appendChild(svgEl('path',{d:'M300,156 C354,156 386,198 390,256 C393,302 382,346 356,384 C338,412 316,440 300,440 Z', fill:'#e8bda9', opacity:'.16'}));
-  /* allık */
-  face.appendChild(svgEl('ellipse',{cx:247, cy:358, rx:26, ry:11, fill:'#f0a6ab', opacity:'.34', filter:'url(#tinyBlur)'}));
-  face.appendChild(svgEl('ellipse',{cx:353, cy:358, rx:26, ry:11, fill:'#f0a6ab', opacity:'.34', filter:'url(#tinyBlur)'}));
-  face.appendChild(svgEl('ellipse',{cx:300, cy:330, rx:14, ry:7, fill:'#f0a6ab', opacity:'.18', filter:'url(#tinyBlur)'}));
+  face.appendChild(svgEl('path',{d:'M215,288 C203,284 196,295 198,309 C200,325 210,334 220,332', fill:'url(#skin)', stroke:'#e2b6a4','stroke-width':'1.5'}));
+  face.appendChild(svgEl('path',{d:'M385,288 C397,284 404,295 402,309 C400,325 390,334 380,332', fill:'url(#skin)', stroke:'#e2b6a4','stroke-width':'1.5'}));
 
-  /* burun */
-  face.appendChild(svgEl('path',{d:'M296,342 C301,352 306,356 310,357', fill:'none', stroke:'#d9a08d','stroke-width':'2.2','stroke-linecap':'round', opacity:'.75'}));
+  /* yan yüz form gölgesi (saçtan düşen yumuşak gölge) */
+  face.appendChild(svgEl('path',{d:'M214,250 C217,194 244,150 300,150 C268,164 244,204 240,258 C237,306 246,344 262,378 C240,344 212,300 214,250 Z',
+    fill:'#c98d78', opacity:'.16', filter:'url(#tinyBlur)'}));
+  face.appendChild(svgEl('path',{d:'M386,250 C383,194 356,150 300,150 C332,164 356,204 360,258 C363,306 354,344 338,378 C360,344 388,300 386,250 Z',
+    fill:'#c98d78', opacity:'.11', filter:'url(#tinyBlur)'}));
 
-  /* dudaklar */
+  /* çene altı / boyun gölgesi */
+  face.appendChild(svgEl('path',{d:'M262,406 C278,432 292,446 300,450 C308,446 322,432 338,406 C322,428 312,438 300,440 C288,438 278,428 262,406 Z',
+    fill:'#c98d78', opacity:'.22', filter:'url(#tinyBlur)'}));
+
+  /* allık — çok yumuşak, küçük */
+  face.appendChild(svgEl('ellipse',{cx:250, cy:352, rx:30, ry:12, fill:'#eda3a4', opacity:'.20', filter:'url(#softBlur)'}));
+  face.appendChild(svgEl('ellipse',{cx:350, cy:352, rx:30, ry:12, fill:'#eda3a4', opacity:'.20', filter:'url(#softBlur)'}));
+
+  /* ---- burun: sadece ince gölge + minik kanat ---- */
+  face.appendChild(svgEl('path',{d:'M304,296 C307,318 309,336 311,350', fill:'none',
+    stroke:'#d5a08c','stroke-width':'2.6','stroke-linecap':'round', opacity:'.28', filter:'url(#tinyBlur)'}));
+  face.appendChild(svgEl('ellipse',{cx:303, cy:355, rx:9, ry:3.4, fill:'#d5a08c', opacity:'.22', filter:'url(#tinyBlur)'}));
+  face.appendChild(svgEl('path',{d:'M306,354 C309,358 312,358 313,355', fill:'none',
+    stroke:'#c78e7c','stroke-width':'1.7','stroke-linecap':'round', opacity:'.55'}));
+
+  /* ---- dudak ---- */
   var mouth=svgEl('g',{id:'mouthGroup'});
   mouth.appendChild(svgEl('path',{id:'mouth', d:MOUTH.neutral, fill:'url(#lipG)'}));
-  mouth.appendChild(svgEl('path',{id:'mouthLine', d:'M283,389 C291,394 309,394 317,389', fill:'none', stroke:'#b96575','stroke-width':'1.6','stroke-linecap':'round', opacity:'.8'}));
+  mouth.appendChild(svgEl('path',{id:'mouthLine', d:'M286,391 C292,396 308,396 314,391', fill:'none',
+    stroke:'#b3606f','stroke-width':'1.5','stroke-linecap':'round', opacity:'.72'}));
+  mouth.appendChild(svgEl('ellipse',{cx:301, cy:397, rx:6, ry:2.1, fill:'#fff', opacity:'.34', filter:'url(#tinyBlur)'}));
   face.appendChild(mouth);
 
-  /* gözler */
-  [['L',252],['R',348]].forEach(function(e){
-    var s=e[0], cx=e[1], m=(s==='L'?1:-1);
-    var eg=svgEl('g',{id:'eye'+s, transform:'translate('+cx+',313) scale(1.06)'});
+  /* ---- gözler: badem, kalın üst kirpik, kirpiğe kesilen iris ---- */
+  [['L',253],['R',347]].forEach(function(e){
+    var s=e[0], cx=e[1];
+    var m =(s==='L'? -1 : 1);   // dışa doğru yön
+    var eg=svgEl('g',{id:'eye'+s, transform:'translate('+cx+',312)'});
     var inner=svgEl('g',{id:'eyeInner'+s});
-    inner.appendChild(svgEl('path',{d:'M-27,1 C-21,-13 -8,-20 2,-19 C15,-18 25,-9 27,2 C22,13 10,20 0,20 C-13,20 -23,13 -27,1 Z', fill:'#fffdfb'}));
-    var pg=svgEl('g',{id:'pupil'+s});
-    pg.appendChild(svgEl('ellipse',{cx:0, cy:1, rx:13.5, ry:15.5, fill:'url(#irisG)'}));
-    pg.appendChild(svgEl('ellipse',{cx:0, cy:3, rx:6.4, ry:8, fill:'#241512'}));
-    pg.appendChild(svgEl('ellipse',{cx:0, cy:11, rx:9, ry:5, fill:'#a8794f', opacity:'.55'}));
-    pg.appendChild(svgEl('circle',{cx:-5.4, cy:-6, r:4.6, fill:'#fff'}));
-    pg.appendChild(svgEl('circle',{cx:6, cy:7, r:2.2, fill:'#fff', opacity:'.75'}));
+
+    var WHITE='M'+(-29*m)+',3 C'+(-25*m)+',-9 '+(-13*m)+',-16 '+(-1*m)+',-16 '+
+              'C'+(14*m)+',-16 '+(25*m)+',-8 '+(29*m)+',3 '+
+              'C'+(23*m)+',13 '+(12*m)+',17 0,17 C'+(-13*m)+',17 '+(-24*m)+',13 '+(-29*m)+',3 Z';
+
+    var cp=svgEl('clipPath',{id:'eyeClip'+s});
+    cp.appendChild(svgEl('path',{d:WHITE}));
+    inner.appendChild(cp);
+
+    inner.appendChild(svgEl('path',{d:WHITE, fill:'#fffdfa'}));
+
+    var pg=svgEl('g',{id:'pupil'+s, 'clip-path':'url(#eyeClip'+s+')'});
+    pg.appendChild(svgEl('ellipse',{cx:0, cy:0, rx:12.6, ry:15.4, fill:'url(#irisG)'}));
+    pg.appendChild(svgEl('ellipse',{cx:0, cy:6, rx:11.4, ry:9, fill:'#c99762', opacity:'.42'}));   // alt ışık
+    pg.appendChild(svgEl('ellipse',{cx:0, cy:0, rx:12.6, ry:15.4, fill:'none', stroke:'#2a1a15','stroke-width':'2.6', opacity:'.85'})); // limbal halka
+    pg.appendChild(svgEl('ellipse',{cx:0, cy:1, rx:5.2, ry:6.6, fill:'#22140f'}));
+    pg.appendChild(svgEl('ellipse',{cx:0, cy:-13, rx:13, ry:7, fill:'#2b1a14', opacity:'.40'}));   // kapak gölgesi
+    pg.appendChild(svgEl('circle',{cx:-5.6*m, cy:-6.5, r:4.4, fill:'#fff', opacity:'.95'}));
+    pg.appendChild(svgEl('circle',{cx:6.4*m, cy:6.4, r:2.1, fill:'#fff', opacity:'.7'}));
     inner.appendChild(pg);
-    /* üst kirpik */
-    inner.appendChild(svgEl('path',{d:'M-28,0 C-22,-16 -7,-23 3,-22 C16,-21 26,-11 28,1 C24,-6 14,-14 2,-15 C-9,-16 -21,-9 -28,0 Z', fill:'#2b1e1e'}));
-    inner.appendChild(svgEl('path',{d:'M'+(26*m)+',1 C'+(31*m)+',-2 '+(33*m)+',-5 '+(33*m)+',-8', fill:'none', stroke:'#2b1e1e','stroke-width':'2.4','stroke-linecap':'round'}));
-    /* alt kirpik */
-    inner.appendChild(svgEl('path',{d:'M-22,10 C-14,18 12,18 22,9', fill:'none', stroke:'#6b4a44','stroke-width':'1.5','stroke-linecap':'round', opacity:'.75'}));
+
+    /* üst kirpik — dolgu, dışa doğru incelip kalkan uç */
+    inner.appendChild(svgEl('path',{d:
+      'M'+(-30*m)+',3 C'+(-26*m)+',-11 '+(-13*m)+',-20 '+(-1*m)+',-20 '+
+      'C'+(15*m)+',-20 '+(27*m)+',-11 '+(32*m)+',-2 '+
+      'C'+(34*m)+',-5 '+(35*m)+',-8 '+(36*m)+',-11 '+
+      'C'+(34*m)+',-4 '+(31*m)+',0 '+(30*m)+',4 '+
+      'C'+(24*m)+',-6 '+(13*m)+',-14 '+(-1*m)+',-14 '+
+      'C'+(-13*m)+',-14 '+(-25*m)+',-6 '+(-30*m)+',3 Z', fill:'#2a1c1a'}));
+
     /* göz kapağı kıvrımı */
-    inner.appendChild(svgEl('path',{d:'M-24,-9 C-16,-19 10,-21 24,-11', fill:'none', stroke:'#c99b8c','stroke-width':'1.6','stroke-linecap':'round', opacity:'.7'}));
+    inner.appendChild(svgEl('path',{d:'M'+(-24*m)+',-9 C'+(-16*m)+',-21 '+(12*m)+',-23 '+(26*m)+',-12',
+      fill:'none', stroke:'#c69a8b','stroke-width':'1.5','stroke-linecap':'round', opacity:'.55'}));
+
+    /* alt kirpik — sadece dış yarı, ince */
+    inner.appendChild(svgEl('path',{d:'M'+(2*m)+',16 C'+(12*m)+',15 '+(22*m)+',11 '+(27*m)+',5',
+      fill:'none', stroke:'#6f4d45','stroke-width':'1.5','stroke-linecap':'round', opacity:'.6'}));
+    /* göz altı ışığı */
+    inner.appendChild(svgEl('ellipse',{cx:0, cy:23, rx:20, ry:4, fill:'#fff', opacity:'.22', filter:'url(#tinyBlur)'}));
+
     eg.appendChild(inner);
     face.appendChild(eg);
-    /* kaş */
-    face.appendChild(svgEl('path',{id:'brow'+s,
-      d:'M'+(cx-27)+',286 C'+(cx-14)+',275 '+(cx+13)+',275 '+(cx+27)+',283',
-      fill:'none', stroke:'#553a2e','stroke-width':'3.8','stroke-linecap':'round'}));
+
+    /* ---- kaş: ince, alçak, uca doğru sivrilen dolgu ---- */
+    face.appendChild(svgEl('path',{id:'brow'+s, d:
+      'M'+(cx-m*31)+',290 C'+(cx-m*15)+',277 '+(cx+m*11)+',272 '+(cx+m*33)+',281 '+
+      'L'+(cx+m*32)+',285 C'+(cx+m*10)+',277 '+(cx-m*14)+',282 '+(cx-m*30)+',295 Z',
+      fill:'#4f352b', opacity:'.92'}));
   });
 
   g.appendChild(face);
 }
 
 var MOUTH = {
-  neutral:'M283,388 C291,383 309,383 317,388 C310,401 290,401 283,388 Z',
-  smile:  'M279,385 C291,381 309,381 321,385 C314,403 286,403 279,385 Z',
-  uneasy: 'M284,397 C291,389 309,389 316,397 C309,393 291,393 284,397 Z',
-  happy:  'M278,383 C291,379 309,379 322,383 C316,408 284,408 278,383 Z'
+  neutral:'M285,391 C290,385 296,383 300,387 C304,383 310,385 315,391 C310,401 290,401 285,391 Z',
+  smile:  'M281,388 C288,383 296,381 300,385 C304,381 312,383 319,388 C313,403 287,403 281,388 Z',
+  uneasy: 'M286,398 C291,392 296,391 300,393 C304,391 309,392 314,398 C309,395 291,395 286,398 Z',
+  happy:  'M280,387 C288,381 296,379 300,384 C304,379 312,381 320,387 C314,407 286,407 280,387 Z'
 };
 
 /* ---------- Saç çizimi ---------- */
@@ -1781,6 +1836,19 @@ function toView(clientX, clientY){
   };
 }
 
+/* --- Parmağın etkilediği alanı gösteren halka --- */
+function showRing(p, active){
+  var el=$('#brushRing'); if(!el) return;
+  var r=(typeof brushRadius==='function' ? brushRadius() : 0);
+  if(!r){ el.classList.add('hidden'); return; }
+  var s=toScreen(p.x,p.y), rr=r*FX.s;
+  el.style.left=Math.round(s.x)+'px'; el.style.top=Math.round(s.y)+'px';
+  el.style.width=Math.round(rr*2)+'px'; el.style.height=Math.round(rr*2)+'px';
+  el.style.margin=Math.round(-rr)+'px 0 0 '+Math.round(-rr)+'px';
+  el.classList.remove('hidden');
+  el.classList.toggle('on', !!active);
+}
+
 /* --- SVG koordinatını ekran (sahne kutusu içi) koordinatına çevirir --- */
 function toScreen(vx, vy){
   return { x:(vx-VIEW_X)*FX.s + FX.ox, y:(vy-VIEW_Y)*FX.s + FX.oy };
@@ -2028,11 +2096,20 @@ function bindInput(){
     if(layer.setPointerCapture && e.pointerId!=null){ try{ layer.setPointerCapture(e.pointerId); }catch(err){} }
     Audio_.init();
     Stage.onDown(p);
+    showRing(p, true);
+    /* basılı tutunca uygulamaya devam etsin — küçük çocuklar için */
+    if(Input.hold) clearInterval(Input.hold);
+    Input.hold=setInterval(function(){
+      if(!Input.down || !Input.pos){ clearInterval(Input.hold); Input.hold=null; return; }
+      if(performance.now()-(Input.tMove||0) < 90) return;   // parmak zaten hareket ediyor
+      Stage.onDrag(Input.pos,{dx:0,dy:1.6,d:1.6});
+    }, 70);
     e.preventDefault();
   }
   function move(e){
     var p=toView(e.clientX,e.clientY);
-    Input.pos=p;
+    Input.pos=p; Input.tMove=performance.now();
+    showRing(p, Input.down);
     if(!Input.down){ Stage.onHover(p); return; }
     var dx=p.x-Input.last.x, dy=p.y-Input.last.y;
     var d=Math.sqrt(dx*dx+dy*dy);
@@ -2053,13 +2130,17 @@ function bindInput(){
     var p=Input.pos||toView(e.clientX,e.clientY);
     Stage.onUp(p);
     Input.lastDir=null;
+    if(Input.hold){ clearInterval(Input.hold); Input.hold=null; }
+    var br=$('#brushRing'); if(br) br.classList.remove('on');
   }
   if(window.PointerEvent){
     layer.addEventListener('pointerdown',start);
     layer.addEventListener('pointermove',move);
     layer.addEventListener('pointerup',end);
     layer.addEventListener('pointercancel',end);
-    layer.addEventListener('pointerleave',function(){ if(!Input.down) Input.pos=null; });
+    layer.addEventListener('pointerleave',function(){
+      if(!Input.down){ Input.pos=null; var b=$('#brushRing'); if(b) b.classList.add('hidden'); }
+    });
   } else {
     layer.addEventListener('mousedown',start);
     window.addEventListener('mousemove',move);
@@ -2220,6 +2301,17 @@ var COACH_POS={
   wash:[300,320,'move'], care:[262,320,'move'], dry:[300,290,'move'],
   cut:[300,560,'side'],  dye:[300,380,'move'], style:[300,400,'move']
 };
+function brushRadius(){
+  if($('#screen-game') && $('#screen-game').hidden) return 0;
+  var id=STAGES[State.currentStage].id, t=State.selectedTool;
+  if(id==='wash')  return (t==='shampoo'||t==='towel')? 80 : 86;
+  if(id==='care')  return 62;
+  if(id==='dry')   return (t==='towel')? 84 : 90;
+  if(id==='comb')  return 46;
+  if(id==='dye')   return 72;
+  if(id==='style') return 60;
+  return 0;
+}
 function updateCoach(){
   var el=$('#coach'); if(!el) return;
   var scr=$('#screen-game');
