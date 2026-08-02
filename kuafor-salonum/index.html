@@ -444,7 +444,7 @@ body[data-theme="midnight"] .reward{background:rgba(255,255,255,.08)}
 
 /* ---------- Mobil düzen ---------- */
 @media (max-width:860px){
-  .tool{min-height:74px; font-size:13px; padding:10px 8px}
+  .tool{font-size:12px; padding:8px 6px}
   .tool svg{width:30px;height:30px}
   .chip{padding:11px 15px; font-size:14px}
   .bstrand{padding:16px 10px; font-size:15px}
@@ -459,8 +459,8 @@ body[data-theme="midnight"] .reward{background:rgba(255,255,255,.08)}
   .stg .num{display:none}
   .stg span.lab{display:block; white-space:nowrap}
   #toolPanel{
-    position:absolute; left:0; right:0; bottom:0; width:auto; z-index:18;
-    padding:0; gap:0; max-height:52%;
+    position:absolute; left:0; right:0; bottom:60px; width:auto; z-index:18;
+    padding:0; gap:0; height:40%;
     background:var(--glass-strong);
     -webkit-backdrop-filter:blur(16px) saturate(1.25); backdrop-filter:blur(16px) saturate(1.25);
     border-top:1px solid rgba(255,255,255,.55);
@@ -469,12 +469,12 @@ body[data-theme="midnight"] .reward{background:rgba(255,255,255,.08)}
     transform:translateY(0); transition:transform .34s cubic-bezier(.2,.85,.25,1);
     overflow:visible;
   }
-  #toolPanel.collapsed{transform:translateY(calc(100% - 30px))}
-  #panelScroll{overflow:auto; padding:6px 12px 12px; display:flex; flex-direction:column; gap:9px; max-height:calc(52vh - 30px)}
+  #toolPanel.collapsed{transform:translateY(calc(100% - 32px))}
+  #panelScroll{overflow:auto; -webkit-overflow-scrolling:touch; padding:4px 12px 10px; display:flex; flex-direction:column; gap:8px; height:calc(100% - 32px)}
   .panel-card{background:transparent !important; border:0 !important; box-shadow:none !important; padding:2px 0; -webkit-backdrop-filter:none; backdrop-filter:none}
   .tool-grid{display:flex; gap:8px; overflow-x:auto; padding-bottom:3px; scrollbar-width:none}
   .tool-grid::-webkit-scrollbar{display:none}
-  .tool{width:62px; flex:none; aspect-ratio:1/1}
+  .tool{width:70px; height:70px; flex:none}
   .color-grid{display:flex; gap:8px; overflow-x:auto; padding:2px 0 4px; scrollbar-width:none}
   .color-grid::-webkit-scrollbar{display:none}
   .sw{width:30px;height:30px;flex:none}
@@ -482,11 +482,27 @@ body[data-theme="midnight"] .reward{background:rgba(255,255,255,.08)}
   .chip-wrap::-webkit-scrollbar{display:none}
   .chip{white-space:nowrap; flex:none}
   #panelHandle{display:flex}
-  #stageWrap{position:absolute; inset:0}
-  #bottomBar{position:absolute; left:0; right:0; bottom:0; z-index:19; transition:transform .34s cubic-bezier(.2,.85,.25,1)}
-  .meters{top:44px}
-  .heat-wrap{top:44px}
-  .scene-top{top:42px}
+  /* --- sahne kendi güvenli alanında; üstünde şerit, altında panel+bar --- */
+  #stageWrap{position:absolute; top:40px; left:0; right:0; bottom:calc(40% + 60px)}
+  body.panel-min #stageWrap{bottom:92px}
+  #bottomBar{
+    position:absolute; left:0; right:0; bottom:0; z-index:22; height:60px; padding:0 10px;
+    background:var(--glass-strong); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    border-top:1px solid rgba(255,255,255,.5);
+  }
+  /* göstergeler sahnenin en üstünde ince bir şerit */
+  .meters{
+    left:0; right:0; top:0; flex-direction:row; justify-content:center; align-items:center;
+    gap:10px; padding:3px 8px; opacity:.9;
+  }
+  .meter{gap:4px; font-size:8.5px}
+  .meter span{width:auto}
+  .meter .bar{width:40px; height:4px}
+  /* rozetler sahnenin en altında */
+  .scene-top{top:auto; bottom:2px}
+  .badge{padding:4px 9px; font-size:10px}
+  .heat-wrap{top:auto; bottom:26px; right:8px}
+  .heat{height:62px; width:7px}
   .menu-grid{grid-template-columns:repeat(3,1fr)}
 }
 #panelHandle{
@@ -2131,7 +2147,8 @@ function bindInput(){
     Stage.onUp(p);
     Input.lastDir=null;
     if(Input.hold){ clearInterval(Input.hold); Input.hold=null; }
-    var br=$('#brushRing'); if(br) br.classList.remove('on');
+    var br=$('#brushRing');
+    if(br){ br.classList.remove('on'); if(e && e.pointerType!=='mouse') br.classList.add('hidden'); }
   }
   if(window.PointerEvent){
     layer.addEventListener('pointerdown',start);
@@ -3317,7 +3334,9 @@ function bindUI(){
 
   /* Mobil panel kolu */
   $('#panelHandle').addEventListener('click',function(){
-    $('#toolPanel').classList.toggle('collapsed');
+    var col=$('#toolPanel').classList.toggle('collapsed');
+    document.body.classList.toggle('panel-min', col);
+    setTimeout(function(){ if(typeof resizeFX==='function') resizeFX(); }, 360);
     Audio_.click();
   });
 
