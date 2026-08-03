@@ -1,13 +1,13 @@
 {
-  "name": "Müslim TR — Çocuk Oyunları",
-  "short_name": "Müslim TR",
-  "description": "Müslüman ailelerin çocukları için reklamsız, üyeliksiz, ücretsiz oyunlar.",
+  "name": "MasalPark — Reklamsız Çocuk Oyunları",
+  "short_name": "MasalPark",
+  "description": "Reklamsız, Türk ailesine uygun üretim. Üyeliksiz, ücretsiz çocuk oyunları.",
   "start_url": "/oyunlar/",
   "scope": "/oyunlar/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#141220",
-  "theme_color": "#141220",
+  "background_color": "#12102a",
+  "theme_color": "#12102a",
   "lang": "tr",
   "icons": [
     { "src": "ikon/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

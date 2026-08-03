@@ -2,74 +2,172 @@
 <html lang="tr">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Müslim TR — Reklamsız Çocuk Oyunları</title>
-<meta name="description" content="Müslüman ailelerin çocukları için reklamsız, üyeliksiz, ücretsiz oyunlar. Kurulum yok, internetsiz de çalışır.">
-<meta name="theme-color" content="#141220">
+<title>MasalPark — Reklamsız Çocuk Oyunları</title>
+<meta name="description" content="MasalPark: Reklamsız, Türk ailesine uygun üretim. Üyeliksiz, ücretsiz çocuk oyunları — kurulum yok, internetsiz de çalışır.">
+<meta name="theme-color" content="#12102a">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="ikon/icon-192.png">
 <link rel="apple-touch-icon" href="ikon/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Müslim TR">
-<meta property="og:title" content="Müslim TR — Reklamsız Çocuk Oyunları">
-<meta property="og:description" content="Reklamsız, üyeliksiz, ücretsiz oyunlar. İslami eğitici içerikler, bulmacalar, arcade ve 2 kişilik oyunlar.">
+<meta name="apple-mobile-web-app-title" content="MasalPark">
+<meta property="og:title" content="MasalPark — Reklamsız Çocuk Oyunları">
+<meta property="og:description" content="Reklamsız, Türk ailesine uygun üretim. Üyeliksiz, ücretsiz oyunlar: eğitici içerikler, bulmacalar, arcade ve 2 kişilik oyunlar.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="tr_TR">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap">
 <style>
-  :root{ --bg:#141220; --card:#1e1b30; --card2:#252140; --ink:#f0edfa; --dim:#9a92b8;
-    --accent:#ffd166; --glow:#8c5fff; --yesil:#4ade80; }
+  :root{
+    --bg:#12102a; --card:#1e1a3e; --card2:#282250; --ink:#f5f2ff; --dim:#aaa2c8;
+    --yildiz:#ffc94d; --cta:#ff8a4c; --yesil:#4ade80; --mor:#9d7bff; --pembe:#ff6b9d;
+    --cizgi:rgba(245,242,255,.09);
+  }
   *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
   body{min-height:100vh;background:var(--bg);color:var(--ink);
-    font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
+    font-family:"Trebuchet MS","Avenir Next",system-ui,sans-serif;
+    font-size:16px;line-height:1.5;
     padding:max(20px,env(safe-area-inset-top)) 16px 40px;
-    background-image:radial-gradient(ellipse 80% 40% at 50% -10%,rgba(140,95,255,.25),transparent)}
-  main{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
-  header{text-align:center;padding:18px 0 4px}
-  h1{font-size:clamp(32px,9vw,50px);font-weight:900;line-height:1.05;letter-spacing:.02em;
-    background:linear-gradient(180deg,#ffd166,#ff8c5f);
+    background-image:
+      radial-gradient(ellipse 90% 42% at 50% -12%,rgba(157,123,255,.28),transparent),
+      radial-gradient(1.2px 1.2px at 12% 18%,rgba(255,255,255,.5),transparent 100%),
+      radial-gradient(1.5px 1.5px at 78% 9%,rgba(255,201,77,.7),transparent 100%),
+      radial-gradient(1px 1px at 33% 6%,rgba(255,255,255,.45),transparent 100%),
+      radial-gradient(1.3px 1.3px at 61% 15%,rgba(255,255,255,.4),transparent 100%),
+      radial-gradient(1px 1px at 90% 22%,rgba(255,255,255,.35),transparent 100%),
+      radial-gradient(1.4px 1.4px at 45% 11%,rgba(255,201,77,.5),transparent 100%),
+      radial-gradient(1px 1px at 22% 9%,rgba(255,255,255,.4),transparent 100%)}
+  main{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+
+  /* ── HERO ── */
+  header{text-align:center;padding:14px 0 0}
+  .logo{display:inline-flex;align-items:center;gap:10px}
+  .logo svg{width:44px;height:44px;flex:none}
+  h1{font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+    font-size:clamp(38px,10vw,56px);font-weight:800;line-height:1;letter-spacing:.01em;
+    background:linear-gradient(180deg,#ffd97a 20%,#ff9d5c 90%);
     -webkit-background-clip:text;background-clip:text;color:transparent}
-  .sub{color:var(--dim);font-size:14px;margin-top:10px;line-height:1.6}
-  .rozetler{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
-  .rozet{font-size:11px;font-weight:800;letter-spacing:.1em;
-    color:var(--yesil);border:1.5px solid rgba(74,222,128,.3);border-radius:999px;padding:6px 13px}
-  .rozet.sari{color:var(--accent);border-color:rgba(255,209,102,.35)}
-  h2{font-size:15px;font-weight:800;letter-spacing:.08em;color:var(--accent);
-    display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-  h2 .adet{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.06em}
-  h2.mor{color:var(--glow)} h2.pembe{color:#ff5f8a}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:-8px}
-  a.game{display:flex;flex-direction:column;gap:8px;background:linear-gradient(180deg,var(--card2),var(--card));
-    border:1.5px solid rgba(240,237,250,.08);border-radius:18px;padding:18px 14px;
-    text-decoration:none;color:var(--ink);transition:transform .12s,border-color .12s}
-  a.game:hover,a.game:active{transform:translateY(-3px);border-color:rgba(255,209,102,.45)}
-  .emoji{font-size:34px;line-height:1}
-  .name{font-size:15px;font-weight:800;letter-spacing:.02em}
-  .desc{font-size:11.5px;color:var(--dim);line-height:1.45}
-  .tag{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--glow);margin-top:auto;padding-top:4px}
-  .tag.iki{color:#ff5f8a} .tag.egitici{color:var(--yesil)}
-  footer{text-align:center;color:var(--dim);font-size:12px;line-height:1.9;padding-top:14px;
-    border-top:1px solid rgba(240,237,250,.08)}
-  footer a{color:var(--accent);text-decoration:none}
-  .geri{background:linear-gradient(180deg,rgba(255,209,102,.13),rgba(140,95,255,.10));
-    border:1.5px solid rgba(255,209,102,.35);border-radius:18px;padding:20px 18px;text-align:center}
-  .geri h3{font-size:16px;font-weight:900;color:var(--accent);letter-spacing:.02em}
-  .geri p{font-size:12.5px;color:var(--dim);line-height:1.6;margin:8px 0 14px}
-  .geri a{display:inline-block;background:var(--accent);color:#241d05;font-weight:900;font-size:14px;
-    letter-spacing:.03em;text-decoration:none;padding:12px 26px;border-radius:999px}
+  .motto{color:var(--ink);font-size:15.5px;font-weight:700;margin-top:10px;letter-spacing:.01em}
+  .motto b{color:var(--yildiz)}
+  .sub{color:var(--dim);font-size:13.5px;margin-top:6px;line-height:1.6}
+  .rozetler{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+  .rozet{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;letter-spacing:.08em;
+    color:var(--yesil);border:1.5px solid rgba(74,222,128,.35);border-radius:999px;padding:7px 13px}
+  .rozet svg{width:13px;height:13px;flex:none}
+  .rozet.sari{color:var(--yildiz);border-color:rgba(255,201,77,.4)}
+
+  /* ── ARAMA ── */
+  .arama{position:relative;margin-top:18px}
+  .arama svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);
+    width:18px;height:18px;color:var(--dim);pointer-events:none}
+  .arama input{width:100%;font:inherit;font-size:16px;color:var(--ink);
+    background:var(--card);border:1.5px solid var(--cizgi);border-radius:999px;
+    padding:13px 44px 13px 46px;outline:none;transition:border-color .2s}
+  .arama input::placeholder{color:var(--dim)}
+  .arama input:focus{border-color:rgba(255,201,77,.55)}
+  .arama input:focus-visible{outline:3px solid rgba(255,201,77,.35);outline-offset:2px}
+  .temizle{position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    width:32px;height:32px;border:none;border-radius:50%;background:var(--card2);
+    color:var(--dim);font-size:16px;cursor:pointer;display:none;align-items:center;justify-content:center}
+  .temizle.acik{display:flex}
+
+  /* ── KATEGORİ ÇİPLERİ ── */
+  .cipler{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none;
+    position:sticky;top:0;z-index:20;margin:0 -16px;padding-left:16px;padding-right:16px;
+    background:linear-gradient(180deg,var(--bg) 78%,transparent)}
+  .cipler::-webkit-scrollbar{display:none}
+  .cip{flex:none;font:inherit;font-size:13px;font-weight:800;letter-spacing:.02em;
+    color:var(--ink);background:var(--card);border:1.5px solid var(--cizgi);
+    border-radius:999px;padding:9px 16px;text-decoration:none;cursor:pointer;
+    transition:border-color .2s,background .2s}
+  .cip:hover{border-color:rgba(255,201,77,.5)}
+  .cip:focus-visible{outline:3px solid rgba(255,201,77,.35);outline-offset:2px}
+
+  /* ── BÖLÜMLER ── */
+  section.kategori{display:flex;flex-direction:column;gap:14px;scroll-margin-top:64px}
+  h2{font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+    font-size:19px;font-weight:800;letter-spacing:.02em;color:var(--yildiz);
+    display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  h2::before{content:"";width:10px;height:10px;border-radius:3px;background:currentColor;
+    align-self:center;flex:none;transform:rotate(45deg)}
+  h2 .adet{font-family:inherit;font-size:12px;font-weight:700;color:var(--dim);letter-spacing:.05em}
+  h2.mor{color:var(--mor)} h2.pembe{color:var(--pembe)} h2.yesil{color:var(--yesil)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
+
+  /* ── OYUN KARTLARI ── */
+  a.game{display:flex;flex-direction:column;gap:9px;
+    background:linear-gradient(180deg,var(--card2),var(--card));
+    border:1.5px solid var(--cizgi);border-radius:20px;padding:16px 14px 14px;
+    text-decoration:none;color:var(--ink);cursor:pointer;
+    transition:border-color .2s,box-shadow .2s,background .2s}
+  a.game:hover{border-color:rgba(255,201,77,.55);
+    box-shadow:0 6px 24px rgba(255,201,77,.10),0 2px 8px rgba(0,0,0,.3)}
+  a.game:focus-visible{outline:3px solid rgba(255,201,77,.55);outline-offset:2px}
+  .emoji{font-size:34px;line-height:1.15}
+  .name{font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+    font-size:16px;font-weight:700;letter-spacing:.01em;line-height:1.25}
+  .desc{font-size:12px;color:var(--dim);line-height:1.5}
+  .tag{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--mor);margin-top:auto;padding-top:5px}
+  .tag.iki{color:var(--pembe)} .tag.egitici{color:var(--yesil)}
+  .bos{display:none;text-align:center;color:var(--dim);font-size:14px;padding:26px 0}
+  .bos.acik{display:block}
+
+  /* ── GÖRÜŞ + FOOTER ── */
+  .geri{background:linear-gradient(180deg,rgba(255,201,77,.12),rgba(157,123,255,.10));
+    border:1.5px solid rgba(255,201,77,.32);border-radius:22px;padding:22px 18px;text-align:center}
+  .geri h3{font-family:"Baloo 2",system-ui,sans-serif;font-size:18px;font-weight:800;color:var(--yildiz)}
+  .geri p{font-size:13px;color:var(--dim);line-height:1.65;margin:8px auto 15px;max-width:44ch}
+  .geri a{display:inline-block;background:linear-gradient(180deg,#ffd97a,#ff9d5c);color:#33210a;
+    font-weight:900;font-size:14.5px;letter-spacing:.02em;text-decoration:none;
+    padding:13px 30px;border-radius:999px;cursor:pointer;transition:filter .2s}
+  .geri a:hover{filter:brightness(1.07)}
+  .geri a:focus-visible{outline:3px solid var(--yildiz);outline-offset:3px}
+  footer{text-align:center;color:var(--dim);font-size:12.5px;line-height:2;padding-top:16px;
+    border-top:1px solid var(--cizgi)}
+  footer a{color:var(--yildiz);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  footer b{color:var(--ink)}
 </style>
 <main>
   <header>
-    <h1>Müslim TR</h1>
-    <div class="sub">Müslüman ailelerin çocukları için oyunlar.<br>Kurulum yok, üyelik yok, hepsi ücretsiz.</div>
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="26" r="15" stroke="#ffc94d" stroke-width="3"/>
+        <path d="M24 11v30M9 26h30M13.4 15.4l21.2 21.2M34.6 15.4L13.4 36.6" stroke="#ffc94d" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+        <circle cx="24" cy="26" r="4.5" fill="#ff8a4c"/>
+        <path d="M37 6l1.4 3.4L42 10.8l-3.6 1.4L37 15.6l-1.4-3.4L32 10.8l3.6-1.4L37 6z" fill="#ffd97a"/>
+      </svg>
+      <h1>MasalPark</h1>
+    </div>
+    <div class="motto">Reklamsız, <b>Türk ailesine uygun</b> üretim.</div>
+    <div class="sub">Kurulum yok, üyelik yok, hepsi ücretsiz — internetsiz de çalışır.</div>
     <div class="rozetler">
-      <span class="rozet">✓ REKLAMSIZ</span>
-      <span class="rozet">✓ VERİ TOPLAMAZ</span>
-      <span class="rozet sari">42 / 100 OYUN</span>
+      <span class="rozet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>REKLAMSIZ</span>
+      <span class="rozet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>VERİ TOPLAMAZ</span>
+      <span class="rozet sari"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.8 6.3.8-4.6 4.3 1.2 6.1L12 17l-5.6 3 1.2-6.1L3 9.6l6.3-.8L12 3z"/></svg>42 / 100 OYUN</span>
+    </div>
+    <div class="arama">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>
+      <label for="ara" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Oyun ara</label>
+      <input id="ara" type="search" placeholder="Oyun ara… (ör. boyama, sudoku)" autocomplete="off">
+      <button class="temizle" id="temizleBtn" aria-label="Aramayı temizle">✕</button>
     </div>
   </header>
 
-  <h2>🌙 İSLAMİ &amp; EĞİTİCİ <span class="adet">13 oyun</span></h2>
+  <nav class="cipler" aria-label="Kategoriler">
+    <a class="cip" href="#egitici">🌙 Eğitici</a>
+    <a class="cip" href="#yaraticilik">🎨 Yaratıcılık</a>
+    <a class="cip" href="#bulmaca">🧩 Bulmaca</a>
+    <a class="cip" href="#arcade">🕹️ Arcade</a>
+    <a class="cip" href="#ikikisi">👥 2 Kişilik</a>
+  </nav>
+
+  <section class="kategori" id="egitici">
+  <h2>İSLAMİ &amp; EĞİTİCİ <span class="adet">13 oyun</span></h2>
   <div class="grid">
     <a class="game" href="arkeolog/"><span class="emoji">🏺</span><span class="name">Küçük Arkeolog</span>
       <span class="desc">6-12 yaş kazı macerası: 6 bölge, 72 görev, 66 buluntu. Toprağı gerçekten kaz, fırçala, kırık vazoyu birleştir, dinozor iskeletini kur, kendi müzeni büyüt. Çevrimdışı çalışır.</span><span class="tag egitici">Eğitici</span></a>
@@ -98,8 +196,10 @@
     <a class="game" href="hal/"><span class="emoji">🌙</span><span class="name">Hâl</span>
       <span class="desc">Müminin farkındalık defteri: namaz, şükür, günlük, su-uyku takibi. Oyun değil, yaşam arkadaşı.</span><span class="tag egitici">Uygulama</span></a>
   </div>
+  </section>
 
-  <h2 class="pembe">🎨 YARATICILIK &amp; GİYDİRME <span class="adet">5 oyun</span></h2>
+  <section class="kategori" id="yaraticilik">
+  <h2 class="pembe">YARATICILIK &amp; GİYDİRME <span class="adet">5 oyun</span></h2>
   <div class="grid">
     <a class="game" href="kuafor-salonum/"><span class="emoji">💇‍♀️</span><span class="name">Helal Dairede Kuaför Salonum</span>
       <span class="desc">Kendi salonunu işlet! Yıka, bakım yap, kurut, tara, kes, boya, şekillendir, ör ve aksesuar tak. 10 aşama, 14 saç rengi, 8 boyama tekniği, örgü mini oyunu, 3 salon teması, öncesi-sonrası fotoğrafı ve puanlama. Süre baskısı yok, geri alma var. Çevrimdışı çalışır. 7+</span><span class="tag">Çocuk</span></a>
@@ -112,8 +212,10 @@
     <a class="game" href="piyano/"><span class="emoji">🎹</span><span class="name">Piyano Karoları</span>
       <span class="desc">Siyah karolara dokun, melodiyi yakala, hızlan.</span><span class="tag">Çocuk</span></a>
   </div>
+  </section>
 
-  <h2 class="mor">🧩 BULMACA &amp; ZEKÂ <span class="adet">11 oyun</span></h2>
+  <section class="kategori" id="bulmaca">
+  <h2 class="mor">BULMACA &amp; ZEKÂ <span class="adet">11 oyun</span></h2>
   <div class="grid">
     <a class="game" href="kelime-yorungesi/"><span class="emoji">🪐</span><span class="name">Kelime Yörüngesi</span>
       <span class="desc">Harfleri parmağınla birleştir, Türkçe kelimeler kur. Bulduğun her kelime bölümün küçük gezegenini canlandırır: çiçek açar, ağaç büyür, ev ışıkları yanar, köprü tamamlanır, çarklar döner. 12 bölüm, bonus kelimeler, 3 ipucu, sınırsız karıştırma. Çevrimdışı çalışır. 7+</span><span class="tag">Kelime</span></a>
@@ -138,8 +240,10 @@
     <a class="game" href="blok-yagmuru/"><span class="emoji">🟦</span><span class="name">Blok Yağmuru</span>
       <span class="desc">Düşen blokları döndür, satırları sil. Otomatik kayıt.</span><span class="tag">Bulmaca</span></a>
   </div>
+  </section>
 
-  <h2 class="mor">🕹️ ARCADE &amp; BECERİ <span class="adet">11 oyun</span></h2>
+  <section class="kategori" id="arcade">
+  <h2 class="yesil">ARCADE &amp; BECERİ <span class="adet">11 oyun</span></h2>
   <div class="grid">
     <a class="game" href="yilan/"><span class="emoji">🐍</span><span class="name">Yılan</span>
       <span class="desc">Elmaları ye, uza, kendine çarpma. Klasiklerin klasiği.</span><span class="tag">Arcade</span></a>
@@ -164,8 +268,10 @@
     <a class="game" href="usta-sofor/"><span class="emoji">🅿️</span><span class="name">Usta Şoför</span>
       <span class="desc">Direksiyon sende: arabayı çizgili yere hasarsız park et.</span><span class="tag">Beceri</span></a>
   </div>
+  </section>
 
-  <h2 class="pembe">👥 2 KİŞİLİK <span class="adet">3 oyun</span></h2>
+  <section class="kategori" id="ikikisi">
+  <h2 class="pembe">2 KİŞİLİK <span class="adet">3 oyun</span></h2>
   <div class="grid">
     <a class="game" href="topac-sumo/"><span class="emoji">🌀</span><span class="name">Topaç Sumo</span>
       <span class="desc">Rakibini ringden it! Bota karşı, aynı klavyede veya oda koduyla online. Kılıç, kalkan, mıknatıs...</span><span class="tag iki">2 Kişilik</span></a>
@@ -174,21 +280,52 @@
     <a class="game" href="ates-su/"><span class="emoji">🔥</span><span class="name">Ateş &amp; Su</span>
       <span class="desc">İki kahraman, tek ekran. Elmasları toplayıp kapılara ulaşın.</span><span class="tag iki">2 Kişilik</span></a>
   </div>
+  </section>
+
+  <div class="bos" id="bosMsg">Aramana uyan oyun bulunamadı. Başka bir kelime dene 🌙</div>
 
   <section class="geri">
-    <h3>💬 Görüşün bizim için kıymetli</h3>
+    <h3>Görüşün bizim için kıymetli</h3>
     <p>Bu oyunları çocuklarımız reklamsız, güvenli oyunlar oynasın diye yapıyoruz.
        Beğendiğini, eksik bulduğunu ya da gördüğün hatayı yaz — hepsini okuyup geliştiriyoruz.</p>
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSclueEPs_2WAzwIwvlzK6xhkJrSmBswJy2PkaoJBq3tgpowEQ/viewform" target="_blank" rel="noopener">Görüş Bildir</a>
   </section>
 
   <footer>
-    📲 <b>Ana ekranına ekle:</b> tarayıcı menüsünden "Ana ekrana ekle" de — uygulama gibi açılır, çevrimdışı da çalışır!<br>
-    Hedef: 100 oyun 🚀 · Reklamsız, ücretsiz<br>
+    <b>Ana ekranına ekle:</b> tarayıcı menüsünden "Ana ekrana ekle" de — uygulama gibi açılır, çevrimdışı da çalışır!<br>
+    Hedef: 100 oyun · Reklamsız, ücretsiz<br>
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSclueEPs_2WAzwIwvlzK6xhkJrSmBswJy2PkaoJBq3tgpowEQ/viewform" target="_blank" rel="noopener">Görüş bildir</a> · <a href="https://github.com/heroharun/oyunlar">Kaynak kodu</a>
   </footer>
 <script>
+'use strict';
 if('serviceWorker' in navigator)
   navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* ── Oyun arama ── */
+(function(){
+  const input=document.getElementById('ara'),
+        temizle=document.getElementById('temizleBtn'),
+        bos=document.getElementById('bosMsg'),
+        bolumler=[...document.querySelectorAll('section.kategori')];
+  const norm=s=>s.toLocaleLowerCase('tr');
+  function filtrele(){
+    const q=norm(input.value.trim());
+    temizle.classList.toggle('acik',q.length>0);
+    let toplam=0;
+    for(const b of bolumler){
+      let gorunen=0;
+      for(const kart of b.querySelectorAll('a.game')){
+        const uygun=!q||norm(kart.textContent).includes(q);
+        kart.style.display=uygun?'':'none';
+        if(uygun) gorunen++;
+      }
+      b.style.display=gorunen?'':'none';
+      toplam+=gorunen;
+    }
+    bos.classList.toggle('acik',toplam===0);
+  }
+  input.addEventListener('input',filtrele);
+  temizle.addEventListener('click',()=>{ input.value=''; filtrele(); input.focus(); });
+})();
 </script>
 </main>
