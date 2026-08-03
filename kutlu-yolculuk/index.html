@@ -84,7 +84,7 @@
   </div>
   <div class="hint">Bineğini seç (puan yaptıkça yenileri açılır):</div>
   <div class="chars" id="mounts" style="flex-wrap:wrap;justify-content:center;max-width:340px"></div>
-  <div class="hint">koşarken çift dokun = bineğe bin · ×1.3 hız + bir çarpışma korur</div>
+  <div class="hint">koşarken çift dokun = bineğe bin (100 azığın varsa anında!) · ×1.3 hız + bir çarpışma korur</div>
   <button class="btn" id="startBtn">🚉 Haydarpaşa'dan Yola Çık</button>
   <button class="btn alt" id="lbBtn">🏆 İlk 100</button>
   <span class="hint" id="bestIntro"></span>
@@ -239,8 +239,12 @@ function curMount(){ const m=MOUNTS[mountSel]||MOUNTS[0];
   return (best>=m.unlock)?m:MOUNTS[0]; }
 function activateMount(){
   if(state!=='play'||mounted) return;
-  if(bank.binek<=0){ mtoast('Bineğin yok — menüden 100 azıkla al! 🧺'); blip(200,0.15,0.1); return; }
-  bank.binek--; saveBank(); mounted=true;
+  /* önce hazır binek; yoksa 100 azık varsa oyun içinde anında binek (önce bu koşunun azığı, sonra kasa) */
+  if(bank.binek>0){ bank.binek--; saveBank(); }
+  else if(azik>=100){ azik-=100; updHud(); }
+  else if(bank.azik>=100){ bank.azik-=100; saveBank(); updBank(); }
+  else { mtoast('Binek için 100 azık gerek 🧺 ('+(azik+bank.azik)+' var)'); blip(200,0.15,0.1); return; }
+  mounted=true;
   const m=curMount();
   mtoast((m.kind==='deve'?'🐪 ':'🐎 ')+m.name+"'e bindin! ×1.3 hız");
   blip(523,0.2,0.16); blip(659,0.25,0.12); buzz([20,40,20]);
@@ -281,7 +285,7 @@ function spawn(){
 function physics(){
   tick++;
   /* yavaş başla, kademeli hızlan: 4.2'den başlar, ~km 540'ta eski başlangıç hızına (6) ulaşır */
-  speed=Math.min(11.5, 4.2+(dist/10)/300);
+  speed=Math.min(9.5, 4.2+(dist/10)/300);   /* tavan: insan reflekslerinin rahat yetiştiği hız */
   dist+=speed*0.14*(mounted?1.3:1);   // binekle ×1.3 mesafe
   laneX+=(lane-laneX)*0.34;           // daha çevik şerit geçişi
   if(jumpT>0)jumpT--;
