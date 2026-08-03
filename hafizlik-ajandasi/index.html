@@ -1,0 +1,2656 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+<meta name="theme-color" content="#0E3B2E">
+<meta name="description" content="Hafızlık Ajandası - Ezberle, tekrar et, takip et.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Hafızlık Ajandası</title>
+<!--
+  ============================================================================
+  HAFIZLIK AJANDASI - Tek dosyalık prototip (v1)
+  ----------------------------------------------------------------------------
+  Mimari:
+    CONFIG  : sabitler, mod bayrakları (AUTH_MODE, TRANSLATION_MODE)
+    I18N    : 4 dilli metin sözlüğü (tr / en / fr / ar)
+    Store   : veri katmanı + servis fonksiyonları (localStorage soyutlanmıştır)
+    Logic   : iş kuralları (dönüş görevleri, sayfa durumu, aralıklı tekrar)
+    Views   : ekran render fonksiyonları (saf fonksiyon -> HTML string)
+    App     : router, olay delegasyonu, modal, toast, geliştirici paneli
+  Sonraki aşama (Nuxt 3 / Vue 3 / Firebase) için: Store.* fonksiyonlarının
+  gövdesi Firestore çağrılarıyla değiştirilerek taşıma yapılabilir.
+  PWA: gerçek offline kurulum için manifest.json + service-worker.js
+  dosyaları bir sonraki aşamada eklenecektir (bkz. PWA notları, en altta).
+  ============================================================================
+-->
+<style>
+/* ===========================================================================
+   1. TASARIM TOKENLARI
+   =========================================================================== */
+:root{
+  --green-900:#0E3B2E;   /* koyu yeşil  */
+  --green-700:#14584220; /* yardımcı    */
+  --emerald:#157A52;     /* zümrüt      */
+  --emerald-soft:#E6F1EB;
+  --cream:#F7F4EC;       /* krem        */
+  --beige:#EFE8D8;       /* açık bej    */
+  --gold:#B8912A;        /* altın vurgu */
+  --ink:#14261F;
+  --ink-soft:#4C6157;
+  --surface:#FFFFFF;
+  --surface-2:#FBF9F4;
+  --line:#E2DACA;
+  --danger:#B3261E;
+  --warn:#8A5A00;
+  --ok:#157A52;
+  --info:#1D4E89;
+  --shadow:0 1px 2px rgba(20,38,31,.06), 0 8px 24px rgba(20,38,31,.06);
+  --r-sm:8px; --r-md:14px; --r-lg:20px; --r-full:999px;
+  --sp:4px;
+  --nav-h:64px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Noto Naskh Arabic", sans-serif;
+  --font-num: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+html[data-theme="dark"]{
+  --green-900:#0B241C;
+  --emerald:#3FB183;
+  --emerald-soft:#16302688;
+  --cream:#0B1310;
+  --beige:#132019;
+  --gold:#E0B84B;
+  --ink:#E9F0EB;
+  --ink-soft:#9DB2A8;
+  --surface:#12201B;
+  --surface-2:#0F1C17;
+  --line:#25382F;
+  --danger:#F2B8B5;
+  --warn:#E7C06B;
+  --ok:#3FB183;
+  --info:#8FBCEB;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font);
+  background:var(--cream);
+  color:var(--ink);
+  font-size:16px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+h1,h2,h3,h4{margin:0;line-height:1.25;letter-spacing:-.01em}
+h1{font-size:1.5rem;font-weight:700}
+h2{font-size:1.15rem;font-weight:700}
+h3{font-size:1rem;font-weight:650}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--emerald)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important}}
+
+/* ===========================================================================
+   2. GENEL BİLEŞENLER
+   =========================================================================== */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:16px;box-shadow:var(--shadow)}
+.card + .card{margin-top:12px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.muted{color:var(--ink-soft);font-size:.85rem}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:760px){.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row-between{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.spacer{flex:1}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;padding:10px 16px;border-radius:var(--r-full);
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  font-weight:600;cursor:pointer;transition:transform .08s ease, background .15s ease;
+  text-decoration:none;
+}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--green-900);color:#F7F4EC;border-color:var(--green-900)}
+html[data-theme="dark"] .btn-primary{background:var(--emerald);color:#06120D;border-color:var(--emerald)}
+.btn-emerald{background:var(--emerald);color:#fff;border-color:var(--emerald)}
+html[data-theme="dark"] .btn-emerald{color:#06120D}
+.btn-ghost{background:transparent}
+.btn-danger{background:transparent;color:var(--danger);border-color:var(--danger)}
+.btn-sm{min-height:36px;padding:6px 12px;font-size:.85rem}
+.btn-block{width:100%}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn-icon{min-width:44px;padding:10px}
+
+.field{display:block;margin-bottom:12px}
+.field > label,.label{display:block;font-size:.82rem;font-weight:650;color:var(--ink-soft);margin-bottom:6px}
+.input,select.input,textarea.input{
+  width:100%;min-height:44px;padding:10px 12px;border-radius:var(--r-sm);
+  border:1px solid var(--line);background:var(--surface-2);color:var(--ink);
+}
+textarea.input{min-height:88px;resize:vertical}
+.hint{font-size:.78rem;color:var(--ink-soft);margin-top:4px}
+
+.chip{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--r-full);
+  border:1px solid var(--line);background:var(--surface);font-size:.82rem;font-weight:600;cursor:pointer;
+  min-height:36px;
+}
+.chip[aria-pressed="true"],.chip.active{background:var(--green-900);color:#F7F4EC;border-color:var(--green-900)}
+html[data-theme="dark"] .chip[aria-pressed="true"],html[data-theme="dark"] .chip.active{background:var(--emerald);color:#06120D}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.scroll-x{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.scroll-x::-webkit-scrollbar{height:0}
+
+/* Durum rozetleri: renk + ikon + metin (renk körlüğü için) */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:var(--r-full);
+  font-size:.74rem;font-weight:700;border:1px solid;white-space:nowrap}
+.badge .bi{font-size:.9em}
+.st-ham{color:var(--warn);border-color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.st-cig{color:var(--danger);border-color:var(--danger);background:color-mix(in srgb,var(--danger) 10%,transparent)}
+.st-pismekte{color:var(--info);border-color:var(--info);background:color-mix(in srgb,var(--info) 10%,transparent)}
+.st-pismis{color:var(--ok);border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.st-saglam{color:var(--gold);border-color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,transparent)}
+
+.bar{height:8px;border-radius:var(--r-full);background:var(--beige);overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--emerald);border-radius:inherit}
+.bar.gold > i{background:var(--gold)}
+
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:12px}
+.stat .k{font-size:.76rem;color:var(--ink-soft);font-weight:650;display:block;margin-bottom:4px}
+.stat .v{font-size:1.35rem;font-weight:700;font-variant-numeric:tabular-nums;display:block}
+.stat .s{font-size:.74rem;color:var(--ink-soft)}
+
+.empty{text-align:center;padding:28px 16px;border:1px dashed var(--line);border-radius:var(--r-md);background:var(--surface-2)}
+.empty .e-ic{font-size:2rem;display:block;margin-bottom:8px}
+.empty h3{margin-bottom:4px}
+.empty p{color:var(--ink-soft);font-size:.88rem;margin-bottom:12px}
+
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.list .li-main{flex:1;min-width:0}
+.li-title{font-weight:650;font-size:.94rem}
+.li-sub{font-size:.78rem;color:var(--ink-soft)}
+.tnum{font-variant-numeric:tabular-nums;font-family:var(--font-num)}
+
+/* İMZA ÖĞE: altı dilimli sayfa halkası --------------------------------- */
+.ring{display:inline-block;flex:none}
+.ring circle,.ring path{transition:opacity .2s ease}
+.seg-off{opacity:.18}
+
+/* ===========================================================================
+   3. KABUK: giriş, üst bar, menüler
+   =========================================================================== */
+#auth{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(120% 90% at 50% 0%, var(--beige), var(--cream) 60%)}
+.auth-box{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:28px 22px;box-shadow:var(--shadow);text-align:center}
+.auth-mark{width:76px;height:76px;margin:0 auto 14px}
+.auth-box h1{font-size:1.6rem;margin-bottom:6px}
+.auth-box .sub{color:var(--ink-soft);margin-bottom:22px;font-size:.95rem}
+.auth-box .btn{margin-bottom:10px}
+.auth-note{font-size:.75rem;color:var(--ink-soft);margin-top:14px;line-height:1.5}
+
+#app{display:none}
+#app.on{display:block}
+
+.topbar{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;
+  background:var(--green-900);color:#F7F4EC;
+}
+html[data-theme="dark"] .topbar{background:var(--surface);border-bottom:1px solid var(--line);color:var(--ink)}
+.topbar .tb-title{font-weight:700;font-size:1.02rem;line-height:1.2}
+.topbar .tb-sub{font-size:.72rem;opacity:.75}
+.topbar .btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);color:inherit}
+html[data-theme="dark"] .topbar .btn{background:var(--surface-2);border-color:var(--line)}
+.lang-select{min-height:40px;padding:6px 10px;border-radius:var(--r-full);
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#F7F4EC;font-weight:600}
+html[data-theme="dark"] .lang-select{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+.lang-select option{color:#14261F;background:#fff}
+.avatar{width:36px;height:36px;border-radius:var(--r-full);background:var(--gold);color:#20180A;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex:none;border:0;cursor:pointer}
+
+.shell{display:block}
+main{padding:14px 14px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px));max-width:1100px;margin:0 auto}
+.view-head{margin-bottom:14px}
+.view-head p{color:var(--ink-soft);font-size:.86rem;margin-top:2px}
+
+/* Alt menü (mobil) */
+.bottomnav{
+  position:fixed;inset-inline:0;bottom:0;z-index:40;display:flex;
+  background:var(--surface);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.bottomnav a{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  min-height:var(--nav-h);text-decoration:none;color:var(--ink-soft);font-size:.66rem;font-weight:650;padding:6px 2px;
+}
+.bottomnav a .ni{font-size:1.15rem;line-height:1}
+.bottomnav a[aria-current="page"]{color:var(--emerald)}
+.bottomnav a[aria-current="page"] .ni{transform:translateY(-1px)}
+
+/* Yan menü (masaüstü) */
+.sidenav{display:none}
+@media(min-width:900px){
+  .shell{display:grid;grid-template-columns:246px minmax(0,1fr);max-width:1240px;margin:0 auto}
+  .sidenav{display:block;position:sticky;top:60px;align-self:start;padding:16px 10px}
+  .sidenav a{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--r-full);
+    text-decoration:none;color:var(--ink);font-weight:600;font-size:.92rem;margin-bottom:2px}
+  .sidenav a:hover{background:var(--surface-2)}
+  .sidenav a[aria-current="page"]{background:var(--emerald-soft);color:var(--emerald)}
+  html[data-theme="dark"] .sidenav a[aria-current="page"]{color:var(--emerald)}
+  .sidenav a .ni{font-size:1.1rem;width:22px;text-align:center}
+  .bottomnav{display:none}
+  main{padding-bottom:40px}
+}
+
+/* ===========================================================================
+   4. MODAL / TOAST / SHEET
+   =========================================================================== */
+.modal-back{position:fixed;inset:0;z-index:60;background:rgba(10,20,16,.5);display:flex;
+  align-items:flex-end;justify-content:center;padding:0}
+@media(min-width:640px){.modal-back{align-items:center;padding:20px}}
+.modal{
+  background:var(--surface);width:100%;max-width:560px;max-height:88dvh;overflow:auto;
+  border-radius:var(--r-lg) var(--r-lg) 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px));
+  border:1px solid var(--line);
+}
+@media(min-width:640px){.modal{border-radius:var(--r-lg)}}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
+.modal-foot{display:flex;gap:8px;margin-top:16px}
+.modal-foot .btn{flex:1}
+
+#toasts{position:fixed;z-index:80;left:50%;transform:translateX(-50%);
+  bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;gap:8px;width:min(94vw,420px);pointer-events:none}
+@media(min-width:900px){#toasts{bottom:20px}}
+.toast{background:var(--green-900);color:#F7F4EC;border-radius:var(--r-md);padding:11px 14px;
+  font-size:.88rem;font-weight:600;box-shadow:var(--shadow);display:flex;gap:8px;align-items:center;
+  animation:tin .2s ease}
+html[data-theme="dark"] .toast{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+.toast.ok{background:var(--emerald);color:#04140E}
+.toast.err{background:var(--danger);color:#fff}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ===========================================================================
+   5. EKRANA ÖZEL
+   =========================================================================== */
+.juz-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:12px;display:flex;gap:12px;align-items:center;text-align:start;width:100%;cursor:pointer}
+.juz-card .li-title,.juz-card .li-sub,.juz-card .bar{display:block}
+.juz-no{width:44px;height:44px;border-radius:12px;background:var(--emerald-soft);color:var(--emerald);
+  display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+html[data-theme="dark"] .juz-no{background:#16302699}
+.page-tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:10px;display:flex;flex-direction:column;gap:6px;align-items:center;cursor:pointer;text-align:center}
+.page-tile .pn{font-weight:750;font-size:.9rem}
+.pages-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+
+.six{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+@media(max-width:400px){
+  .six{grid-template-columns:repeat(3,1fr)}
+  .topbar .tb-sub{display:none}
+  .lang-select{max-width:110px}
+}
+.six button{min-height:52px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface-2);
+  font-weight:700;font-size:.8rem;cursor:pointer;color:var(--ink-soft);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px}
+.six button[aria-pressed="true"]{background:var(--emerald);border-color:var(--emerald);color:#fff}
+html[data-theme="dark"] .six button[aria-pressed="true"]{color:#06120D}
+.six button .tick{font-size:.9rem}
+
+.timer-dial{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:2.6rem;font-weight:700;
+  letter-spacing:-.02em;text-align:center;margin:6px 0 2px}
+.timer-state{text-align:center;font-size:.8rem;color:var(--ink-soft);margin-bottom:14px}
+
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .dow{font-size:.68rem;text-align:center;color:var(--ink-soft);font-weight:700;padding:4px 0}
+.cal .day{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:var(--surface);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:2px}
+.cal .day.out{opacity:.35}
+.cal .day.today{border-color:var(--gold);border-width:2px}
+.cal .day.sel{background:var(--emerald-soft);border-color:var(--emerald)}
+.cal .day .dn{font-size:.82rem;font-weight:650}
+.cal .dots{display:flex;gap:2px}
+.cal .dot{width:5px;height:5px;border-radius:50%;background:var(--emerald)}
+.cal .dot.pending{background:var(--gold)}
+.cal .dot.missed{background:var(--danger)}
+
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart text{font-size:9px;fill:var(--ink-soft);font-family:var(--font)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:.76rem;color:var(--ink-soft)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.stack{display:flex;height:22px;border-radius:var(--r-full);overflow:hidden;border:1px solid var(--line)}
+.stack i{display:block;height:100%}
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.heat .hc{aspect-ratio:1;border-radius:5px;background:var(--beige);border:1px solid var(--line)}
+
+.tr-box{position:relative}
+.tr-count{position:absolute;inset-inline-end:10px;bottom:8px;font-size:.72rem;color:var(--ink-soft)}
+.tr-out{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;min-height:88px}
+[dir="rtl"] .tr-ar,.ar-text{font-size:1.08em;line-height:1.9}
+
+.dev pre{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:10px;font-size:.72rem;max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.testrow{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line);font-size:.84rem}
+.testrow .tf{font-weight:800}
+.pass{color:var(--ok)} .fail{color:var(--danger)}
+
+.offline-bar{display:none;background:var(--warn);color:#fff;text-align:center;font-size:.8rem;padding:6px;font-weight:650}
+body.offline .offline-bar{display:block}
+html[data-theme="dark"] .offline-bar{color:#1a1300}
+</style>
+</head>
+<body>
+
+<!-- ======================= GİRİŞ EKRANI ======================= -->
+<section id="auth" aria-labelledby="authTitle">
+  <div class="auth-box">
+    <svg class="auth-mark" viewBox="0 0 100 100" role="img" aria-hidden="true">
+      <circle cx="50" cy="50" r="40" fill="none" stroke="#157A52" stroke-width="7" stroke-linecap="round"
+              stroke-dasharray="36 6" transform="rotate(-90 50 50)"/>
+      <path d="M62 30a22 22 0 1 0 0 40 26 26 0 1 1 0-40z" fill="#0E3B2E"/>
+      <circle cx="72" cy="34" r="4" fill="#B8912A"/>
+    </svg>
+    <h1 id="authTitle" data-i18n="app_title">Hafızlık Ajandası</h1>
+    <p class="sub" data-i18n="app_sub">Ezberle, tekrar et, takip et.</p>
+    <button class="btn btn-primary btn-block" data-act="login-google">
+      <span aria-hidden="true">◎</span><span data-i18n="login_google">Google ile giriş yap</span>
+    </button>
+    <button class="btn btn-block" data-act="login-demo">
+      <span aria-hidden="true">▷</span><span data-i18n="login_demo">Demo kullanıcı olarak devam et</span>
+    </button>
+    <p class="auth-note" data-i18n="auth_note">
+      Bu bir prototiptir. Veriler yalnızca bu cihazda, tarayıcı hafızasında saklanır.
+    </p>
+  </div>
+</section>
+
+<!-- ======================= UYGULAMA ======================= -->
+<div id="app">
+  <header class="topbar">
+    <button class="avatar" data-act="go" data-view="profile" id="tbAvatar" aria-label="Profil">HA</button>
+    <div style="min-width:0">
+      <div class="tb-title" data-i18n="app_title">Hafızlık Ajandası</div>
+      <div class="tb-sub" id="tbSub">—</div>
+    </div>
+    <div class="spacer"></div>
+    <label class="sr-only" for="langSelect" data-i18n="language">Dil</label>
+    <select id="langSelect" class="lang-select" aria-label="Dil / Language">
+      <option value="tr">Türkçe</option>
+      <option value="en">English</option>
+      <option value="fr">Français</option>
+      <option value="ar">العربية</option>
+    </select>
+    <button class="btn btn-icon" data-act="toggle-theme" aria-label="Tema" title="Tema"><span id="themeIcon" aria-hidden="true">☾</span></button>
+  </header>
+  <div class="offline-bar" role="status" data-i18n="offline_msg">Çevrimdışısınız. Hafızlık özellikleri çalışmaya devam eder.</div>
+
+  <div class="shell">
+    <nav class="sidenav" aria-label="Ana menü" id="sideNav"></nav>
+    <main id="view" tabindex="-1"></main>
+  </div>
+
+  <nav class="bottomnav" aria-label="Alt menü" id="bottomNav"></nav>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+
+<script>
+"use strict";
+/* ===========================================================================
+   BÖLÜM 1 — YAPILANDIRMA
+   =========================================================================== */
+
+/* Giriş modu. "demo" -> tarayıcı içi sahte profil.
+   ÜRETİM NOTU: gerçek Google girişi için Firebase Authentication kullanılır:
+     import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+     const cred = await signInWithPopup(getAuth(), new GoogleAuthProvider());
+     Store.setUser({ id: cred.user.uid, name: cred.user.displayName, ... })
+   AUTH_MODE = "firebase" olduğunda loginGoogleUser() bu akışa yönlendirilir. */
+const AUTH_MODE = "demo";
+
+/* Çeviri modu. "demo" -> yerleşik örnek sözlük.
+   ÜRETİM NOTU: LibreTranslate / Google Cloud Translation / DeepL için
+   adaptör aşağıda translateText() içinde hazırdır. API anahtarı ASLA
+   frontend'e yazılmaz; istek kendi backend'iniz üzerinden geçmelidir. */
+const TRANSLATION_MODE = "demo";
+
+const STORAGE_KEY   = "hafizlikAjandasiDataV1";
+const SESSION_KEY   = "hafizlikAjandasiSessionV1"; // aktif oturum/kullanıcı anahtarı
+const APP_VERSION   = "1.0.0";
+
+/* Aralıklı tekrar aralıkları (gün). Index = o ana kadarki başarılı tekrar sayısı. */
+const REVISION_INTERVALS = [0, 1, 3, 7, 14, 30];
+
+/* Medine mushafı standart cüz başlangıç sayfaları (604 sayfa varsayımı).
+   Ayarlardan değiştirilebilir; kod hiçbir yerde "20 sayfa" varsayımına bağlı değildir. */
+const DEFAULT_JUZ_STARTS = [1,22,42,62,82,102,121,142,162,182,201,222,242,262,282,
+                            302,322,342,362,382,402,422,442,462,482,502,522,542,562,582];
+
+const TASK_TYPES = ["new_memorization","old_revision","turn_study","juz_revision",
+                    "page_revision","listening","teacher_check","free_note"];
+const DIFFICULTIES = ["kolay","orta","zor","cokzor"];
+const STATUSES = ["ham","cig","pismekte","pismis","saglam"];
+const STATUS_ICON = { ham:"◔", cig:"◑", pismekte:"◕", pismis:"●", saglam:"★" };
+const LANGS = ["tr","en","fr","ar"];
+
+const NAV_ITEMS = [
+  { id:"home",      icon:"⌂", key:"nav_home",      primary:true  },
+  { id:"tracking",  icon:"❑", key:"nav_tracking",  primary:true  },
+  { id:"turns",     icon:"↻", key:"nav_turns",     primary:true  },
+  { id:"revisions", icon:"✓", key:"nav_revisions", primary:false },
+  { id:"agenda",    icon:"▤", key:"nav_agenda",    primary:true  },
+  { id:"timer",     icon:"◷", key:"nav_timer",     primary:false },
+  { id:"translate", icon:"⇄", key:"nav_translate", primary:false },
+  { id:"stats",     icon:"◫", key:"nav_stats",     primary:false },
+  { id:"profile",   icon:"☺", key:"nav_profile",   primary:false }
+];
+
+/* ===========================================================================
+   BÖLÜM 2 — ÇOK DİLLİLİK (tr / en / fr / ar)
+   Her anahtar: [tr, en, fr, ar]
+   =========================================================================== */
+const I18N = {
+app_title:["Hafızlık Ajandası","Memorization Planner","Agenda de Mémorisation","أجندة الحفظ"],
+app_sub:["Ezberle, tekrar et, takip et.","Memorize, revise, track.","Mémorise, révise, suis.","احفظ، راجع، تابع."],
+auth_note:["Bu bir prototiptir. Veriler yalnızca bu cihazda, tarayıcı hafızasında saklanır.","This is a prototype. Data is stored only on this device, in browser storage.","Ceci est un prototype. Les données sont stockées uniquement sur cet appareil.","هذا نموذج أولي. تُحفظ البيانات على هذا الجهاز فقط."],
+login_google:["Google ile giriş yap","Sign in with Google","Se connecter avec Google","تسجيل الدخول عبر Google"],
+login_demo:["Demo kullanıcı olarak devam et","Continue as demo user","Continuer en mode démo","المتابعة كمستخدم تجريبي"],
+login_form_title:["Hesap bilgileri","Account details","Informations du compte","بيانات الحساب"],
+login_form_desc:["Prototipte Google girişi taklit edilir. Bilgileriniz cihazınızdan çıkmaz.","Google sign-in is simulated here. Your details never leave this device.","La connexion Google est simulée. Vos données restent sur l'appareil.","تسجيل الدخول عبر Google محاكاة فقط. بياناتك لا تغادر جهازك."],
+first_name:["Ad","First name","Prénom","الاسم"],
+last_name:["Soyad","Last name","Nom","اللقب"],
+email:["E-posta","Email","E-mail","البريد الإلكتروني"],
+nav_home:["Ana Sayfa","Home","Accueil","الرئيسية"],
+nav_tracking:["Hafızlık Takibi","Tracking","Suivi","المتابعة"],
+nav_turns:["Dönüşler","Turns","Tours","الدورات"],
+nav_revisions:["Tekrarlar","Revisions","Révisions","المراجعات"],
+nav_agenda:["Ajanda","Agenda","Agenda","الأجندة"],
+nav_timer:["Süre Takibi","Timer","Minuteur","المؤقّت"],
+nav_translate:["Çeviri","Translate","Traduction","الترجمة"],
+nav_stats:["İstatistikler","Statistics","Statistiques","الإحصاءات"],
+nav_profile:["Profil ve Ayarlar","Profile & Settings","Profil et réglages","الملف والإعدادات"],
+nav_more:["Daha Fazla","More","Plus","المزيد"],
+language:["Dil","Language","Langue","اللغة"],
+save:["Kaydet","Save","Enregistrer","حفظ"],
+cancel:["Vazgeç","Cancel","Annuler","إلغاء"],
+close:["Kapat","Close","Fermer","إغلاق"],
+del:["Sil","Delete","Supprimer","حذف"],
+edit:["Düzenle","Edit","Modifier","تعديل"],
+add:["Ekle","Add","Ajouter","إضافة"],
+back:["Geri","Back","Retour","رجوع"],
+apply:["Uygula","Apply","Appliquer","تطبيق"],
+logout:["Çıkış yap","Sign out","Se déconnecter","تسجيل الخروج"],
+juz:["Cüz","Juz","Juz","جزء"],
+page:["Sayfa","Page","Page","صفحة"],
+pages:["sayfa","pages","pages","صفحة"],
+minutes:["dakika","minutes","minutes","دقيقة"],
+min_short:["dk","min","min","د"],
+hour_short:["sa","h","h","س"],
+today:["Bugün","Today","Aujourd'hui","اليوم"],
+yesterday:["Dün","Yesterday","Hier","أمس"],
+week:["Hafta","Week","Semaine","أسبوع"],
+month:["Ay","Month","Mois","شهر"],
+day:["Gün","Day","Jour","يوم"],
+date:["Tarih","Date","Date","التاريخ"],
+time:["Saat","Time","Heure","الوقت"],
+note:["Not","Note","Note","ملاحظة"],
+notes:["Notlar","Notes","Notes","ملاحظات"],
+status:["Durum","Status","Statut","الحالة"],
+difficulty:["Zorluk","Difficulty","Difficulté","الصعوبة"],
+kolay:["Kolay","Easy","Facile","سهل"],
+orta:["Orta","Medium","Moyen","متوسط"],
+zor:["Zor","Hard","Difficile","صعب"],
+cokzor:["Çok zor","Very hard","Très difficile","صعب جدًا"],
+st_ham:["Ham","Raw","Brut","خام"],
+st_cig:["Çiğ","Fresh","Frais","نيء"],
+st_pismekte:["Pişmekte","Setting in","En cours","قيد النضج"],
+st_pismis:["Pişmiş","Cooked","Consolidé","ناضج"],
+st_saglam:["Sağlam","Solid","Solide","متين"],
+st_ham_d:["Yeni başlandı, altı bölüm henüz bitmedi.","Just started, six parts not finished yet.","Commencé, les six parties ne sont pas finies.","بدأ حديثًا ولم تكتمل الأجزاء الستة."],
+st_cig_d:["İlk ezber bitti, tekrar bekliyor.","First memorization done, awaiting revision.","Mémorisé une fois, en attente de révision.","اكتمل الحفظ الأول وينتظر المراجعة."],
+st_pismekte_d:["Birkaç tekrar yapıldı, oturuyor.","A few revisions done, settling.","Quelques révisions faites.","تمت بعض المراجعات."],
+st_pismis_d:["Yeterli tekrar yapıldı, güvenilir.","Enough revisions, reliable.","Assez de révisions, fiable.","مراجعات كافية، موثوق."],
+st_saglam_d:["Uzun dönem tekrarları tamamlandı.","Long-term revisions complete.","Révisions à long terme terminées.","اكتملت المراجعات طويلة المدى."],
+start:["Başlat","Start","Démarrer","ابدأ"],
+pause:["Duraklat","Pause","Pause","إيقاف مؤقت"],
+resume:["Devam Et","Resume","Reprendre","استئناف"],
+finish:["Bitir","Finish","Terminer","إنهاء"],
+reset:["Sıfırla","Reset","Réinitialiser","تصفير"],
+running:["Çalışma sürüyor","Session running","Session en cours","الجلسة جارية"],
+paused:["Duraklatıldı","Paused","En pause","متوقف مؤقتًا"],
+idle:["Sayaç boşta","Timer idle","Minuteur inactif","المؤقت متوقف"],
+start_study:["Çalışmaya Başla","Start studying","Commencer l'étude","ابدأ الدراسة"],
+continue_last:["Kaldığın Yerden Devam Et","Continue where you left off","Reprendre où vous étiez","تابع من حيث توقفت"],
+today_new_target:["Bugünkü yeni ezber hedefi","Today's new memorization goal","Objectif de nouvelle mémorisation","هدف الحفظ الجديد اليوم"],
+today_rev_target:["Bugünkü tekrar hedefi","Today's revision goal","Objectif de révision","هدف المراجعة اليوم"],
+today_time:["Bugün çalışılan süre","Time studied today","Temps étudié aujourd'hui","وقت الدراسة اليوم"],
+today_sections:["Bugün tamamlanan bölüm","Parts completed today","Parties terminées aujourd'hui","الأجزاء المكتملة اليوم"],
+current_turn:["Mevcut dönüş","Current turn","Tour actuel","الدورة الحالية"],
+turn_progress:["Dönüş ilerlemesi","Turn progress","Progression du tour","تقدم الدورة"],
+total_pages_mem:["Toplam ezberlenen sayfa","Total pages memorized","Pages mémorisées","إجمالي الصفحات المحفوظة"],
+cooked_pages:["Pişmiş sayfa","Cooked pages","Pages consolidées","الصفحات الناضجة"],
+overdue_revs:["Geciken tekrar","Overdue revisions","Révisions en retard","مراجعات متأخرة"],
+streak:["Çalışma serisi","Study streak","Série d'étude","سلسلة الدراسة"],
+streak_days:["gün","days","jours","يوم"],
+todays_tasks:["Bugünün ajanda görevleri","Today's agenda","Agenda du jour","مهام اليوم"],
+upcoming_revs:["Yaklaşan tekrarlar","Upcoming revisions","Révisions à venir","المراجعات القادمة"],
+recent_pages:["Son çalışılan sayfalar","Recently studied pages","Pages étudiées récemment","آخر الصفحات المدروسة"],
+weekly_chart:["Haftalık ilerleme","Weekly progress","Progression hebdomadaire","التقدم الأسبوعي"],
+select_page:["Sayfa seç","Select a page","Choisir une page","اختر صفحة"],
+pick_juz:["Cüz seçerek","By juz","Par juz","حسب الجزء"],
+pick_page:["Sayfa numarasıyla","By page number","Par numéro de page","حسب رقم الصفحة"],
+pick_turn:["Dönüşten","From turn","Depuis le tour","من الدورة"],
+pick_last:["Son sayfadan devam","Continue last page","Continuer la dernière page","تابع الصفحة الأخيرة"],
+memorized:["Ezberlenen","Memorized","Mémorisé","محفوظ"],
+awaiting:["Tekrar bekleyen","Awaiting revision","En attente","بانتظار المراجعة"],
+completion:["Tamamlanma","Completion","Achèvement","نسبة الإنجاز"],
+six_parts:["Altıda birlik ilerleme","Sixths progress","Progression en sixièmes","التقدم بالأسداس"],
+not_started:["Başlanmadı","Not started","Non commencé","لم يبدأ"],
+in_progress:["Devam ediyor","In progress","En cours","قيد التقدم"],
+first_done:["İlk ezber tamamlandı","First memorization complete","Première mémorisation terminée","اكتمل الحفظ الأول"],
+study_seconds:["Toplam çalışma","Total study","Étude totale","إجمالي الدراسة"],
+repeat_count:["Tekrar sayısı","Revision count","Nombre de révisions","عدد المراجعات"],
+last_studied:["Son çalışma","Last studied","Dernière étude","آخر دراسة"],
+next_rev:["Sonraki tekrar","Next revision","Prochaine révision","المراجعة القادمة"],
+success_rate:["Başarı yüzdesi","Success rate","Taux de réussite","نسبة النجاح"],
+open_page:["Sayfayı aç","Open page","Ouvrir la page","افتح الصفحة"],
+turn:["Dönüş","Turn","Tour","دورة"],
+turn_n:["{n}. dönüş","Turn {n}","Tour {n}","الدورة {n}"],
+turn_select:["Mevcut dönüşünüzü seçin","Select your current turn","Choisissez votre tour actuel","اختر دورتك الحالية"],
+new_page:["Yeni sayfa","New page","Nouvelle page","صفحة جديدة"],
+repeat_pages:["Tekrar sayfaları","Revision pages","Pages de révision","صفحات المراجعة"],
+turn_tasks:["Dönüş görevleri","Turn tasks","Tâches du tour","مهام الدورة"],
+turn_done_juz:["Tamamlanan cüz","Completed juz","Juz terminés","الأجزاء المكتملة"],
+daily_juz:["Bugün çalışılan cüz","Juz studied today","Juz étudiés aujourd'hui","الأجزاء المدروسة اليوم"],
+turn_start:["Dönüş başlangıcı","Turn started","Début du tour","بداية الدورة"],
+turn_eta:["Tahmini bitiş","Estimated finish","Fin estimée","النهاية المتوقعة"],
+turn_note:["Dönüş notu","Turn note","Note du tour","ملاحظة الدورة"],
+no_task_juz:["Bu cüzde bu dönüş için sayfa yok.","No page for this turn in this juz.","Aucune page pour ce tour.","لا توجد صفحة لهذه الدورة."],
+mark_done:["Tamamlandı işaretle","Mark complete","Marquer terminé","وضع علامة مكتمل"],
+new_revision:["Tekrar kaydı ekle","Add revision","Ajouter une révision","إضافة مراجعة"],
+mistakes:["Hata sayısı","Mistakes","Erreurs","عدد الأخطاء"],
+hesitations:["Takılma sayısı","Hesitations","Hésitations","عدد التوقفات"],
+received_help:["Yardım alındı","Received help","Aide reçue","تلقّى مساعدة"],
+fluency:["Akıcılık puanı","Fluency score","Score de fluidité","درجة الطلاقة"],
+fl1:["Çok zorlandı","Struggled a lot","Très difficile","تعثّر كثيرًا"],
+fl2:["Zorlandı","Struggled","Difficile","تعثّر"],
+fl3:["Orta","Average","Moyen","متوسط"],
+fl4:["İyi","Good","Bien","جيد"],
+fl5:["Çok akıcı","Very fluent","Très fluide","طليق جدًا"],
+duration:["Süre","Duration","Durée","المدة"],
+rev_history:["Tekrar geçmişi","Revision history","Historique des révisions","سجل المراجعات"],
+due_today:["Bugün tekrarı gelenler","Due today","À réviser aujourd'hui","مستحق اليوم"],
+overdue:["Geciken","Overdue","En retard","متأخر"],
+upcoming:["Yaklaşan","Upcoming","À venir","قادم"],
+agenda_add:["Görev ekle","Add task","Ajouter une tâche","إضافة مهمة"],
+title:["Başlık","Title","Titre","العنوان"],
+start_time:["Başlangıç saati","Start time","Heure de début","وقت البدء"],
+est_minutes:["Tahmini süre (dk)","Estimated minutes","Durée estimée (min)","المدة المقدرة (د)"],
+task_type:["Görev türü","Task type","Type de tâche","نوع المهمة"],
+target_sections:["Hedeflenen bölüm","Target parts","Parties visées","الأجزاء المستهدفة"],
+reminder:["Hatırlatma","Reminder","Rappel","تذكير"],
+tt_new_memorization:["Yeni ezber","New memorization","Nouvelle mémorisation","حفظ جديد"],
+tt_old_revision:["Eski ezber tekrarı","Old revision","Ancienne révision","مراجعة قديمة"],
+tt_turn_study:["Dönüş çalışması","Turn study","Étude du tour","دراسة الدورة"],
+tt_juz_revision:["Cüz tekrarı","Juz revision","Révision de juz","مراجعة جزء"],
+tt_page_revision:["Sayfa tekrarı","Page revision","Révision de page","مراجعة صفحة"],
+tt_listening:["Dinleme","Listening","Écoute","استماع"],
+tt_teacher_check:["Hoca kontrolü","Teacher check","Contrôle du professeur","عرض على المعلّم"],
+tt_free_note:["Serbest not","Free note","Note libre","ملاحظة حرة"],
+ag_pending:["Bekliyor","Pending","En attente","معلّق"],
+ag_done:["Tamamlandı","Completed","Terminé","مكتمل"],
+ag_partial:["Kısmen tamamlandı","Partly completed","Partiellement terminé","مكتمل جزئيًا"],
+ag_postponed:["Ertelendi","Postponed","Reporté","مؤجل"],
+ag_missed:["Yapılmadı","Missed","Manqué","لم يُنجز"],
+view_day:["Günlük","Daily","Jour","يومي"],
+view_week:["Haftalık","Weekly","Semaine","أسبوعي"],
+view_month:["Aylık","Monthly","Mois","شهري"],
+elapsed:["Geçen süre","Elapsed","Temps écoulé","الوقت المنقضي"],
+finish_q_sections:["Kaç bölüm tamamlandı?","How many parts completed?","Combien de parties terminées ?","كم جزءًا أكملت؟"],
+finish_q_full:["Sayfa tamamen ezberlendi mi?","Fully memorized?","Page entièrement mémorisée ?","هل حُفظت الصفحة كاملة؟"],
+finish_q_how:["Çalışma nasıldı?","How was the session?","Comment était la session ?","كيف كانت الجلسة؟"],
+finish_q_note:["Not eklemek ister misiniz?","Add a note?","Ajouter une note ?","هل تريد إضافة ملاحظة؟"],
+finish_q_next:["Sonraki tekrar tarihi","Next revision date","Date de prochaine révision","تاريخ المراجعة القادمة"],
+yes:["Evet","Yes","Oui","نعم"],
+no:["Hayır","No","Non","لا"],
+source_lang:["Kaynak dil","Source language","Langue source","اللغة المصدر"],
+target_lang:["Hedef dil","Target language","Langue cible","اللغة الهدف"],
+swap:["Dilleri değiştir","Swap languages","Inverser les langues","تبديل اللغتين"],
+translate_btn:["Çevir","Translate","Traduire","ترجم"],
+copy:["Kopyala","Copy","Copier","نسخ"],
+copied:["Kopyalandı.","Copied.","Copié.","تم النسخ."],
+tr_history:["Çeviri geçmişi","Translation history","Historique","سجل الترجمة"],
+clear_history:["Geçmişi temizle","Clear history","Effacer l'historique","مسح السجل"],
+favorite:["Favori","Favorite","Favori","مفضّل"],
+chars:["karakter","characters","caractères","حرف"],
+tr_demo_notice:["Demo çeviri modu: bu metin yerleşik örnek sözlükte bulunamadı.","Demo translation mode: this text is not in the built-in sample dictionary.","Mode démo : ce texte n'est pas dans le dictionnaire d'exemple.","وضع الترجمة التجريبي: هذا النص غير موجود في القاموس المدمج."],
+tr_input_ph:["Çevrilecek metni yazın","Type the text to translate","Saisissez le texte à traduire","اكتب النص المراد ترجمته"],
+stats_total_time:["Toplam çalışma süresi","Total study time","Temps d'étude total","إجمالي وقت الدراسة"],
+stats_daily_avg:["Günlük ortalama","Daily average","Moyenne quotidienne","المعدل اليومي"],
+stats_week_total:["Bu hafta","This week","Cette semaine","هذا الأسبوع"],
+stats_month_total:["Bu ay","This month","Ce mois","هذا الشهر"],
+stats_sections:["Tamamlanan 1/6 parça","Sixths completed","Sixièmes terminés","الأسداس المكتملة"],
+stats_revisions:["Toplam tekrar","Total revisions","Révisions totales","إجمالي المراجعات"],
+stats_dist:["Sayfa durumlarının dağılımı","Page status distribution","Répartition des statuts","توزيع حالات الصفحات"],
+stats_7days:["Son 7 günlük çalışma süresi","Study time, last 7 days","Temps d'étude, 7 derniers jours","وقت الدراسة، آخر ٧ أيام"],
+stats_4weeks:["Son 4 haftalık ezber ilerlemesi","Memorization, last 4 weeks","Mémorisation, 4 dernières semaines","الحفظ، آخر ٤ أسابيع"],
+stats_juz_rate:["Cüz bazında tamamlanma","Completion by juz","Achèvement par juz","الإنجاز حسب الجزء"],
+stats_heat:["Günlere göre çalışma yoğunluğu","Study intensity by day","Intensité par jour","كثافة الدراسة حسب اليوم"],
+stats_top_juz:["En çok çalışılan cüz","Most studied juz","Juz le plus étudié","الجزء الأكثر دراسة"],
+stats_hard_pages:["En zorlanılan sayfalar","Hardest pages","Pages les plus difficiles","أصعب الصفحات"],
+stats_best_streak:["En uzun çalışma serisi","Longest streak","Plus longue série","أطول سلسلة"],
+stats_ontime:["Zamanında tamamlanan görev","Tasks completed on time","Tâches à temps","المهام في وقتها"],
+stats_late_rate:["Geciken tekrar oranı","Overdue revision rate","Taux de retard","نسبة التأخر"],
+profile_title:["Profil","Profile","Profil","الملف الشخصي"],
+settings:["Ayarlar","Settings","Réglages","الإعدادات"],
+start_date:["Hafızlığa başlama tarihi","Memorization start date","Date de début","تاريخ بدء الحفظ"],
+daily_goal_min:["Günlük hedef (dakika)","Daily goal (minutes)","Objectif quotidien (min)","الهدف اليومي (دقيقة)"],
+weekly_goal_min:["Haftalık hedef (dakika)","Weekly goal (minutes)","Objectif hebdo (min)","الهدف الأسبوعي (دقيقة)"],
+daily_new_target:["Günlük yeni ezber hedefi","Daily new page goal","Objectif de nouvelles pages","هدف الصفحات الجديدة"],
+daily_rev_target:["Günlük tekrar hedefi","Daily revision goal","Objectif de révisions","هدف المراجعات اليومي"],
+theme:["Tema","Theme","Thème","السمة"],
+theme_light:["Açık","Light","Clair","فاتح"],
+theme_dark:["Koyu","Dark","Sombre","داكن"],
+theme_system:["Sistem","System","Système","النظام"],
+total_quran_pages:["Toplam Kur'an sayfası","Total Qur'an pages","Total de pages","إجمالي صفحات المصحف"],
+juz_starts:["Cüz başlangıç sayfaları","Juz start pages","Pages de début des juz","صفحات بداية الأجزاء"],
+juz_starts_hint:["30 sayı, virgülle ayrılmış.","30 numbers, comma separated.","30 nombres séparés par des virgules.","٣٠ رقمًا مفصولة بفواصل."],
+cooked_threshold:["Pişmiş sayfa tekrar eşiği","Cooked threshold","Seuil consolidé","حد الناضج"],
+solid_threshold:["Sağlam sayfa tekrar eşiği","Solid threshold","Seuil solide","حد المتين"],
+week_start:["Haftanın başlangıç günü","Week starts on","Début de semaine","بداية الأسبوع"],
+monday:["Pazartesi","Monday","Lundi","الإثنين"],
+sunday:["Pazar","Sunday","Dimanche","الأحد"],
+notif_prefs:["Bildirim tercihleri","Notification preferences","Préférences de notification","تفضيلات الإشعارات"],
+notif_toasts:["Kayıt bildirimlerini göster","Show save notifications","Afficher les notifications","إظهار إشعارات الحفظ"],
+notif_due:["Tekrar hatırlatmalarını göster","Show revision reminders","Afficher les rappels","إظهار تذكيرات المراجعة"],
+export_data:["Verileri dışa aktar","Export data","Exporter les données","تصدير البيانات"],
+import_data:["Verileri içe aktar","Import data","Importer les données","استيراد البيانات"],
+reset_all:["Bütün verileri sıfırla","Reset all data","Tout réinitialiser","تصفير كل البيانات"],
+clear_demo:["Demo verilerini temizle","Clear demo data","Effacer les données démo","مسح البيانات التجريبية"],
+dev_panel:["Geliştirici Paneli","Developer panel","Panneau développeur","لوحة المطوّر"],
+dev_seed:["Demo verisi oluştur","Seed demo data","Générer des données démo","إنشاء بيانات تجريبية"],
+dev_state:["Uygulama durumunu göster","Show app state","Afficher l'état","عرض حالة التطبيق"],
+dev_active:["Aktif süre kaydı","Active timer record","Enregistrement actif","سجل المؤقت النشط"],
+dev_recalc:["Dönüş görevlerini yeniden hesapla","Recalculate turn tasks","Recalculer les tâches","إعادة حساب المهام"],
+dev_sample_rev:["Örnek tekrar tarihi oluştur","Generate sample revision date","Générer une date d'exemple","توليد تاريخ مراجعة"],
+dev_i18n:["Dil anahtarlarını kontrol et","Check language keys","Vérifier les clés","فحص مفاتيح اللغة"],
+dev_tests:["Test senaryolarını çalıştır","Run test scenarios","Lancer les tests","تشغيل الاختبارات"],
+t_saved:["Değişiklikler kaydedildi.","Changes saved.","Modifications enregistrées.","تم حفظ التغييرات."],
+t_started:["Çalışma başlatıldı.","Session started.","Session démarrée.","بدأت الجلسة."],
+t_paused:["Çalışma duraklatıldı.","Session paused.","Session en pause.","تم إيقاف الجلسة مؤقتًا."],
+t_resumed:["Çalışmaya devam ediliyor.","Session resumed.","Session reprise.","تم استئناف الجلسة."],
+t_finished:["Çalışma tamamlandı.","Session completed.","Session terminée.","اكتملت الجلسة."],
+t_progress:["Sayfa ilerlemesi kaydedildi.","Page progress saved.","Progression enregistrée.","تم حفظ تقدم الصفحة."],
+t_rev:["Tekrar kaydı oluşturuldu.","Revision recorded.","Révision enregistrée.","تم تسجيل المراجعة."],
+t_task_done:["Ajanda görevi tamamlandı.","Agenda task completed.","Tâche terminée.","اكتملت المهمة."],
+t_invalid:["Geçersiz veri girdiniz.","Invalid data entered.","Données non valides.","بيانات غير صالحة."],
+t_irreversible:["Bu işlem geri alınamaz.","This action cannot be undone.","Action irréversible.","لا يمكن التراجع عن هذا."],
+t_goal:["Bugünkü hedefinizi tamamladınız.","You reached today's goal.","Objectif du jour atteint.","أكملت هدف اليوم."],
+t_cooked:["Tebrikler, bu sayfa pişmiş seviyeye ulaştı.","This page reached cooked level.","Cette page est consolidée.","وصلت هذه الصفحة إلى مستوى النضج."],
+t_online:["Çevrimiçi oldunuz.","You are back online.","Vous êtes en ligne.","أنت متصل الآن."],
+t_offline:["Çevrimdışısınız.","You are offline.","Vous êtes hors ligne.","أنت غير متصل."],
+t_reset:["Bütün veriler silindi.","All data deleted.","Toutes les données supprimées.","تم حذف كل البيانات."],
+t_imported:["Veriler içe aktarıldı.","Data imported.","Données importées.","تم استيراد البيانات."],
+t_one_timer:["Aynı anda yalnızca bir sayaç çalışabilir.","Only one timer can run at a time.","Un seul minuteur à la fois.","مؤقت واحد فقط في الوقت نفسه."],
+offline_msg:["Çevrimdışısınız. Hafızlık özellikleri çalışmaya devam eder.","You are offline. Memorization features keep working.","Hors ligne. Les fonctions de mémorisation restent actives.","أنت غير متصل. تستمر ميزات الحفظ في العمل."],
+empty_pages:["Henüz sayfa çalışmadınız","No pages studied yet","Aucune page étudiée","لم تدرس أي صفحة بعد"],
+empty_pages_d:["Bir cüz seçin ve ilk sayfanızı açın.","Pick a juz and open your first page.","Choisissez un juz et ouvrez une page.","اختر جزءًا وافتح أول صفحة."],
+empty_agenda:["Bu gün için görev yok","No task for this day","Aucune tâche ce jour","لا مهام لهذا اليوم"],
+empty_agenda_d:["Ajandanıza yeni bir çalışma ekleyin.","Add a new task to your agenda.","Ajoutez une tâche à votre agenda.","أضف مهمة جديدة إلى أجندتك."],
+empty_rev:["Tekrar kaydı yok","No revisions yet","Aucune révision","لا مراجعات بعد"],
+empty_rev_d:["Ezberlediğiniz bir sayfayı açıp tekrar kaydı ekleyin.","Open a memorized page and record a revision.","Ouvrez une page et enregistrez une révision.","افتح صفحة محفوظة وسجّل مراجعة."],
+empty_tr:["Çeviri geçmişi boş","Translation history is empty","Historique vide","السجل فارغ"],
+empty_tr_d:["Yukarıdan bir metin çevirin.","Translate a text above.","Traduisez un texte ci-dessus.","ترجم نصًا في الأعلى."],
+empty_stats:["Yeterli veri yok","Not enough data","Pas assez de données","لا توجد بيانات كافية"],
+empty_stats_d:["Birkaç çalışma yaptıktan sonra grafikler burada görünecek.","Charts appear here after a few sessions.","Les graphiques apparaîtront après quelques sessions.","ستظهر الرسوم بعد عدة جلسات."],
+confirm_reset:["Bütün veriler kalıcı olarak silinecek. Devam edilsin mi?","All data will be permanently deleted. Continue?","Toutes les données seront supprimées. Continuer ?","سيتم حذف كل البيانات نهائيًا. متابعة؟"],
+confirm_delete:["Bu kayıt silinecek. Devam edilsin mi?","This record will be deleted. Continue?","Cet enregistrement sera supprimé. Continuer ?","سيتم حذف هذا السجل. متابعة؟"],
+manual_status:["Durumu elle ayarla","Set status manually","Définir le statut","تعيين الحالة يدويًا"],
+manual_flag:["Elle değiştirildi","Manually set","Défini manuellement","معدّل يدويًا"],
+auto_status:["Otomatik hesapla","Auto calculate","Calcul auto","حساب تلقائي"],
+of_word:["/","of","sur","من"],
+none:["Yok","None","Aucun","لا شيء"]
+};
+
+/* Aktif dil ve çeviri okuyucu */
+let LANG = "tr";
+function t(key, vars){
+  const row = I18N[key];
+  let s = row ? (row[LANGS.indexOf(LANG)] || row[0]) : key;
+  if(vars) Object.keys(vars).forEach(k => { s = s.split("{"+k+"}").join(vars[k]); });
+  return s;
+}
+
+/* ===========================================================================
+   BÖLÜM 3 — YARDIMCI FONKSİYONLAR
+   =========================================================================== */
+const $  = (s, r) => (r||document).querySelector(s);
+const $$ = (s, r) => Array.from((r||document).querySelectorAll(s));
+const uid = (p) => (p||"id") + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,7);
+const clamp = (n,a,b) => Math.min(b, Math.max(a, n));
+const esc = (s) => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = (v,d) => { const n = Number(v); return Number.isFinite(n) ? n : (d||0); };
+
+/* --- Tarih: ISO saklanır, arayüzde yerel gösterilir (İş kuralı 12-13) ------ */
+function todayISO(d){ const x = d ? new Date(d) : new Date();
+  return x.getFullYear() + "-" + String(x.getMonth()+1).padStart(2,"0") + "-" + String(x.getDate()).padStart(2,"0"); }
+function addDaysISO(iso, days){ const d = fromISO(iso); d.setDate(d.getDate()+days); return todayISO(d); }
+function fromISO(iso){ const [y,m,dd] = String(iso).split("-").map(Number); return new Date(y, (m||1)-1, dd||1); }
+function diffDays(a,b){ return Math.round((fromISO(b) - fromISO(a)) / 86400000); }
+function localeOf(){ return { tr:"tr-TR", en:"en-US", fr:"fr-FR", ar:"ar" }[LANG] || "tr-TR"; }
+function fmtDate(iso, opts){ if(!iso) return "—";
+  try { return fromISO(iso).toLocaleDateString(localeOf(), opts || {day:"numeric",month:"short",year:"numeric"}); }
+  catch(e){ return iso; } }
+function fmtDateTime(isoTs){ if(!isoTs) return "—";
+  try { return new Date(isoTs).toLocaleString(localeOf(), {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); }
+  catch(e){ return isoTs; } }
+function fmtClock(isoTs){ if(!isoTs) return "—";
+  try { return new Date(isoTs).toLocaleTimeString(localeOf(), {hour:"2-digit",minute:"2-digit"}); }
+  catch(e){ return isoTs; } }
+function hhmmss(sec){ sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0"); }
+function humanMin(sec){ const m = Math.round(sec/60);
+  if(m < 60) return m + " " + t("min_short");
+  return Math.floor(m/60) + " " + t("hour_short") + " " + (m%60) + " " + t("min_short"); }
+
+/* ===========================================================================
+   BÖLÜM 4 — VERİ KATMANI (Store)
+   Tüm localStorage erişimi buradadır. Firebase'e taşırken sadece bu
+   fonksiyonların gövdesi değiştirilir; arayüz kodu aynı kalır.
+   =========================================================================== */
+const Depo = (function(){
+  /* localStorage engellenmişse (iframe/gizli mod) bellek içi yedeğe düşer. */
+  let mem = {}; let ok = true;
+  try { const k="__t"; localStorage.setItem(k,"1"); localStorage.removeItem(k); }
+  catch(e){ ok = false; }
+  return {
+    get(k){ try { return ok ? localStorage.getItem(k) : (mem[k] ?? null); } catch(e){ return mem[k] ?? null; } },
+    set(k,v){ try { ok ? localStorage.setItem(k,v) : (mem[k]=v); } catch(e){ mem[k]=v; } },
+    del(k){ try { ok ? localStorage.removeItem(k) : delete mem[k]; } catch(e){ delete mem[k]; } },
+    persistent: ok
+  };
+})();
+
+function emptyData(){
+  return {
+    version: APP_VERSION,
+    user: { id:"", name:"", email:"", avatar:"", memorizationStartDate: todayISO(),
+            currentTurn:1, dailyTargetMinutes:60, weeklyTargetMinutes:420,
+            dailyNewPageTarget:1, dailyRevisionTarget:3,
+            preferredLanguage:"tr", theme:"light", createdAt:"", lastLoginAt:"",
+            notifySaves:true, notifyDue:true, isDemo:false },
+    settings: { totalQuranPages:604, juzCount:30, juzStarts: DEFAULT_JUZ_STARTS.slice(),
+                cookedRepeatThreshold:3, solidRepeatThreshold:5, weekStartsOn:"monday" },
+    pages: [], studySessions: [], revisions: [], turns: [], agendaItems: [], translations: [],
+    activeSession: null
+  };
+}
+
+let DATA = emptyData();
+let pageIndex = new Map();   /* pageNumber -> page nesnesi (hızlı erişim) */
+
+function reindexPages(){ pageIndex = new Map(); (DATA.pages||[]).forEach(p => pageIndex.set(p.pageNumber, p)); }
+
+/* --- Servis fonksiyonları (Firebase adaptasyon noktaları) ----------------- */
+function loadAppData(){
+  const raw = Depo.get(STORAGE_KEY);
+  if(!raw){ DATA = emptyData(); reindexPages(); return DATA; }
+  try {
+    const parsed = JSON.parse(raw);
+    DATA = Object.assign(emptyData(), parsed);
+    DATA.user = Object.assign(emptyData().user, parsed.user || {});
+    DATA.settings = Object.assign(emptyData().settings, parsed.settings || {});
+    ["pages","studySessions","revisions","turns","agendaItems","translations"].forEach(k=>{
+      if(!Array.isArray(DATA[k])) DATA[k] = [];
+    });
+  } catch(e){ console.warn("Veri okunamadı, sıfırlanıyor.", e); DATA = emptyData(); }
+  reindexPages();
+  return DATA;
+}
+function saveAppData(silent){
+  DATA.version = APP_VERSION;
+  Depo.set(STORAGE_KEY, JSON.stringify(DATA));
+  /* ÜRETİM: setDoc(doc(db,"users",uid), DATA)  -> Firestore */
+  if(!silent && DATA.user.notifySaves !== false) toast(t("t_saved"));
+}
+function setSessionUser(id){ Depo.set(SESSION_KEY, id||""); }
+function getSessionUser(){ return Depo.get(SESSION_KEY) || ""; }
+
+/* Giriş / çıkış -------------------------------------------------------- */
+function loginDemoUser(){
+  loadAppData();
+  if(!DATA.user.id || !DATA.user.isDemo){
+    DATA = emptyData(); reindexPages();   /* İK11: hesaplar birbirine karışmaz */
+    DATA.user.id = uid("user");
+    DATA.user.name = "Demo Hafız";
+    DATA.user.email = "demo@hafizlik.app";
+    DATA.user.isDemo = true;
+    DATA.user.createdAt = new Date().toISOString();
+    DATA.user.currentTurn = 4;
+    DATA.user.dailyTargetMinutes = 60;
+    DATA.user.weeklyTargetMinutes = 420;
+    DATA.user.memorizationStartDate = addDaysISO(todayISO(), -210);
+    seedDemoData();
+  }
+  DATA.user.lastLoginAt = new Date().toISOString();
+  DATA.user.preferredLanguage = LANG;
+  setSessionUser(DATA.user.id);
+  saveAppData(true);
+  return DATA.user;
+}
+function loginGoogleUser(profile){
+  /* AUTH_MODE === "firebase" olduğunda burada signInWithPopup sonucu kullanılır. */
+  loadAppData();
+  const fresh = (!DATA.user.id) || DATA.user.isDemo;
+  if(fresh){ DATA = emptyData(); reindexPages(); }   /* İK11 */
+  DATA.user.id = DATA.user.id || uid("user");
+  DATA.user.name = (profile.firstName + " " + profile.lastName).trim();
+  DATA.user.email = profile.email;
+  DATA.user.avatar = "";
+  DATA.user.isDemo = false;   /* İş kuralı 11: demo verisiyle karışmaz */
+  DATA.user.createdAt = DATA.user.createdAt || new Date().toISOString();
+  DATA.user.lastLoginAt = new Date().toISOString();
+  DATA.user.preferredLanguage = LANG;
+  setSessionUser(DATA.user.id);
+  saveAppData(true);
+  return DATA.user;
+}
+function logoutUser(){
+  stopTicker();
+  setSessionUser("");
+  /* Veriler cihazda kalır; yeniden giriş yapılınca geri gelir. */
+  document.body.classList.remove("locked");
+  $("#app").classList.remove("on");
+  $("#auth").style.display = "flex";
+}
+
+/* ===========================================================================
+   BÖLÜM 5 — CÜZ / SAYFA MODELİ
+   =========================================================================== */
+function juzRanges(){
+  const st = DATA.settings, starts = (st.juzStarts && st.juzStarts.length ? st.juzStarts : DEFAULT_JUZ_STARTS).slice();
+  const total = num(st.totalQuranPages, 604);
+  const out = [];
+  for(let i=0;i<starts.length;i++){
+    const start = clamp(num(starts[i],1),1,total);
+    const end = (i === starts.length-1) ? total : clamp(num(starts[i+1],1)-1, start, total);
+    out.push({ juz:i+1, start, end, count: end-start+1 });
+  }
+  return out;
+}
+function juzOf(pageNumber){ const r = juzRanges().find(j => pageNumber >= j.start && pageNumber <= j.end); return r ? r.juz : 1; }
+function juzRange(juzNumber){ return juzRanges()[juzNumber-1] || juzRanges()[0]; }
+
+/* Sayfa nesneleri gerektiğinde oluşturulur (604 boş kayıt tutulmaz). */
+function getPage(pageNumber, createIfMissing){
+  pageNumber = clamp(Math.round(num(pageNumber,1)), 1, num(DATA.settings.totalQuranPages,604));
+  let p = pageIndex.get(pageNumber);
+  if(p || !createIfMissing) return p || null;
+  const r = juzRanges().find(j => pageNumber >= j.start && pageNumber <= j.end) || juzRanges()[0];
+  p = { id:"p"+pageNumber, juzNumber:r.juz, pageNumber, pageIndexInJuz: pageNumber - r.start + 1,
+        progressSections:0, status:"ham", statusManual:false, repeatCount:0, successRate:0,
+        fluencyScore:0, difficulty:"orta", totalStudySeconds:0, lastStudiedAt:"",
+        nextRevisionAt:"", note:"", completedAt:null };
+  DATA.pages.push(p); pageIndex.set(pageNumber, p);
+  return p;
+}
+function touchedPages(){ return DATA.pages.filter(p => p.progressSections>0 || p.repeatCount>0 || p.totalStudySeconds>0); }
+
+/* --- Durum hesabı (İş kuralı 3) ------------------------------------------ */
+function computeStatus(page){
+  const s = DATA.settings;
+  const cooked = num(s.cookedRepeatThreshold,3), solid = num(s.solidRepeatThreshold,5);
+  const rc = num(page.repeatCount,0), sr = num(page.successRate,0);
+  if(num(page.progressSections,0) < 6) return "ham";
+  if(rc === 0) return "cig";
+  if(rc < cooked) return "pismekte";
+  if(rc >= solid && sr >= 90) return "saglam";
+  return "pismis";
+}
+function refreshStatus(page){
+  if(page.statusManual) return page.status;   /* İş kuralı 4-5 */
+  const prev = page.status;
+  page.status = computeStatus(page);
+  if(prev !== "pismis" && prev !== "saglam" && (page.status === "pismis" || page.status === "saglam")) toast(t("t_cooked"), "ok");
+  return page.status;
+}
+function statusLabel(s){ return t("st_" + s); }
+
+/* --- Aralıklı tekrar ----------------------------------------------------- */
+function nextRevisionDate(repeatCount, fromDate){
+  const i = clamp(num(repeatCount,0), 0, REVISION_INTERVALS.length-1);
+  return addDaysISO(fromDate || todayISO(), REVISION_INTERVALS[i]);
+}
+
+/* --- Sayfa ilerlemesi ---------------------------------------------------- */
+function updatePageProgress(pageNumber, sections, extra){
+  const p = getPage(pageNumber, true);
+  const before = p.progressSections;
+  p.progressSections = clamp(Math.round(num(sections,0)), 0, 6);
+  if(extra) Object.assign(p, extra);
+  if(p.progressSections >= 6 && !p.completedAt) p.completedAt = new Date().toISOString();   /* İş kuralı 1 */
+  if(p.progressSections < 6) p.completedAt = null;
+  if(before < 6 && p.progressSections >= 6 && !p.nextRevisionAt) p.nextRevisionAt = nextRevisionDate(0);
+  p.lastStudiedAt = new Date().toISOString();
+  refreshStatus(p);
+  saveAppData(true);
+  return p;
+}
+
+/* --- Çalışma oturumu ----------------------------------------------------- */
+function createStudySession(rec){
+  const s = Object.assign({ id: uid("ss"), pageId:"", type:"new_memorization", startedAt:"", endedAt:"",
+                            pausedSeconds:0, totalSeconds:0, progressBefore:0, progressAfter:0, notes:"" }, rec);
+  DATA.studySessions.push(s);
+  saveAppData(true);
+  return s;
+}
+/* --- Tekrar kaydı -------------------------------------------------------- */
+function createRevision(rec){
+  const r = Object.assign({ id: uid("rv"), pageId:"", date: todayISO(), durationSeconds:0, mistakeCount:0,
+                            hesitationCount:0, receivedHelp:false, fluencyScore:3, successRate:80, notes:"" }, rec);
+  DATA.revisions.push(r);
+  const pn = num(String(r.pageId).replace("p",""),0);
+  const p = getPage(pn, true);
+  if(p){
+    p.repeatCount = num(p.repeatCount,0) + 1;                                   /* İş kuralı 2 */
+    const prevRate = num(p.successRate,0);
+    p.successRate = p.repeatCount === 1 ? num(r.successRate,0)
+                  : Math.round((prevRate*(p.repeatCount-1) + num(r.successRate,0)) / p.repeatCount);
+    p.fluencyScore = num(r.fluencyScore,3);
+    p.totalStudySeconds = num(p.totalStudySeconds,0) + num(r.durationSeconds,0);
+    p.lastStudiedAt = new Date().toISOString();
+    p.nextRevisionAt = r.nextRevisionAt || nextRevisionDate(p.repeatCount);
+    refreshStatus(p);
+  }
+  saveAppData(true);
+  return r;
+}
+/* --- Ajanda -------------------------------------------------------------- */
+function createAgendaItem(rec){
+  const a = Object.assign({ id: uid("ag"), title:"", date: todayISO(), startTime:"", estimatedMinutes:30,
+                            taskType:"new_memorization", juzNumber:null, pageNumber:null, targetSections:1,
+                            status:"pending", notes:"", reminder:false, completedAt:null }, rec);
+  DATA.agendaItems.push(a);
+  saveAppData(true);
+  return a;
+}
+function setAgendaStatus(id, status){
+  const a = DATA.agendaItems.find(x => x.id === id); if(!a) return null;
+  a.status = status;
+  a.completedAt = (status === "done" || status === "partial") ? new Date().toISOString() : null;
+  /* İş kuralı 10: tamamlanan görev bağlı sayfayı günceller */
+  if((status === "done" || status === "partial") && a.pageNumber){
+    const p = getPage(a.pageNumber, true);
+    if(a.taskType === "new_memorization" || a.taskType === "turn_study"){
+      const add = status === "done" ? num(a.targetSections,1) : Math.max(1, Math.round(num(a.targetSections,1)/2));
+      updatePageProgress(a.pageNumber, clamp(p.progressSections + add, 0, 6));
+    } else {
+      p.lastStudiedAt = new Date().toISOString();
+      p.totalStudySeconds = num(p.totalStudySeconds,0) + num(a.estimatedMinutes,0)*60;
+      refreshStatus(p);
+    }
+  }
+  saveAppData(true);
+  return a;
+}
+
+/* ===========================================================================
+   BÖLÜM 6 — DÖNÜŞ SİSTEMİ
+   N. dönüşte her cüzün SONDAN N. sayfası yeni (ham) sayfadır; ondan sonra
+   cüzün sonuna kadar gelen sayfalar tekrar sayfalarıdır. Sona en yakın
+   sayfa en çok tekrar edildiği için en pişmiş olanıdır.
+   =========================================================================== */
+function maxTurns(){ return Math.max.apply(null, juzRanges().map(j => j.count)); }
+
+function calculateTurnTasks(turnNumber){
+  const N = Math.max(1, Math.round(num(turnNumber,1)));
+  return juzRanges().map(j => {
+    const newPage = j.end - N + 1;
+    if(newPage < j.start) return { juz:j.juz, available:false, newPage:null, repeatPages:[], range:j };  /* İş kuralı 9 */
+    const repeats = [];
+    for(let p = newPage + 1; p <= j.end; p++) repeats.push(p);
+    return { juz:j.juz, available:true, newPage, repeatPages:repeats, range:j };
+  });
+}
+function turnTaskDone(task){
+  if(!task.available) return false;
+  const np = getPage(task.newPage, false);
+  return !!(np && np.progressSections >= 6);
+}
+function turnProgress(turnNumber){
+  const tasks = calculateTurnTasks(turnNumber).filter(x => x.available);
+  const done = tasks.filter(turnTaskDone).length;
+  return { total: tasks.length, done, pct: tasks.length ? Math.round(done/tasks.length*100) : 0, tasks };
+}
+function currentTurnRecord(){
+  const n = num(DATA.user.currentTurn,1);
+  let rec = DATA.turns.find(x => x.turnNumber === n);
+  if(!rec){ rec = { id: uid("tn"), turnNumber:n, startedAt: todayISO(), completedAt:null, completedJuzNumbers:[], notes:"" };
+    DATA.turns.push(rec); }
+  return rec;
+}
+
+/* ===========================================================================
+   BÖLÜM 7 — TÜRETİLMİŞ İSTATİSTİKLER
+   =========================================================================== */
+function sessionsOn(dateISO){ return DATA.studySessions.filter(s => s.endedAt && todayISO(s.endedAt) === dateISO); }
+function revisionsOn(dateISO){ return DATA.revisions.filter(r => r.date === dateISO); }
+function secondsOn(dateISO){
+  return sessionsOn(dateISO).reduce((a,s)=>a+num(s.totalSeconds,0),0)
+       + revisionsOn(dateISO).reduce((a,r)=>a+num(r.durationSeconds,0),0);
+}
+function sectionsOn(dateISO){
+  return sessionsOn(dateISO).reduce((a,s)=>a + Math.max(0, num(s.progressAfter,0)-num(s.progressBefore,0)), 0);
+}
+function activeDays(){
+  const set = new Set();
+  DATA.studySessions.forEach(s => { if(s.endedAt) set.add(todayISO(s.endedAt)); });
+  DATA.revisions.forEach(r => { if(r.date) set.add(r.date); });
+  return Array.from(set).sort();
+}
+function currentStreak(){
+  const days = new Set(activeDays());
+  let d = todayISO(), n = 0;
+  if(!days.has(d)) d = addDaysISO(d,-1);
+  while(days.has(d)){ n++; d = addDaysISO(d,-1); }
+  return n;
+}
+function longestStreak(){
+  const days = activeDays(); if(!days.length) return 0;
+  let best = 1, cur = 1;
+  for(let i=1;i<days.length;i++){
+    cur = (diffDays(days[i-1], days[i]) === 1) ? cur+1 : 1;
+    best = Math.max(best, cur);
+  }
+  return best;
+}
+function dueRevisions(){
+  const today = todayISO();
+  const due = [], late = [], soon = [];
+  touchedPages().forEach(p => {
+    if(!p.nextRevisionAt || p.progressSections < 6) return;
+    const d = diffDays(today, p.nextRevisionAt);
+    if(d < 0) late.push(p); else if(d === 0) due.push(p); else if(d <= 7) soon.push(p);
+  });
+  const byDate = (a,b) => a.nextRevisionAt < b.nextRevisionAt ? -1 : 1;
+  return { due: due.sort(byDate), late: late.sort(byDate), soon: soon.sort(byDate) };
+}
+function statusCounts(){
+  const c = { ham:0, cig:0, pismekte:0, pismis:0, saglam:0 };
+  touchedPages().forEach(p => { c[p.status] = (c[p.status]||0)+1; });
+  return c;
+}
+function memorizedCount(){ return DATA.pages.filter(p => p.progressSections >= 6).length; }
+
+/* ===========================================================================
+   BÖLÜM 8 — BİLDİRİM (toast) ve MODAL
+   =========================================================================== */
+let SILENT = false;   /* toplu işlemlerde bildirimleri bastırır */
+function toast(msg, kind){
+  if(SILENT) return;
+  const box = $("#toasts"); if(!box) return;
+  const el = document.createElement("div");
+  el.className = "toast" + (kind ? " " + kind : "");
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; setTimeout(()=>el.remove(), 220); }, 2600);
+}
+let modalOnSave = null;
+function openModal(title, bodyHTML, onSave, saveLabel){
+  const root = $("#modalRoot");
+  root.innerHTML =
+    '<div class="modal-back" data-act="modal-back">' +
+      '<div class="modal" role="dialog" aria-modal="true" aria-label="'+esc(title)+'">' +
+        '<div class="modal-head"><h2>'+esc(title)+'</h2>' +
+          '<button class="btn btn-sm btn-ghost" data-act="modal-close" aria-label="'+esc(t("close"))+'">✕</button></div>' +
+        '<div id="modalBody">'+bodyHTML+'</div>' +
+        (onSave ? '<div class="modal-foot">' +
+          '<button class="btn" data-act="modal-close">'+esc(t("cancel"))+'</button>' +
+          '<button class="btn btn-primary" data-act="modal-save">'+esc(saveLabel||t("save"))+'</button></div>' : '') +
+      '</div></div>';
+  modalOnSave = onSave || null;
+  const first = root.querySelector("input,select,textarea,button");
+  if(first) setTimeout(()=>first.focus(), 30);
+}
+function closeModal(){ $("#modalRoot").innerHTML = ""; modalOnSave = null; }
+function confirmBox(message, onYes){
+  openModal(t("t_irreversible"),
+    '<p style="margin-bottom:8px">'+esc(message)+'</p><p class="muted">'+esc(t("t_irreversible"))+'</p>',
+    () => { onYes(); return true; }, t("apply"));
+}
+
+/* ===========================================================================
+   BÖLÜM 9 — SÜRE TUTUCU
+   Aktif oturum DATA.activeSession içinde saklanır; sayfa yenilense ya da
+   sekme arkaplana geçse bile süre gerçek zaman damgalarından hesaplanır.
+   =========================================================================== */
+let ticker = null;
+function activeElapsed(){
+  const a = DATA.activeSession; if(!a) return 0;
+  const now = Date.now();
+  const base = (now - new Date(a.startedAt).getTime()) / 1000;
+  const pausedNow = a.pausedAt ? (now - new Date(a.pausedAt).getTime())/1000 : 0;
+  return Math.max(0, base - num(a.pausedSeconds,0) - pausedNow);
+}
+function startTimer(pageNumber, type){
+  if(DATA.activeSession && DATA.activeSession.pageNumber !== pageNumber){ toast(t("t_one_timer"), "err"); return false; } /* İş kuralı 7 */
+  if(DATA.activeSession) return true;
+  const p = getPage(pageNumber, true);
+  DATA.activeSession = { id: uid("ss"), pageId: p.id, pageNumber: p.pageNumber, type: type || "new_memorization",
+                         startedAt: new Date().toISOString(), pausedSeconds:0, pausedAt:null,
+                         progressBefore: p.progressSections };
+  saveAppData(true); startTicker(); toast(t("t_started"), "ok"); return true;
+}
+function pauseTimer(){ const a = DATA.activeSession; if(!a || a.pausedAt) return;
+  a.pausedAt = new Date().toISOString(); saveAppData(true); toast(t("t_paused")); render(); }
+function resumeTimer(){ const a = DATA.activeSession; if(!a || !a.pausedAt) return;
+  a.pausedSeconds = num(a.pausedSeconds,0) + (Date.now() - new Date(a.pausedAt).getTime())/1000;
+  a.pausedAt = null; saveAppData(true); toast(t("t_resumed")); render(); }
+function resetTimer(){ if(!DATA.activeSession) return;
+  DATA.activeSession = null; stopTicker(); saveAppData(true); render(); }
+function startTicker(){ stopTicker(); ticker = setInterval(() => {
+  const el = $("#timerDial"); if(el && DATA.activeSession) el.textContent = hhmmss(activeElapsed()); }, 1000); }
+function stopTicker(){ if(ticker){ clearInterval(ticker); ticker = null; } }
+
+/* Çalışmayı bitirme akışı: kullanıcıdan bölüm sayısı, bitiş durumu, not alınır */
+function finishTimerFlow(){
+  const a = DATA.activeSession; if(!a) return;
+  const p = getPage(a.pageNumber, true);
+  const secs = Math.round(activeElapsed());
+  const body =
+    '<p class="muted" style="margin-bottom:10px">'+esc(t("juz"))+' '+p.juzNumber+' · '+esc(t("page"))+' '+p.pageNumber+
+      ' · '+esc(t("elapsed"))+': <b class="tnum">'+hhmmss(secs)+'</b></p>' +
+    '<div class="field"><label for="fSections">'+esc(t("finish_q_sections"))+'</label>' +
+      '<select class="input" id="fSections">' + [0,1,2,3,4,5,6].map(n =>
+        '<option value="'+n+'"'+(n===p.progressSections?" selected":"")+'>'+n+'/6</option>').join("") + '</select></div>' +
+    '<div class="field"><label for="fFull">'+esc(t("finish_q_full"))+'</label>' +
+      '<select class="input" id="fFull"><option value="0">'+esc(t("no"))+'</option><option value="1">'+esc(t("yes"))+'</option></select></div>' +
+    '<div class="field"><label for="fQuality">'+esc(t("finish_q_how"))+'</label>' +
+      '<select class="input" id="fQuality">' + [1,2,3,4,5].map(n =>
+        '<option value="'+n+'"'+(n===3?" selected":"")+'>'+n+' — '+esc(t("fl"+n))+'</option>').join("") + '</select></div>' +
+    '<div class="field"><label for="fNote">'+esc(t("finish_q_note"))+'</label>' +
+      '<textarea class="input" id="fNote" rows="2">'+esc(p.note||"")+'</textarea></div>' +
+    '<div class="field"><label for="fNext">'+esc(t("finish_q_next"))+'</label>' +
+      '<input class="input" type="date" id="fNext" value="'+esc(p.nextRevisionAt || nextRevisionDate(p.repeatCount))+'"></div>';
+  openModal(t("finish"), body, () => {
+    let sections = num($("#fSections").value, 0);
+    if($("#fFull").value === "1") sections = 6;
+    const quality = num($("#fQuality").value, 3);
+    createStudySession({ id:a.id, pageId:p.id, type:a.type, startedAt:a.startedAt, endedAt:new Date().toISOString(),
+                         pausedSeconds: Math.round(num(a.pausedSeconds,0)), totalSeconds: secs,
+                         progressBefore: num(a.progressBefore,0), progressAfter: sections, notes: $("#fNote").value.trim() });
+    p.totalStudySeconds = num(p.totalStudySeconds,0) + secs;
+    p.fluencyScore = quality;
+    updatePageProgress(p.pageNumber, sections, { note: $("#fNote").value.trim(), nextRevisionAt: $("#fNext").value || p.nextRevisionAt });
+    DATA.activeSession = null; stopTicker(); saveAppData(true);
+    toast(t("t_finished"), "ok");
+    checkDailyGoal();
+    return true;
+  }, t("save"));
+}
+function checkDailyGoal(){
+  const goalSec = num(DATA.user.dailyTargetMinutes,60)*60;
+  if(goalSec > 0 && secondsOn(todayISO()) >= goalSec) toast(t("t_goal"), "ok");
+}
+
+/* ===========================================================================
+   BÖLÜM 10 — ÇEVİRİ SERVİSİ
+   =========================================================================== */
+/* Demo sözlüğü: her satır 4 dilde karşılıklıdır (tr, en, fr, ar). */
+const TR_DICT = [
+["selam","peace","paix","سلام"],
+["merhaba","hello","bonjour","مرحبا"],
+["hoş geldiniz","welcome","bienvenue","أهلا وسهلا"],
+["teşekkür ederim","thank you","merci","شكرا لك"],
+["kitap","book","livre","كتاب"],
+["sayfa","page","page","صفحة"],
+["cüz","juz","juz","جزء"],
+["ayet","verse","verset","آية"],
+["sure","surah","sourate","سورة"],
+["ezber","memorization","mémorisation","حفظ"],
+["hafız","hafiz","hafiz","حافظ"],
+["tekrar","revision","révision","مراجعة"],
+["dönüş","turn","tour","دورة"],
+["ders","lesson","leçon","درس"],
+["hoca","teacher","professeur","معلم"],
+["öğrenci","student","étudiant","طالب"],
+["sabah","morning","matin","صباح"],
+["akşam","evening","soir","مساء"],
+["gece","night","nuit","ليل"],
+["gün","day","jour","يوم"],
+["hafta","week","semaine","أسبوع"],
+["ay","month","mois","شهر"],
+["yıl","year","année","سنة"],
+["saat","hour","heure","ساعة"],
+["dakika","minute","minute","دقيقة"],
+["su","water","eau","ماء"],
+["ekmek","bread","pain","خبز"],
+["ev","house","maison","بيت"],
+["mescit","mosque","mosquée","مسجد"],
+["namaz","prayer","prière","صلاة"],
+["oruç","fasting","jeûne","صوم"],
+["sabır","patience","patience","صبر"],
+["ilim","knowledge","savoir","علم"],
+["kalp","heart","cœur","قلب"],
+["dil","language","langue","لغة"],
+["anne","mother","mère","أم"],
+["baba","father","père","أب"],
+["arkadaş","friend","ami","صديق"],
+["güzel","beautiful","beau","جميل"],
+["kolay","easy","facile","سهل"],
+["zor","difficult","difficile","صعب"],
+["yeni","new","nouveau","جديد"],
+["eski","old","ancien","قديم"],
+["evet","yes","oui","نعم"],
+["hayır","no","non","لا"],
+["bugün ezber yaptım","i memorized today","j'ai mémorisé aujourd'hui","حفظت اليوم"],
+["yarın tekrar edeceğim","i will revise tomorrow","je réviserai demain","سأراجع غدا"],
+["allah razı olsun","may god be pleased with you","que dieu vous récompense","جزاك الله خيرا"],
+["hayırlı olsun","congratulations","félicitations","مبارك"],
+["nasılsın","how are you","comment vas-tu","كيف حالك"]
+];
+function dictLookup(text, from, to){
+  const fi = LANGS.indexOf(from), ti = LANGS.indexOf(to);
+  const key = String(text).trim().toLowerCase().replace(/[.!?،؛]+$/,"");
+  const row = TR_DICT.find(r => r[fi].toLowerCase() === key);
+  return row ? row[ti] : null;
+}
+/**
+ * translateText — servis adaptörü.
+ * @param {string} sourceText
+ * @param {string} sourceLanguage  tr|en|fr|ar
+ * @param {string} targetLanguage  tr|en|fr|ar
+ * @returns {{text:string, demo:boolean}}
+ *
+ * ÜRETİM ENTEGRASYONU (backend üzerinden!):
+ *   // LibreTranslate:
+ *   //   POST https://<kendi-sunucunuz>/translate  { q, source, target, format:"text" }
+ *   // Google Cloud Translation v3:
+ *   //   POST https://translation.googleapis.com/v3/projects/<id>:translateText
+ *   // DeepL:
+ *   //   POST https://api-free.deepl.com/v2/translate  (Authorization: DeepL-Auth-Key ...)
+ *   API anahtarını frontend'e yazmak GÜVENLİ DEĞİLDİR: anahtar tarayıcıdan
+ *   okunabilir. İstek daima kendi backend'iniz (ör. Firebase Cloud Function)
+ *   üzerinden gönderilmeli, anahtar orada saklanmalıdır.
+ */
+function translateText(sourceText, sourceLanguage, targetLanguage){
+  const src = String(sourceText||"").trim();
+  if(!src) return { text:"", demo:false };
+  if(sourceLanguage === targetLanguage) return { text: src, demo:false };
+  if(TRANSLATION_MODE !== "demo"){
+    /* return await ApiAdapter.translate(src, sourceLanguage, targetLanguage); */
+  }
+  const whole = dictLookup(src, sourceLanguage, targetLanguage);
+  if(whole) return { text: whole, demo:false };
+  /* Kelime kelime dene; bulunamayanlar olduğu gibi bırakılır. */
+  const parts = src.split(/(\s+)/);
+  let hit = 0, tot = 0;
+  const out = parts.map(w => {
+    if(/^\s+$/.test(w)) return w;
+    tot++;
+    const m = dictLookup(w, sourceLanguage, targetLanguage);
+    if(m){ hit++; return m; }
+    return w;
+  }).join("");
+  return { text: out, demo: hit < tot };
+}
+
+/* ===========================================================================
+   BÖLÜM 11 — DEMO VERİSİ
+   =========================================================================== */
+function seedDemoData(){
+  SILENT = true;
+  const ranges = juzRanges();
+  const mk = (pageNumber, o) => Object.assign(getPage(pageNumber, true), o);
+
+  /* 1. cüz son sayfa: pişmiş | 2. cüz: pişmekte | 3. cüz: çiğ */
+  const p1 = mk(ranges[0].end, { progressSections:6, repeatCount:4, successRate:88, difficulty:"orta",
+    completedAt:new Date().toISOString(), lastStudiedAt:addDaysISO(todayISO(),-2)+"T18:00:00.000Z",
+    nextRevisionAt: addDaysISO(todayISO(), -1), totalStudySeconds: 3*3600, note:"Sonu akıcı." });
+  const p2 = mk(ranges[1].end, { progressSections:6, repeatCount:2, successRate:74, difficulty:"zor",
+    completedAt:new Date().toISOString(), lastStudiedAt:addDaysISO(todayISO(),-1)+"T19:10:00.000Z",
+    nextRevisionAt: todayISO(), totalStudySeconds: 2*3600 });
+  const p3 = mk(ranges[2].end, { progressSections:6, repeatCount:0, successRate:0, difficulty:"orta",
+    completedAt:new Date().toISOString(), lastStudiedAt:todayISO()+"T08:20:00.000Z",
+    nextRevisionAt: todayISO(), totalStudySeconds: 65*60 });
+  /* 4. cüz sondan dördüncü sayfa: 2/6 (bugün 17:40-18:30 çalışması) */
+  const p4no = ranges[3].end - 3;
+  const p4 = mk(p4no, { progressSections:2, repeatCount:0, difficulty:"zor", totalStudySeconds: 50*60,
+    lastStudiedAt: todayISO()+"T18:30:00.000Z", note:"Ortadaki benzer ayetler karışıyor." });
+  [p1,p2,p3,p4].forEach(refreshStatus);
+
+  const startTs = todayISO()+"T17:40:00";
+  const endTs   = todayISO()+"T18:30:00";
+  createStudySession({ pageId:p4.id, type:"new_memorization", startedAt:new Date(startTs).toISOString(),
+    endedAt:new Date(endTs).toISOString(), pausedSeconds:0, totalSeconds:50*60,
+    progressBefore:0, progressAfter:2, notes:"İlk iki bölüm tamam." });
+  createStudySession({ pageId:p3.id, type:"new_memorization", startedAt:new Date(addDaysISO(todayISO(),-1)+"T08:00:00").toISOString(),
+    endedAt:new Date(addDaysISO(todayISO(),-1)+"T09:05:00").toISOString(), totalSeconds:65*60, progressBefore:3, progressAfter:6 });
+  createStudySession({ pageId:p2.id, type:"revision", startedAt:new Date(addDaysISO(todayISO(),-2)+"T20:00:00").toISOString(),
+    endedAt:new Date(addDaysISO(todayISO(),-2)+"T20:35:00").toISOString(), totalSeconds:35*60, progressBefore:6, progressAfter:6 });
+
+  DATA.revisions.push({ id:uid("rv"), pageId:p1.id, date:addDaysISO(todayISO(),-4), durationSeconds:12*60,
+    mistakeCount:1, hesitationCount:2, receivedHelp:false, fluencyScore:4, successRate:92, notes:"" });
+  DATA.revisions.push({ id:uid("rv"), pageId:p2.id, date:addDaysISO(todayISO(),-3), durationSeconds:15*60,
+    mistakeCount:4, hesitationCount:5, receivedHelp:true, fluencyScore:2, successRate:70, notes:"Baş taraf zayıf." });
+
+  createAgendaItem({ title:"Yeni ezber — 4. cüz", date:todayISO(), startTime:"17:40", estimatedMinutes:50,
+    taskType:"new_memorization", juzNumber:4, pageNumber:p4no, targetSections:2, status:"done" });
+  createAgendaItem({ title:"Dönüş çalışması — 5-8. cüz", date:todayISO(), startTime:"20:00", estimatedMinutes:45,
+    taskType:"turn_study", juzNumber:5, pageNumber:null, targetSections:1, status:"pending" });
+  createAgendaItem({ title:"Hoca kontrolü", date:addDaysISO(todayISO(),1), startTime:"10:00", estimatedMinutes:30,
+    taskType:"teacher_check", status:"pending", reminder:true });
+
+  currentTurnRecord();
+  SILENT = false;
+  saveAppData(true);
+}
+function clearDemoData(){
+  DATA.pages = []; DATA.studySessions = []; DATA.revisions = []; DATA.agendaItems = [];
+  DATA.turns = []; DATA.activeSession = null;
+  reindexPages(); saveAppData(true);
+}
+
+/* ===========================================================================
+   BÖLÜM 12 — GÖRSEL BİLEŞENLER
+   İmza öğe: sayfayı altı dilime bölen ilerleme halkası.
+   =========================================================================== */
+function ringSVG(sections, size, label){
+  const s = clamp(num(sections,0),0,6), r = 15.5, c = 2*Math.PI*r, seg = c/6 - 2.2;
+  let out = '<svg class="ring" width="'+size+'" height="'+size+'" viewBox="0 0 40 40" role="img" aria-label="'+
+            esc((label||"") + " " + s + "/6")+'">';
+  for(let i=0;i<6;i++){
+    const off = -(i * c/6);
+    out += '<circle cx="20" cy="20" r="'+r+'" fill="none" stroke="'+(i<s?"var(--emerald)":"var(--line)")+'" '+
+           'stroke-width="4.5" stroke-linecap="round" stroke-dasharray="'+seg.toFixed(2)+' '+(c-seg).toFixed(2)+'" '+
+           'stroke-dashoffset="'+off.toFixed(2)+'" transform="rotate(-90 20 20)"'+(i<s?"":' class="seg-off"')+'/>';
+  }
+  out += '<text x="20" y="20" text-anchor="middle" dominant-baseline="central" '+
+         'style="font-size:11px;font-weight:800;fill:var(--ink)">'+s+'/6</text></svg>';
+  return out;
+}
+function statusBadge(st){
+  return '<span class="badge st-'+st+'"><span class="bi" aria-hidden="true">'+STATUS_ICON[st]+'</span>'+esc(statusLabel(st))+'</span>';
+}
+function progressWord(sections){
+  if(sections <= 0) return t("not_started");
+  if(sections >= 6) return t("first_done");
+  return t("in_progress");
+}
+function statCard(key, value, sub){
+  return '<div class="stat"><span class="k">'+esc(t(key))+'</span><span class="v tnum">'+esc(value)+'</span>' +
+         (sub ? '<span class="s">'+esc(sub)+'</span>' : '') + '</div>';
+}
+function emptyState(titleKey, descKey, actLabel, actAttrs){
+  return '<div class="empty"><span class="e-ic" aria-hidden="true">✦</span><h3>'+esc(t(titleKey))+'</h3>' +
+         '<p>'+esc(t(descKey))+'</p>' +
+         (actLabel ? '<button class="btn btn-primary" '+(actAttrs||"")+'>'+esc(actLabel)+'</button>' : '') + '</div>';
+}
+function pageRowHTML(p){
+  return '<li><span>'+ringSVG(p.progressSections, 34, t("page")+" "+p.pageNumber)+'</span>' +
+         '<div class="li-main"><div class="li-title">'+esc(t("page"))+' '+p.pageNumber+
+           ' <span class="muted">· '+esc(t("juz"))+' '+p.juzNumber+'</span></div>' +
+         '<div class="li-sub">'+statusBadge(p.status)+' <span class="tnum">'+esc(t("repeat_count"))+': '+p.repeatCount+'</span>'+
+           (p.nextRevisionAt ? ' · '+esc(t("next_rev"))+': '+esc(fmtDate(p.nextRevisionAt,{day:"numeric",month:"short"})) : '')+'</div></div>' +
+         '<button class="btn btn-sm" data-act="open-page" data-page="'+p.pageNumber+'">'+esc(t("open_page"))+'</button></li>';
+}
+
+/* ===========================================================================
+   BÖLÜM 13 — EKRANLAR
+   =========================================================================== */
+let VIEW = "home";
+let STATE = { juz:null, page:null, agendaView:"month", agendaDate: todayISO(), turnView:null,
+              trFrom:"tr", trTo:"ar", trText:"", trOut:null, moreOpen:false };
+
+/* --- 13.1 ANA SAYFA ------------------------------------------------------- */
+function viewHome(){
+  const u = DATA.user, today = todayISO();
+  const secs = secondsOn(today), sections = sectionsOn(today);
+  const revToday = revisionsOn(today).length;
+  const tp = turnProgress(u.currentTurn);
+  const d = dueRevisions();
+  const sc = statusCounts();
+  const todays = DATA.agendaItems.filter(a => a.date === today);
+  const recent = touchedPages().slice().sort((a,b)=> (b.lastStudiedAt||"") < (a.lastStudiedAt||"") ? -1 : 1).slice(0,5);
+  const last = recent[0];
+
+  let h = '<div class="view-head"><h1>'+esc(t("nav_home"))+'</h1><p>'+esc(u.name||"—")+' · '+
+          esc(t("turn_n",{n:u.currentTurn}))+'</p></div>';
+
+  /* Hızlı eylemler */
+  h += '<div class="grid g2" style="margin-bottom:12px">' +
+       '<button class="btn btn-primary" data-act="start-study">'+esc(t("start_study"))+'</button>' +
+       '<button class="btn" data-act="open-page" data-page="'+(last?last.pageNumber:"")+'"'+(last?"":" disabled")+'>'+
+         esc(t("continue_last"))+'</button></div>';
+
+  /* Kartlar */
+  h += '<div class="grid g4" style="margin-bottom:12px">' +
+    statCard("today_new_target", sections + "/" + (num(u.dailyNewPageTarget,1)*6), t("six_parts")) +
+    statCard("today_rev_target", revToday + "/" + num(u.dailyRevisionTarget,3)) +
+    statCard("today_time", humanMin(secs), num(u.dailyTargetMinutes,60) + " " + t("minutes")) +
+    statCard("streak", currentStreak() + " " + t("streak_days")) +
+    '</div>';
+  h += '<div class="grid g4" style="margin-bottom:12px">' +
+    statCard("current_turn", u.currentTurn + ".") +
+    statCard("turn_progress", tp.pct + "%", tp.done + "/" + tp.total + " " + t("juz")) +
+    statCard("total_pages_mem", memorizedCount()) +
+    statCard("cooked_pages", (sc.pismis + sc.saglam)) +
+    '</div>';
+
+  /* Dönüş ilerleme çubuğu */
+  h += '<div class="card"><div class="card-head"><h2>'+esc(t("turn_progress"))+'</h2>' +
+       '<button class="btn btn-sm" data-act="go" data-view="turns">'+esc(t("nav_turns"))+' →</button></div>' +
+       '<div class="bar"><i style="width:'+tp.pct+'%"></i></div>' +
+       '<p class="muted" style="margin-top:8px">'+esc(t("turn_n",{n:u.currentTurn}))+' · '+tp.done+'/'+tp.total+' '+esc(t("juz"))+'</p></div>';
+
+  /* Geciken tekrarlar */
+  if(d.late.length || d.due.length){
+    h += '<div class="card"><div class="card-head"><h2>'+esc(t("upcoming_revs"))+'</h2>' +
+         '<span class="badge st-cig"><span class="bi" aria-hidden="true">!</span>'+esc(t("overdue"))+': '+d.late.length+'</span></div><ul class="list">';
+    h += d.late.concat(d.due).slice(0,5).map(pageRowHTML).join("");
+    h += '</ul></div>';
+  }
+
+  /* Bugünün ajandası */
+  h += '<div class="card"><div class="card-head"><h2>'+esc(t("todays_tasks"))+'</h2>' +
+       '<button class="btn btn-sm" data-act="go" data-view="agenda">'+esc(t("nav_agenda"))+' →</button></div>';
+  h += todays.length ? '<ul class="list">' + todays.map(agendaRowHTML).join("") + '</ul>'
+                     : emptyState("empty_agenda","empty_agenda_d", t("agenda_add"), 'data-act="agenda-add"');
+  h += '</div>';
+
+  /* Son çalışılan sayfalar */
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("recent_pages"))+'</h2>';
+  h += recent.length ? '<ul class="list">'+recent.map(pageRowHTML).join("")+'</ul>'
+                     : emptyState("empty_pages","empty_pages_d", t("nav_tracking"), 'data-act="go" data-view="tracking"');
+  h += '</div>';
+
+  /* Haftalık grafik */
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("weekly_chart"))+'</h2>'+barChart7()+'</div>';
+  return h;
+}
+
+function barChart7(){
+  const days = [], vals = [];
+  for(let i=6;i>=0;i--){ const d = addDaysISO(todayISO(), -i); days.push(d); vals.push(Math.round(secondsOn(d)/60)); }
+  const max = Math.max(60, ...vals);
+  const W = 320, H = 110, bw = W/7;
+  let s = '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(t("stats_7days"))+'">';
+  vals.forEach((v,i)=>{
+    const bh = Math.max(2, (v/max)*(H-28));
+    s += '<rect x="'+(i*bw+7)+'" y="'+(H-20-bh)+'" width="'+(bw-14)+'" height="'+bh+'" rx="4" fill="var(--emerald)"/>';
+    s += '<text x="'+(i*bw+bw/2)+'" y="'+(H-24-bh)+'" text-anchor="middle">'+v+'</text>';
+    s += '<text x="'+(i*bw+bw/2)+'" y="'+(H-6)+'" text-anchor="middle">'+
+         fromISO(days[i]).toLocaleDateString(localeOf(),{weekday:"short"})+'</text>';
+  });
+  s += '</svg>';
+  return s;
+}
+
+/* --- 13.2 HAFIZLIK TAKİBİ ------------------------------------------------- */
+function viewTracking(){
+  if(STATE.page) return viewPageDetail(STATE.page);
+  if(STATE.juz)  return viewJuzPages(STATE.juz);
+  let h = '<div class="view-head"><h1>'+esc(t("nav_tracking"))+'</h1><p>'+esc(t("select_page"))+'</p></div>';
+  h += '<div class="card"><div class="grid g2">' +
+       '<button class="btn btn-sm" data-act="pick-page-number">'+esc(t("pick_page"))+'</button>' +
+       '<button class="btn btn-sm" data-act="go" data-view="turns">'+esc(t("pick_turn"))+'</button>' +
+       '</div></div>';
+  h += '<div class="grid g2" style="margin-top:12px">';
+  juzRanges().forEach(j => {
+    const inJuz = DATA.pages.filter(p => p.pageNumber >= j.start && p.pageNumber <= j.end);
+    const mem = inJuz.filter(p => p.progressSections >= 6).length;
+    const wait = inJuz.filter(p => p.progressSections >= 6 && p.nextRevisionAt && diffDays(todayISO(), p.nextRevisionAt) <= 0).length;
+    const pct = Math.round(mem / j.count * 100);
+    h += '<button class="juz-card" data-act="open-juz" data-juz="'+j.juz+'">' +
+         '<span class="juz-no">'+j.juz+'</span><span style="flex:1;min-width:0">' +
+         '<span class="li-title">'+esc(t("juz"))+' '+j.juz+'</span>' +
+         '<span class="li-sub">'+j.count+' '+esc(t("pages"))+' · '+esc(t("memorized"))+': '+mem+' · '+esc(t("awaiting"))+': '+wait+'</span>' +
+         '<span class="bar" style="margin-top:6px"><i style="width:'+pct+'%"></i></span>' +
+         '<span class="li-sub">'+esc(t("completion"))+': '+pct+'%</span></span></button>';
+  });
+  h += '</div>';
+  return h;
+}
+function viewJuzPages(juzNumber){
+  const j = juzRange(juzNumber);
+  let h = '<div class="view-head"><button class="btn btn-sm" data-act="back-juz">← '+esc(t("back"))+'</button>' +
+          '<h1 style="margin-top:8px">'+esc(t("juz"))+' '+j.juz+'</h1>' +
+          '<p>'+esc(t("page"))+' '+j.start+'–'+j.end+' · '+j.count+' '+esc(t("pages"))+'</p></div>';
+  h += '<div class="pages-grid">';
+  for(let n=j.start;n<=j.end;n++){
+    const p = getPage(n,false);
+    const sec = p ? p.progressSections : 0;
+    h += '<button class="page-tile" data-act="open-page" data-page="'+n+'">' + ringSVG(sec, 42, t("page")+" "+n) +
+         '<span class="pn">'+n+'</span>' + (p ? statusBadge(p.status) : '<span class="muted" style="font-size:.7rem">'+esc(t("not_started"))+'</span>') +
+         '</button>';
+  }
+  h += '</div>';
+  return h;
+}
+function viewPageDetail(pageNumber){
+  const p = getPage(pageNumber, true);
+  const active = DATA.activeSession && DATA.activeSession.pageNumber === p.pageNumber ? DATA.activeSession : null;
+  const revs = DATA.revisions.filter(r => r.pageId === p.id).slice().reverse();
+  const sess = DATA.studySessions.filter(s => s.pageId === p.id).slice().reverse();
+
+  let h = '<div class="view-head"><button class="btn btn-sm" data-act="back-page">← '+esc(t("back"))+'</button>' +
+          '<h1 style="margin-top:8px">'+esc(t("page"))+' '+p.pageNumber+'</h1>' +
+          '<p>'+esc(t("juz"))+' '+p.juzNumber+' · '+esc(t("page"))+' '+p.pageIndexInJuz+'/'+juzRange(p.juzNumber).count+' '+
+          esc(t("of_word"))+' '+esc(t("juz"))+'</p></div>';
+
+  /* İlerleme + altı bölüm */
+  h += '<div class="card"><div class="row" style="gap:14px;align-items:center;margin-bottom:12px">' +
+       ringSVG(p.progressSections, 64, t("page")+" "+p.pageNumber) +
+       '<div style="flex:1;min-width:0"><div class="li-title">'+esc(progressWord(p.progressSections))+'</div>' +
+       '<div class="li-sub">'+statusBadge(p.status)+(p.statusManual?' <span class="muted">('+esc(t("manual_flag"))+')</span>':'')+'</div></div></div>';
+  h += '<h3 style="margin-bottom:8px">'+esc(t("six_parts"))+'</h3><div class="six">';
+  for(let i=1;i<=6;i++){
+    const on = p.progressSections >= i;
+    h += '<button data-act="toggle-six" data-page="'+p.pageNumber+'" data-i="'+i+'" aria-pressed="'+on+'" ' +
+         'aria-label="'+i+'/6"><span class="tick" aria-hidden="true">'+(on?"✓":"·")+'</span>'+i+'/6</button>';
+  }
+  h += '</div></div>';
+
+  /* Sayaç */
+  h += '<div class="card"><h2 style="margin-bottom:6px">'+esc(t("nav_timer"))+'</h2>' +
+       '<div class="timer-dial" id="timerDial">'+hhmmss(active?activeElapsed():0)+'</div>' +
+       '<div class="timer-state">'+esc(active ? (active.pausedAt ? t("paused") : t("running")) : t("idle"))+'</div>' +
+       '<div class="row" style="gap:6px">' +
+       (!active ? '<button class="btn btn-emerald" data-act="timer-start" data-page="'+p.pageNumber+'">'+esc(t("start"))+'</button>' : '') +
+       (active && !active.pausedAt ? '<button class="btn" data-act="timer-pause">'+esc(t("pause"))+'</button>' : '') +
+       (active && active.pausedAt ? '<button class="btn btn-emerald" data-act="timer-resume">'+esc(t("resume"))+'</button>' : '') +
+       (active ? '<button class="btn btn-primary" data-act="timer-finish">'+esc(t("finish"))+'</button>' : '') +
+       (active ? '<button class="btn btn-danger btn-sm" data-act="timer-reset">'+esc(t("reset"))+'</button>' : '') +
+       '</div></div>';
+
+  /* Detay bilgileri */
+  h += '<div class="card"><div class="grid g2">' +
+    statCard("repeat_count", p.repeatCount) +
+    statCard("success_rate", p.successRate + "%") +
+    statCard("study_seconds", humanMin(p.totalStudySeconds)) +
+    statCard("next_rev", p.nextRevisionAt ? fmtDate(p.nextRevisionAt) : t("none")) +
+    '</div>' +
+    '<div class="field" style="margin-top:12px"><label for="pDiff">'+esc(t("difficulty"))+'</label>' +
+      '<select class="input" id="pDiff" data-act="set-diff" data-page="'+p.pageNumber+'">' +
+      DIFFICULTIES.map(d => '<option value="'+d+'"'+(p.difficulty===d?" selected":"")+'>'+esc(t(d))+'</option>').join("") + '</select></div>' +
+    '<div class="field"><label for="pStatus">'+esc(t("manual_status"))+'</label>' +
+      '<select class="input" id="pStatus" data-act="set-status" data-page="'+p.pageNumber+'">' +
+      '<option value="">'+esc(t("auto_status"))+'</option>' +
+      STATUSES.map(s => '<option value="'+s+'"'+(p.statusManual && p.status===s?" selected":"")+'>'+esc(t("st_"+s))+'</option>').join("") + '</select>' +
+      '<p class="hint">'+esc(t("st_"+p.status+"_d"))+'</p></div>' +
+    '<div class="field"><label for="pNext">'+esc(t("next_rev"))+'</label>' +
+      '<input class="input" type="date" id="pNext" value="'+esc(p.nextRevisionAt||"")+'" data-act="set-next" data-page="'+p.pageNumber+'"></div>' +
+    '<div class="field"><label for="pNote">'+esc(t("note"))+'</label>' +
+      '<textarea class="input" id="pNote" rows="2" data-act="set-note" data-page="'+p.pageNumber+'">'+esc(p.note||"")+'</textarea></div>' +
+    '<button class="btn btn-emerald btn-block" data-act="rev-add" data-page="'+p.pageNumber+'">'+esc(t("new_revision"))+'</button>' +
+    '</div>';
+
+  /* Geçmiş */
+  h += '<div class="card"><h2 style="margin-bottom:8px">'+esc(t("rev_history"))+'</h2>';
+  h += revs.length ? '<ul class="list">' + revs.map(revRowHTML).join("") + '</ul>'
+                   : '<p class="muted">'+esc(t("empty_rev"))+'</p>';
+  h += '</div>';
+  if(sess.length){
+    h += '<div class="card"><h2 style="margin-bottom:8px">'+esc(t("nav_timer"))+'</h2><ul class="list">' +
+      sess.slice(0,8).map(s => '<li><div class="li-main"><div class="li-title tnum">'+fmtClock(s.startedAt)+' → '+fmtClock(s.endedAt)+'</div>' +
+        '<div class="li-sub">'+humanMin(s.totalSeconds)+' · '+s.progressBefore+'/6 → '+s.progressAfter+'/6'+
+        (s.notes?' · '+esc(s.notes):'')+'</div></div></li>').join("") + '</ul></div>';
+  }
+  return h;
+}
+function revRowHTML(r){
+  const pn = String(r.pageId).replace("p","");
+  return '<li><div class="li-main"><div class="li-title">'+esc(fmtDate(r.date))+' · '+esc(t("page"))+' '+esc(pn)+'</div>' +
+    '<div class="li-sub tnum">'+esc(t("success_rate"))+': '+r.successRate+'% · '+esc(t("mistakes"))+': '+r.mistakeCount +
+    ' · '+esc(t("hesitations"))+': '+r.hesitationCount+' · '+esc(t("fluency"))+': '+r.fluencyScore+'/5' +
+    (r.receivedHelp ? ' · '+esc(t("received_help")) : '') + '</div>' +
+    (r.notes ? '<div class="li-sub">'+esc(r.notes)+'</div>' : '') + '</div>' +
+    '<button class="btn btn-sm btn-danger" data-act="rev-del" data-id="'+r.id+'" aria-label="'+esc(t("del"))+'">✕</button></li>';
+}
+
+/* --- 13.3 DÖNÜŞLER -------------------------------------------------------- */
+function viewTurns(){
+  const u = DATA.user, N = num(u.currentTurn,1);
+  const rec = currentTurnRecord();
+  const tp = turnProgress(N);
+  const maxT = maxTurns();
+  const doneToday = new Set();
+  DATA.studySessions.filter(s => s.endedAt && todayISO(s.endedAt) === todayISO()).forEach(s => {
+    const p = getPage(num(String(s.pageId).replace("p",""),0), false); if(p) doneToday.add(p.juzNumber);
+  });
+  /* Tahmini bitiş: son 14 günde tamamlanan sayfa hızına göre */
+  const recentDone = DATA.pages.filter(p => p.completedAt && diffDays(todayISO(p.completedAt), todayISO()) <= 14).length;
+  const perDay = recentDone / 14;
+  const remaining = tp.total - tp.done;
+  const eta = perDay > 0 ? addDaysISO(todayISO(), Math.ceil(remaining/perDay)) : null;
+
+  let h = '<div class="view-head"><h1>'+esc(t("nav_turns"))+'</h1><p>'+esc(t("turn_select"))+'</p></div>';
+
+  h += '<div class="card"><label class="label" for="turnSel">'+esc(t("current_turn"))+'</label>' +
+       '<select class="input" id="turnSel" data-act="set-turn">';
+  for(let i=1;i<=maxT;i++) h += '<option value="'+i+'"'+(i===N?" selected":"")+'>'+esc(t("turn_n",{n:i}))+'</option>';
+  h += '</select><p class="hint">'+esc(t("turn_select"))+' (1–'+maxT+')</p>' +
+       '<div class="grid g2" style="margin-top:10px">' +
+         statCard("turn_progress", tp.pct+"%", tp.done+"/"+tp.total) +
+         statCard("daily_juz", doneToday.size) +
+         statCard("turn_start", fmtDate(rec.startedAt)) +
+         statCard("turn_eta", eta ? fmtDate(eta) : t("none")) +
+       '</div>' +
+       '<div class="bar" style="margin-top:10px"><i style="width:'+tp.pct+'%"></i></div>' +
+       '<div class="field" style="margin-top:12px"><label for="turnNote">'+esc(t("turn_note"))+'</label>' +
+         '<textarea class="input" id="turnNote" rows="2" data-act="set-turn-note">'+esc(rec.notes||"")+'</textarea></div>' +
+       '</div>';
+
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("turn_tasks"))+'</h2><ul class="list">';
+  calculateTurnTasks(N).forEach(task => {
+    if(!task.available){
+      h += '<li><div class="li-main"><div class="li-title">'+esc(t("juz"))+' '+task.juz+'</div>' +
+           '<div class="li-sub">'+esc(t("no_task_juz"))+'</div></div></li>';
+      return;
+    }
+    const np = getPage(task.newPage, false);
+    const sec = np ? np.progressSections : 0;
+    const done = turnTaskDone(task);
+    const reps = task.repeatPages.map(pn => {
+      const rp = getPage(pn,false);
+      return '<button class="chip btn-sm" data-act="open-page" data-page="'+pn+'" style="min-height:30px;padding:3px 9px">'+
+        pn+' '+(rp? STATUS_ICON[rp.status] : "·")+'</button>';
+    }).join(" ");
+    h += '<li>'+ringSVG(sec, 38, t("page")+" "+task.newPage)+
+      '<div class="li-main"><div class="li-title">'+esc(t("juz"))+' '+task.juz+' — '+esc(t("new_page"))+': '+task.newPage +
+        (done ? ' <span class="badge st-pismis"><span class="bi" aria-hidden="true">✓</span>'+esc(t("ag_done"))+'</span>' : '') + '</div>' +
+      (reps ? '<div class="li-sub" style="margin-top:4px">'+esc(t("repeat_pages"))+': '+reps+'</div>'
+            : '<div class="li-sub">'+esc(t("repeat_pages"))+': '+esc(t("none"))+'</div>') +
+      '</div>' +
+      '<button class="btn btn-sm" data-act="open-page" data-page="'+task.newPage+'">'+esc(t("open_page"))+'</button></li>';
+  });
+  h += '</ul></div>';
+  return h;
+}
+
+/* --- 13.4 TEKRARLAR ------------------------------------------------------- */
+function viewRevisions(){
+  const d = dueRevisions();
+  const all = DATA.revisions.slice().reverse();
+  let h = '<div class="view-head"><h1>'+esc(t("nav_revisions"))+'</h1><p>'+esc(t("due_today"))+' · '+esc(t("overdue"))+'</p></div>';
+
+  h += '<div class="grid g3" style="margin-bottom:12px">' +
+    statCard("overdue", d.late.length) + statCard("due_today", d.due.length) + statCard("upcoming", d.soon.length) + '</div>';
+
+  if(d.late.length) h += '<div class="card"><h2 style="margin-bottom:8px">'+esc(t("overdue"))+'</h2><ul class="list">' +
+    d.late.map(pageRowHTML).join("") + '</ul></div>';
+  if(d.due.length) h += '<div class="card"><h2 style="margin-bottom:8px">'+esc(t("due_today"))+'</h2><ul class="list">' +
+    d.due.map(pageRowHTML).join("") + '</ul></div>';
+  if(d.soon.length) h += '<div class="card"><h2 style="margin-bottom:8px">'+esc(t("upcoming"))+'</h2><ul class="list">' +
+    d.soon.map(pageRowHTML).join("") + '</ul></div>';
+
+  h += '<div class="card"><div class="card-head"><h2>'+esc(t("rev_history"))+'</h2>' +
+       '<button class="btn btn-sm btn-emerald" data-act="rev-add">'+esc(t("new_revision"))+'</button></div>';
+  h += all.length ? '<ul class="list">' + all.slice(0,40).map(revRowHTML).join("") + '</ul>'
+                  : emptyState("empty_rev","empty_rev_d", t("nav_tracking"), 'data-act="go" data-view="tracking"');
+  h += '</div>';
+  return h;
+}
+function revisionModal(pageNumber){
+  const pages = touchedPages().filter(p => p.progressSections >= 6);
+  const preset = pageNumber || (pages[0] ? pages[0].pageNumber : null);
+  if(!pages.length){ toast(t("empty_rev_d"), "err"); return; }
+  const body =
+    '<div class="field"><label for="rPage">'+esc(t("page"))+'</label><select class="input" id="rPage">' +
+      pages.map(p => '<option value="'+p.pageNumber+'"'+(p.pageNumber===preset?" selected":"")+'>'+
+        t("juz")+' '+p.juzNumber+' · '+t("page")+' '+p.pageNumber+'</option>').join("") + '</select></div>' +
+    '<div class="grid g2">' +
+      '<div class="field"><label for="rDate">'+esc(t("date"))+'</label><input class="input" type="date" id="rDate" value="'+todayISO()+'"></div>' +
+      '<div class="field"><label for="rDur">'+esc(t("duration"))+' ('+esc(t("min_short"))+')</label><input class="input" type="number" min="0" id="rDur" value="10"></div>' +
+      '<div class="field"><label for="rStart">'+esc(t("start_time"))+'</label><input class="input" type="time" id="rStart" value="'+
+        new Date().toTimeString().slice(0,5)+'"></div>' +
+      '<div class="field"><label for="rMist">'+esc(t("mistakes"))+'</label><input class="input" type="number" min="0" id="rMist" value="0"></div>' +
+      '<div class="field"><label for="rHes">'+esc(t("hesitations"))+'</label><input class="input" type="number" min="0" id="rHes" value="0"></div>' +
+      '<div class="field"><label for="rRate">'+esc(t("success_rate"))+' (%)</label><input class="input" type="number" min="0" max="100" id="rRate" value="90"></div>' +
+    '</div>' +
+    '<div class="field"><label for="rFl">'+esc(t("fluency"))+'</label><select class="input" id="rFl">' +
+      [1,2,3,4,5].map(n => '<option value="'+n+'"'+(n===4?" selected":"")+'>'+n+' — '+esc(t("fl"+n))+'</option>').join("") + '</select></div>' +
+    '<div class="field"><label for="rHelp">'+esc(t("received_help"))+'</label><select class="input" id="rHelp">' +
+      '<option value="0">'+esc(t("no"))+'</option><option value="1">'+esc(t("yes"))+'</option></select></div>' +
+    '<div class="field"><label for="rNote">'+esc(t("note"))+'</label><textarea class="input" id="rNote" rows="2"></textarea></div>';
+  openModal(t("new_revision"), body, () => {
+    const pn = num($("#rPage").value,0);
+    const rate = clamp(num($("#rRate").value,0),0,100);
+    if(!pn){ toast(t("t_invalid"),"err"); return false; }
+    createRevision({ pageId:"p"+pn, date:$("#rDate").value || todayISO(),
+      durationSeconds: num($("#rDur").value,0)*60, mistakeCount: num($("#rMist").value,0),
+      hesitationCount: num($("#rHes").value,0), receivedHelp: $("#rHelp").value === "1",
+      fluencyScore: num($("#rFl").value,3), successRate: rate, notes: $("#rNote").value.trim() });
+    toast(t("t_rev"), "ok");
+    return true;
+  });
+}
+
+/* --- 13.5 AJANDA ---------------------------------------------------------- */
+function viewAgenda(){
+  const mode = STATE.agendaView, sel = STATE.agendaDate;
+  let h = '<div class="view-head"><div class="row-between"><h1>'+esc(t("nav_agenda"))+'</h1>' +
+          '<button class="btn btn-sm btn-emerald" data-act="agenda-add">'+esc(t("agenda_add"))+'</button></div></div>';
+  h += '<div class="chips" style="margin-bottom:12px">' +
+    ["day","week","month"].map(m => '<button class="chip" data-act="agenda-view" data-mode="'+m+'" aria-pressed="'+(mode===m)+'">'+
+      esc(t("view_"+m))+'</button>').join("") + '</div>';
+
+  h += '<div class="card"><div class="row-between" style="margin-bottom:10px">' +
+       '<button class="btn btn-sm" data-act="agenda-shift" data-dir="-1">‹</button>' +
+       '<b>'+esc(agendaHeadLabel())+'</b>' +
+       '<button class="btn btn-sm" data-act="agenda-shift" data-dir="1">›</button></div>';
+  if(mode === "month") h += calendarHTML(sel);
+  else if(mode === "week") h += weekStripHTML(sel);
+  h += '</div>';
+
+  const items = agendaItemsForRange();
+  h += '<div class="card"><h2 style="margin-bottom:8px">'+esc(t("nav_agenda"))+'</h2>';
+  h += items.length ? '<ul class="list">' + items.map(agendaRowHTML).join("") + '</ul>'
+                    : emptyState("empty_agenda","empty_agenda_d", t("agenda_add"), 'data-act="agenda-add"');
+  h += '</div>';
+  return h;
+}
+function agendaHeadLabel(){
+  const d = fromISO(STATE.agendaDate);
+  if(STATE.agendaView === "month") return d.toLocaleDateString(localeOf(),{month:"long",year:"numeric"});
+  if(STATE.agendaView === "week"){ const s = weekStart(STATE.agendaDate);
+    return fmtDate(s,{day:"numeric",month:"short"}) + " – " + fmtDate(addDaysISO(s,6),{day:"numeric",month:"short"}); }
+  return fmtDate(STATE.agendaDate,{weekday:"long",day:"numeric",month:"long"});
+}
+function weekStart(iso){
+  const d = fromISO(iso); const dow = d.getDay();
+  const startsMon = DATA.settings.weekStartsOn !== "sunday";
+  const back = startsMon ? ((dow + 6) % 7) : dow;
+  return addDaysISO(iso, -back);
+}
+function agendaItemsForRange(){
+  const mode = STATE.agendaView, sel = STATE.agendaDate;
+  let from = sel, to = sel;
+  if(mode === "week"){ from = weekStart(sel); to = addDaysISO(from,6); }
+  if(mode === "month"){ const d = fromISO(sel);
+    from = todayISO(new Date(d.getFullYear(), d.getMonth(), 1));
+    to   = todayISO(new Date(d.getFullYear(), d.getMonth()+1, 0)); }
+  return DATA.agendaItems.filter(a => a.date >= from && a.date <= to)
+    .sort((a,b) => (a.date+a.startTime) < (b.date+b.startTime) ? -1 : 1);
+}
+function calendarHTML(sel){
+  const d = fromISO(sel), y = d.getFullYear(), m = d.getMonth();
+  const first = new Date(y, m, 1), dim = new Date(y, m+1, 0).getDate();
+  const startsMon = DATA.settings.weekStartsOn !== "sunday";
+  const lead = startsMon ? ((first.getDay()+6)%7) : first.getDay();
+  const dows = [];
+  for(let i=0;i<7;i++){ const dd = new Date(2024,0,(startsMon?1:0)+i);
+    dows.push(dd.toLocaleDateString(localeOf(),{weekday:"narrow"})); }
+  let h = '<div class="cal">' + dows.map(x => '<div class="dow">'+esc(x)+'</div>').join("");
+  for(let i=0;i<lead;i++) h += '<div class="day out" aria-hidden="true"></div>';
+  for(let n=1;n<=dim;n++){
+    const iso = todayISO(new Date(y,m,n));
+    const items = DATA.agendaItems.filter(a => a.date === iso);
+    const dots = items.slice(0,3).map(a => '<span class="dot '+(a.status==="done"?"":(a.status==="missed"?"missed":"pending"))+'"></span>').join("");
+    h += '<button class="day'+(iso===todayISO()?" today":"")+(iso===sel?" sel":"")+'" data-act="agenda-day" data-date="'+iso+'" '+
+         'aria-label="'+esc(fmtDate(iso))+'"><span class="dn">'+n+'</span><span class="dots">'+dots+'</span></button>';
+  }
+  h += '</div>';
+  return h;
+}
+function weekStripHTML(sel){
+  const s = weekStart(sel);
+  let h = '<div class="cal">';
+  for(let i=0;i<7;i++){
+    const iso = addDaysISO(s,i);
+    const items = DATA.agendaItems.filter(a => a.date === iso);
+    h += '<button class="day'+(iso===todayISO()?" today":"")+(iso===sel?" sel":"")+'" data-act="agenda-day" data-date="'+iso+'">' +
+         '<span class="dn">'+fromISO(iso).getDate()+'</span>' +
+         '<span class="muted" style="font-size:.62rem">'+fromISO(iso).toLocaleDateString(localeOf(),{weekday:"short"})+'</span>' +
+         '<span class="dots">'+items.slice(0,3).map(a=>'<span class="dot '+(a.status==="done"?"":"pending")+'"></span>').join("")+'</span></button>';
+  }
+  h += '</div>';
+  return h;
+}
+function agendaRowHTML(a){
+  const stKey = { pending:"ag_pending", done:"ag_done", partial:"ag_partial", postponed:"ag_postponed", missed:"ag_missed" }[a.status] || "ag_pending";
+  const stCls = { done:"st-pismis", partial:"st-pismekte", postponed:"st-ham", missed:"st-cig", pending:"st-ham" }[a.status];
+  return '<li><div class="li-main"><div class="li-title">'+esc(a.title || t("tt_"+a.taskType))+'</div>' +
+    '<div class="li-sub">'+esc(fmtDate(a.date,{day:"numeric",month:"short"}))+
+      (a.startTime ? ' · '+esc(a.startTime) : '') + ' · '+esc(t("tt_"+a.taskType))+' · '+a.estimatedMinutes+' '+esc(t("min_short")) +
+      (a.juzNumber ? ' · '+esc(t("juz"))+' '+a.juzNumber : '') + (a.pageNumber ? ' · '+esc(t("page"))+' '+a.pageNumber : '') +
+      (a.reminder ? ' · '+esc(t("reminder")) : '') + '</div>' +
+    '<div class="li-sub"><span class="badge '+stCls+'"><span class="bi" aria-hidden="true">•</span>'+esc(t(stKey))+'</span>' +
+      (a.notes ? ' '+esc(a.notes) : '') + '</div></div>' +
+    '<button class="btn btn-sm" data-act="agenda-status" data-id="'+a.id+'" aria-label="'+esc(t("status"))+'">⋯</button>' +
+    '<button class="btn btn-sm btn-danger" data-act="agenda-del" data-id="'+a.id+'" aria-label="'+esc(t("del"))+'">✕</button></li>';
+}
+function agendaModal(item){
+  const a = item || { title:"", date: STATE.agendaDate || todayISO(), startTime:"", estimatedMinutes:30,
+                      taskType:"new_memorization", juzNumber:"", pageNumber:"", targetSections:1, notes:"", reminder:false };
+  const body =
+    '<div class="field"><label for="aTitle">'+esc(t("title"))+'</label><input class="input" id="aTitle" value="'+esc(a.title)+'"></div>' +
+    '<div class="field"><label for="aType">'+esc(t("task_type"))+'</label><select class="input" id="aType">' +
+      TASK_TYPES.map(x => '<option value="'+x+'"'+(a.taskType===x?" selected":"")+'>'+esc(t("tt_"+x))+'</option>').join("") + '</select></div>' +
+    '<div class="grid g2">' +
+      '<div class="field"><label for="aDate">'+esc(t("date"))+'</label><input class="input" type="date" id="aDate" value="'+esc(a.date)+'"></div>' +
+      '<div class="field"><label for="aTime">'+esc(t("start_time"))+'</label><input class="input" type="time" id="aTime" value="'+esc(a.startTime)+'"></div>' +
+      '<div class="field"><label for="aMin">'+esc(t("est_minutes"))+'</label><input class="input" type="number" min="5" step="5" id="aMin" value="'+num(a.estimatedMinutes,30)+'"></div>' +
+      '<div class="field"><label for="aSec">'+esc(t("target_sections"))+'</label><select class="input" id="aSec">' +
+        [1,2,3,4,5,6].map(n=>'<option value="'+n+'"'+(num(a.targetSections,1)===n?" selected":"")+'>'+n+'/6</option>').join("")+'</select></div>' +
+      '<div class="field"><label for="aJuz">'+esc(t("juz"))+'</label><input class="input" type="number" min="1" max="30" id="aJuz" value="'+esc(a.juzNumber||"")+'"></div>' +
+      '<div class="field"><label for="aPage">'+esc(t("page"))+'</label><input class="input" type="number" min="1" id="aPage" value="'+esc(a.pageNumber||"")+'"></div>' +
+    '</div>' +
+    '<div class="field"><label for="aRem">'+esc(t("reminder"))+'</label><select class="input" id="aRem">' +
+      '<option value="0"'+(!a.reminder?" selected":"")+'>'+esc(t("no"))+'</option>' +
+      '<option value="1"'+(a.reminder?" selected":"")+'>'+esc(t("yes"))+'</option></select></div>' +
+    '<div class="field"><label for="aNote">'+esc(t("note"))+'</label><textarea class="input" id="aNote" rows="2">'+esc(a.notes)+'</textarea></div>';
+  openModal(item ? t("edit") : t("agenda_add"), body, () => {
+    const date = $("#aDate").value;
+    if(!date){ toast(t("t_invalid"), "err"); return false; }
+    const rec = { title: $("#aTitle").value.trim(), date, startTime: $("#aTime").value,
+      estimatedMinutes: num($("#aMin").value,30), taskType: $("#aType").value,
+      juzNumber: $("#aJuz").value ? clamp(num($("#aJuz").value,1),1,30) : null,
+      pageNumber: $("#aPage").value ? clamp(num($("#aPage").value,1),1,num(DATA.settings.totalQuranPages,604)) : null,
+      targetSections: num($("#aSec").value,1), reminder: $("#aRem").value === "1", notes: $("#aNote").value.trim() };
+    if(!rec.title) rec.title = t("tt_"+rec.taskType);
+    if(item) Object.assign(item, rec), saveAppData();
+    else createAgendaItem(rec);
+    return true;
+  });
+}
+
+/* --- 13.6 SÜRE TAKİBİ ----------------------------------------------------- */
+function viewTimer(){
+  const a = DATA.activeSession;
+  let h = '<div class="view-head"><h1>'+esc(t("nav_timer"))+'</h1><p>'+esc(t("idle"))+' / '+esc(t("running"))+'</p></div>';
+  if(!a){
+    h += '<div class="card">' + emptyState("empty_pages","empty_pages_d", t("start_study"), 'data-act="start-study"') + '</div>';
+  } else {
+    const p = getPage(a.pageNumber, true);
+    h += '<div class="card"><div class="row" style="justify-content:center;margin-bottom:6px">'+
+      ringSVG(p.progressSections, 72, t("page")+" "+p.pageNumber)+'</div>' +
+      '<p class="muted" style="text-align:center">'+esc(t("juz"))+' '+p.juzNumber+' · '+esc(t("page"))+' '+p.pageNumber+'</p>' +
+      '<div class="timer-dial" id="timerDial">'+hhmmss(activeElapsed())+'</div>' +
+      '<div class="timer-state">'+esc(a.pausedAt ? t("paused") : t("running"))+' · '+esc(t("start_time"))+': '+fmtClock(a.startedAt)+'</div>' +
+      '<div class="grid g2">' +
+        (a.pausedAt ? '<button class="btn btn-emerald" data-act="timer-resume">'+esc(t("resume"))+'</button>'
+                    : '<button class="btn" data-act="timer-pause">'+esc(t("pause"))+'</button>') +
+        '<button class="btn btn-primary" data-act="timer-finish">'+esc(t("finish"))+'</button>' +
+      '</div><button class="btn btn-danger btn-block btn-sm" style="margin-top:8px" data-act="timer-reset">'+esc(t("reset"))+'</button>' +
+      '<button class="btn btn-block btn-sm" style="margin-top:8px" data-act="open-page" data-page="'+p.pageNumber+'">'+esc(t("open_page"))+'</button>' +
+      '</div>';
+  }
+  const recent = DATA.studySessions.slice().reverse().slice(0,15);
+  h += '<div class="card"><h2 style="margin-bottom:8px">'+esc(t("rev_history"))+'</h2>';
+  h += recent.length ? '<ul class="list">' + recent.map(s => {
+      const pn = String(s.pageId).replace("p","");
+      return '<li><div class="li-main"><div class="li-title">'+esc(t("page"))+' '+esc(pn)+' · <span class="tnum">'+
+        fmtClock(s.startedAt)+'–'+fmtClock(s.endedAt)+'</span></div>' +
+        '<div class="li-sub tnum">'+humanMin(s.totalSeconds)+' · '+s.progressBefore+'/6 → '+s.progressAfter+'/6</div></div></li>';
+    }).join("") + '</ul>' : '<p class="muted">'+esc(t("empty_pages_d"))+'</p>';
+  h += '</div>';
+  return h;
+}
+
+/* --- 13.7 ÇEVİRİ ---------------------------------------------------------- */
+function viewTranslate(){
+  const names = { tr:"Türkçe", en:"English", fr:"Français", ar:"العربية" };
+  let h = '<div class="view-head"><h1>'+esc(t("nav_translate"))+'</h1><p>'+esc(t("tr_demo_notice"))+'</p></div>';
+  h += '<div class="card">' +
+    '<div class="grid g2">' +
+      '<div class="field"><label for="trFrom">'+esc(t("source_lang"))+'</label><select class="input" id="trFrom">' +
+        LANGS.map(l => '<option value="'+l+'"'+(STATE.trFrom===l?" selected":"")+'>'+names[l]+'</option>').join("") + '</select></div>' +
+      '<div class="field"><label for="trTo">'+esc(t("target_lang"))+'</label><select class="input" id="trTo">' +
+        LANGS.map(l => '<option value="'+l+'"'+(STATE.trTo===l?" selected":"")+'>'+names[l]+'</option>').join("") + '</select></div>' +
+    '</div>' +
+    '<button class="btn btn-sm btn-block" data-act="tr-swap" style="margin-bottom:12px">⇄ '+esc(t("swap"))+'</button>' +
+    '<div class="field tr-box"><label for="trText">'+esc(t("tr_input_ph"))+'</label>' +
+      '<textarea class="input'+(STATE.trFrom==="ar"?" ar-text":"")+'" id="trText" rows="3" maxlength="2000" '+
+      (STATE.trFrom==="ar"?'dir="rtl" ':'')+'placeholder="'+esc(t("tr_input_ph"))+'">'+esc(STATE.trText)+'</textarea>' +
+      '<span class="tr-count" id="trCount">'+STATE.trText.length+' '+esc(t("chars"))+'</span></div>' +
+    '<button class="btn btn-primary btn-block" data-act="tr-run">'+esc(t("translate_btn"))+'</button>';
+  if(STATE.trOut !== null){
+    h += '<div class="label" style="margin-top:14px">'+esc(names[STATE.trTo])+'</div>' +
+      '<div class="tr-out'+(STATE.trTo==="ar"?" ar-text":"")+'"'+(STATE.trTo==="ar"?' dir="rtl"':'')+'>'+esc(STATE.trOut.text)+'</div>' +
+      (STATE.trOut.demo ? '<p class="hint">'+esc(t("tr_demo_notice"))+'</p>' : '') +
+      '<div class="row" style="margin-top:8px"><button class="btn btn-sm" data-act="tr-copy">'+esc(t("copy"))+'</button>' +
+      '<button class="btn btn-sm" data-act="tr-fav">★ '+esc(t("favorite"))+'</button></div>';
+  }
+  h += '</div>';
+
+  const hist = DATA.translations.slice().reverse();
+  h += '<div class="card"><div class="card-head"><h2>'+esc(t("tr_history"))+'</h2>' +
+       (hist.length ? '<button class="btn btn-sm btn-danger" data-act="tr-clear">'+esc(t("clear_history"))+'</button>' : '') + '</div>';
+  h += hist.length ? '<ul class="list">' + hist.slice(0,30).map(x =>
+      '<li><div class="li-main"><div class="li-title">'+esc(x.sourceText)+'</div>' +
+      '<div class="li-sub">'+esc(names[x.sourceLanguage])+' → '+esc(names[x.targetLanguage])+': '+esc(x.translatedText)+'</div></div>' +
+      '<button class="btn btn-sm" data-act="tr-togglefav" data-id="'+x.id+'" aria-label="'+esc(t("favorite"))+'">'+(x.favorite?"★":"☆")+'</button>' +
+      '</li>').join("") + '</ul>'
+    : emptyState("empty_tr","empty_tr_d");
+  h += '</div>';
+  return h;
+}
+
+/* --- 13.8 İSTATİSTİKLER --------------------------------------------------- */
+function viewStats(){
+  const days = activeDays();
+  const totalSec = DATA.studySessions.reduce((a,s)=>a+num(s.totalSeconds,0),0)
+                 + DATA.revisions.reduce((a,r)=>a+num(r.durationSeconds,0),0);
+  const avg = days.length ? totalSec/days.length : 0;
+  let weekSec = 0, monthSec = 0;
+  for(let i=0;i<7;i++)  weekSec  += secondsOn(addDaysISO(todayISO(),-i));
+  for(let i=0;i<30;i++) monthSec += secondsOn(addDaysISO(todayISO(),-i));
+  const sc = statusCounts();
+  const totalSections = DATA.studySessions.reduce((a,s)=>a+Math.max(0,num(s.progressAfter,0)-num(s.progressBefore,0)),0);
+
+  /* En çok çalışılan cüz */
+  const juzSec = {};
+  DATA.pages.forEach(p => { juzSec[p.juzNumber] = (juzSec[p.juzNumber]||0) + num(p.totalStudySeconds,0); });
+  const topJuz = Object.keys(juzSec).sort((a,b)=>juzSec[b]-juzSec[a])[0];
+  /* En zorlanılan sayfalar: düşük başarı + çok hata */
+  const hard = touchedPages().slice().sort((a,b)=>
+      (num(a.successRate,100) - num(b.successRate,100)) || (num(b.repeatCount,0)-num(a.repeatCount,0))).slice(0,5);
+  /* Görev oranları */
+  const past = DATA.agendaItems.filter(a => a.date <= todayISO());
+  const onTime = past.filter(a => a.status === "done").length;
+  const onTimeRate = past.length ? Math.round(onTime/past.length*100) : 0;
+  const memo = touchedPages().filter(p => p.progressSections>=6 && p.nextRevisionAt);
+  const lateRate = memo.length ? Math.round(memo.filter(p => diffDays(todayISO(), p.nextRevisionAt) < 0).length / memo.length * 100) : 0;
+
+  let h = '<div class="view-head"><h1>'+esc(t("nav_stats"))+'</h1></div>';
+  if(!days.length && !touchedPages().length) return h + '<div class="card">' + emptyState("empty_stats","empty_stats_d") + '</div>';
+
+  h += '<div class="grid g4" style="margin-bottom:12px">' +
+    statCard("stats_total_time", humanMin(totalSec)) + statCard("stats_daily_avg", humanMin(avg)) +
+    statCard("stats_week_total", humanMin(weekSec)) + statCard("stats_month_total", humanMin(monthSec)) + '</div>';
+  h += '<div class="grid g4" style="margin-bottom:12px">' +
+    statCard("total_pages_mem", memorizedCount()) + statCard("stats_sections", totalSections) +
+    statCard("stats_revisions", DATA.revisions.length) + statCard("streak", currentStreak()+" "+t("streak_days")) + '</div>';
+  h += '<div class="grid g4" style="margin-bottom:12px">' +
+    statCard("stats_top_juz", topJuz ? (t("juz")+" "+topJuz) : t("none")) +
+    statCard("stats_best_streak", longestStreak()+" "+t("streak_days")) +
+    statCard("stats_ontime", onTimeRate+"%") + statCard("stats_late_rate", lateRate+"%") + '</div>';
+
+  /* Durum dağılımı */
+  const totalTouched = Math.max(1, touchedPages().length);
+  const colors = { ham:"var(--warn)", cig:"var(--danger)", pismekte:"var(--info)", pismis:"var(--ok)", saglam:"var(--gold)" };
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("stats_dist"))+'</h2><div class="stack">' +
+    STATUSES.map(s => '<i style="width:'+(sc[s]/totalTouched*100)+'%;background:'+colors[s]+'" title="'+esc(statusLabel(s))+'"></i>').join("") +
+    '</div><div class="legend">' + STATUSES.map(s =>
+      '<span><i style="background:'+colors[s]+'"></i>'+STATUS_ICON[s]+' '+esc(statusLabel(s))+': <b>'+sc[s]+'</b></span>').join("") + '</div></div>';
+
+  /* 7 gün */
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("stats_7days"))+'</h2>'+barChart7()+'</div>';
+
+  /* 4 hafta ezber ilerlemesi */
+  const wk = [];
+  for(let w=3;w>=0;w--){
+    let c = 0;
+    DATA.pages.forEach(p => { if(!p.completedAt) return;
+      const dd = diffDays(todayISO(p.completedAt), todayISO());
+      if(dd >= w*7 && dd < (w+1)*7) c++; });
+    wk.push(c);
+  }
+  const wkMax = Math.max(1, ...wk);
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("stats_4weeks"))+'</h2>' +
+       '<svg class="chart" viewBox="0 0 320 110" role="img" aria-label="'+esc(t("stats_4weeks"))+'">' +
+       wk.map((v,i)=>{ const bh = Math.max(2,(v/wkMax)*70), x = i*80+16;
+         return '<rect x="'+x+'" y="'+(90-bh)+'" width="48" height="'+bh+'" rx="4" fill="var(--gold)"/>' +
+                '<text x="'+(x+24)+'" y="'+(86-bh)+'" text-anchor="middle">'+v+'</text>' +
+                '<text x="'+(x+24)+'" y="104" text-anchor="middle">-'+(3-i)+' '+esc(t("week"))+'</text>'; }).join("") +
+       '</svg></div>';
+
+  /* Cüz bazında tamamlanma */
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("stats_juz_rate"))+'</h2>';
+  h += '<svg class="chart" viewBox="0 0 320 150" role="img" aria-label="'+esc(t("stats_juz_rate"))+'">';
+  juzRanges().forEach((j,i)=>{
+    const mem = DATA.pages.filter(p => p.pageNumber>=j.start && p.pageNumber<=j.end && p.progressSections>=6).length;
+    const pct = mem/j.count;
+    const x = 6 + (i%15)*21, y = i<15 ? 8 : 82;
+    return h += '<rect x="'+x+'" y="'+y+'" width="16" height="52" rx="3" fill="var(--line)"/>' +
+      '<rect x="'+x+'" y="'+(y+52-Math.max(1,pct*52))+'" width="16" height="'+Math.max(1,pct*52)+'" rx="3" fill="var(--emerald)"/>' +
+      '<text x="'+(x+8)+'" y="'+(y+64)+'" text-anchor="middle">'+j.juz+'</text>';
+  });
+  h += '</svg></div>';
+
+  /* Yoğunluk ısı haritası (son 28 gün) */
+  const heat = [];
+  for(let i=27;i>=0;i--){ const d = addDaysISO(todayISO(),-i); heat.push({ d, m: Math.round(secondsOn(d)/60) }); }
+  const hMax = Math.max(1, ...heat.map(x=>x.m));
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("stats_heat"))+'</h2><div class="heat">' +
+    heat.map(x => { const a = x.m ? (0.22 + 0.78*(x.m/hMax)) : 0;
+      return '<div class="hc" title="'+esc(fmtDate(x.d))+': '+x.m+' '+esc(t("min_short"))+'" '+
+             'style="background:color-mix(in srgb, var(--emerald) '+Math.round(a*100)+'%, var(--beige))"></div>'; }).join("") +
+    '</div></div>';
+
+  /* En zorlanılan sayfalar */
+  if(hard.length){
+    h += '<div class="card"><h2 style="margin-bottom:8px">'+esc(t("stats_hard_pages"))+'</h2><ul class="list">' +
+      hard.map(pageRowHTML).join("") + '</ul></div>';
+  }
+  return h;
+}
+
+/* --- 13.9 PROFİL VE AYARLAR ----------------------------------------------- */
+function viewProfile(){
+  const u = DATA.user, s = DATA.settings;
+  let h = '<div class="view-head"><h1>'+esc(t("nav_profile"))+'</h1></div>';
+
+  h += '<div class="card"><div class="row" style="gap:12px;margin-bottom:12px">' +
+    '<span class="avatar" style="width:52px;height:52px;font-size:1.1rem" aria-hidden="true">'+esc(initials(u.name))+'</span>' +
+    '<div><div class="li-title">'+esc(u.name||"—")+'</div><div class="li-sub">'+esc(u.email||"—")+'</div>' +
+    '<div class="li-sub">'+esc(t("start_date"))+': '+esc(fmtDate(u.memorizationStartDate))+'</div></div></div>' +
+    '<div class="grid g2">' +
+      statCard("stats_total_time", humanMin(DATA.studySessions.reduce((a,x)=>a+num(x.totalSeconds,0),0))) +
+      statCard("total_pages_mem", memorizedCount()) +
+      statCard("stats_revisions", DATA.revisions.length) +
+      statCard("current_turn", u.currentTurn + ".") +
+    '</div></div>';
+
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("profile_title"))+'</h2>' +
+    '<div class="field"><label for="uName">'+esc(t("first_name"))+' / '+esc(t("last_name"))+'</label>' +
+      '<input class="input" id="uName" value="'+esc(u.name)+'" data-act="set-user" data-k="name"></div>' +
+    '<div class="field"><label for="uMail">'+esc(t("email"))+'</label>' +
+      '<input class="input" type="email" id="uMail" value="'+esc(u.email)+'" data-act="set-user" data-k="email"></div>' +
+    '<div class="field"><label for="uStart">'+esc(t("start_date"))+'</label>' +
+      '<input class="input" type="date" id="uStart" value="'+esc(u.memorizationStartDate)+'" data-act="set-user" data-k="memorizationStartDate"></div>' +
+    '<div class="grid g2">' +
+      '<div class="field"><label for="uDaily">'+esc(t("daily_goal_min"))+'</label>' +
+        '<input class="input" type="number" min="0" id="uDaily" value="'+num(u.dailyTargetMinutes,60)+'" data-act="set-user" data-k="dailyTargetMinutes" data-num="1"></div>' +
+      '<div class="field"><label for="uWeekly">'+esc(t("weekly_goal_min"))+'</label>' +
+        '<input class="input" type="number" min="0" id="uWeekly" value="'+num(u.weeklyTargetMinutes,420)+'" data-act="set-user" data-k="weeklyTargetMinutes" data-num="1"></div>' +
+      '<div class="field"><label for="uNew">'+esc(t("daily_new_target"))+'</label>' +
+        '<input class="input" type="number" min="0" id="uNew" value="'+num(u.dailyNewPageTarget,1)+'" data-act="set-user" data-k="dailyNewPageTarget" data-num="1"></div>' +
+      '<div class="field"><label for="uRev">'+esc(t("daily_rev_target"))+'</label>' +
+        '<input class="input" type="number" min="0" id="uRev" value="'+num(u.dailyRevisionTarget,3)+'" data-act="set-user" data-k="dailyRevisionTarget" data-num="1"></div>' +
+    '</div></div>';
+
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("settings"))+'</h2>' +
+    '<div class="field"><span class="label">'+esc(t("theme"))+'</span><div class="chips">' +
+      ["light","dark","system"].map(x => '<button class="chip" data-act="set-theme" data-theme="'+x+'" aria-pressed="'+(u.theme===x)+'">'+
+        esc(t("theme_"+x))+'</button>').join("") + '</div></div>' +
+    '<div class="field"><label for="setLang">'+esc(t("language"))+'</label><select class="input" id="setLang" data-act="set-lang">' +
+      LANGS.map(l => '<option value="'+l+'"'+(LANG===l?" selected":"")+'>'+({tr:"Türkçe",en:"English",fr:"Français",ar:"العربية"})[l]+'</option>').join("") + '</select></div>' +
+    '<div class="grid g2">' +
+      '<div class="field"><label for="sTotal">'+esc(t("total_quran_pages"))+'</label>' +
+        '<input class="input" type="number" min="30" id="sTotal" value="'+num(s.totalQuranPages,604)+'" data-act="set-setting" data-k="totalQuranPages" data-num="1"></div>' +
+      '<div class="field"><label for="sWeek">'+esc(t("week_start"))+'</label><select class="input" id="sWeek" data-act="set-setting" data-k="weekStartsOn">' +
+        '<option value="monday"'+(s.weekStartsOn==="monday"?" selected":"")+'>'+esc(t("monday"))+'</option>' +
+        '<option value="sunday"'+(s.weekStartsOn==="sunday"?" selected":"")+'>'+esc(t("sunday"))+'</option></select></div>' +
+      '<div class="field"><label for="sCook">'+esc(t("cooked_threshold"))+'</label>' +
+        '<input class="input" type="number" min="1" id="sCook" value="'+num(s.cookedRepeatThreshold,3)+'" data-act="set-setting" data-k="cookedRepeatThreshold" data-num="1"></div>' +
+      '<div class="field"><label for="sSolid">'+esc(t("solid_threshold"))+'</label>' +
+        '<input class="input" type="number" min="1" id="sSolid" value="'+num(s.solidRepeatThreshold,5)+'" data-act="set-setting" data-k="solidRepeatThreshold" data-num="1"></div>' +
+    '</div>' +
+    '<div class="field"><label for="sJuz">'+esc(t("juz_starts"))+'</label>' +
+      '<textarea class="input" id="sJuz" rows="3" data-act="set-juzstarts">'+esc((s.juzStarts||DEFAULT_JUZ_STARTS).join(", "))+'</textarea>' +
+      '<p class="hint">'+esc(t("juz_starts_hint"))+'</p></div>' +
+    '<div class="field"><span class="label">'+esc(t("notif_prefs"))+'</span>' +
+      '<label style="display:flex;gap:8px;align-items:center;font-weight:500;margin-bottom:6px">' +
+        '<input type="checkbox" id="nSave" data-act="set-user" data-k="notifySaves" data-bool="1"'+(u.notifySaves!==false?" checked":"")+'> '+esc(t("notif_toasts"))+'</label>' +
+      '<label style="display:flex;gap:8px;align-items:center;font-weight:500">' +
+        '<input type="checkbox" id="nDue" data-act="set-user" data-k="notifyDue" data-bool="1"'+(u.notifyDue!==false?" checked":"")+'> '+esc(t("notif_due"))+'</label></div>' +
+    '</div>';
+
+  h += '<div class="card"><h2 style="margin-bottom:10px">'+esc(t("export_data"))+' / '+esc(t("import_data"))+'</h2>' +
+    '<div class="grid g2">' +
+      '<button class="btn" data-act="export">'+esc(t("export_data"))+'</button>' +
+      '<button class="btn" data-act="import">'+esc(t("import_data"))+'</button>' +
+      '<button class="btn btn-danger" data-act="clear-demo">'+esc(t("clear_demo"))+'</button>' +
+      '<button class="btn btn-danger" data-act="reset-all">'+esc(t("reset_all"))+'</button>' +
+    '</div>' +
+    '<input type="file" id="importFile" accept="application/json" class="sr-only">' +
+    '<button class="btn btn-block" style="margin-top:10px" data-act="logout">'+esc(t("logout"))+'</button></div>';
+
+  /* Geliştirici paneli (gizlenebilir) */
+  h += '<details class="card dev"><summary style="cursor:pointer;font-weight:700">'+esc(t("dev_panel"))+'</summary>' +
+    '<div class="grid g2" style="margin-top:12px">' +
+      '<button class="btn btn-sm" data-act="dev-seed">'+esc(t("dev_seed"))+'</button>' +
+      '<button class="btn btn-sm" data-act="dev-state">'+esc(t("dev_state"))+'</button>' +
+      '<button class="btn btn-sm" data-act="dev-active">'+esc(t("dev_active"))+'</button>' +
+      '<button class="btn btn-sm" data-act="dev-recalc">'+esc(t("dev_recalc"))+'</button>' +
+      '<button class="btn btn-sm" data-act="dev-sample-rev">'+esc(t("dev_sample_rev"))+'</button>' +
+      '<button class="btn btn-sm" data-act="dev-i18n">'+esc(t("dev_i18n"))+'</button>' +
+      '<button class="btn btn-sm btn-emerald" data-act="dev-tests">'+esc(t("dev_tests"))+'</button>' +
+      '<button class="btn btn-sm btn-danger" data-act="reset-all">'+esc(t("reset_all"))+'</button>' +
+    '</div><div id="devOut" style="margin-top:12px"></div></details>';
+
+  h += '<p class="muted" style="text-align:center;margin:16px 0">v'+APP_VERSION+' · '+
+       (Depo.persistent ? "localStorage" : "memory fallback")+' · AUTH_MODE='+AUTH_MODE+' · TRANSLATION_MODE='+TRANSLATION_MODE+'</p>';
+  return h;
+}
+function initials(name){
+  const parts = String(name||"").trim().split(/\s+/).filter(Boolean);
+  const a = parts[0] ? parts[0][0] : "", b = parts[1] ? parts[1][0] : "";
+  return ((a + b) || "?").toUpperCase();
+}
+
+/* ===========================================================================
+   BÖLÜM 14 — GELİŞTİRİCİ PANELİ: TEST SENARYOLARI
+   =========================================================================== */
+function runTests(){
+  SILENT = true;
+  const out = [];
+  const add = (name, pass, detail) => out.push({ name, pass:!!pass, detail: detail||"" });
+
+  /* Senaryo 1: 4. dönüşte 1. cüzün sondan 4. sayfası yeni sayfadır */
+  const tasks = calculateTurnTasks(4);
+  const j1 = juzRange(1), tk = tasks[0];
+  add("S1 · 4. dönüş — yeni sayfa = cüz sonu-3", tk.newPage === j1.end - 3, "newPage=" + tk.newPage + " beklenen=" + (j1.end-3));
+  add("S1 · 4. dönüş — 3 tekrar sayfası", tk.repeatPages.length === 3, "repeats=[" + tk.repeatPages.join(",") + "]");
+  add("S1 · tekrar sayfaları cüz sonuna kadar", tk.repeatPages[tk.repeatPages.length-1] === j1.end, "son=" + tk.repeatPages[2]);
+  const tooBig = calculateTurnTasks(maxTurns()+5).filter(x=>x.available).length;
+  add("İK9 · sayfası olmayan cüzde görev üretilmez", tooBig === 0, "üretilen=" + tooBig);
+
+  /* Senaryo 2: 17:40 → 18:30 = 50 dk, ilerleme 2/6 */
+  const testPage = 1;
+  const p = getPage(testPage, true);
+  const snapshot = JSON.parse(JSON.stringify(p));
+  const st = new Date(todayISO()+"T17:40:00"), en = new Date(todayISO()+"T18:30:00");
+  const secs = (en - st)/1000;
+  add("S2 · süre 50 dakika", Math.round(secs/60) === 50, Math.round(secs/60) + " dk");
+  const before = p.progressSections;
+  updatePageProgress(testPage, 2);
+  add("S2 · ilerleme 2/6 kaydedilir", getPage(testPage).progressSections === 2, getPage(testPage).progressSections + "/6");
+
+  /* Senaryo 3: 6/6 -> çiğ, tekrarlarla pişmiş */
+  updatePageProgress(testPage, 6);
+  const p3 = getPage(testPage);
+  p3.repeatCount = 0; p3.successRate = 0; p3.statusManual = false; refreshStatus(p3);
+  add("S3 · 6/6 sonrası durum 'çiğ'", p3.status === "cig", p3.status);
+  const revIds = [];
+  for(let i=0;i<3;i++){ const r = createRevision({ pageId:"p"+testPage, successRate:85, fluencyScore:4, durationSeconds:0 }); revIds.push(r.id); }
+  add("S3 · 3 tekrar sonrası sayaç 3", getPage(testPage).repeatCount === 3, "repeatCount=" + getPage(testPage).repeatCount);
+  add("S3 · 3 tekrar sonrası 'pişmiş'", getPage(testPage).status === "pismis", getPage(testPage).status);
+  add("İK2 · aralıklı tekrar tarihi ilerledi",
+      getPage(testPage).nextRevisionAt === addDaysISO(todayISO(), REVISION_INTERVALS[3]),
+      getPage(testPage).nextRevisionAt);
+
+  /* Senaryo 4: dil + yön */
+  const prevLang = LANG;
+  const pagesBefore = DATA.pages.length;
+  setLanguage("ar", true);
+  add("S4 · Arapça arayüz", t("nav_home") === I18N.nav_home[3], t("nav_home"));
+  add("S4 · yön rtl", document.documentElement.getAttribute("dir") === "rtl", document.documentElement.getAttribute("dir"));
+  add("S4 · kayıtlar korunur", DATA.pages.length === pagesBefore, DATA.pages.length + " sayfa");
+  setLanguage(prevLang, true);
+
+  /* Senaryo 5: yenilemede veri ve aktif sayaç korunur */
+  const hadActive = !!DATA.activeSession;
+  if(!hadActive){ startTimer(testPage, "new_memorization"); }
+  saveAppData(true);
+  const raw = JSON.parse(Depo.get(STORAGE_KEY));
+  add("S5 · aktif sayaç diske yazılır", !!raw.activeSession, raw.activeSession ? raw.activeSession.startedAt : "yok");
+  add("S5 · veriler diske yazılır", Array.isArray(raw.pages) && raw.pages.length > 0, raw.pages.length + " sayfa");
+  add("İK7 · ikinci sayaç engellenir", startTimer(testPage + 1, "new_memorization") === false, "engellendi");
+  if(!hadActive){ DATA.activeSession = null; stopTicker(); }
+
+  /* Senaryo 6: dışa aktar → sil → içe aktar */
+  const backup = JSON.stringify(DATA);
+  const countBefore = DATA.pages.length;
+  DATA.pages = []; reindexPages();
+  const restored = JSON.parse(backup);
+  DATA = Object.assign(emptyData(), restored); reindexPages();
+  add("S6 · JSON yedeği geri yüklenir", DATA.pages.length === countBefore, DATA.pages.length + "/" + countBefore);
+
+  /* Dil anahtarı bütünlüğü */
+  const missing = [];
+  Object.keys(I18N).forEach(k => { const row = I18N[k];
+    if(!Array.isArray(row) || row.length !== 4 || row.some(x => !x || !String(x).trim())) missing.push(k); });
+  add("i18n · 4 dilde eksik anahtar yok", missing.length === 0, missing.slice(0,6).join(", ") || "tamam");
+
+  /* Cüz aralıkları bütünlüğü */
+  const rs = juzRanges();
+  const contiguous = rs.every((r,i) => i === 0 || r.start === rs[i-1].end + 1);
+  add("Cüz aralıkları kesintisiz", contiguous && rs[rs.length-1].end === num(DATA.settings.totalQuranPages,604),
+      rs[0].start + "–" + rs[rs.length-1].end);
+
+  /* Test sonrası temizlik: test sayfası eski haline döndürülür */
+  DATA.revisions = DATA.revisions.filter(r => revIds.indexOf(r.id) === -1);
+  const tp = getPage(testPage, true);
+  Object.assign(tp, snapshot);
+  DATA.studySessions = DATA.studySessions.filter(s => s.pageId !== "p"+testPage || s.endedAt);
+  SILENT = false;
+  saveAppData(true);
+  return out;
+}
+function renderTests(){
+  const res = runTests();
+  const passed = res.filter(r=>r.pass).length;
+  $("#devOut").innerHTML = '<p style="font-weight:700;margin-bottom:8px">' + passed + "/" + res.length + ' ✓</p>' +
+    res.map(r => '<div class="testrow"><span class="tf '+(r.pass?"pass":"fail")+'">'+(r.pass?"✓":"✕")+'</span>' +
+      '<span style="flex:1">'+esc(r.name)+'<br><span class="muted">'+esc(r.detail)+'</span></span></div>').join("");
+}
+
+/* ===========================================================================
+   BÖLÜM 15 — DİL, TEMA, YÖNLENDİRME
+   =========================================================================== */
+function setLanguage(lang, silent){
+  if(LANGS.indexOf(lang) === -1) lang = "tr";
+  LANG = lang;
+  DATA.user.preferredLanguage = lang;
+  Depo.set("hafizlikLang", lang);
+  document.documentElement.setAttribute("lang", lang);
+  document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+  $$("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  const sel = $("#langSelect"); if(sel) sel.value = lang;
+  if(!silent){ saveAppData(true); renderNav(); render(); }
+}
+function applyTheme(pref){
+  const wanted = pref || DATA.user.theme || "light";
+  const sysDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const eff = wanted === "system" ? (sysDark ? "dark" : "light") : wanted;
+  document.documentElement.setAttribute("data-theme", eff);
+  const ic = $("#themeIcon"); if(ic) ic.textContent = eff === "dark" ? "☀" : "☾";
+}
+function renderNav(){
+  const side = $("#sideNav"), bot = $("#bottomNav");
+  side.innerHTML = NAV_ITEMS.map(n =>
+    '<a href="#'+n.id+'" data-act="go" data-view="'+n.id+'"'+(VIEW===n.id?' aria-current="page"':'')+'>' +
+    '<span class="ni" aria-hidden="true">'+n.icon+'</span><span>'+esc(t(n.key))+'</span></a>').join("");
+  const primary = NAV_ITEMS.filter(n => n.primary);
+  bot.innerHTML = primary.map(n =>
+    '<a href="#'+n.id+'" data-act="go" data-view="'+n.id+'"'+(VIEW===n.id?' aria-current="page"':'')+'>' +
+    '<span class="ni" aria-hidden="true">'+n.icon+'</span><span>'+esc(t(n.key))+'</span></a>').join("") +
+    '<a href="#more" data-act="more"'+(!primary.some(n=>n.id===VIEW)?' aria-current="page"':'')+'>' +
+    '<span class="ni" aria-hidden="true">≡</span><span>'+esc(t("nav_more"))+'</span></a>';
+}
+function moreMenu(){
+  const rest = NAV_ITEMS.filter(n => !n.primary);
+  openModal(t("nav_more"), '<div class="grid g2">' + rest.map(n =>
+    '<button class="btn" data-act="go" data-view="'+n.id+'"><span aria-hidden="true">'+n.icon+'</span> '+esc(t(n.key))+'</button>').join("") + '</div>');
+}
+const VIEWS = { home:viewHome, tracking:viewTracking, turns:viewTurns, revisions:viewRevisions,
+                agenda:viewAgenda, timer:viewTimer, translate:viewTranslate, stats:viewStats, profile:viewProfile };
+function go(view){
+  if(!VIEWS[view]) view = "home";
+  if(view !== "tracking"){ STATE.juz = null; STATE.page = null; }
+  VIEW = view;
+  location.hash = view;
+  closeModal();
+  renderNav(); render();
+  const m = $("#view");
+  if(m){ if(m.scrollIntoView) m.scrollIntoView({block:"start"}); m.focus({preventScroll:true}); }
+}
+function render(){
+  const host = $("#view"); if(!host) return;
+  host.innerHTML = (VIEWS[VIEW] || viewHome)();
+  const u = DATA.user;
+  $("#tbAvatar").textContent = initials(u.name);
+  $("#tbSub").textContent = (u.name || "—") + " · " + t("turn_n",{n:num(u.currentTurn,1)});
+  if(DATA.activeSession && !DATA.activeSession.pausedAt) startTicker(); else stopTicker();
+}
+
+/* ===========================================================================
+   BÖLÜM 16 — OLAY DELEGASYONU (CSP uyumlu: inline onclick yok)
+   =========================================================================== */
+document.addEventListener("click", (ev) => {
+  const el = ev.target.closest("[data-act]"); if(!el) return;
+  const act = el.getAttribute("data-act");
+  const pn = () => num(el.getAttribute("data-page"), 0);
+
+  /* Sadece tıklamayla çalışan eylemler burada; select/input değişimleri aşağıda */
+  if(["set-diff","set-status","set-next","set-note","set-turn","set-turn-note","set-user","set-setting",
+      "set-juzstarts","set-lang"].indexOf(act) !== -1) return;
+
+  switch(act){
+    case "login-google": {
+      if(AUTH_MODE !== "demo"){ /* signInWithPopup(...) */ }
+      openModal(t("login_form_title"),
+        '<p class="muted" style="margin-bottom:12px">'+esc(t("login_form_desc"))+'</p>' +
+        '<div class="field"><label for="gName">'+esc(t("first_name"))+'</label><input class="input" id="gName" autocomplete="given-name"></div>' +
+        '<div class="field"><label for="gSur">'+esc(t("last_name"))+'</label><input class="input" id="gSur" autocomplete="family-name"></div>' +
+        '<div class="field"><label for="gMail">'+esc(t("email"))+'</label><input class="input" type="email" id="gMail" autocomplete="email"></div>',
+        () => {
+          const first = $("#gName").value.trim(), mail = $("#gMail").value.trim();
+          if(!first || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){ toast(t("t_invalid"), "err"); return false; }
+          loginGoogleUser({ firstName:first, lastName:$("#gSur").value.trim(), email:mail });
+          enterApp(); return true;
+        }, t("login_google"));
+      break;
+    }
+    case "login-demo": loginDemoUser(); enterApp(); break;
+    case "logout": confirmBox(t("logout"), () => { logoutUser(); closeModal(); }); break;
+    case "go": ev.preventDefault(); go(el.getAttribute("data-view")); break;
+    case "more": ev.preventDefault(); moreMenu(); break;
+    case "toggle-theme": {
+      const order = ["light","dark","system"];
+      DATA.user.theme = order[(order.indexOf(DATA.user.theme)+1) % 3];
+      applyTheme(); saveAppData(true); if(VIEW==="profile") render();
+      toast(t("theme") + ": " + t("theme_" + DATA.user.theme));
+      break;
+    }
+    case "modal-back": if(ev.target.classList.contains("modal-back")) closeModal(); break;
+    case "modal-close": closeModal(); break;
+    case "modal-save": if(!modalOnSave || modalOnSave() !== false){ closeModal(); renderNav(); render(); } break;
+
+    /* --- takip --- */
+    case "open-juz": STATE.juz = num(el.getAttribute("data-juz"),1); STATE.page = null; VIEW="tracking"; renderNav(); render(); break;
+    case "back-juz": STATE.juz = null; render(); break;
+    case "open-page": {
+      if(!el.getAttribute("data-page")) break;
+      STATE.page = pn(); STATE.juz = STATE.juz || juzOf(STATE.page); VIEW = "tracking";
+      closeModal(); renderNav(); render(); break;
+    }
+    case "back-page": STATE.page = null; render(); break;
+    case "pick-page-number": {
+      openModal(t("pick_page"),
+        '<div class="field"><label for="jumpPage">'+esc(t("page"))+' (1–'+num(DATA.settings.totalQuranPages,604)+')</label>' +
+        '<input class="input" type="number" min="1" max="'+num(DATA.settings.totalQuranPages,604)+'" id="jumpPage" value="1"></div>',
+        () => { const n = clamp(num($("#jumpPage").value,1),1,num(DATA.settings.totalQuranPages,604));
+                STATE.page = n; STATE.juz = juzOf(n); VIEW = "tracking"; return true; }, t("open_page"));
+      break;
+    }
+    case "start-study": {
+      const last = touchedPages().slice().sort((a,b)=>(b.lastStudiedAt||"")<(a.lastStudiedAt||"")?-1:1)[0];
+      const suggested = last ? last.pageNumber : (calculateTurnTasks(DATA.user.currentTurn).find(x=>x.available)||{}).newPage || 1;
+      openModal(t("start_study"),
+        '<div class="field"><label for="startPage">'+esc(t("page"))+'</label>' +
+        '<input class="input" type="number" min="1" max="'+num(DATA.settings.totalQuranPages,604)+'" id="startPage" value="'+suggested+'"></div>' +
+        '<div class="field"><label for="startType">'+esc(t("task_type"))+'</label><select class="input" id="startType">' +
+          '<option value="new_memorization">'+esc(t("tt_new_memorization"))+'</option>' +
+          '<option value="revision">'+esc(t("tt_old_revision"))+'</option></select></div>',
+        () => { const n = clamp(num($("#startPage").value,1),1,num(DATA.settings.totalQuranPages,604));
+          if(!startTimer(n, $("#startType").value)) return false;
+          STATE.page = n; STATE.juz = juzOf(n); VIEW = "tracking"; return true; }, t("start"));
+      break;
+    }
+    case "toggle-six": {
+      const p = getPage(pn(), true), i = num(el.getAttribute("data-i"),1);
+      /* i. dilime tıklandığında: zaten doluysa i-1'e düşer, değilse i'ye çıkar */
+      updatePageProgress(p.pageNumber, p.progressSections >= i ? i-1 : i);
+      toast(t("t_progress"), "ok"); render(); break;
+    }
+
+    /* --- sayaç --- */
+    case "timer-start": if(startTimer(pn(), "new_memorization")) render(); break;
+    case "timer-pause": pauseTimer(); break;
+    case "timer-resume": resumeTimer(); break;
+    case "timer-finish": finishTimerFlow(); break;
+    case "timer-reset": confirmBox(t("reset"), () => { resetTimer(); closeModal(); }); break;
+
+    /* --- tekrar --- */
+    case "rev-add": revisionModal(el.getAttribute("data-page") ? pn() : null); break;
+    case "rev-del": {
+      const id = el.getAttribute("data-id");
+      confirmBox(t("confirm_delete"), () => {
+        const r = DATA.revisions.find(x => x.id === id);
+        if(r){ const p = getPage(num(String(r.pageId).replace("p",""),0), false);
+               if(p){ p.repeatCount = Math.max(0, p.repeatCount-1); refreshStatus(p); } }
+        DATA.revisions = DATA.revisions.filter(x => x.id !== id);
+        saveAppData(); closeModal(); render();
+      });
+      break;
+    }
+
+    /* --- ajanda --- */
+    case "agenda-view": STATE.agendaView = el.getAttribute("data-mode"); render(); break;
+    case "agenda-day": STATE.agendaDate = el.getAttribute("data-date");
+      if(STATE.agendaView === "month") STATE.agendaView = "day";
+      render(); break;
+    case "agenda-shift": {
+      const dir = num(el.getAttribute("data-dir"),1);
+      if(STATE.agendaView === "day") STATE.agendaDate = addDaysISO(STATE.agendaDate, dir);
+      else if(STATE.agendaView === "week") STATE.agendaDate = addDaysISO(STATE.agendaDate, dir*7);
+      else { const d = fromISO(STATE.agendaDate); STATE.agendaDate = todayISO(new Date(d.getFullYear(), d.getMonth()+dir, 1)); }
+      render(); break;
+    }
+    case "agenda-add": VIEW = "agenda"; renderNav(); agendaModal(null); break;
+    case "agenda-del": {
+      const id = el.getAttribute("data-id");
+      confirmBox(t("confirm_delete"), () => { DATA.agendaItems = DATA.agendaItems.filter(x => x.id !== id);
+        saveAppData(); closeModal(); render(); });
+      break;
+    }
+    case "agenda-status": {
+      const id = el.getAttribute("data-id");
+      const a = DATA.agendaItems.find(x => x.id === id); if(!a) break;
+      openModal(t("status"),
+        '<div class="chips" style="margin-bottom:12px">' +
+        [["done","ag_done"],["partial","ag_partial"],["postponed","ag_postponed"],["missed","ag_missed"],["pending","ag_pending"]]
+          .map(([v,k]) => '<button class="chip" data-act="agenda-set" data-id="'+id+'" data-status="'+v+'" aria-pressed="'+(a.status===v)+'">'+
+            esc(t(k))+'</button>').join("") + '</div>' +
+        '<button class="btn btn-block" data-act="agenda-edit" data-id="'+id+'">'+esc(t("edit"))+'</button>');
+      break;
+    }
+    case "agenda-set": {
+      setAgendaStatus(el.getAttribute("data-id"), el.getAttribute("data-status"));
+      toast(t("t_task_done"), "ok"); closeModal(); render(); break;
+    }
+    case "agenda-edit": {
+      const a = DATA.agendaItems.find(x => x.id === el.getAttribute("data-id"));
+      if(a) agendaModal(a); break;
+    }
+
+    /* --- çeviri --- */
+    case "tr-swap": { const f = STATE.trFrom; STATE.trFrom = STATE.trTo; STATE.trTo = f;
+      if(STATE.trOut){ STATE.trText = STATE.trOut.text; STATE.trOut = null; } render(); break; }
+    case "tr-run": {
+      STATE.trText = ($("#trText") ? $("#trText").value : "");
+      STATE.trFrom = $("#trFrom").value; STATE.trTo = $("#trTo").value;
+      if(!STATE.trText.trim()){ toast(t("t_invalid"), "err"); break; }
+      STATE.trOut = translateText(STATE.trText, STATE.trFrom, STATE.trTo);
+      DATA.translations.push({ id: uid("tr"), sourceLanguage:STATE.trFrom, targetLanguage:STATE.trTo,
+        sourceText:STATE.trText, translatedText:STATE.trOut.text, favorite:false, createdAt:new Date().toISOString() });
+      saveAppData(true); render();
+      if(STATE.trOut.demo) toast(t("tr_demo_notice"));
+      break;
+    }
+    case "tr-copy": {
+      const txt = STATE.trOut ? STATE.trOut.text : "";
+      if(navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>toast(t("copied"),"ok")).catch(()=>toast(t("t_invalid"),"err"));
+      else { const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select();
+             try{ document.execCommand("copy"); toast(t("copied"),"ok"); }catch(e){} ta.remove(); }
+      break;
+    }
+    case "tr-fav": { const last = DATA.translations[DATA.translations.length-1];
+      if(last){ last.favorite = true; saveAppData(); render(); } break; }
+    case "tr-togglefav": { const x = DATA.translations.find(y => y.id === el.getAttribute("data-id"));
+      if(x){ x.favorite = !x.favorite; saveAppData(true); render(); } break; }
+    case "tr-clear": confirmBox(t("clear_history"), () => { DATA.translations = []; saveAppData(); closeModal(); render(); }); break;
+
+    /* --- ayarlar --- */
+    case "set-theme": DATA.user.theme = el.getAttribute("data-theme"); applyTheme(); saveAppData(); render(); break;
+    case "export": {
+      const blob = new Blob([JSON.stringify(DATA, null, 2)], { type:"application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "hafizlik-ajandasi-" + todayISO() + ".json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+      toast(t("export_data"), "ok"); break;
+    }
+    case "import": $("#importFile").click(); break;
+    case "clear-demo": confirmBox(t("clear_demo"), () => { clearDemoData(); closeModal(); render(); toast(t("t_saved"),"ok"); }); break;
+    case "reset-all": confirmBox(t("confirm_reset"), () => {
+      Depo.del(STORAGE_KEY); Depo.del(SESSION_KEY);
+      DATA = emptyData(); reindexPages(); stopTicker(); closeModal();
+      toast(t("t_reset"), "ok");
+      $("#app").classList.remove("on"); $("#auth").style.display = "flex";
+    }); break;
+
+    /* --- geliştirici paneli --- */
+    case "dev-seed": seedDemoData(); toast(t("dev_seed"), "ok"); render(); break;
+    case "dev-state": $("#devOut").innerHTML = '<pre>'+esc(JSON.stringify(DATA, null, 2).slice(0, 20000))+'</pre>'; break;
+    case "dev-active": $("#devOut").innerHTML = '<pre>'+esc(JSON.stringify(
+        { activeSession: DATA.activeSession, elapsed: hhmmss(activeElapsed()) }, null, 2))+'</pre>'; break;
+    case "dev-recalc": {
+      const list = calculateTurnTasks(DATA.user.currentTurn);
+      $("#devOut").innerHTML = '<pre>'+esc(list.map(x => "Cüz "+x.juz+": "+(x.available
+        ? ("yeni="+x.newPage+" tekrar=["+x.repeatPages.join(",")+"]") : "görev yok")).join("\n"))+'</pre>';
+      break;
+    }
+    case "dev-sample-rev": {
+      const rows = REVISION_INTERVALS.map((d,i) => i+". tekrar sonrası → "+nextRevisionDate(i)+" (+"+d+" gün)");
+      $("#devOut").innerHTML = '<pre>'+esc(rows.join("\n"))+'</pre>'; break;
+    }
+    case "dev-i18n": {
+      const bad = Object.keys(I18N).filter(k => !Array.isArray(I18N[k]) || I18N[k].length !== 4 || I18N[k].some(v=>!v));
+      $("#devOut").innerHTML = '<pre>'+esc("Anahtar sayısı: "+Object.keys(I18N).length+
+        "\nEksik/hatalı: "+(bad.length ? bad.join(", ") : "yok"))+'</pre>'; break;
+    }
+    case "dev-tests": renderTests(); break;
+  }
+});
+
+/* Değer değişimleri (select / input / textarea) */
+document.addEventListener("change", (ev) => {
+  const el = ev.target.closest("[data-act]"); if(!el) return;
+  const act = el.getAttribute("data-act");
+  const pnum = () => num(el.getAttribute("data-page"), 0);
+  switch(act){
+    case "set-diff": { const p = getPage(pnum(), true); p.difficulty = el.value; saveAppData(); break; }
+    case "set-status": {
+      const p = getPage(pnum(), true);
+      if(!el.value){ p.statusManual = false; refreshStatus(p); }
+      else { p.status = el.value; p.statusManual = true; }   /* İş kuralı 5 */
+      saveAppData(); render(); break;
+    }
+    case "set-next": { const p = getPage(pnum(), true); p.nextRevisionAt = el.value; saveAppData(); break; }
+    case "set-note": { const p = getPage(pnum(), true); p.note = el.value; saveAppData(); break; }
+    case "set-turn": {
+      DATA.user.currentTurn = clamp(num(el.value,1), 1, maxTurns());
+      currentTurnRecord(); saveAppData(); render(); break;
+    }
+    case "set-turn-note": { currentTurnRecord().notes = el.value; saveAppData(); break; }
+    case "set-user": {
+      const k = el.getAttribute("data-k");
+      DATA.user[k] = el.getAttribute("data-bool") ? el.checked
+                   : (el.getAttribute("data-num") ? num(el.value,0) : el.value);
+      saveAppData(); break;
+    }
+    case "set-setting": {
+      const k = el.getAttribute("data-k");
+      DATA.settings[k] = el.getAttribute("data-num") ? Math.max(30, num(el.value,604)) : el.value;
+      saveAppData(); render(); break;
+    }
+    case "set-juzstarts": {
+      const arr = el.value.split(/[,\s]+/).map(x=>num(x,0)).filter(x=>x>0);
+      if(arr.length !== 30 || arr.some((v,i)=> i>0 && v <= arr[i-1])){ toast(t("t_invalid"), "err"); break; }
+      DATA.settings.juzStarts = arr; DATA.pages.forEach(p => {
+        const r = juzRanges().find(j => p.pageNumber>=j.start && p.pageNumber<=j.end);
+        if(r){ p.juzNumber = r.juz; p.pageIndexInJuz = p.pageNumber - r.start + 1; } });
+      saveAppData(); render(); break;
+    }
+    case "set-lang": setLanguage(el.value); break;
+  }
+});
+document.addEventListener("input", (ev) => {
+  if(ev.target.id === "trText"){
+    STATE.trText = ev.target.value;
+    const c = $("#trCount"); if(c) c.textContent = STATE.trText.length + " " + t("chars");
+  }
+});
+$("#langSelect") && $("#langSelect").addEventListener("change", e => setLanguage(e.target.value));
+
+/* Klavye: modal ESC ile kapanır */
+document.addEventListener("keydown", (ev) => {
+  if(ev.key === "Escape" && $("#modalRoot").innerHTML) closeModal();
+});
+/* İçe aktarma dosyası */
+document.addEventListener("change", (ev) => {
+  if(ev.target.id !== "importFile") return;
+  const file = ev.target.files && ev.target.files[0]; if(!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const obj = JSON.parse(rd.result);
+      if(!obj || typeof obj !== "object" || !obj.user) throw new Error("format");
+      DATA = Object.assign(emptyData(), obj);
+      DATA.user = Object.assign(emptyData().user, obj.user || {});
+      DATA.settings = Object.assign(emptyData().settings, obj.settings || {});
+      reindexPages(); saveAppData(true);
+      setLanguage(DATA.user.preferredLanguage || LANG, true); applyTheme();
+      toast(t("t_imported"), "ok"); renderNav(); render();
+    } catch(e){ toast(t("t_invalid"), "err"); }
+  };
+  rd.readAsText(file);
+  ev.target.value = "";
+});
+
+/* Çevrimiçi / çevrimdışı durumu */
+function netState(initial){
+  const off = !navigator.onLine;
+  document.body.classList.toggle("offline", off);
+  if(!initial) toast(off ? t("t_offline") : t("t_online"), off ? "err" : "ok");
+}
+window.addEventListener("online", () => netState(false));
+window.addEventListener("offline", () => netState(false));
+
+/* Sekme geri geldiğinde sayacı tazele (İş kuralı 6) */
+document.addEventListener("visibilitychange", () => {
+  if(!document.hidden && DATA.activeSession){ const el = $("#timerDial");
+    if(el) el.textContent = hhmmss(activeElapsed()); startTicker(); }
+});
+window.addEventListener("hashchange", () => {
+  const v = location.hash.replace("#","");
+  if(VIEWS[v] && v !== VIEW) go(v);
+});
+
+/* ===========================================================================
+   BÖLÜM 17 — BAŞLANGIÇ
+   =========================================================================== */
+function enterApp(){
+  $("#auth").style.display = "none";
+  $("#app").classList.add("on");
+  setLanguage(DATA.user.preferredLanguage || LANG, true);
+  applyTheme();
+  netState(true);
+  const v = location.hash.replace("#","");
+  VIEW = VIEWS[v] ? v : "home";
+  renderNav(); render();
+  /* Gecikmiş tekrar hatırlatması */
+  if(DATA.user.notifyDue !== false){
+    const d = dueRevisions();
+    if(d.late.length) setTimeout(() => toast(t("overdue_revs") + ": " + d.late.length, "err"), 700);
+  }
+}
+function boot(){
+  LANG = Depo.get("hafizlikLang") || (navigator.language||"tr").slice(0,2);
+  if(LANGS.indexOf(LANG) === -1) LANG = "tr";
+  loadAppData();
+  setLanguage(DATA.user.preferredLanguage || LANG, true);
+  applyTheme();
+  if(window.matchMedia){
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if(mq.addEventListener) mq.addEventListener("change", () => applyTheme());
+  }
+  if(getSessionUser() && DATA.user.id === getSessionUser()){
+    DATA.user.lastLoginAt = new Date().toISOString();
+    saveAppData(true);
+    enterApp();
+  } else {
+    $("#auth").style.display = "flex";
+  }
+}
+boot();
+
+/* ===========================================================================
+   BÖLÜM 18 — PWA NOTLARI (sonraki aşama)
+   ---------------------------------------------------------------------------
+   Bu prototip tek dosya olduğu için gerçek PWA kurulumu yapılmamıştır.
+   Sonraki aşamada eklenecekler:
+     1) manifest.json  -> name, short_name, start_url:"/", display:"standalone",
+        background_color:"#F7F4EC", theme_color:"#0E3B2E", icons[192,512]
+        <link rel="manifest" href="/manifest.json">
+     2) service-worker.js -> uygulama kabuğunu önbelleğe alır (cache-first),
+        çeviri isteklerini network-first yapar:
+        navigator.serviceWorker.register("/service-worker.js");
+     3) Push notification -> Firebase Cloud Messaging ile tekrar hatırlatmaları.
+   Şu anda çevrimdışı çalışma localStorage sayesinde zaten sağlanmaktadır:
+   çeviri dışındaki tüm hafızlık özellikleri internet olmadan çalışır.
+   =========================================================================== */
+</script>
+</body>
+</html>
