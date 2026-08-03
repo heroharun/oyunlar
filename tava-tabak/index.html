@@ -128,9 +128,10 @@ function firlat(){
 
 function physics(dt){
   tick+=dt;
-  zorluk=Math.min(10,puan/12);
+  zorluk=Math.min(12,puan/9);
   atisT-=dt;
-  if(atisT<=0){ firlat(); atisT=(78-zorluk*4.2)*(0.85+Math.random()*0.4); }
+  /* daha sık atış: 60 birimden başlar, ~108 köftede 19'a kadar iner */
+  if(atisT<=0){ firlat(); atisT=(60-zorluk*3.4)*(0.8+Math.random()*0.35); }
   tabakX+=(hedefX-tabakX)*(1-Math.pow(0.72,dt));
   const ty=TABAK_Y(), tw=Math.min(W*0.19,96);
   for(const o of objler){
