@@ -116,9 +116,10 @@ function yeniGoktasi(){
   const of=(Math.random()-0.5)*YARICAP()[1]*1.4;
   const hx=m.x+Math.cos(aci+Math.PI/2)*of, hy=m.y+Math.sin(aci+Math.PI/2)*of;
   const dx=hx-x0, dy=hy-y0, L=Math.hypot(dx,dy);
-  const hiz=(2.6+Math.min(2.4,tick/1800))*(0.85+Math.random()*0.35);
+  /* kolaydan zora: hız 2.0'dan başlar, ~2 dakikada 4.4'e tırmanır */
+  const hiz=(2.0+Math.min(2.4,tick/3000))*(0.85+Math.random()*0.35);
   goktaslar.push({x:x0,y:y0,vx:dx/L*hiz,vy:dy/L*hiz,r:13+Math.random()*9,
-    don:Math.random()*6.28,uyari:52,iz:[]});
+    don:Math.random()*6.28,uyari:52,iz:[],girdi:false});
   blip(220,0.12,0.07,'sawtooth');
 }
 function yeniOdul(){
@@ -134,7 +135,8 @@ function physics(dt){
   if(iFrames>0)iFrames-=dt;
   const hiz=0.023+Math.min(0.02,tick/60000);
   for(const u of uydu) u.a+=hiz*u.yon*dt;
-  gtT-=dt; if(gtT<=0){ yeniGoktasi(); gtT=(150-Math.min(70,tick/120))*(0.8+Math.random()*0.5); }
+  /* kolaydan zora: ilk dakika seyrek (aralık ~230), sonra sıklaşır (taban ~90) */
+  gtT-=dt; if(gtT<=0){ yeniGoktasi(); gtT=(230-Math.min(140,tick/60))*(0.85+Math.random()*0.4); }
   odT-=dt; if(odT<=0){ if(oduller.length<4) yeniOdul(); odT=120+Math.random()*90; }
   const m=MERKEZ(), R=YARICAP();
   /* uydu konumları */
@@ -143,12 +145,14 @@ function physics(dt){
   for(const g of goktaslar){
     if(g.uyari>0){ g.uyari-=dt; continue; }
     g.x+=g.vx*dt; g.y+=g.vy*dt; g.don+=0.06*dt;
+    if(!g.girdi&&g.x>-60&&g.x<W+60&&g.y>-60&&g.y<H+60) g.girdi=true;
     g.iz.push({x:g.x,y:g.y}); if(g.iz.length>9)g.iz.shift();
     if(iFrames<=0) for(let i=0;i<2;i++){
       if(Math.hypot(g.x-up[i].x,g.y-up[i].y)<g.r+13){ carp(g); return; }
     }
   }
-  goktaslar=goktaslar.filter(g=>g.uyari>0||((g.x>-80&&g.x<W+80&&g.y>-80&&g.y<H+80)));
+  /* ekrana girmeden silme; girdikten sonra çıkınca sil */
+  goktaslar=goktaslar.filter(g=>g.uyari>0||!g.girdi||(g.x>-80&&g.x<W+80&&g.y>-80&&g.y<H+80));
   /* ödüller */
   for(const o of oduller){
     const i=o.halka, ox=m.x+Math.cos(o.aci)*R[i], oy=m.y+Math.sin(o.aci)*R[i];
