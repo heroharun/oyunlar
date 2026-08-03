@@ -41,6 +41,14 @@
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #1e7a58}
   .btn:focus-visible{outline:3px solid var(--tur);outline-offset:3px}
   .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .btn2{font:inherit;font-weight:800;font-size:13.5px;letter-spacing:.05em;color:var(--ink);
+    background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.28);
+    border-radius:999px;padding:11px 26px;cursor:pointer}
+  .diller{display:flex;gap:8px}
+  .dil{font:inherit;font-size:13px;font-weight:900;color:var(--dim);background:none;
+    border:1.5px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 14px;cursor:pointer}
+  .dil.aktif{color:#101020;background:var(--sari);border-color:var(--sari)}
+  #nasilIcerik{text-align:left;white-space:pre-line}
 </style>
 <canvas id="c"></canvas>
 <div id="hud">
@@ -55,14 +63,26 @@
 
 <div class="kart" id="giris">
   <h1>AYNA <span>ARABA</span></h1>
-  <p>Sola dokun → sola, sağa dokun → sağa… ta ki <b style="color:var(--mor)">AYNA MODU</b> gelene kadar! Mor ışık yanınca her şey tersine döner: sola dokununca araba <b>sağa</b> gider. Beynin şaşıracak, refleksin güçlenecek. 3 canın var, ❤️ tazeler.</p>
+  <p id="girisMetin">Sola dokun → sola, sağa dokun → sağa… ta ki <b style="color:var(--mor)">AYNA MODU</b> gelene kadar! Mor ışık yanınca her şey tersine döner: sola dokununca araba <b>sağa</b> gider. Beynin şaşıracak, refleksin güçlenecek. 3 canın var, ❤️ tazeler.</p>
+  <div class="diller">
+    <button class="dil" data-dil="tr">TR</button>
+    <button class="dil" data-dil="en">EN</button>
+    <button class="dil" data-dil="es">ES</button>
+  </div>
   <button class="btn" id="baslaBtn">Kontağı Çevir</button>
+  <button class="btn2" id="nasilBtn">❓ Nasıl Oynanır</button>
   <span class="hint" id="bestIntro"></span>
-  <span class="hint">klavye: ← → · ayna modunda tersine!</span>
+  <span class="hint" id="klavyeHint">klavye: ← → · ayna modunda tersine!</span>
+</div>
+
+<div class="kart gizli" id="nasil">
+  <h1 id="nasilBaslik" style="font-size:28px">NASIL OYNANIR</h1>
+  <p id="nasilIcerik"></p>
+  <button class="btn" id="nasilKapat">Tamam</button>
 </div>
 
 <div class="kart gizli" id="son">
-  <h1>ÇARPTIN!</h1>
+  <h1 id="sonBaslik">ÇARPTIN!</h1>
   <div class="puanlar" id="sonPuan"></div>
   <p id="sonMsg"></p>
   <button class="btn" id="tekrarBtn">Tekrar Dene</button>
@@ -70,6 +90,51 @@
 
 <script>
 'use strict';
+const DILLER={
+tr:{giris:'Sola dokun → sola, sağa dokun → sağa… ta ki AYNA MODU gelene kadar! Mor ışık yanınca her şey tersine döner: sola dokununca araba sağa gider. Beynin şaşıracak, refleksin güçlenecek. 3 canın var, ❤️ tazeler.',
+ basla:'Kontağı Çevir',tekrar:'Tekrar Dene',nasilBtn:'❓ Nasıl Oynanır',tamam:'Tamam',nasilBaslik:'NASIL OYNANIR',
+ nasil:'1️⃣ Sol/sağ yarıya dokun (veya ← →): araba bir şerit kayar.\n\n2️⃣ Konilerden ve karşı arabalardan kaç, ⭐ yıldızları topla.\n\n3️⃣ "🪞 Ayna geliyor…" uyarısından sonra AYNA MODU başlar: kontroller TERSİNE döner!\n\n4️⃣ Ayna modunda araba morlaşır, ekran çerçevelenir; süre çubuğu bitince normale döner.\n\n5️⃣ 3 canın var; ❤️ kalpler tazeler.\n\n💡 Ayna gelince bir saniye dur, düşün, sonra dokun — acele eden şaşırır!',
+ klavye:'klavye: ← → · ayna modunda tersine!',lPuan:'PUAN',dur:'DURAKLATILDI',devamIp:'devam için ▶ düğmesine bas',
+ sonBaslik:'ÇARPTIN!',sonPuanF:(p2,y)=>p2.toLocaleString('tr-TR')+' puan · ⭐ '+y,rekor:'🏆 YENİ REKOR! ',
+ enIyiF:b=>'En iyin: '+b.toLocaleString('tr-TR')+'. ',sonEk:'Ayna geldiğinde bir saniye dur, düşün, sonra dokun!',
+ canArti:'❤️ +1 can!',canEksi:'💥 -1 can!',aynaGeliyor:'🪞 AYNA GELİYOR…',aynaModu:'🪞 AYNA MODU! TERS!',
+ normal:'✅ Normal kontroller',bant:'🪞 AYNA MODU — kontroller TERS',bantMini:'🪞 ayna geliyor…',ters:'🪞 TERS!',
+ enIyiIntroF:b=>'EN İYİ: '+b.toLocaleString('tr-TR')},
+en:{giris:'Tap left → go left, tap right → go right… until MIRROR MODE hits! When the purple light comes on, everything flips: tapping left sends the car RIGHT. Your brain will wobble, your reflexes will grow. 3 lives, ❤️ refills.',
+ basla:'Start the Engine',tekrar:'Try Again',nasilBtn:'❓ How to Play',tamam:'OK',nasilBaslik:'HOW TO PLAY',
+ nasil:'1️⃣ Tap the left/right half (or ← →): the car shifts one lane.\n\n2️⃣ Dodge cones and oncoming cars, collect ⭐ stars.\n\n3️⃣ After the "🪞 mirror coming…" warning, MIRROR MODE begins: controls are REVERSED!\n\n4️⃣ In mirror mode the car turns purple and the screen gets a frame; when the timer bar empties, controls return to normal.\n\n5️⃣ You have 3 lives; ❤️ hearts refill them.\n\n💡 When the mirror hits, pause a second, think, then tap — rushing gets you crashed!',
+ klavye:'keys: ← → · reversed in mirror mode!',lPuan:'SCORE',dur:'PAUSED',devamIp:'press ▶ to continue',
+ sonBaslik:'CRASHED!',sonPuanF:(p2,y)=>p2.toLocaleString('en-US')+' points · ⭐ '+y,rekor:'🏆 NEW RECORD! ',
+ enIyiF:b=>'Your best: '+b.toLocaleString('en-US')+'. ',sonEk:'When the mirror hits, pause a second, think, then tap!',
+ canArti:'❤️ +1 life!',canEksi:'💥 -1 life!',aynaGeliyor:'🪞 MIRROR COMING…',aynaModu:'🪞 MIRROR MODE! REVERSED!',
+ normal:'✅ Normal controls',bant:'🪞 MIRROR MODE — controls REVERSED',bantMini:'🪞 mirror coming…',ters:'🪞 FLIPPED!',
+ enIyiIntroF:b=>'BEST: '+b.toLocaleString('en-US')},
+es:{giris:'Toca a la izquierda → va a la izquierda… ¡hasta que llega el MODO ESPEJO! Con la luz morada todo se invierte: tocar a la izquierda manda el coche a la DERECHA. Tu cerebro se confundirá, tus reflejos crecerán. 3 vidas, ❤️ recarga.',
+ basla:'Arrancar',tekrar:'Otra Vez',nasilBtn:'❓ Cómo Jugar',tamam:'Vale',nasilBaslik:'CÓMO JUGAR',
+ nasil:'1️⃣ Toca la mitad izquierda/derecha (o ← →): el coche cambia de carril.\n\n2️⃣ Esquiva conos y coches, recoge ⭐ estrellas.\n\n3️⃣ Tras el aviso "🪞 espejo en camino…" empieza el MODO ESPEJO: ¡controles INVERTIDOS!\n\n4️⃣ En modo espejo el coche se vuelve morado y la pantalla se enmarca; al agotarse la barra vuelve a la normalidad.\n\n5️⃣ Tienes 3 vidas; los ❤️ las recargan.\n\n💡 Cuando llegue el espejo: para un segundo, piensa y luego toca. ¡Las prisas estrellan!',
+ klavye:'teclas: ← → · ¡invertidas en modo espejo!',lPuan:'PUNTOS',dur:'PAUSA',devamIp:'pulsa ▶ para seguir',
+ sonBaslik:'¡CHOCASTE!',sonPuanF:(p2,y)=>p2.toLocaleString('es-ES')+' puntos · ⭐ '+y,rekor:'🏆 ¡NUEVO RÉCORD! ',
+ enIyiF:b=>'Tu récord: '+b.toLocaleString('es-ES')+'. ',sonEk:'Cuando llegue el espejo: ¡para, piensa y luego toca!',
+ canArti:'❤️ ¡+1 vida!',canEksi:'💥 ¡-1 vida!',aynaGeliyor:'🪞 ESPEJO EN CAMINO…',aynaModu:'🪞 ¡MODO ESPEJO! ¡INVERTIDO!',
+ normal:'✅ Controles normales',bant:'🪞 MODO ESPEJO — controles INVERTIDOS',bantMini:'🪞 espejo en camino…',ters:'🪞 ¡INVERTIDO!',
+ enIyiIntroF:b=>'RÉCORD: '+b.toLocaleString('es-ES')}};
+let dil=localStorage.getItem('mp_dil')||'tr';
+if(!DILLER[dil])dil='tr';
+const S=k=>DILLER[dil][k]??DILLER.tr[k];
+function uygulaDil(){
+  document.getElementById('girisMetin').textContent=S('giris');
+  document.getElementById('baslaBtn').textContent=S('basla');
+  document.getElementById('tekrarBtn').textContent=S('tekrar');
+  document.getElementById('nasilBtn').textContent=S('nasilBtn');
+  document.getElementById('nasilKapat').textContent=S('tamam');
+  document.getElementById('nasilBaslik').textContent=S('nasilBaslik');
+  document.getElementById('nasilIcerik').textContent=S('nasil');
+  document.getElementById('klavyeHint').textContent=S('klavye');
+  document.getElementById('sonBaslik').textContent=S('sonBaslik');
+  document.querySelectorAll('#hud .label')[0].textContent=S('lPuan');
+  document.getElementById('bestIntro').textContent=best>0?S('enIyiIntroF')(best):'';
+  document.querySelectorAll('.dil').forEach(b=>b.classList.toggle('aktif',b.dataset.dil===dil));
+}
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
 function resize(){ DPR=Math.min(devicePixelRatio||1,3); W=innerWidth; H=innerHeight;
@@ -78,7 +143,7 @@ function resize(){ DPR=Math.min(devicePixelRatio||1,3); W=innerWidth; H=innerHei
 resize(); addEventListener('resize',resize);
 
 let best=+(localStorage.getItem('aynaaraba_best')||0);
-document.getElementById('bestIntro').textContent=best>0?'EN İYİ: '+best.toLocaleString('tr-TR'):'';
+
 
 let AC=null;
 const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
@@ -138,14 +203,14 @@ function physics(dt){
   if(!ayna){
     aynaSayac-=dt;
     if(aynaSayac<=90&&aynaSayac>0&&aynaUyari<=0){ aynaUyari=90;
-      toast('🪞 AYNA GELİYOR…'); blip(500,0.2,0.1); }
+      toast(S('aynaGeliyor')); blip(500,0.2,0.1); }
     if(aynaUyari>0)aynaUyari-=dt;
     if(aynaSayac<=0){ ayna=true; aynaT=360;
-      toast('🪞 AYNA MODU! TERS!'); blip(300,0.3,0.15,'square'); blip(600,0.3,0.1,'square'); buzz([30,40,30]); }
+      toast(S('aynaModu')); blip(300,0.3,0.15,'square'); blip(600,0.3,0.1,'square'); buzz([30,40,30]); }
   } else {
     aynaT-=dt;
     if(aynaT<=0){ ayna=false; aynaSayac=560+Math.random()*280;
-      toast('✅ Normal kontroller'); blip(760,0.15,0.12); buzz(15); }
+      toast(S('normal')); blip(760,0.15,0.12); buzz(15); }
   }
   spawnT-=spd*dt;
   if(spawnT<=0){ spawn(); spawnT=200+Math.random()*160; }
@@ -157,7 +222,7 @@ function physics(dt){
       if(o.tip==='yildiz'){ o.hit=true; yildiz++; puan+=15; updHud(); blip(980,0.08,0.12); buzz(8);
         patla(laneCX(o.lane),o.y,'#ffc94d'); popup(laneCX(o.lane),o.y-24,'+15','#ffc94d'); }
       else if(o.tip==='can'){ o.hit=true; can=Math.min(3,can+1); updHud();
-        toast('❤️ +1 can!'); blip(660,0.1,0.13); blip(880,0.14,0.12); buzz([15,25,15]); }
+        toast(S('canArti')); blip(660,0.1,0.13); blip(880,0.14,0.12); buzz([15,25,15]); }
       else if(iFrames>0){ }
       else { crash(o); return; }
     }
@@ -174,7 +239,7 @@ function crash(o){
   if(can>1){
     can--; iFrames=110; o.hit=true; sarsinti=12;
     objs=objs.filter(x=>!(x.tip==='blok'&&x.y>ARABA_Y()-260&&x.y<ARABA_Y()+80));
-    updHud(); toast('💥 -1 can!');
+    updHud(); toast(S('canEksi'));
     blip(200,0.2,0.16,'square'); buzz([40,30,40]);
     return;
   }
@@ -182,8 +247,8 @@ function crash(o){
   blip(140,0.4,0.2,'sawtooth'); buzz([60,40,80]);
   const p=Math.floor(puan), rekor=p>best;
   if(rekor){ best=p; localStorage.setItem('aynaaraba_best',best); }
-  document.getElementById('sonPuan').textContent=p.toLocaleString('tr-TR')+' puan · ⭐ '+yildiz;
-  document.getElementById('sonMsg').textContent=(rekor?'🏆 YENİ REKOR! ':'En iyin: '+best.toLocaleString('tr-TR')+'. ')+'Ayna geldiğinde bir saniye dur, düşün, sonra dokun!';
+  document.getElementById('sonPuan').textContent=S('sonPuanF')(p,yildiz);
+  document.getElementById('sonMsg').textContent=(rekor?S('rekor'):S('enIyiF')(best))+S('sonEk');
   setTimeout(()=>document.getElementById('son').classList.remove('gizli'),450);
 }
 
@@ -354,7 +419,7 @@ function draw(){
     ctx.save(); ctx.translate(W/2,H/2); ctx.scale(1+(1-f)*0.4,1+(1-f)*0.4);
     ctx.globalAlpha=Math.min(1,f*2);
     ctx.font='900 44px "Avenir Next",system-ui'; ctx.textAlign='center'; ctx.fillStyle='#fff';
-    ctx.fillText('🪞 TERS!',0,0); ctx.restore(); ctx.globalAlpha=1;
+    ctx.fillText(S('ters'),0,0); ctx.restore(); ctx.globalAlpha=1;
   }
   /* ayna modu çerçevesi + sayaç */
   if(ayna){
@@ -362,7 +427,7 @@ function draw(){
     ctx.strokeRect(4,4,W-8,H-8);
     ctx.fillStyle='rgba(176,107,255,.95)';
     ctx.font='900 17px "Avenir Next",system-ui'; ctx.textAlign='center';
-    ctx.fillText('🪞 AYNA MODU — kontroller TERS',W/2,H*0.13);
+    ctx.fillText(S('bant'),W/2,H*0.13);
     /* kalan süre çubuğu */
     ctx.fillStyle='rgba(255,255,255,.2)';
     ctx.beginPath(); ctx.roundRect(W/2-70,H*0.145,140,7,4); ctx.fill();
@@ -372,15 +437,15 @@ function draw(){
     if(Math.floor(tick/8)%2===0){
       ctx.fillStyle='rgba(176,107,255,.9)';
       ctx.font='900 15px "Avenir Next",system-ui'; ctx.textAlign='center';
-      ctx.fillText('🪞 ayna geliyor…',W/2,H*0.13);
+      ctx.fillText(S('bantMini'),W/2,H*0.13);
     }
   }
   if(state==='dur'){
     ctx.fillStyle='rgba(36,26,51,.8)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle='#f6f1ff'; ctx.font='900 30px "Avenir Next",system-ui'; ctx.textAlign='center';
-    ctx.fillText('DURAKLATILDI',W/2,H/2-8);
+    ctx.fillText(S('dur'),W/2,H/2-8);
     ctx.font='700 14px "Avenir Next",system-ui'; ctx.fillStyle='#a595c2';
-    ctx.fillText('devam için ▶ düğmesine bas',W/2,H/2+24);
+    ctx.fillText(S('devamIp'),W/2,H/2+24);
   }
 }
 let sonTs=0;
@@ -418,6 +483,12 @@ tap(document.getElementById('baslaBtn'),()=>{ audio(); reset(); state='play';
   document.getElementById('giris').classList.add('gizli'); });
 tap(document.getElementById('tekrarBtn'),()=>{ audio(); reset(); state='play';
   document.getElementById('son').classList.add('gizli'); });
+tap(document.getElementById('nasilBtn'),()=>document.getElementById('nasil').classList.remove('gizli'));
+tap(document.getElementById('nasilKapat'),()=>document.getElementById('nasil').classList.add('gizli'));
+document.querySelectorAll('.dil').forEach(b=>tap(b,()=>{
+  dil=b.dataset.dil; localStorage.setItem('mp_dil',dil); uygulaDil();
+}));
+uygulaDil();
 loop();
 </script>
 </html>

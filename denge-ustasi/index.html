@@ -37,6 +37,14 @@
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #1d5c54}
   .btn:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
   .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .btn2{font:inherit;font-weight:800;font-size:13.5px;letter-spacing:.05em;color:var(--ink);
+    background:rgba(39,66,58,.08);border:1.5px solid rgba(39,66,58,.25);
+    border-radius:999px;padding:11px 26px;cursor:pointer}
+  .diller{display:flex;gap:8px}
+  .dil{font:inherit;font-size:13px;font-weight:900;color:var(--dim);background:none;
+    border:1.5px solid rgba(39,66,58,.25);border-radius:10px;padding:8px 14px;cursor:pointer}
+  .dil.aktif{color:#fff;background:var(--teal);border-color:var(--teal)}
+  #nasilIcerik{text-align:left;white-space:pre-line}
 </style>
 <canvas id="c"></canvas>
 <div id="hud">
@@ -48,14 +56,26 @@
 
 <div class="kart" id="giris">
   <h1>DENGE USTASI</h1>
-  <p>Kutular yukarıdan süzülüyor — <b>sağa/sola dokunarak</b> düşen kutuyu yönlendir, tahterevallinin iki yanını dengede tut! Eğim <b>25°'yi geçerse</b> her şey kayar. Ağır kutular (sayısı büyük olan) terazide daha çok bastırır.</p>
+  <p id="girisMetin">Kutular yukarıdan süzülüyor — <b>sağa/sola dokunarak</b> düşen kutuyu yönlendir, tahterevallinin iki yanını dengede tut! Eğim <b>25°'yi geçerse</b> her şey kayar. Ağır kutular (sayısı büyük olan) terazide daha çok bastırır.</p>
+  <div class="diller">
+    <button class="dil" data-dil="tr">TR</button>
+    <button class="dil" data-dil="en">EN</button>
+    <button class="dil" data-dil="es">ES</button>
+  </div>
   <button class="btn" id="baslaBtn">Başla</button>
+  <button class="btn2" id="nasilBtn">❓ Nasıl Oynanır</button>
   <span class="hint" id="bestIntro"></span>
-  <span class="hint">klavye: ← → ile yönlendir</span>
+  <span class="hint" id="klavyeHint">klavye: ← → ile yönlendir</span>
+</div>
+
+<div class="kart gizli" id="nasil">
+  <h1 id="nasilBaslik" style="font-size:28px">NASIL OYNANIR</h1>
+  <p id="nasilIcerik"></p>
+  <button class="btn" id="nasilKapat">Tamam</button>
 </div>
 
 <div class="kart gizli" id="son">
-  <h1>DEVRİLDİ!</h1>
+  <h1 id="sonBaslik">DEVRİLDİ!</h1>
   <div class="puanlar" id="sonPuan"></div>
   <p id="sonMsg"></p>
   <button class="btn" id="tekrarBtn">Tekrar Dene</button>
@@ -63,6 +83,46 @@
 
 <script>
 'use strict';
+const DILLER={
+tr:{giris:'Kutular yukarıdan süzülüyor — sağa/sola dokunarak düşen kutuyu yönlendir, tahterevallinin iki yanını dengede tut! Eğim 25°\'yi geçerse her şey kayar. Ağır kutular (sayısı büyük olan) terazide daha çok bastırır.',
+ basla:'Başla',tekrar:'Tekrar Dene',nasilBtn:'❓ Nasıl Oynanır',tamam:'Tamam',nasilBaslik:'NASIL OYNANIR',
+ nasil:'1️⃣ Kutu yukarıdan süzülür; ekranın soluna/sağına dokunarak (veya ← →) it.\n\n2️⃣ Kutu tahterevalliye konar — merkeze uzaklığı kadar bastırır.\n\n3️⃣ Üzerindeki sayı ağırlığıdır: 4, 1\'den dört kat güçlü bastırır.\n\n4️⃣ İki yanı dengede tut; eğim 25°\'yi geçerse oyun biter.\n\n5️⃣ Kenarlar kızarmaya başlarsa tehlikedesin — hafif tarafı doldur!\n\n💡 Ağır kutuları merkeze yakın, hafifleri uca bırakmak en güvenlisi.',
+ klavye:'klavye: ← → ile yönlendir',lPuan:'KUTU',lEgim:'EĞİM',dur:'DURAKLATILDI',devamIp:'devam için ▶ düğmesine bas',
+ sonBaslik:'DEVRİLDİ!',sonPuanF:n=>n+' kutu dengede durdu',rekor:'🏆 YENİ REKOR! ',enIyiF:b=>'En iyin: '+b+'. ',
+ sonEk:'Ağır kutuları merkeze yakın bırakmayı dene!',kutuT:n=>'🏆 '+n+' kutu!',dustu:'📦 Kutu yere düştü!',
+ enIyiIntroF:b=>'EN İYİ: '+b+' kutu'},
+en:{giris:'Crates drift down — tap left/right to steer them and keep both sides of the seesaw balanced! If the tilt passes 25°, everything slides off. Heavier crates (bigger number) press down harder.',
+ basla:'Start',tekrar:'Try Again',nasilBtn:'❓ How to Play',tamam:'OK',nasilBaslik:'HOW TO PLAY',
+ nasil:'1️⃣ A crate drifts down; tap the left/right side (or ← →) to push it.\n\n2️⃣ It lands on the seesaw — the farther from the center, the harder it presses.\n\n3️⃣ The number is its weight: a 4 presses four times harder than a 1.\n\n4️⃣ Keep both sides balanced; past 25° tilt the game ends.\n\n5️⃣ Red edges mean danger — load the lighter side!\n\n💡 Safest: heavy crates near the center, light ones at the tips.',
+ klavye:'keys: ← → steer',lPuan:'CRATES',lEgim:'TILT',dur:'PAUSED',devamIp:'press ▶ to continue',
+ sonBaslik:'TIPPED OVER!',sonPuanF:n=>n+' crates stayed balanced',rekor:'🏆 NEW RECORD! ',enIyiF:b=>'Your best: '+b+'. ',
+ sonEk:'Try dropping heavy crates closer to the center!',kutuT:n=>'🏆 '+n+' crates!',dustu:'📦 Crate hit the floor!',
+ enIyiIntroF:b=>'BEST: '+b+' crates'},
+es:{giris:'Las cajas bajan flotando: toca izquierda/derecha para guiarlas y mantén el balancín equilibrado. Si la inclinación pasa de 25°, ¡todo se desliza! Las cajas pesadas (número mayor) presionan más fuerte.',
+ basla:'Empezar',tekrar:'Otra Vez',nasilBtn:'❓ Cómo Jugar',tamam:'Vale',nasilBaslik:'CÓMO JUGAR',
+ nasil:'1️⃣ Una caja baja flotando; toca el lado izquierdo/derecho (o ← →) para empujarla.\n\n2️⃣ Aterriza en el balancín: cuanto más lejos del centro, más presiona.\n\n3️⃣ El número es su peso: un 4 presiona cuatro veces más que un 1.\n\n4️⃣ Mantén el equilibrio; pasados 25° el juego termina.\n\n5️⃣ Bordes rojos = peligro. ¡Carga el lado ligero!\n\n💡 Lo más seguro: cajas pesadas cerca del centro, ligeras en las puntas.',
+ klavye:'teclas: ← → guiar',lPuan:'CAJAS',lEgim:'INCLIN.',dur:'PAUSA',devamIp:'pulsa ▶ para seguir',
+ sonBaslik:'¡SE VOLCÓ!',sonPuanF:n=>n+' cajas en equilibrio',rekor:'🏆 ¡NUEVO RÉCORD! ',enIyiF:b=>'Tu récord: '+b+'. ',
+ sonEk:'¡Prueba a soltar las cajas pesadas cerca del centro!',kutuT:n=>'🏆 ¡'+n+' cajas!',dustu:'📦 ¡Caja al suelo!',
+ enIyiIntroF:b=>'RÉCORD: '+b+' cajas'}};
+let dil=localStorage.getItem('mp_dil')||'tr';
+if(!DILLER[dil])dil='tr';
+const S=k=>DILLER[dil][k]??DILLER.tr[k];
+function uygulaDil(){
+  document.getElementById('girisMetin').textContent=S('giris');
+  document.getElementById('baslaBtn').textContent=S('basla');
+  document.getElementById('tekrarBtn').textContent=S('tekrar');
+  document.getElementById('nasilBtn').textContent=S('nasilBtn');
+  document.getElementById('nasilKapat').textContent=S('tamam');
+  document.getElementById('nasilBaslik').textContent=S('nasilBaslik');
+  document.getElementById('nasilIcerik').textContent=S('nasil');
+  document.getElementById('klavyeHint').textContent=S('klavye');
+  document.getElementById('sonBaslik').textContent=S('sonBaslik');
+  const et=document.querySelectorAll('#hud .label');
+  et[0].textContent=S('lPuan'); et[1].textContent=S('lEgim');
+  document.getElementById('bestIntro').textContent=best>0?S('enIyiIntroF')(best):'';
+  document.querySelectorAll('.dil').forEach(b=>b.classList.toggle('aktif',b.dataset.dil===dil));
+}
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
 function resize(){ DPR=Math.min(devicePixelRatio||1,3); W=innerWidth; H=innerHeight;
@@ -71,7 +131,7 @@ function resize(){ DPR=Math.min(devicePixelRatio||1,3); W=innerWidth; H=innerHei
 resize(); addEventListener('resize',resize);
 
 let best=+(localStorage.getItem('denge_best')||0);
-document.getElementById('bestIntro').textContent=best>0?'EN İYİ: '+best+' kutu':'';
+
 
 let AC=null;
 const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
@@ -141,12 +201,12 @@ function physics(dt){
         puan++; updHud();
         toz(dusen.x,hedefY+dusen.boy/2); popup(dusen.x,hedefY-24,'+1');
         blip(240+dusen.agirlik*40,0.09,0.13,'square'); buzz(10);
-        if(puan%10===0) toast('🏆 '+puan+' kutu!');
+        if(puan%10===0) toast(S('kutuT')(puan));
         dusen=null; setTimeout(()=>{ if(state==='play') yeniKutu(); },420);
       }
     } else if(dusen.y>H+40){
       /* tahterevalli dışına düştü: kutu kaybı ama oyun devam */
-      toast('📦 Kutu yere düştü!');
+      toast(S('dustu'));
       blip(160,0.2,0.12,'sawtooth'); buzz(30);
       dusen=null; setTimeout(()=>{ if(state==='play') yeniKutu(); },420);
     }
@@ -157,8 +217,8 @@ function devril(){
   blip(120,0.5,0.2,'sawtooth'); buzz([80,50,80]);
   const rekor=puan>best;
   if(rekor){ best=puan; localStorage.setItem('denge_best',best); }
-  document.getElementById('sonPuan').textContent=puan+' kutu dengede durdu';
-  document.getElementById('sonMsg').textContent=(rekor?'🏆 YENİ REKOR! ':'En iyin: '+best+'. ')+'Ağır kutuları merkeze yakın bırakmayı dene!';
+  document.getElementById('sonPuan').textContent=S('sonPuanF')(puan);
+  document.getElementById('sonMsg').textContent=(rekor?S('rekor'):S('enIyiF')(best))+S('sonEk');
   setTimeout(()=>document.getElementById('son').classList.remove('gizli'),500);
 }
 
@@ -292,9 +352,9 @@ function draw(){
   if(state==='dur'){
     ctx.fillStyle='rgba(233,242,238,.82)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle='#27423a'; ctx.font='900 30px "Avenir Next",system-ui'; ctx.textAlign='center';
-    ctx.fillText('DURAKLATILDI',W/2,H/2-8);
+    ctx.fillText(S('dur'),W/2,H/2-8);
     ctx.font='700 14px "Avenir Next",system-ui'; ctx.fillStyle='#7a988d';
-    ctx.fillText('devam için ▶ düğmesine bas',W/2,H/2+24);
+    ctx.fillText(S('devamIp'),W/2,H/2+24);
   }
 }
 let sonTs=0;
@@ -329,6 +389,12 @@ tap(document.getElementById('baslaBtn'),()=>{ audio(); reset(); state='play';
   document.getElementById('giris').classList.add('gizli'); });
 tap(document.getElementById('tekrarBtn'),()=>{ audio(); reset(); state='play';
   document.getElementById('son').classList.add('gizli'); });
+tap(document.getElementById('nasilBtn'),()=>document.getElementById('nasil').classList.remove('gizli'));
+tap(document.getElementById('nasilKapat'),()=>document.getElementById('nasil').classList.add('gizli'));
+document.querySelectorAll('.dil').forEach(b=>tap(b,()=>{
+  dil=b.dataset.dil; localStorage.setItem('mp_dil',dil); uygulaDil();
+}));
+uygulaDil();
 loop();
 </script>
 </html>

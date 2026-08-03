@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>RENK TUZAĞI — Yazıya İnanma, Renge Bak!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#141928; --ink:#f2f5ff; --dim:#94a0bf; --dogru:#3ecf9a; --yanlis:#e85454; --sari:#ffc94d; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  #oyunAlani{height:100%;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+  #hud{display:flex;justify-content:space-between;align-items:flex-start}
+  .kutu{text-align:center}
+  .label{font-size:9px;letter-spacing:.2em;color:var(--dim);font-weight:800}
+  .deger{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+  #canEl{font-size:15px;letter-spacing:2px;text-align:center;margin-top:4px}
+  #sahne{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+  #soruEtiket{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  #kelime{font-size:clamp(52px,17vw,92px);font-weight:900;letter-spacing:.02em;
+    text-shadow:0 4px 20px rgba(0,0,0,.4);transition:transform .08s}
+  #kelime.sars{animation:sr .3s}
+  @keyframes sr{25%{transform:translateX(-9px)}50%{transform:translateX(8px)}75%{transform:translateX(-5px)}}
+  #zamanKutu{width:min(70vw,300px);height:10px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden}
+  #zaman{height:100%;background:linear-gradient(90deg,#3ecf9a,#ffc94d);border-radius:99px}
+  #butonlar{display:flex;gap:14px;padding-bottom:8px}
+  .cevap{flex:1;font:inherit;font-size:38px;font-weight:900;border:none;border-radius:22px;
+    padding:22px 0;cursor:pointer;color:#fff;transition:transform .08s,filter .15s}
+  .cevap:active{transform:translateY(4px)}
+  #hayirBtn{background:linear-gradient(180deg,#f06a6a,#d13c3c);box-shadow:0 6px 0 #8f2020}
+  #hayirBtn:active{box-shadow:0 2px 0 #8f2020}
+  #evetBtn{background:linear-gradient(180deg,#4fe3ad,#2eb583);box-shadow:0 6px 0 #17724e}
+  #evetBtn:active{box-shadow:0 2px 0 #17724e}
+  #toast{position:fixed;top:18%;left:50%;transform:translateX(-50%);font-size:24px;font-weight:900;
+    color:var(--sari);opacity:0;pointer-events:none;white-space:nowrap;z-index:6}
+  #toast.pop{animation:tp .8s ease-out}
+  @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.6)}
+    15%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{opacity:1}100%{opacity:0}}
+  .kart{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(20,25,40,.97);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .kart.gizli{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .kart.gizli .btn,.kart.gizli .btn2,.kart.gizli .dil{pointer-events:none}
+  .kart h1{font-size:clamp(34px,9vw,58px);font-weight:900;line-height:1.05;transform:rotate(-2deg)}
+  .kart h1 .r1{color:#e85454}.kart h1 .r2{color:#3d8bfd}.kart h1 .r3{color:#3ecf9a}.kart h1 .r4{color:#ffc94d}
+  .kart p{max-width:38ch;color:var(--dim);font-size:14.5px;line-height:1.6}
+  .kart .puanlar{font-size:30px;font-weight:900}
+  .btn{font:inherit;font-weight:900;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
+    color:#101820;background:linear-gradient(180deg,#4fe3ad,#2eb583);border:none;border-radius:999px;
+    padding:15px 42px;cursor:pointer;box-shadow:0 5px 0 #17724e}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #17724e}
+  .btn:focus-visible{outline:3px solid var(--dogru);outline-offset:3px}
+  .btn2{font:inherit;font-weight:800;font-size:13.5px;letter-spacing:.05em;color:var(--ink);
+    background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);
+    border-radius:999px;padding:11px 26px;cursor:pointer}
+  .diller{display:flex;gap:8px}
+  .dil{font:inherit;font-size:13px;font-weight:900;color:var(--dim);background:none;
+    border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 14px;cursor:pointer}
+  .dil.aktif{color:#101820;background:var(--sari);border-color:var(--sari)}
+  .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  #nasilIcerik{text-align:left;white-space:pre-line}
+</style>
+<div id="oyunAlani">
+  <div id="hud">
+    <div class="kutu"><div class="label" id="lPuan">PUAN</div><div class="deger" id="puanEl">0</div></div>
+    <div><div class="kutu"><div class="label" id="lSeri">SERİ</div><div class="deger" id="seriEl">0</div></div>
+      <div id="canEl">❤️❤️❤️</div></div>
+    <div class="kutu"><div class="label" id="lRekor">REKOR</div><div class="deger" id="bestEl">0</div></div>
+  </div>
+  <div id="sahne">
+    <div id="soruEtiket"></div>
+    <div id="kelime">MAVİ</div>
+    <div id="zamanKutu"><div id="zaman"></div></div>
+  </div>
+  <div id="butonlar">
+    <button class="cevap" id="hayirBtn" aria-label="uyusmuyor">✗</button>
+    <button class="cevap" id="evetBtn" aria-label="uyusuyor">✓</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<div class="kart" id="giris">
+  <h1><span class="r1">RENK</span> <span class="r2">TUZ</span><span class="r3">A</span><span class="r4">ĞI</span></h1>
+  <p id="girisMetin"></p>
+  <div class="diller">
+    <button class="dil" data-dil="tr">TR</button>
+    <button class="dil" data-dil="en">EN</button>
+    <button class="dil" data-dil="es">ES</button>
+  </div>
+  <button class="btn" id="baslaBtn"></button>
+  <button class="btn2" id="nasilBtn"></button>
+  <span class="hint" id="bestIntro"></span>
+</div>
+
+<div class="kart gizli" id="nasil">
+  <h1 id="nasilBaslik" style="font-size:30px"></h1>
+  <p id="nasilIcerik"></p>
+  <button class="btn" id="nasilKapat"></button>
+</div>
+
+<div class="kart gizli" id="son">
+  <h1 id="sonBaslik"></h1>
+  <div class="puanlar" id="sonPuan"></div>
+  <p id="sonMsg"></p>
+  <button class="btn" id="tekrarBtn"></button>
+</div>
+
+<script>
+'use strict';
+/* ── ÇOK DİLLİ METİNLER ── */
+const DILLER={
+tr:{
+  giris:'Kelime bir renk söylüyor ama bambaşka bir renge boyanmış olabilir! YAZININ ANLAMI ile MÜREKKEBİN RENGİ uyuşuyorsa ✓, uyuşmuyorsa ✗ bas. Beynin "yazıyı okuma" refleksine karşı savaş — bilim buna Stroop etkisi diyor!',
+  basla:'Başla', tekrar:'Tekrar Dene', nasilBtn:'❓ Nasıl Oynanır', tamam:'Tamam',
+  nasilBaslik:'NASIL OYNANIR', soruEtiket:'ANLAM = RENK Mİ?',
+  nasil:'1️⃣ Ekranda bir renk ismi belirir (ör. "MAVİ").\n\n2️⃣ Yazının BOYANDIĞI renge bak — okuduğuna değil!\n\n3️⃣ Anlam ile boya AYNIYSA ✓ (sağ), FARKLIYSA ✗ (sol) bas.\n\n4️⃣ Süre çubuğu bitmeden cevapla — her doğruda hızlanır.\n\n5️⃣ 3 canın var; yanlış cevap ve süre aşımı can götürür.\n\n⌨️ Klavye: ← = ✗ · → = ✓',
+  lPuan:'PUAN', lSeri:'SERİ', lRekor:'REKOR',
+  sonBaslik:'BEYİN MOLASI!', sonPuanF:n=>n+' doğru', rekor:'🏆 YENİ REKOR! ',
+  enIyiF:b=>'En iyin: '+b+'. ', sonEk:'Gözün renge, aklın anlama takıldı — bir daha!',
+  seriF:n=>'🔥 Seri x'+n+'!', sureDoldu:'⏰ Süre doldu!', yanlisMsg:'💥 Yanlış!',
+  enIyiIntroF:b=>'EN İYİ: '+b,
+  renkler:{kirmizi:'KIRMIZI',mavi:'MAVİ',yesil:'YEŞİL',sari:'SARI',mor:'MOR',turuncu:'TURUNCU'}
+},
+en:{
+  giris:'The word names a color — but it may be painted in a totally different one! Tap ✓ if the MEANING matches the INK color, ✗ if it does not. Fight your brain\'s urge to just read the word — science calls this the Stroop effect!',
+  basla:'Start', tekrar:'Try Again', nasilBtn:'❓ How to Play', tamam:'OK',
+  nasilBaslik:'HOW TO PLAY', soruEtiket:'MEANING = COLOR?',
+  nasil:'1️⃣ A color word appears (e.g. "BLUE").\n\n2️⃣ Look at the color it is PAINTED in — not what it says!\n\n3️⃣ If meaning and ink MATCH tap ✓ (right); if NOT tap ✗ (left).\n\n4️⃣ Answer before the timer bar runs out — it gets faster.\n\n5️⃣ You have 3 lives; wrong answers and timeouts cost one.\n\n⌨️ Keyboard: ← = ✗ · → = ✓',
+  lPuan:'SCORE', lSeri:'STREAK', lRekor:'BEST',
+  sonBaslik:'BRAIN BREAK!', sonPuanF:n=>n+' correct', rekor:'🏆 NEW RECORD! ',
+  enIyiF:b=>'Your best: '+b+'. ', sonEk:'Your eyes saw the color, your brain read the word — go again!',
+  seriF:n=>'🔥 Streak x'+n+'!', sureDoldu:'⏰ Time\'s up!', yanlisMsg:'💥 Wrong!',
+  enIyiIntroF:b=>'BEST: '+b,
+  renkler:{kirmizi:'RED',mavi:'BLUE',yesil:'GREEN',sari:'YELLOW',mor:'PURPLE',turuncu:'ORANGE'}
+},
+es:{
+  giris:'La palabra dice un color… ¡pero puede estar pintada de otro totalmente distinto! Pulsa ✓ si el SIGNIFICADO coincide con el color de la TINTA, ✗ si no coincide. Lucha contra el impulso de leer la palabra: ¡la ciencia lo llama efecto Stroop!',
+  basla:'Empezar', tekrar:'Otra Vez', nasilBtn:'❓ Cómo Jugar', tamam:'Vale',
+  nasilBaslik:'CÓMO JUGAR', soruEtiket:'¿SIGNIFICADO = COLOR?',
+  nasil:'1️⃣ Aparece el nombre de un color (ej. "AZUL").\n\n2️⃣ Mira de qué color está PINTADA la palabra, ¡no lo que dice!\n\n3️⃣ Si coinciden pulsa ✓ (derecha); si no, ✗ (izquierda).\n\n4️⃣ Responde antes de que se agote la barra — cada vez va más rápido.\n\n5️⃣ Tienes 3 vidas; los fallos y el tiempo agotado restan una.\n\n⌨️ Teclado: ← = ✗ · → = ✓',
+  lPuan:'PUNTOS', lSeri:'RACHA', lRekor:'RÉCORD',
+  sonBaslik:'¡DESCANSO!', sonPuanF:n=>n+' aciertos', rekor:'🏆 ¡NUEVO RÉCORD! ',
+  enIyiF:b=>'Tu récord: '+b+'. ', sonEk:'Tus ojos vieron el color, tu mente leyó la palabra. ¡Otra vez!',
+  seriF:n=>'🔥 ¡Racha x'+n+'!', sureDoldu:'⏰ ¡Tiempo!', yanlisMsg:'💥 ¡Fallo!',
+  enIyiIntroF:b=>'RÉCORD: '+b,
+  renkler:{kirmizi:'ROJO',mavi:'AZUL',yesil:'VERDE',sari:'AMARILLO',mor:'MORADO',turuncu:'NARANJA'}
+}};
+let dil=localStorage.getItem('mp_dil')||'tr';
+if(!DILLER[dil])dil='tr';
+const S=k=>DILLER[dil][k]??DILLER.tr[k];
+
+const RENK_KOD={kirmizi:'#e85454',mavi:'#3d8bfd',yesil:'#3ecf9a',sari:'#ffc94d',mor:'#b06bff',turuncu:'#ff8a4c'};
+const ANAHTARLAR=Object.keys(RENK_KOD);
+
+let best=+(localStorage.getItem('renktuzagi_best')||0);
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function blip(f,d=0.1,v=0.12,tip='triangle'){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type=tip; o.frequency.value=f; g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+0.02); }catch(e){} }
+const buzz=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+let state='intro', puan=0, seri=0, can=3, sure=0, sureMax=0, uyum=false, timerId=null;
+
+function uygulaDil(){
+  document.getElementById('girisMetin').textContent=S('giris');
+  document.getElementById('baslaBtn').textContent=S('basla');
+  document.getElementById('tekrarBtn').textContent=S('tekrar');
+  document.getElementById('nasilBtn').textContent=S('nasilBtn');
+  document.getElementById('nasilKapat').textContent=S('tamam');
+  document.getElementById('nasilBaslik').textContent=S('nasilBaslik');
+  document.getElementById('nasilIcerik').textContent=S('nasil');
+  document.getElementById('soruEtiket').textContent=S('soruEtiket');
+  document.getElementById('lPuan').textContent=S('lPuan');
+  document.getElementById('lSeri').textContent=S('lSeri');
+  document.getElementById('lRekor').textContent=S('lRekor');
+  document.getElementById('sonBaslik').textContent=S('sonBaslik');
+  document.getElementById('bestIntro').textContent=best>0?S('enIyiIntroF')(best):'';
+  document.querySelectorAll('.dil').forEach(b=>b.classList.toggle('aktif',b.dataset.dil===dil));
+}
+function updHud(){
+  document.getElementById('puanEl').textContent=puan;
+  document.getElementById('seriEl').textContent=seri;
+  document.getElementById('bestEl').textContent=best;
+  document.getElementById('canEl').textContent='❤️'.repeat(can)+'🖤'.repeat(3-can);
+}
+
+function yeniSoru(){
+  const anlam=ANAHTARLAR[Math.floor(Math.random()*ANAHTARLAR.length)];
+  /* %45 uyumlu, %55 tuzak */
+  uyum=Math.random()<0.45;
+  let boya=anlam;
+  if(!uyum){ do{ boya=ANAHTARLAR[Math.floor(Math.random()*ANAHTARLAR.length)]; }while(boya===anlam); }
+  const el=document.getElementById('kelime');
+  el.textContent=S('renkler')[anlam];
+  el.style.color=RENK_KOD[boya];
+  /* süre: 3sn'den başlar, 40 doğruda 1.1sn'ye iner */
+  sureMax=Math.max(66,180-puan*2.9); sure=sureMax;
+}
+function zamanTik(){
+  if(state!=='play')return;
+  sure-=1;
+  document.getElementById('zaman').style.width=(sure/sureMax*100)+'%';
+  if(sure<=0) hata(S('sureDoldu'));
+}
+function cevap(secim){
+  if(state!=='play')return;
+  audio();
+  if(secim===uyum){
+    puan++; seri++;
+    blip(620+Math.min(seri,10)*35,0.07,0.12); buzz(6);
+    if(seri%10===0){ toast(S('seriF')(seri)); blip(1040,0.12,0.12); }
+    updHud(); yeniSoru();
+  } else hata(S('yanlisMsg'));
+}
+function hata(msg){
+  can--; seri=0; updHud(); toast(msg);
+  blip(180,0.25,0.16,'sawtooth'); buzz([40,30,40]);
+  const el=document.getElementById('kelime');
+  el.classList.remove('sars'); void el.offsetWidth; el.classList.add('sars');
+  if(can<=0){ bitir(); return; }
+  yeniSoru();
+}
+function bitir(){
+  state='son'; clearInterval(timerId);
+  const rekor=puan>best;
+  if(rekor){ best=puan; localStorage.setItem('renktuzagi_best',best); }
+  document.getElementById('sonPuan').textContent=S('sonPuanF')(puan);
+  document.getElementById('sonMsg').textContent=(rekor?S('rekor'):S('enIyiF')(best))+S('sonEk');
+  setTimeout(()=>document.getElementById('son').classList.remove('gizli'),350);
+}
+function basla(){
+  audio(); puan=0; seri=0; can=3; state='play'; updHud(); yeniSoru();
+  clearInterval(timerId); timerId=setInterval(zamanTik,16.7);
+  document.getElementById('giris').classList.add('gizli');
+  document.getElementById('son').classList.add('gizli');
+}
+
+const tap=(el,fn)=>{ el.addEventListener('click',fn);
+  el.addEventListener('touchend',e=>{ e.preventDefault(); e.stopPropagation(); fn(); },{passive:false}); };
+tap(document.getElementById('baslaBtn'),basla);
+tap(document.getElementById('tekrarBtn'),basla);
+tap(document.getElementById('evetBtn'),()=>cevap(true));
+tap(document.getElementById('hayirBtn'),()=>cevap(false));
+tap(document.getElementById('nasilBtn'),()=>document.getElementById('nasil').classList.remove('gizli'));
+tap(document.getElementById('nasilKapat'),()=>document.getElementById('nasil').classList.add('gizli'));
+document.querySelectorAll('.dil').forEach(b=>tap(b,()=>{
+  dil=b.dataset.dil; localStorage.setItem('mp_dil',dil); uygulaDil();
+}));
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight') cevap(true);
+  else if(e.key==='ArrowLeft') cevap(false);
+});
+uygulaDil(); updHud();
+</script>
+</html>

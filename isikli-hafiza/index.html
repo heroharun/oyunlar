@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>IŞIKLI HAFIZA — Diziyi Aklında Tut!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#151226; --ink:#f4f1ff; --dim:#9d94c2; --sari:#ffc94d; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  #oyunAlani{height:100%;display:flex;flex-direction:column;align-items:center;
+    padding:max(12px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));gap:10px}
+  #hud{width:100%;max-width:420px;display:flex;justify-content:space-between;align-items:flex-start}
+  .kutu{text-align:center}
+  .label{font-size:9px;letter-spacing:.2em;color:var(--dim);font-weight:800}
+  .deger{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+  #canEl{font-size:15px;letter-spacing:2px;text-align:center;margin-top:4px}
+  #durum{min-height:30px;font-size:16px;font-weight:800;color:var(--sari);display:flex;align-items:center}
+  #tahta{flex:1;display:flex;align-items:center;justify-content:center;width:100%}
+  #izgara{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(84vw,380px)}
+  .ped{aspect-ratio:1;border:none;border-radius:26px;cursor:pointer;
+    transition:filter .12s,transform .1s;filter:brightness(.55);position:relative}
+  .ped:active{transform:scale(.96)}
+  .ped.yak{filter:brightness(1.25) saturate(1.2);box-shadow:0 0 40px var(--pr)}
+  .ped::after{content:"";position:absolute;inset:12px;border-radius:18px;
+    background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.35),transparent 60%)}
+  #p0{--pr:#e85454;background:linear-gradient(180deg,#f06a6a,#c93838)}
+  #p1{--pr:#3d8bfd;background:linear-gradient(180deg,#5a9dff,#2a6fd6)}
+  #p2{--pr:#3ecf9a;background:linear-gradient(180deg,#4fe3ad,#27a374)}
+  #p3{--pr:#ffc94d;background:linear-gradient(180deg,#ffd97a,#f0a832)}
+  #toast{position:fixed;top:16%;left:50%;transform:translateX(-50%);font-size:24px;font-weight:900;
+    color:var(--sari);opacity:0;pointer-events:none;white-space:nowrap;z-index:6}
+  #toast.pop{animation:tp .8s ease-out}
+  @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.6)}
+    15%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{opacity:1}100%{opacity:0}}
+  .kart{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(21,18,38,.97);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .kart.gizli{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .kart.gizli .btn,.kart.gizli .btn2,.kart.gizli .dil{pointer-events:none}
+  .kart h1{font-size:clamp(32px,8.5vw,54px);font-weight:900;line-height:1.05;transform:rotate(-2deg);
+    background:linear-gradient(90deg,#e85454,#3d8bfd,#3ecf9a,#ffc94d);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .kart p{max-width:38ch;color:var(--dim);font-size:14.5px;line-height:1.6}
+  .kart .puanlar{font-size:30px;font-weight:900}
+  .btn{font:inherit;font-weight:900;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
+    color:#171128;background:linear-gradient(180deg,#ffd97a,#f0a832);border:none;border-radius:999px;
+    padding:15px 42px;cursor:pointer;box-shadow:0 5px 0 #a8721c}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a8721c}
+  .btn:focus-visible{outline:3px solid var(--sari);outline-offset:3px}
+  .btn2{font:inherit;font-weight:800;font-size:13.5px;letter-spacing:.05em;color:var(--ink);
+    background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);
+    border-radius:999px;padding:11px 26px;cursor:pointer}
+  .diller{display:flex;gap:8px}
+  .dil{font:inherit;font-size:13px;font-weight:900;color:var(--dim);background:none;
+    border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 14px;cursor:pointer}
+  .dil.aktif{color:#171128;background:var(--sari);border-color:var(--sari)}
+  .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  #nasilIcerik{text-align:left;white-space:pre-line}
+</style>
+<div id="oyunAlani">
+  <div id="hud">
+    <div class="kutu"><div class="label" id="lSeviye">SEVİYE</div><div class="deger" id="seviyeEl">1</div></div>
+    <div><div id="canEl">❤️❤️❤️</div></div>
+    <div class="kutu"><div class="label" id="lRekor">REKOR</div><div class="deger" id="bestEl">0</div></div>
+  </div>
+  <div id="durum"></div>
+  <div id="tahta">
+    <div id="izgara">
+      <button class="ped" id="p0" aria-label="kirmizi"></button>
+      <button class="ped" id="p1" aria-label="mavi"></button>
+      <button class="ped" id="p2" aria-label="yesil"></button>
+      <button class="ped" id="p3" aria-label="sari"></button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<div class="kart" id="giris">
+  <h1>IŞIKLI HAFIZA</h1>
+  <p id="girisMetin"></p>
+  <div class="diller">
+    <button class="dil" data-dil="tr">TR</button>
+    <button class="dil" data-dil="en">EN</button>
+    <button class="dil" data-dil="es">ES</button>
+  </div>
+  <button class="btn" id="baslaBtn"></button>
+  <button class="btn2" id="nasilBtn"></button>
+  <span class="hint" id="bestIntro"></span>
+</div>
+
+<div class="kart gizli" id="nasil">
+  <h1 id="nasilBaslik" style="font-size:28px"></h1>
+  <p id="nasilIcerik"></p>
+  <button class="btn" id="nasilKapat"></button>
+</div>
+
+<div class="kart gizli" id="son">
+  <h1 id="sonBaslik"></h1>
+  <div class="puanlar" id="sonPuan"></div>
+  <p id="sonMsg"></p>
+  <button class="btn" id="tekrarBtn"></button>
+</div>
+
+<script>
+'use strict';
+const DILLER={
+tr:{
+  giris:'Işıklar sırayla yanar, sen de aynı sırayla dokunursun. Her turda dizi bir ışık uzar — çalışma belleğin ne kadar taşıyabilir? Nota sesleri sana yardım eder: kulağın da ezberler!',
+  basla:'Başla', tekrar:'Tekrar Dene', nasilBtn:'❓ Nasıl Oynanır', tamam:'Tamam',
+  nasilBaslik:'NASIL OYNANIR',
+  nasil:'1️⃣ İzle: renkli pedler sırayla yanıp söner.\n\n2️⃣ Tekrarla: aynı sırayla pedlere dokun.\n\n3️⃣ Her başarılı turda diziye 1 ışık eklenir.\n\n4️⃣ Yanlış pede basarsan 1 can gider ama AYNI dizi tekrar gösterilir — hatırlama şansın sürer.\n\n5️⃣ 3 can biterse oyun biter; rekorun kaydedilir.\n\n💡 İpucu: renkleri kelimeye çevir (kırmızı-mavi-mavi…) ya da melodiyi mırıldan!',
+  izle:'👀 İZLE…', sıra:'👆 SIRA SENDE', dogruTur:'✨ Doğru! Dizi uzuyor…',
+  lSeviye:'SEVİYE', lRekor:'REKOR',
+  sonBaslik:'HAFIZA DOLDU!', sonPuanF:n=>n+' ışıklık dizi', rekor:'🏆 YENİ REKOR! ',
+  enIyiF:b=>'En iyin: '+b+'. ', sonEk:'Her deneme belleğini biraz daha güçlendirir!',
+  hataMsg:'💥 Yanlış ped! Dizi yeniden gösteriliyor…',
+  enIyiIntroF:b=>'EN İYİ: '+b+' ışık'
+},
+en:{
+  giris:'Lights flash in a sequence — repeat it by tapping in the same order. Each round adds one more light. How much can your working memory hold? The musical notes help your ears memorize too!',
+  basla:'Start', tekrar:'Try Again', nasilBtn:'❓ How to Play', tamam:'OK',
+  nasilBaslik:'HOW TO PLAY',
+  nasil:'1️⃣ Watch: the colored pads light up in order.\n\n2️⃣ Repeat: tap the pads in the same order.\n\n3️⃣ Each successful round adds 1 more light.\n\n4️⃣ A wrong tap costs 1 life, but the SAME sequence replays — you get another chance to remember.\n\n5️⃣ Lose all 3 lives and the game ends; your best is saved.\n\n💡 Tip: turn colors into words (red-blue-blue…) or hum the melody!',
+  izle:'👀 WATCH…', sıra:'👆 YOUR TURN', dogruTur:'✨ Correct! Sequence grows…',
+  lSeviye:'LEVEL', lRekor:'BEST',
+  sonBaslik:'MEMORY FULL!', sonPuanF:n=>'sequence of '+n+' lights', rekor:'🏆 NEW RECORD! ',
+  enIyiF:b=>'Your best: '+b+'. ', sonEk:'Every attempt makes your memory a little stronger!',
+  hataMsg:'💥 Wrong pad! Replaying the sequence…',
+  enIyiIntroF:b=>'BEST: '+b+' lights'
+},
+es:{
+  giris:'Las luces se encienden en orden: repítelo tocando en la misma secuencia. Cada ronda añade una luz más. ¿Cuánto aguanta tu memoria de trabajo? ¡Las notas musicales también ayudan a tus oídos!',
+  basla:'Empezar', tekrar:'Otra Vez', nasilBtn:'❓ Cómo Jugar', tamam:'Vale',
+  nasilBaslik:'CÓMO JUGAR',
+  nasil:'1️⃣ Observa: los botones se iluminan en orden.\n\n2️⃣ Repite: toca los botones en el mismo orden.\n\n3️⃣ Cada ronda superada añade 1 luz más.\n\n4️⃣ Un toque erróneo resta 1 vida, pero la MISMA secuencia se repite: tienes otra oportunidad.\n\n5️⃣ Sin vidas, termina el juego; tu récord se guarda.\n\n💡 Consejo: convierte los colores en palabras (rojo-azul-azul…) ¡o tararea la melodía!',
+  izle:'👀 OBSERVA…', sıra:'👆 TU TURNO', dogruTur:'✨ ¡Correcto! La secuencia crece…',
+  lSeviye:'NIVEL', lRekor:'RÉCORD',
+  sonBaslik:'¡MEMORIA LLENA!', sonPuanF:n=>'secuencia de '+n+' luces', rekor:'🏆 ¡NUEVO RÉCORD! ',
+  enIyiF:b=>'Tu récord: '+b+'. ', sonEk:'¡Cada intento fortalece un poco más tu memoria!',
+  hataMsg:'💥 ¡Botón equivocado! Repitiendo la secuencia…',
+  enIyiIntroF:b=>'RÉCORD: '+b+' luces'
+}};
+let dil=localStorage.getItem('mp_dil')||'tr';
+if(!DILLER[dil])dil='tr';
+const S=k=>DILLER[dil][k]??DILLER.tr[k];
+
+let best=+(localStorage.getItem('isikli_best')||0);
+const NOTALAR=[329.6,392,523.3,659.3];   /* mi-sol-do-mi: hoş bir dörtlü */
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function nota(i,d=0.32,v=0.15){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type='triangle'; o.frequency.value=NOTALAR[i];
+  g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+0.02); }catch(e){} }
+function blip(f,d=0.15,v=0.12,tip='sawtooth'){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type=tip; o.frequency.value=f; g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+0.02); }catch(e){} }
+const buzz=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+let state='intro', dizi=[], adim=0, can=3, gosterimde=false;
+
+function uygulaDil(){
+  document.getElementById('girisMetin').textContent=S('giris');
+  document.getElementById('baslaBtn').textContent=S('basla');
+  document.getElementById('tekrarBtn').textContent=S('tekrar');
+  document.getElementById('nasilBtn').textContent=S('nasilBtn');
+  document.getElementById('nasilKapat').textContent=S('tamam');
+  document.getElementById('nasilBaslik').textContent=S('nasilBaslik');
+  document.getElementById('nasilIcerik').textContent=S('nasil');
+  document.getElementById('lSeviye').textContent=S('lSeviye');
+  document.getElementById('lRekor').textContent=S('lRekor');
+  document.getElementById('sonBaslik').textContent=S('sonBaslik');
+  document.getElementById('bestIntro').textContent=best>0?S('enIyiIntroF')(best):'';
+  document.querySelectorAll('.dil').forEach(b=>b.classList.toggle('aktif',b.dataset.dil===dil));
+}
+function updHud(){
+  document.getElementById('seviyeEl').textContent=dizi.length;
+  document.getElementById('bestEl').textContent=best;
+  document.getElementById('canEl').textContent='❤️'.repeat(can)+'🖤'.repeat(3-can);
+}
+const bekle=ms=>new Promise(r=>setTimeout(r,ms));
+async function yak(i,sure=420){
+  const p=document.getElementById('p'+i);
+  p.classList.add('yak'); nota(i,sure/1000+0.1);
+  await bekle(sure);
+  p.classList.remove('yak');
+}
+async function goster(){
+  gosterimde=true;
+  document.getElementById('durum').textContent=S('izle');
+  await bekle(650);
+  const hiz=Math.max(230,470-dizi.length*18);   /* uzadıkça hızlanır */
+  for(const i of dizi){ await yak(i,hiz); await bekle(hiz*0.35); }
+  gosterimde=false; adim=0;
+  document.getElementById('durum').textContent=S('sıra');
+}
+async function pedBas(i){
+  if(state!=='play'||gosterimde)return;
+  audio();
+  const p=document.getElementById('p'+i);
+  p.classList.add('yak'); nota(i,0.25); buzz(6);
+  setTimeout(()=>p.classList.remove('yak'),200);
+  if(i===dizi[adim]){
+    adim++;
+    if(adim===dizi.length){
+      toast(S('dogruTur'));
+      await bekle(500);
+      dizi.push(Math.floor(Math.random()*4));
+      updHud(); goster();
+    }
+  } else {
+    can--; updHud(); toast(S('hataMsg'));
+    blip(150,0.4,0.16); buzz([50,40,50]);
+    if(can<=0){ bitir(); return; }
+    await bekle(700); goster();
+  }
+}
+function bitir(){
+  state='son';
+  const skor=dizi.length-1;   /* son gösterilen tamamlanamayan hariç */
+  const rekor=skor>best;
+  if(rekor){ best=Math.max(0,skor); localStorage.setItem('isikli_best',best); }
+  document.getElementById('sonPuan').textContent=S('sonPuanF')(Math.max(0,skor));
+  document.getElementById('sonMsg').textContent=(rekor?S('rekor'):S('enIyiF')(best))+S('sonEk');
+  setTimeout(()=>document.getElementById('son').classList.remove('gizli'),350);
+}
+function basla(){
+  audio(); dizi=[Math.floor(Math.random()*4)]; can=3; state='play'; updHud();
+  document.getElementById('giris').classList.add('gizli');
+  document.getElementById('son').classList.add('gizli');
+  goster();
+}
+
+const tap=(el,fn)=>{ el.addEventListener('click',fn);
+  el.addEventListener('touchend',e=>{ e.preventDefault(); e.stopPropagation(); fn(); },{passive:false}); };
+tap(document.getElementById('baslaBtn'),basla);
+tap(document.getElementById('tekrarBtn'),basla);
+for(let i=0;i<4;i++) tap(document.getElementById('p'+i),()=>pedBas(i));
+tap(document.getElementById('nasilBtn'),()=>document.getElementById('nasil').classList.remove('gizli'));
+tap(document.getElementById('nasilKapat'),()=>document.getElementById('nasil').classList.add('gizli'));
+document.querySelectorAll('.dil').forEach(b=>tap(b,()=>{
+  dil=b.dataset.dil; localStorage.setItem('mp_dil',dil); uygulaDil();
+}));
+addEventListener('keydown',e=>{
+  const k={'1':0,'2':1,'3':2,'4':3}[e.key];
+  if(k!==undefined) pedBas(k);
+});
+uygulaDil(); updHud();
+</script>
+</html>
