@@ -70,7 +70,7 @@
 'use strict';
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
-function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+function resize(){ DPR=Math.min(devicePixelRatio||1,3); W=innerWidth; H=innerHeight;
   cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
   ctx.setTransform(DPR,0,0,DPR,0,0); }
 resize(); addEventListener('resize',resize);

@@ -72,7 +72,7 @@
 'use strict';
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
-function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+function resize(){ DPR=Math.min(devicePixelRatio||1,3); W=innerWidth; H=innerHeight;
   cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
   ctx.setTransform(DPR,0,0,DPR,0,0); }
 resize(); addEventListener('resize',resize);
@@ -92,7 +92,10 @@ function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
 /* ── DURUM ── */
 const SERIT=3;
 let state='intro', tick=0, dist=0, puan=0, yildiz=0, can=3, iFrames=0, spd=0;
-let lane=1, laneX=1, objs=[], spawnT=0;
+let lane=1, laneX=1, objs=[], spawnT=0, parcalar=[], popups=[], sarsinti=0;
+function patla(x,y,renk){ for(let i=0;i<10;i++){ const a2=Math.random()*6.28,h2=1+Math.random()*2.6;
+  parcalar.push({x,y,vx:Math.cos(a2)*h2,vy:Math.sin(a2)*h2,omur:22+Math.random()*14,renk}); } }
+function popup(x,y,metin,renk){ popups.push({x,y,metin,renk,omur:44}); }
 /* ayna modu */
 let ayna=false, aynaT=0, aynaUyari=0, aynaSayac=700;
 
@@ -115,7 +118,9 @@ function spawn(){
   if(r<0.6){
     const dolu=[0,1,2].filter(l=>l!==bos);
     const kac=Math.random()<0.6?1:2;
-    for(let i=0;i<kac;i++) objs.push({lane:dolu[i],y:-60,tip:'blok',v:Math.random()<0.5?0:1,hit:false});
+    const renkler=[['#d1524a','#a33028'],['#4a7fd1','#2d5aa8'],['#d1a94a','#a8802d'],['#7a58c9','#5638a0']];
+    for(let i=0;i<kac;i++) objs.push({lane:dolu[i],y:-60,tip:'blok',v:Math.random()<0.5?0:1,
+      renk:renkler[Math.floor(Math.random()*renkler.length)],hit:false});
   } else if(r<0.85){
     objs.push({lane:Math.floor(Math.random()*SERIT),y:-60,tip:'yildiz',hit:false});
   } else if(can<3){
@@ -149,7 +154,8 @@ function physics(dt){
     o.y+=spd*dt;
     if(o.hit)continue;
     if(Math.abs(o.y-ay)<38&&Math.abs(o.lane-laneX)<0.42){
-      if(o.tip==='yildiz'){ o.hit=true; yildiz++; puan+=15; updHud(); blip(980,0.08,0.12); buzz(8); }
+      if(o.tip==='yildiz'){ o.hit=true; yildiz++; puan+=15; updHud(); blip(980,0.08,0.12); buzz(8);
+        patla(laneCX(o.lane),o.y,'#ffc94d'); popup(laneCX(o.lane),o.y-24,'+15','#ffc94d'); }
       else if(o.tip==='can'){ o.hit=true; can=Math.min(3,can+1); updHud();
         toast('❤️ +1 can!'); blip(660,0.1,0.13); blip(880,0.14,0.12); buzz([15,25,15]); }
       else if(iFrames>0){ }
@@ -157,11 +163,16 @@ function physics(dt){
     }
   }
   objs=objs.filter(o=>!o.hit&&o.y<H+80);
+  for(const p of parcalar){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.omur-=dt; }
+  parcalar=parcalar.filter(p=>p.omur>0);
+  for(const p of popups){ p.y-=1.1*dt; p.omur-=dt; }
+  popups=popups.filter(p=>p.omur>0);
+  if(sarsinti>0)sarsinti-=dt;
   updHud();
 }
 function crash(o){
   if(can>1){
-    can--; iFrames=110; o.hit=true;
+    can--; iFrames=110; o.hit=true; sarsinti=12;
     objs=objs.filter(x=>!(x.tip==='blok'&&x.y>ARABA_Y()-260&&x.y<ARABA_Y()+80));
     updHud(); toast('💥 -1 can!');
     blip(200,0.2,0.16,'square'); buzz([40,30,40]);
@@ -183,6 +194,24 @@ function cizYol(){
   else { g.addColorStop(0,'#2b2140'); g.addColorStop(1,'#1d1530'); }
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
   const w2=yolW();
+  /* yol kenarı: gece silueti binalar + ışıklı pencereler (akar) */
+  const binaAkis=(tick*spd*0.5)%180;
+  for(const taraf of [-1,1]){
+    const bx=W/2+taraf*(w2/2+16);
+    for(let by=-180+binaAkis;by<H;by+=180){
+      const bw=Math.max(24,(W-w2)/2-24);
+      if(bw<18)continue;
+      const x0=taraf<0?4:W-4-bw;
+      const bh=110+((Math.floor((by-binaAkis)/180)*61)%50);
+      ctx.fillStyle=ayna?'#2b1e42':'#221a38';
+      ctx.beginPath(); ctx.roundRect(x0,by,bw,bh,6); ctx.fill();
+      /* pencereler */
+      ctx.fillStyle=ayna?'rgba(176,107,255,.5)':'rgba(255,201,77,.4)';
+      for(let wy2=by+12;wy2<by+bh-12;wy2+=24)
+        for(let wx2=x0+7;wx2<x0+bw-10;wx2+=17)
+          if(((wx2*7+wy2)%5)<3) ctx.fillRect(wx2,wy2,7,9);
+    }
+  }
   ctx.fillStyle=ayna?'#33254a':'#2a2140';
   ctx.fillRect(W/2-w2/2-14,0,w2+28,H);
   ctx.fillStyle=ayna?'#b06bff':'#5e5378';
@@ -203,6 +232,14 @@ function cizAraba(){
   const x=laneCX(0)+(laneCX(2)-laneCX(0))*laneX/2, y=ARABA_Y();
   if(iFrames>0&&Math.floor(tick/4)%2===0) return;
   const w=Math.min(W*0.1,52), h=w*1.75;
+  /* far huzmesi */
+  const far=ctx.createLinearGradient(0,y-h/2,0,y-h*2.6);
+  far.addColorStop(0,'rgba(255,233,168,.22)'); far.addColorStop(1,'rgba(255,233,168,0)');
+  ctx.fillStyle=far;
+  ctx.beginPath();
+  ctx.moveTo(x-w*0.32,y-h/2); ctx.lineTo(x-w*0.75,y-h*2.6);
+  ctx.lineTo(x+w*0.75,y-h*2.6); ctx.lineTo(x+w*0.32,y-h/2);
+  ctx.closePath(); ctx.fill();
   ctx.save(); ctx.translate(x,y);
   ctx.rotate((lane-laneX)*0.18);
   if(ayna) ctx.scale(-1,1);          /* ayna modunda araba da aynalanır — görsel ipucu */
@@ -279,9 +316,12 @@ function cizObj(o){
     ctx.fillStyle='#10151f';
     for(const [tx,ty] of [[-w*0.55,-h*0.25],[w*0.55,-h*0.25],[-w*0.55,h*0.25],[w*0.55,h*0.25]])
       { ctx.beginPath(); ctx.roundRect(tx-5,ty-10,10,20,4); ctx.fill(); }
-    ctx.fillStyle='#525c72';
+    const [ac,ko]=o.renk||['#6b768f','#525c72'];
+    ctx.fillStyle=ko;
     ctx.beginPath(); ctx.roundRect(-w/2,-h/2,w,h,w*0.32); ctx.fill();
-    ctx.fillStyle='#6b768f';
+    const kg=ctx.createLinearGradient(-w/2,0,w/2,0);
+    kg.addColorStop(0,ko); kg.addColorStop(0.4,ac); kg.addColorStop(1,ko);
+    ctx.fillStyle=kg;
     ctx.beginPath(); ctx.roundRect(-w/2+3,-h/2+3,w-6,h-6,w*0.28); ctx.fill();
     ctx.fillStyle='rgba(16,21,31,.9)';
     ctx.beginPath(); ctx.roundRect(-w*0.32,h*0.06,w*0.64,h*0.22,6); ctx.fill();
@@ -293,10 +333,29 @@ function cizObj(o){
   }
 }
 function draw(){
+  ctx.save();
+  if(sarsinti>0) ctx.translate((Math.random()-0.5)*sarsinti,(Math.random()-0.5)*sarsinti);
   cizYol();
   objs.sort((a,b)=>a.y-b.y);
   for(const o of objs) cizObj(o);
   cizAraba();
+  for(const p of parcalar){ ctx.globalAlpha=Math.min(1,p.omur/14);
+    ctx.fillStyle=p.renk; ctx.beginPath(); ctx.arc(p.x,p.y,2.6,0,6.28); ctx.fill(); }
+  ctx.globalAlpha=1;
+  for(const p of popups){ ctx.globalAlpha=Math.min(1,p.omur/16);
+    ctx.fillStyle=p.renk; ctx.font='900 19px "Avenir Next",system-ui'; ctx.textAlign='center';
+    ctx.fillText(p.metin,p.x,p.y); }
+  ctx.globalAlpha=1;
+  ctx.restore();
+  /* ayna aktivasyon flaşı */
+  if(ayna&&aynaT>320){
+    const f=(aynaT-320)/40;
+    ctx.fillStyle='rgba(176,107,255,'+(f*0.35)+')'; ctx.fillRect(0,0,W,H);
+    ctx.save(); ctx.translate(W/2,H/2); ctx.scale(1+(1-f)*0.4,1+(1-f)*0.4);
+    ctx.globalAlpha=Math.min(1,f*2);
+    ctx.font='900 44px "Avenir Next",system-ui'; ctx.textAlign='center'; ctx.fillStyle='#fff';
+    ctx.fillText('🪞 TERS!',0,0); ctx.restore(); ctx.globalAlpha=1;
+  }
   /* ayna modu çerçevesi + sayaç */
   if(ayna){
     ctx.strokeStyle='rgba(176,107,255,.85)'; ctx.lineWidth=7;

@@ -73,7 +73,7 @@
 'use strict';
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
-function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+function resize(){ DPR=Math.min(devicePixelRatio||1,3); W=innerWidth; H=innerHeight;
   cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
   ctx.setTransform(DPR,0,0,DPR,0,0); }
 resize(); addEventListener('resize',resize);
@@ -94,8 +94,11 @@ const MERKEZ=()=>({x:W/2,y:H*0.46});
 const YARICAP=()=>[Math.min(W,H)*0.21,Math.min(W,H)*0.335];
 let state='intro', tick=0, puan=0, yildiz=0, can=3, iFrames=0;
 /* uydular: açı + yön */
-const uydu=[{a:0,yon:1,renk:'#39d0ff'},{a:Math.PI,yon:-1,renk:'#b06bff'}];
-let goktaslar=[], oduller=[], gtT=140, odT=90, yildizAlan=[];
+const uydu=[{a:0,yon:1,renk:'#39d0ff',iz:[]},{a:Math.PI,yon:-1,renk:'#b06bff',iz:[]}];
+let goktaslar=[], oduller=[], gtT=140, odT=90, yildizAlan=[], parcalar=[], popups=[];
+function patla(x,y,renk){ for(let i=0;i<10;i++){ const a2=Math.random()*6.28,h2=1+Math.random()*2.6;
+  parcalar.push({x,y,vx:Math.cos(a2)*h2,vy:Math.sin(a2)*h2,omur:22+Math.random()*14,renk}); } }
+function popup(x,y,metin,renk){ popups.push({x,y,metin,renk,omur:44}); }
 
 function reset(){ tick=0; puan=0; yildiz=0; can=3; iFrames=0;
   uydu[0].a=0; uydu[0].yon=1; uydu[1].a=Math.PI; uydu[1].yon=-1;
@@ -151,12 +154,22 @@ function physics(dt){
     const i=o.halka, ox=m.x+Math.cos(o.aci)*R[i], oy=m.y+Math.sin(o.aci)*R[i];
     if(Math.hypot(ox-up[i].x,oy-up[i].y)<24){
       o.al=true;
-      if(o.tip==='yildiz'){ yildiz++; puan+=20; blip(980,0.08,0.12); buzz(8); }
+      if(o.tip==='yildiz'){ yildiz++; puan+=20; blip(980,0.08,0.12); buzz(8);
+        patla(ox,oy,'#ffc94d'); popup(ox,oy-22,'+20','#ffc94d'); }
       else { can=Math.min(3,can+1); toast('❤️ +1 can!'); blip(660,0.1,0.13); blip(880,0.14,0.12); buzz([15,25,15]); }
       updHud();
     }
   }
   oduller=oduller.filter(o=>!o.al&&tick-o.dogum<900);
+  /* uydu izleri */
+  for(let i=0;i<2;i++){
+    uydu[i].iz.push(uydu[i].a);
+    if(uydu[i].iz.length>14)uydu[i].iz.shift();
+  }
+  for(const p of parcalar){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.omur-=dt; }
+  parcalar=parcalar.filter(p=>p.omur>0);
+  for(const p of popups){ p.y-=1.1*dt; p.omur-=dt; }
+  popups=popups.filter(p=>p.omur>0);
   updHud();
 }
 function carp(g){
@@ -185,6 +198,21 @@ function cizArka(){
   const g=ctx.createRadialGradient(W/2,H*0.46,40,W/2,H*0.46,H*0.75);
   g.addColorStop(0,'#1c1840'); g.addColorStop(1,'#0d0b20');
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  /* bulutsu lekeleri */
+  const neb1=ctx.createRadialGradient(W*0.2,H*0.2,10,W*0.2,H*0.2,W*0.45);
+  neb1.addColorStop(0,'rgba(176,107,255,.14)'); neb1.addColorStop(1,'rgba(176,107,255,0)');
+  ctx.fillStyle=neb1; ctx.fillRect(0,0,W,H);
+  const neb2=ctx.createRadialGradient(W*0.85,H*0.75,10,W*0.85,H*0.75,W*0.5);
+  neb2.addColorStop(0,'rgba(57,208,255,.1)'); neb2.addColorStop(1,'rgba(57,208,255,0)');
+  ctx.fillStyle=neb2; ctx.fillRect(0,0,W,H);
+  /* ara sıra kayan yıldız */
+  const ky=Math.floor(tick/420);
+  const kf=(tick%420)/26;
+  if(kf<1){
+    const sx=((ky*137)%100)/100*W, sy=((ky*71)%40)/100*H;
+    ctx.strokeStyle='rgba(255,255,255,'+(0.7*(1-kf))+')'; ctx.lineWidth=2; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(sx+kf*120,sy+kf*60); ctx.lineTo(sx+kf*120-26,sy+kf*60-13); ctx.stroke();
+  }
   for(const n of yildizArka.noktalar){
     ctx.globalAlpha=0.4+0.5*Math.abs(Math.sin(tick*0.02+n.p));
     ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,6.28); ctx.fill();
@@ -278,9 +306,25 @@ function draw(){
     ctx.beginPath(); ctx.arc(-g.r*0.3,g.r*0.28,g.r*0.14,0,6.28); ctx.fill();
     ctx.restore();
   }
+  /* parçacıklar + puan animasyonları */
+  for(const p of parcalar){ ctx.globalAlpha=Math.min(1,p.omur/14);
+    ctx.fillStyle=p.renk; ctx.beginPath(); ctx.arc(p.x,p.y,2.6,0,6.28); ctx.fill(); }
+  ctx.globalAlpha=1;
+  for(const p of popups){ ctx.globalAlpha=Math.min(1,p.omur/16);
+    ctx.fillStyle=p.renk; ctx.font='900 19px "Avenir Next",system-ui'; ctx.textAlign='center';
+    ctx.fillText(p.metin,p.x,p.y); }
+  ctx.globalAlpha=1;
   /* uydular */
   for(let i=0;i<2;i++){
     const u=uydu[i], x=m.x+Math.cos(u.a)*R[i], y=m.y+Math.sin(u.a)*R[i];
+    /* halka üzerinde renkli iz kuyruğu */
+    for(let j=0;j<u.iz.length;j++){
+      const ia=u.iz[j], ix=m.x+Math.cos(ia)*R[i], iy=m.y+Math.sin(ia)*R[i];
+      ctx.globalAlpha=(j/u.iz.length)*0.35;
+      ctx.fillStyle=u.renk;
+      ctx.beginPath(); ctx.arc(ix,iy,3+3*j/u.iz.length,0,6.28); ctx.fill();
+    }
+    ctx.globalAlpha=1;
     if(iFrames>0&&Math.floor(tick/4)%2===0) continue;
     const halo=ctx.createRadialGradient(x,y,2,x,y,26);
     halo.addColorStop(0,u.renk+'66'); halo.addColorStop(1,u.renk+'00');
@@ -289,17 +333,25 @@ function draw(){
     /* gövde */
     ctx.fillStyle=u.renk;
     ctx.beginPath(); ctx.roundRect(-8,-11,16,22,6); ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.85)';
-    ctx.beginPath(); ctx.roundRect(-5,-8,10,7,3); ctx.fill();
+    /* yüz penceresi: iki göz — sevimlilik */
+    ctx.fillStyle='rgba(255,255,255,.92)';
+    ctx.beginPath(); ctx.roundRect(-5,-8,10,8,3); ctx.fill();
+    ctx.fillStyle='#1a2038';
+    const gozKay=Math.sin(tick*0.05+i)*1.2;
+    ctx.beginPath(); ctx.arc(-2+gozKay,-4,1.4,0,6.28); ctx.arc(2.5+gozKay,-4,1.4,0,6.28); ctx.fill();
     /* paneller */
     ctx.fillStyle=u.renk;
     ctx.beginPath(); ctx.roundRect(-20,-5,10,10,3); ctx.fill();
     ctx.beginPath(); ctx.roundRect(10,-5,10,10,3); ctx.fill();
     ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=1.5;
     ctx.strokeRect(-20,-5,10,10); ctx.strokeRect(10,-5,10,10);
+    ctx.beginPath(); ctx.moveTo(-15,-5); ctx.lineTo(-15,5); ctx.moveTo(10,0); ctx.lineTo(20,0); ctx.stroke();
     /* alev */
     ctx.fillStyle='#ff9a5c';
     ctx.beginPath(); ctx.moveTo(-4,11); ctx.lineTo(0,17+Math.random()*4); ctx.lineTo(4,11);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#ffd97a';
+    ctx.beginPath(); ctx.moveTo(-2,11); ctx.lineTo(0,14.5); ctx.lineTo(2,11);
     ctx.closePath(); ctx.fill();
     ctx.restore();
   }
