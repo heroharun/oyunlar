@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>DENGE USTASI — Tahterevalliyi Devirme!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#e9f2ee; --ink:#27423a; --dim:#7a988d; --teal:#2e8f83; --sari:#f0a832; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  canvas{display:block}
+  #hud{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;display:flex;
+    justify-content:space-between;align-items:flex-start;padding:0 14px;pointer-events:none;z-index:5}
+  .kutu{text-align:center}
+  .label{font-size:9px;letter-spacing:.2em;color:var(--dim);font-weight:800}
+  .deger{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+  #durdur{pointer-events:auto;font:inherit;font-size:17px;font-weight:900;color:var(--ink);
+    background:rgba(39,66,58,.08);border:1.5px solid rgba(39,66,58,.22);
+    border-radius:12px;width:44px;height:44px;cursor:pointer}
+  #toast{position:fixed;top:20%;left:50%;transform:translateX(-50%);font-size:22px;font-weight:900;
+    color:var(--teal);opacity:0;pointer-events:none;white-space:nowrap;z-index:6}
+  #toast.pop{animation:tp .8s ease-out}
+  @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.6)}
+    15%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{opacity:1}100%{opacity:0}}
+  .kart{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(233,242,238,.97);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .kart.gizli{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .kart.gizli .btn{pointer-events:none}
+  .kart h1{font-size:clamp(34px,9vw,58px);font-weight:900;line-height:1.05;color:var(--teal);transform:rotate(-2deg)}
+  .kart p{max-width:38ch;color:var(--dim);font-size:14.5px;line-height:1.6}
+  .kart .puanlar{font-size:30px;font-weight:900}
+  .btn{font:inherit;font-weight:900;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
+    color:#fff;background:linear-gradient(180deg,#3aa896,#2e8f83);border:none;border-radius:999px;
+    padding:15px 42px;cursor:pointer;box-shadow:0 5px 0 #1d5c54}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #1d5c54}
+  .btn:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+  .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+</style>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div class="kutu"><div class="label">KUTU</div><div class="deger" id="puanEl">0</div></div>
+  <button id="durdur" aria-label="Durdur / Devam">⏸</button>
+  <div class="kutu"><div class="label">EĞİM</div><div class="deger" id="egimEl">0°</div></div>
+</div>
+<div id="toast"></div>
+
+<div class="kart" id="giris">
+  <h1>DENGE USTASI</h1>
+  <p>Kutular yukarıdan süzülüyor — <b>sağa/sola dokunarak</b> düşen kutuyu yönlendir, tahterevallinin iki yanını dengede tut! Eğim <b>25°'yi geçerse</b> her şey kayar. Ağır kutular (sayısı büyük olan) terazide daha çok bastırır.</p>
+  <button class="btn" id="baslaBtn">Başla</button>
+  <span class="hint" id="bestIntro"></span>
+  <span class="hint">klavye: ← → ile yönlendir</span>
+</div>
+
+<div class="kart gizli" id="son">
+  <h1>DEVRİLDİ!</h1>
+  <div class="puanlar" id="sonPuan"></div>
+  <p id="sonMsg"></p>
+  <button class="btn" id="tekrarBtn">Tekrar Dene</button>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0); }
+resize(); addEventListener('resize',resize);
+
+let best=+(localStorage.getItem('denge_best')||0);
+document.getElementById('bestIntro').textContent=best>0?'EN İYİ: '+best+' kutu':'';
+
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function blip(f,d=0.1,v=0.12,tip='triangle'){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type=tip; o.frequency.value=f; g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+0.02); }catch(e){} }
+const buzz=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+/* ── DURUM ── */
+const PIVOT=()=>({x:W/2,y:H*0.72});
+const KOL=()=>Math.min(W*0.42,220);          /* tahterevalli yarı uzunluğu */
+let state='intro', tick=0, aci=0, aciV=0, puan=0;
+let dusen=null, yerlesik=[], gicirt=0;
+
+const RENKLER=['#c98d4e','#8fb56a','#6a9fd8','#d88a6a','#b58ad8'];
+function yeniKutu(){
+  const agirlik=1+Math.floor(Math.random()*4);           /* 1-4 kg */
+  const boy=26+agirlik*7;
+  dusen={x:W/2+(Math.random()-0.5)*W*0.5, y:-40, vy:0, vx:0,
+    agirlik, boy, renk:RENKLER[agirlik%RENKLER.length], sal:Math.random()*6.28};
+}
+function reset(){ tick=0; aci=0; aciV=0; puan=0; yerlesik=[]; gicirt=0; yeniKutu(); updHud(); }
+function updHud(){
+  document.getElementById('puanEl').textContent=puan;
+  const der=Math.round(Math.abs(aci)*57.3);
+  const el=document.getElementById('egimEl');
+  el.textContent=der+'°';
+  el.style.color=der>18?'#d1382f':der>11?'#e8963e':'var(--ink)';
+}
+
+function physics(dt){
+  tick+=dt;
+  /* tork: yerleşik kutuların ağırlık × kol mesafesi */
+  let tork=0;
+  for(const k of yerlesik) tork+=k.agirlik*k.ofset;
+  /* yay benzeri dinamik */
+  /* tek 4kg kutu kolun yarısında ≈ 12° yapar; devrilme ancak yığılmayla gelir */
+  aciV+=(tork*0.000012-aci*0.028-aciV*0.05)*dt;
+  aci+=aciV*dt;
+  updHud();
+  if(Math.abs(aci)>25/57.3){ devril(); return; }
+  /* uyarı gıcırtısı */
+  if(Math.abs(aci)>15/57.3){ gicirt-=dt; if(gicirt<=0){ blip(180,0.15,0.06,'sawtooth'); gicirt=30; } }
+  /* düşen kutu */
+  if(dusen){
+    const hiz=2.1+Math.min(2.2,puan*0.08);
+    dusen.vy=hiz; dusen.y+=dusen.vy*dt; dusen.x+=dusen.vx*dt; dusen.vx*=Math.pow(0.9,dt);
+    dusen.x=Math.max(30,Math.min(W-30,dusen.x));
+    /* tahterevalli yüzeyi ile temas */
+    const p=PIVOT(), dx=dusen.x-p.x;
+    if(Math.abs(dx)<=KOL()){
+      const yuzeyY=p.y+Math.tan(aci)*dx-14;
+      /* o noktadaki yığın yüksekliği */
+      let yigin=0;
+      for(const k of yerlesik) if(Math.abs(k.ofset-dx)<k.boy*0.55) yigin=Math.max(yigin,k.kat+1);
+      const hedefY=yuzeyY-yigin*30;
+      if(dusen.y+dusen.boy/2>=hedefY){
+        yerlesik.push({ofset:dx,agirlik:dusen.agirlik,boy:dusen.boy,renk:dusen.renk,kat:yigin});
+        puan++; updHud();
+        blip(240+dusen.agirlik*40,0.09,0.13,'square'); buzz(10);
+        if(puan%10===0) toast('🏆 '+puan+' kutu!');
+        dusen=null; setTimeout(()=>{ if(state==='play') yeniKutu(); },420);
+      }
+    } else if(dusen.y>H+40){
+      /* tahterevalli dışına düştü: kutu kaybı ama oyun devam */
+      toast('📦 Kutu yere düştü!');
+      blip(160,0.2,0.12,'sawtooth'); buzz(30);
+      dusen=null; setTimeout(()=>{ if(state==='play') yeniKutu(); },420);
+    }
+  }
+}
+function devril(){
+  state='son';
+  blip(120,0.5,0.2,'sawtooth'); buzz([80,50,80]);
+  const rekor=puan>best;
+  if(rekor){ best=puan; localStorage.setItem('denge_best',best); }
+  document.getElementById('sonPuan').textContent=puan+' kutu dengede durdu';
+  document.getElementById('sonMsg').textContent=(rekor?'🏆 YENİ REKOR! ':'En iyin: '+best+'. ')+'Ağır kutuları merkeze yakın bırakmayı dene!';
+  setTimeout(()=>document.getElementById('son').classList.remove('gizli'),500);
+}
+
+/* ── ÇİZİM ── */
+function cizArka(){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#eaf4f0'); g.addColorStop(1,'#d7e8e0');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  /* atölye rafı imâsı */
+  ctx.fillStyle='rgba(39,66,58,.06)';
+  for(let y=90;y<H*0.5;y+=110){ ctx.beginPath(); ctx.roundRect(24,y,W-48,8,4); ctx.fill(); }
+  /* zemin */
+  ctx.fillStyle='#c9b28f'; ctx.fillRect(0,H*0.87,W,H*0.13);
+  ctx.fillStyle='#b39c78'; ctx.fillRect(0,H*0.87,W,8);
+}
+function cizTahterevalli(){
+  const p=PIVOT(), kol=KOL();
+  /* destek üçgeni */
+  ctx.fillStyle='#8a6a42';
+  ctx.beginPath(); ctx.moveTo(p.x,p.y-6);
+  ctx.lineTo(p.x-46,H*0.87); ctx.lineTo(p.x+46,H*0.87); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#75592f';
+  ctx.beginPath(); ctx.moveTo(p.x,p.y+2); ctx.lineTo(p.x-14,H*0.87); ctx.lineTo(p.x+14,H*0.87);
+  ctx.closePath(); ctx.fill();
+  /* kalas */
+  ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(aci);
+  const kg=ctx.createLinearGradient(0,-9,0,9);
+  kg.addColorStop(0,'#d9a866'); kg.addColorStop(1,'#b3813f');
+  ctx.fillStyle=kg;
+  ctx.beginPath(); ctx.roundRect(-kol,-9,kol*2,18,8); ctx.fill();
+  ctx.strokeStyle='rgba(74,50,32,.4)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.roundRect(-kol,-9,kol*2,18,8); ctx.stroke();
+  /* orta işaret + kenar tutamaklar */
+  ctx.fillStyle='rgba(74,50,32,.3)';
+  ctx.fillRect(-2,-9,4,18);
+  /* yerleşik kutular (kalasla döner) */
+  for(const k of yerlesik) cizKutu(k.ofset,-14-k.kat*30,k,true);
+  ctx.restore();
+  /* pivot pimi */
+  ctx.fillStyle='#4a3220'; ctx.beginPath(); ctx.arc(p.x,p.y,8,0,6.28); ctx.fill();
+  ctx.fillStyle='#8a6a42'; ctx.beginPath(); ctx.arc(p.x,p.y,4,0,6.28); ctx.fill();
+}
+function cizKutu(x,y,k,gorece){
+  ctx.save(); if(!gorece) ctx.translate(0,0);
+  const b=k.boy;
+  ctx.save(); ctx.translate(x,y);
+  if(!gorece&&k.sal!==undefined) ctx.rotate(Math.sin(tick*0.06+k.sal)*0.08);
+  ctx.fillStyle='rgba(0,0,0,.12)';
+  ctx.beginPath(); ctx.ellipse(0,b/2+4,b*0.55,5,0,0,6.28); ctx.fill();
+  const g=ctx.createLinearGradient(-b/2,0,b/2,0);
+  g.addColorStop(0,k.renk); g.addColorStop(1,shade(k.renk,-24));
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.roundRect(-b/2,-b/2,b,b,7); ctx.fill();
+  ctx.strokeStyle='rgba(39,30,18,.45)'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.roundRect(-b/2,-b/2,b,b,7); ctx.stroke();
+  /* bant */
+  ctx.fillStyle='rgba(255,255,255,.25)';
+  ctx.fillRect(-b/2,-3,b,6);
+  ctx.fillStyle='#fff'; ctx.font='900 '+Math.max(13,b*0.4)+'px "Avenir Next",system-ui';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.strokeStyle='rgba(39,30,18,.5)'; ctx.lineWidth=3;
+  ctx.strokeText(k.agirlik,0,1); ctx.fillText(k.agirlik,0,1);
+  ctx.restore(); ctx.restore();
+}
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16);
+  const r=Math.max(0,Math.min(255,(n>>16)+amt)), g=Math.max(0,Math.min(255,((n>>8)&255)+amt)),
+        b=Math.max(0,Math.min(255,(n&255)+amt));
+  return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0');
+}
+function draw(){
+  cizArka(); cizTahterevalli();
+  if(dusen){
+    /* iniş çizgisi */
+    ctx.strokeStyle='rgba(46,143,131,.3)'; ctx.lineWidth=2; ctx.setLineDash([6,7]);
+    ctx.beginPath(); ctx.moveTo(dusen.x,dusen.y+dusen.boy/2); ctx.lineTo(dusen.x,H*0.86); ctx.stroke();
+    ctx.setLineDash([]);
+    cizKutu(dusen.x,dusen.y,dusen,false);
+  }
+  if(state==='dur'){
+    ctx.fillStyle='rgba(233,242,238,.82)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#27423a'; ctx.font='900 30px "Avenir Next",system-ui'; ctx.textAlign='center';
+    ctx.fillText('DURAKLATILDI',W/2,H/2-8);
+    ctx.font='700 14px "Avenir Next",system-ui'; ctx.fillStyle='#7a988d';
+    ctx.fillText('devam için ▶ düğmesine bas',W/2,H/2+24);
+  }
+}
+let sonTs=0;
+function loop(ts){
+  const dt=sonTs?Math.min(3,Math.max(0.25,(ts-sonTs)/16.667)):1; sonTs=ts;
+  if(state==='play') physics(dt);
+  if(state!=='intro') draw();
+  requestAnimationFrame(loop);
+}
+
+/* ── KONTROLLER ── */
+function itele(yon){
+  if(state!=='play'||!dusen)return;
+  audio(); dusen.vx+=yon*2.6; blip(yon<0?380:460,0.05,0.07); buzz(4);
+}
+cv.addEventListener('touchstart',e=>{ e.preventDefault();
+  for(const t of e.changedTouches) itele(t.clientX<W/2?-1:1); },{passive:false});
+cv.addEventListener('mousedown',e=>itele(e.clientX<W/2?-1:1));
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') itele(-1);
+  else if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') itele(1);
+  else if(e.key==='p'||e.key==='P'||e.key===' ') durdurToggle();
+});
+function durdurToggle(){
+  if(state==='play'){ state='dur'; document.getElementById('durdur').textContent='▶'; }
+  else if(state==='dur'){ state='play'; document.getElementById('durdur').textContent='⏸'; }
+}
+document.getElementById('durdur').addEventListener('click',durdurToggle);
+const tap=(el,fn)=>{ el.addEventListener('click',fn);
+  el.addEventListener('touchend',e=>{ e.preventDefault(); e.stopPropagation(); fn(); },{passive:false}); };
+tap(document.getElementById('baslaBtn'),()=>{ audio(); reset(); state='play';
+  document.getElementById('giris').classList.add('gizli'); });
+tap(document.getElementById('tekrarBtn'),()=>{ audio(); reset(); state='play';
+  document.getElementById('son').classList.add('gizli'); });
+loop();
+</script>
+</html>
