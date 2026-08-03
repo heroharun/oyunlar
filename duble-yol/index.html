@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>DUBLE YOL — İki Araba, Tek Sürücü</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --bg:#1a2332; --ink:#f2f6ff; --dim:#93a3bd; --kirmizi:#e84545; --mavi:#3d8bfd; --sari:#ffc94d; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  canvas{display:block}
+  #hud{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;display:flex;
+    justify-content:space-between;align-items:flex-start;padding:0 14px;pointer-events:none;z-index:5}
+  .kutu{text-align:center}
+  .label{font-size:9px;letter-spacing:.2em;color:var(--dim);font-weight:800}
+  .deger{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+  #durdur{pointer-events:auto;font:inherit;font-size:17px;font-weight:900;color:var(--ink);
+    background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.25);
+    border-radius:12px;width:44px;height:44px;cursor:pointer}
+  #toast{position:fixed;top:22%;left:50%;transform:translateX(-50%);font-size:22px;font-weight:900;
+    color:var(--sari);opacity:0;pointer-events:none;text-shadow:0 2px 10px rgba(0,0,0,.6);
+    white-space:nowrap;z-index:6}
+  #toast.pop{animation:tp .8s ease-out}
+  @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.6)}
+    15%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{opacity:1}100%{opacity:0}}
+  .kart{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(26,35,50,.96);
+    transition:opacity .3s;padding:24px;z-index:10}
+  .kart.gizli{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .kart.gizli .btn{pointer-events:none}
+  .kart h1{font-size:clamp(36px,10vw,64px);font-weight:900;line-height:1.05;transform:rotate(-2deg)}
+  .kart h1 .k{color:var(--kirmizi)} .kart h1 .m{color:var(--mavi)}
+  .kart p{max-width:38ch;color:var(--dim);font-size:14.5px;line-height:1.6}
+  .kart .puanlar{font-size:30px;font-weight:900}
+  .btn{font:inherit;font-weight:900;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
+    color:#26150a;background:linear-gradient(180deg,#ffd97a,#ff9d5c);border:none;border-radius:999px;
+    padding:15px 42px;cursor:pointer;box-shadow:0 5px 0 #b05e2a}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b05e2a}
+  .btn:focus-visible{outline:3px solid var(--sari);outline-offset:3px}
+  .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+</style>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div class="kutu"><div class="label">PUAN</div><div class="deger" id="puanEl">0</div></div>
+  <button id="durdur" aria-label="Durdur / Devam">⏸</button>
+  <div class="kutu"><div class="label">⭐</div><div class="deger" id="yildizEl">0</div></div>
+</div>
+<div id="toast"></div>
+
+<div class="kart" id="giris">
+  <h1><span class="k">DUBLE</span> <span class="m">YOL</span></h1>
+  <p>İki araba, tek sürücü — ikisi de sende! <b style="color:var(--kirmizi)">Sol yarıya dokun</b> → kırmızı şerit değiştirir, <b style="color:var(--mavi)">sağ yarıya dokun</b> → mavi şerit değiştirir. Bloklardan kaç, yıldızları topla. Yol hiç bitmez!</p>
+  <button class="btn" id="baslaBtn">Yola Çık</button>
+  <span class="hint" id="bestIntro"></span>
+  <span class="hint">klavye: A = kırmızı · D = mavi</span>
+</div>
+
+<div class="kart gizli" id="son">
+  <h1 id="sonBaslik">ÇARPTIN!</h1>
+  <div class="puanlar" id="sonPuan"></div>
+  <p id="sonMsg"></p>
+  <button class="btn" id="tekrarBtn">Tekrar Dene</button>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0); }
+resize(); addEventListener('resize',resize);
+
+let best=+(localStorage.getItem('dubleyol_best')||0);
+document.getElementById('bestIntro').textContent=best>0?'EN İYİ: '+best.toLocaleString('tr-TR'):'';
+
+let AC=null;
+const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function blip(f,d=0.1,v=0.12,tip='triangle'){ try{ const a=audio(),t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type=tip; o.frequency.value=f; g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+0.02); }catch(e){} }
+const buzz=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+/* ── OYUN DURUMU ── */
+let state='intro', tick=0, dist=0, puan=0, yildiz=0, spd=0;
+/* her yarı: lane 0=iç, 1=dış · laneX yumuşak geçiş */
+const araba=[{lane:0,laneX:0,renk:'#e84545',govde:'#c22f2f'},{lane:1,laneX:1,renk:'#3d8bfd',govde:'#2a6fd6'}];
+let objs=[], spawnT=[0,0], carpan=null;
+
+const ARABA_Y=()=>H*0.8;
+/* yarı merkezi + şerit x'i */
+function laneCX(side,lane){
+  const merkez=side===0?W*0.25:W*0.75;
+  const ac=W*0.115;
+  return merkez+(lane===0?-ac:ac)*( side===0?1:1 );
+}
+
+function reset(){ tick=0; dist=0; puan=0; yildiz=0; spd=3.6;
+  araba[0].lane=0; araba[0].laneX=0; araba[1].lane=1; araba[1].laneX=1;
+  objs=[]; spawnT=[80,260]; carpan=null; updHud(); }
+function updHud(){
+  document.getElementById('puanEl').textContent=Math.floor(puan).toLocaleString('tr-TR');
+  document.getElementById('yildizEl').textContent=yildiz;
+}
+
+/* ── SPAWN: her yarıda tek tek, geçilebilir aralıklarla ── */
+function spawn(side){
+  const lane=Math.random()<0.5?0:1;
+  const tip=Math.random()<0.62?'blok':'yildiz';
+  objs.push({side,lane,y:-60,tip,hit:false});
+}
+
+function physics(dt){
+  tick+=dt;
+  spd=Math.min(8.2, 3.6+dist/2600);   /* yavaş başla, kademeli hızlan */
+  dist+=spd*0.15*dt;
+  puan+=spd*0.05*dt;
+  const lerp=1-Math.pow(0.62,dt);
+  for(const a of araba) a.laneX+=(a.lane-a.laneX)*lerp;
+  for(let s=0;s<2;s++){
+    spawnT[s]-=spd*dt;
+    if(spawnT[s]<=0){ spawn(s); spawnT[s]=170+Math.random()*150; }
+  }
+  const ay=ARABA_Y();
+  for(const o of objs){
+    o.y+=spd*dt;
+    if(o.hit)continue;
+    const a=araba[o.side];
+    if(Math.abs(o.y-ay)<38&&Math.abs(o.lane-a.laneX)<0.4){
+      if(o.tip==='yildiz'){ o.hit=true; yildiz++; puan+=15; updHud(); blip(980,0.08,0.12); buzz(8); }
+      else { crash(o); return; }
+    }
+  }
+  objs=objs.filter(o=>!o.hit&&o.y<H+80);
+  if(Math.floor(puan)%1===0) updHud();
+}
+
+function crash(o){
+  state='son'; carpan=o;
+  blip(140,0.35,0.2,'sawtooth'); buzz([60,40,80]);
+  const p=Math.floor(puan);
+  const rekor=p>best;
+  if(rekor){ best=p; localStorage.setItem('dubleyol_best',best); }
+  document.getElementById('sonBaslik').textContent=o.side===0?'KIRMIZI ÇARPTI!':'MAVİ ÇARPTI!';
+  document.getElementById('sonBaslik').style.color=o.side===0?'var(--kirmizi)':'var(--mavi)';
+  document.getElementById('sonPuan').textContent=p.toLocaleString('tr-TR')+' puan · ⭐ '+yildiz;
+  document.getElementById('sonMsg').textContent=(rekor?'🏆 YENİ REKOR! ':'En iyin: '+best.toLocaleString('tr-TR')+'. ')+'İki gözün iki yolda olsun!';
+  setTimeout(()=>document.getElementById('son').classList.remove('gizli'),450);
+}
+
+/* ── ÇİZİM ── */
+function cizYol(){
+  ctx.fillStyle='#233047'; ctx.fillRect(0,0,W,H);
+  /* iki asfalt şerit bloğu */
+  for(let s=0;s<2;s++){
+    const cx2=s===0?W*0.25:W*0.75, yolW=W*0.40;
+    ctx.fillStyle='#2b3950';
+    ctx.fillRect(cx2-yolW/2,0,yolW,H);
+    /* kenar çizgileri */
+    ctx.fillStyle='#f2f6ff';
+    ctx.fillRect(cx2-yolW/2+3,0,4,H); ctx.fillRect(cx2+yolW/2-7,0,4,H);
+    /* orta kesikli şerit çizgisi — akar */
+    ctx.fillStyle='rgba(255,201,77,.85)';
+    const akis=(tick*spd)%56;
+    for(let y=-56+akis;y<H;y+=56){ ctx.fillRect(cx2-2.5,y,5,30); }
+  }
+  /* ortadaki refüj */
+  ctx.fillStyle='#18202f'; ctx.fillRect(W*0.5-W*0.045,0,W*0.09,H);
+  ctx.fillStyle='#3a4a63';
+  const akis2=(tick*spd*0.6)%90;
+  for(let y=-90+akis2;y<H;y+=90){ ctx.beginPath(); ctx.arc(W*0.5,y,5,0,6.28); ctx.fill(); }
+}
+function cizAraba(side){
+  const a=araba[side], x=laneCX(side,0)+(laneCX(side,1)-laneCX(side,0))*a.laneX, y=ARABA_Y();
+  const w=Math.min(W*0.085,46), h=w*1.7;
+  ctx.save(); ctx.translate(x,y);
+  const egim=(a.lane-a.laneX)*0.5; ctx.rotate(egim*0.35);
+  ctx.fillStyle='rgba(0,0,0,.35)';
+  ctx.beginPath(); ctx.ellipse(0,h*0.42,w*0.62,10,0,0,6.28); ctx.fill();
+  /* tekerlekler */
+  ctx.fillStyle='#141a26';
+  for(const [tx,ty] of [[-w*0.55,-h*0.28],[w*0.55,-h*0.28],[-w*0.55,h*0.24],[w*0.55,h*0.24]])
+    { ctx.beginPath(); ctx.roundRect(tx-5,ty-11,10,22,4); ctx.fill(); }
+  /* gövde */
+  ctx.fillStyle=a.govde;
+  ctx.beginPath(); ctx.roundRect(-w/2,-h/2,w,h,w*0.34); ctx.fill();
+  ctx.fillStyle=a.renk;
+  ctx.beginPath(); ctx.roundRect(-w/2+3,-h/2+3,w-6,h-6,w*0.3); ctx.fill();
+  /* cam */
+  ctx.fillStyle='rgba(20,26,38,.85)';
+  ctx.beginPath(); ctx.roundRect(-w*0.32,-h*0.30,w*0.64,h*0.24,6); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(-w*0.32,h*0.10,w*0.64,h*0.20,6); ctx.fill();
+  /* farlar */
+  ctx.fillStyle='#ffe9a8';
+  ctx.beginPath(); ctx.arc(-w*0.26,-h*0.46,4,0,6.28); ctx.arc(w*0.26,-h*0.46,4,0,6.28); ctx.fill();
+  ctx.restore();
+}
+function cizObj(o){
+  const x=laneCX(o.side,o.lane);
+  if(o.tip==='yildiz'){
+    const r=15+Math.sin(tick*0.15+o.y)*2;
+    ctx.save(); ctx.translate(x,o.y); ctx.rotate(Math.sin(tick*0.05+o.y)*0.2);
+    ctx.fillStyle='#ffc94d';
+    ctx.beginPath();
+    for(let i=0;i<10;i++){ const rr=i%2?r*0.45:r, aa=i*Math.PI/5-Math.PI/2;
+      ctx[i?'lineTo':'moveTo'](Math.cos(aa)*rr,Math.sin(aa)*rr); }
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.restore();
+  } else {
+    const w2=Math.min(W*0.09,48);
+    ctx.fillStyle='rgba(0,0,0,.3)';
+    ctx.beginPath(); ctx.ellipse(x,o.y+w2*0.62,w2*0.6,7,0,0,6.28); ctx.fill();
+    ctx.fillStyle='#5a6b85';
+    ctx.beginPath(); ctx.roundRect(x-w2/2,o.y-w2/2,w2,w2,10); ctx.fill();
+    ctx.fillStyle='#7284a3';
+    ctx.beginPath(); ctx.roundRect(x-w2/2+4,o.y-w2/2+4,w2-8,w2-8,7); ctx.fill();
+    /* çizgili uyarı bandı */
+    ctx.save(); ctx.beginPath(); ctx.roundRect(x-w2/2+4,o.y-6,w2-8,12,4); ctx.clip();
+    for(let i=-1;i<5;i++){ ctx.fillStyle=i%2?'#ffc94d':'#26150a';
+      ctx.fillRect(x-w2/2+4+i*12,o.y-6,12,12); }
+    ctx.restore();
+  }
+}
+function draw(){
+  cizYol();
+  objs.sort((a,b)=>a.y-b.y);
+  for(const o of objs) cizObj(o);
+  cizAraba(0); cizAraba(1);
+  if(state==='dur'){
+    ctx.fillStyle='rgba(26,35,50,.72)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#f2f6ff'; ctx.font='900 30px "Avenir Next",system-ui';
+    ctx.textAlign='center'; ctx.fillText('DURAKLATILDI',W/2,H/2-10);
+    ctx.font='700 14px "Avenir Next",system-ui'; ctx.fillStyle='#93a3bd';
+    ctx.fillText('devam için ▶ düğmesine bas',W/2,H/2+22);
+  }
+}
+let sonTs=0;
+function loop(ts){
+  /* kare hızından bağımsız fizik: 60fps'e normalize edilmiş delta */
+  const dt=sonTs?Math.min(3,Math.max(0.25,(ts-sonTs)/16.667)):1;
+  sonTs=ts;
+  if(state==='play') physics(dt);
+  if(state==='play'||state==='dur'||state==='son') draw();
+  requestAnimationFrame(loop);
+}
+
+/* ── KONTROLLER ── */
+function serit(side){
+  if(state!=='play')return;
+  audio();
+  araba[side].lane=araba[side].lane===0?1:0;
+  blip(side===0?440:560,0.05,0.08); buzz(5);
+}
+cv.addEventListener('touchstart',e=>{ e.preventDefault();
+  for(const t of e.changedTouches) serit(t.clientX<W/2?0:1);
+},{passive:false});
+cv.addEventListener('mousedown',e=>serit(e.clientX<W/2?0:1));
+addEventListener('keydown',e=>{
+  if(e.key==='a'||e.key==='A'||e.key==='ArrowLeft') serit(0);
+  else if(e.key==='d'||e.key==='D'||e.key==='ArrowRight') serit(1);
+  else if(e.key==='p'||e.key==='P'||e.key===' ') durdurToggle();
+});
+function durdurToggle(){
+  if(state==='play'){ state='dur'; document.getElementById('durdur').textContent='▶'; }
+  else if(state==='dur'){ state='play'; document.getElementById('durdur').textContent='⏸'; }
+}
+document.getElementById('durdur').addEventListener('click',durdurToggle);
+
+const tap=(el,fn)=>{ el.addEventListener('click',fn);
+  el.addEventListener('touchend',e=>{ e.preventDefault(); e.stopPropagation(); fn(); },{passive:false}); };
+tap(document.getElementById('baslaBtn'),()=>{
+  audio(); reset(); state='play';
+  document.getElementById('giris').classList.add('gizli');
+});
+tap(document.getElementById('tekrarBtn'),()=>{
+  audio(); reset(); state='play';
+  document.getElementById('son').classList.add('gizli');
+});
+loop();
+</script>
+</html>
