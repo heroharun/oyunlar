@@ -1,0 +1,2633 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Zekâtım - Altın, döviz, nakit, hisse, kripto, ticari mal, alacak ve borçlarınızı tek ekranda değerlendirerek yaklaşık zekât tutarınızı hesaplayın.">
+<meta name="color-scheme" content="light dark">
+<title>Zekâtım — Yaklaşık Zekât Hesaplama</title>
+<style>
+/* =========================================================
+   ZEKÂTIM — Tasarım belirteçleri (design tokens)
+   Marka adı için: JS içindeki BRAND nesnesini değiştirin.
+   ========================================================= */
+:root{
+  --background:#F6F4EE;
+  --surface:#FFFFFF;
+  --surface-2:#FBFAF6;
+  --primary:#174C3C;
+  --primary-dark:#0F3A2D;
+  --primary-light:#E8F0EC;
+  --accent:#B99045;
+  --accent-soft:#F4EADA;
+  --text:#1F2925;
+  --muted:#68736D;
+  --border:#DDDCD5;
+  --danger:#A23B3B;
+  --danger-soft:#F7E9E9;
+  --success:#25734F;
+  --warning:#8A6D1F;
+  --warning-soft:#FBF3DF;
+
+  --radius-sm:8px;
+  --radius:14px;
+  --radius-lg:22px;
+  --shadow-sm:0 1px 2px rgba(23,76,60,.06), 0 1px 3px rgba(23,76,60,.05);
+  --shadow:0 4px 14px rgba(23,76,60,.07), 0 1px 3px rgba(23,76,60,.05);
+  --shadow-lg:0 18px 40px rgba(23,76,60,.12);
+  --ring:0 0 0 3px rgba(185,144,69,.45);
+
+  --step-1:clamp(.75rem,.72rem + .1vw,.8rem);
+  --step0:clamp(.9rem,.87rem + .15vw,.95rem);
+  --step1:clamp(1.05rem,1rem + .3vw,1.2rem);
+  --step2:clamp(1.3rem,1.15rem + .7vw,1.65rem);
+  --step3:clamp(1.7rem,1.4rem + 1.5vw,2.5rem);
+  --step4:clamp(2rem,1.5rem + 2.6vw,3.2rem);
+
+  --nav-h:64px;
+  --maxw:1200px;
+}
+[data-theme="dark"]{
+  --background:#101613;
+  --surface:#18211D;
+  --surface-2:#141C18;
+  --primary:#5FBF97;
+  --primary-dark:#3E9A76;
+  --primary-light:#1B2A24;
+  --accent:#D8B071;
+  --accent-soft:#2A2418;
+  --text:#EAF0EC;
+  --muted:#9AA8A1;
+  --border:#2A352F;
+  --danger:#E08585;
+  --danger-soft:#2B1D1D;
+  --success:#6FC79C;
+  --warning:#D9BC72;
+  --warning-soft:#262117;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow:0 4px 16px rgba(0,0,0,.35);
+  --shadow-lg:0 18px 44px rgba(0,0,0,.5);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%; scroll-behavior:smooth; scroll-padding-top:calc(var(--nav-h) + 12px)}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}
+body{
+  margin:0; background:var(--background); color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  font-size:var(--step0); line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0; line-height:1.22; font-weight:700; letter-spacing:-.01em}
+h1{font-size:var(--step4)}
+h2{font-size:var(--step3)}
+h3{font-size:var(--step2)}
+h4{font-size:var(--step1)}
+p{margin:0}
+button,input,select,textarea{font:inherit; color:inherit}
+a{color:var(--primary); text-underline-offset:3px}
+:focus-visible{outline:none; box-shadow:var(--ring); border-radius:6px}
+.wrap{width:100%; max-width:var(--maxw); margin-inline:auto; padding-inline:20px}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip{position:absolute;left:-9999px;top:0;z-index:200;background:var(--primary);color:#fff;padding:10px 16px;border-radius:0 0 10px 0}
+.skip:focus{left:0}
+
+/* ================= Navigasyon ================= */
+.nav{
+  position:sticky; top:0; z-index:60; height:var(--nav-h);
+  background:color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter:saturate(140%) blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{display:flex; align-items:center; gap:14px; height:var(--nav-h)}
+.brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); font-weight:800; letter-spacing:-.02em}
+.brand-mark{
+  width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;
+  background:linear-gradient(145deg,var(--primary),var(--primary-dark)); color:#fff; font-size:18px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+}
+.brand-name{font-size:1.05rem}
+.brand-sub{display:block; font-size:.68rem; font-weight:500; color:var(--muted); letter-spacing:.02em}
+.nav-links{display:flex; align-items:center; gap:4px; margin-inline-start:auto}
+.nav-links a{
+  padding:9px 12px; border-radius:10px; text-decoration:none; color:var(--muted);
+  font-weight:600; font-size:.88rem; transition:background .18s,color .18s; white-space:nowrap;
+}
+.nav-links a:hover{background:var(--primary-light); color:var(--primary)}
+.nav-actions{display:flex; align-items:center; gap:8px}
+.icon-btn{
+  width:40px;height:40px;border-radius:11px;border:1px solid var(--border);background:var(--surface);
+  display:grid;place-items:center;cursor:pointer;font-size:1rem;transition:.18s;
+}
+.icon-btn:hover{border-color:var(--primary); color:var(--primary)}
+.hamburger{display:none}
+@media (max-width:1000px){
+  .nav-links{
+    position:fixed; inset:var(--nav-h) 0 auto 0; flex-direction:column; align-items:stretch; gap:2px;
+    background:var(--surface); border-bottom:1px solid var(--border); padding:12px 20px 18px;
+    box-shadow:var(--shadow); transform:translateY(-8px); opacity:0; pointer-events:none; transition:.2s;
+  }
+  .nav-links.open{transform:none; opacity:1; pointer-events:auto}
+  .nav-links a{padding:12px 10px; font-size:.98rem}
+  .hamburger{display:grid}
+  .nav-cta{display:none}
+  .nav-links .nav-cta{display:block; text-align:center; margin-top:8px}
+}
+
+/* ================= Butonlar ================= */
+.btn{
+  --btn-bg:var(--primary); --btn-fg:#fff; --btn-bd:var(--primary);
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  min-height:44px; padding:11px 18px; border-radius:12px; cursor:pointer;
+  background:var(--btn-bg); color:var(--btn-fg); border:1px solid var(--btn-bd);
+  font-weight:650; font-size:.9rem; text-decoration:none; transition:transform .12s, filter .18s, background .18s;
+}
+.btn:hover{filter:brightness(1.06)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.55; cursor:not-allowed}
+.btn-ghost{--btn-bg:transparent; --btn-fg:var(--primary); --btn-bd:var(--border)}
+.btn-ghost:hover{--btn-bd:var(--primary); background:var(--primary-light)}
+.btn-accent{--btn-bg:var(--accent); --btn-bd:var(--accent); --btn-fg:#231c0c}
+[data-theme="dark"] .btn-accent{--btn-fg:#14100a}
+.btn-soft{--btn-bg:var(--primary-light); --btn-fg:var(--primary); --btn-bd:transparent}
+.btn-danger{--btn-bg:transparent; --btn-fg:var(--danger); --btn-bd:var(--border)}
+.btn-danger:hover{background:var(--danger-soft); --btn-bd:var(--danger)}
+.btn-sm{min-height:36px; padding:7px 12px; font-size:.82rem; border-radius:10px}
+.btn-block{width:100%}
+.btn .spin{width:15px;height:15px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ================= Hero ================= */
+.hero{position:relative; overflow:hidden; padding:clamp(38px,6vw,74px) 0 clamp(30px,5vw,56px)}
+.hero::before{
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 22px, color-mix(in srgb,var(--primary) 9%, transparent) 22px 23px),
+    repeating-linear-gradient(-45deg, transparent 0 22px, color-mix(in srgb,var(--accent) 11%, transparent) 22px 23px);
+  -webkit-mask-image:radial-gradient(120% 90% at 78% 12%, #000 0%, transparent 68%);
+  mask-image:radial-gradient(120% 90% at 78% 12%, #000 0%, transparent 68%);
+}
+.hero-grid{position:relative; display:grid; grid-template-columns:1.15fr .85fr; gap:clamp(24px,4vw,52px); align-items:center}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr}}
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px; font-size:.76rem; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--primary); background:var(--primary-light);
+  padding:7px 13px; border-radius:999px; margin-bottom:18px;
+}
+.hero h1{margin-bottom:16px}
+.hero-lead{color:var(--muted); font-size:clamp(1rem,.95rem + .35vw,1.15rem); max-width:56ch}
+.hero-btns{display:flex; flex-wrap:wrap; gap:12px; margin-top:26px}
+.hero-note{margin-top:20px; font-size:.82rem; color:var(--muted); display:flex; align-items:center; gap:8px}
+
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:22px}
+.hero-card{padding:24px; box-shadow:var(--shadow-lg)}
+.hero-card-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px}
+.hero-card-head h4{font-size:1rem}
+.chip{font-size:.72rem; font-weight:700; padding:5px 10px; border-radius:999px; background:var(--accent-soft); color:var(--warning)}
+.chip-ok{background:var(--primary-light); color:var(--success)}
+.chip-no{background:var(--danger-soft); color:var(--danger)}
+.kv{display:flex; align-items:baseline; justify-content:space-between; gap:14px; padding:11px 0; border-bottom:1px dashed var(--border)}
+.kv:last-child{border-bottom:0}
+.kv dt{color:var(--muted); font-size:.85rem}
+.kv dd{margin:0; font-weight:700; font-variant-numeric:tabular-nums}
+.kv-big dd{font-size:var(--step2); color:var(--primary)}
+
+/* ================= Bölümler ================= */
+.section{padding:clamp(34px,5vw,62px) 0}
+.section-head{max-width:60ch; margin-bottom:26px}
+.section-head .eyebrow{margin-bottom:12px}
+.section-head p{color:var(--muted); margin-top:10px}
+
+/* ================= Sticky özet ================= */
+.calc-layout{display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:24px; align-items:start}
+@media (max-width:1000px){.calc-layout{grid-template-columns:1fr}}
+.summary-panel{position:sticky; top:calc(var(--nav-h) + 16px)}
+@media (max-width:1000px){.summary-panel{position:static}}
+.summary-panel .card{padding:20px}
+.summary-total{
+  background:linear-gradient(150deg,var(--primary),var(--primary-dark)); color:#fff;
+  border-radius:var(--radius); padding:16px 18px; margin-bottom:14px;
+}
+[data-theme="dark"] .summary-total{color:#08120E}
+.summary-total .label{font-size:.78rem; opacity:.85; font-weight:600}
+.summary-total .value{font-size:var(--step2); font-weight:800; font-variant-numeric:tabular-nums; margin-top:2px}
+.nisab-bar{height:8px; border-radius:99px; background:var(--border); overflow:hidden; margin:12px 0 6px}
+.nisab-bar span{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--primary)); border-radius:99px; transition:width .35s ease}
+.mini-note{font-size:.76rem; color:var(--muted)}
+
+/* ================= Adım göstergesi ================= */
+.steps{
+  display:flex; gap:6px; overflow-x:auto; padding:6px; margin-bottom:18px;
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-sm);
+  scrollbar-width:thin;
+}
+.step-pill{
+  display:flex; align-items:center; gap:8px; padding:9px 13px; border-radius:10px; border:0; background:transparent;
+  color:var(--muted); font-weight:600; font-size:.84rem; white-space:nowrap; cursor:pointer; transition:.18s;
+}
+.step-pill:hover{background:var(--primary-light); color:var(--primary)}
+.step-pill .num{
+  width:22px;height:22px;border-radius:50%; display:grid; place-items:center; font-size:.72rem; font-weight:800;
+  background:var(--border); color:var(--text);
+}
+.step-pill[aria-current="true"]{background:var(--primary); color:#fff}
+.step-pill[aria-current="true"] .num{background:rgba(255,255,255,.22); color:#fff}
+[data-theme="dark"] .step-pill[aria-current="true"]{color:#0B1512}
+[data-theme="dark"] .step-pill[aria-current="true"] .num{background:rgba(0,0,0,.2); color:#0B1512}
+.step-pill.done .num{background:var(--success); color:#fff}
+.progress{height:6px; background:var(--border); border-radius:99px; overflow:hidden; margin-bottom:20px}
+.progress span{display:block; height:100%; background:var(--primary); border-radius:99px; transition:width .3s ease}
+
+.panel{display:none; animation:fade .25s ease}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+.panel-head{margin-bottom:18px}
+.panel-head h3{margin-bottom:6px}
+.panel-head p{color:var(--muted); font-size:.88rem}
+
+/* ================= Form ================= */
+.grid{display:grid; gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:820px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.field{display:flex; flex-direction:column; gap:6px; min-width:0}
+.field > label,.field-label{font-size:.82rem; font-weight:650; color:var(--text); display:flex; align-items:center; gap:6px}
+.input,select.input,textarea.input{
+  width:100%; min-height:44px; padding:10px 13px; border-radius:11px;
+  border:1px solid var(--border); background:var(--surface-2); color:var(--text);
+  transition:border-color .16s, box-shadow .16s, background .16s;
+}
+.input:hover{border-color:color-mix(in srgb,var(--primary) 40%, var(--border))}
+.input:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%, transparent); background:var(--surface)}
+.input[aria-invalid="true"]{border-color:var(--danger); background:var(--danger-soft)}
+.input-affix{position:relative; display:flex; align-items:center}
+.input-affix .input{padding-inline-end:52px}
+.input-affix .affix{position:absolute; inset-inline-end:12px; font-size:.78rem; font-weight:700; color:var(--muted); pointer-events:none}
+.hint{font-size:.75rem; color:var(--muted); font-variant-numeric:tabular-nums}
+.hint strong{color:var(--primary)}
+.err{font-size:.75rem; color:var(--danger); min-height:0}
+.info-btn{
+  width:20px;height:20px;border-radius:50%;border:1px solid var(--border);background:var(--surface);
+  color:var(--muted); font-size:.7rem; font-weight:800; cursor:pointer; display:grid; place-items:center; flex:0 0 auto;
+}
+.info-btn:hover{border-color:var(--accent); color:var(--accent)}
+
+.switch{display:flex; align-items:center; gap:12px; padding:13px 15px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface-2); cursor:pointer}
+.switch input{position:absolute; opacity:0; width:0; height:0}
+.switch .track{width:44px;height:25px;border-radius:99px;background:var(--border); position:relative; flex:0 0 auto; transition:.2s}
+.switch .track::after{content:""; position:absolute; top:3px; inset-inline-start:3px; width:19px;height:19px;border-radius:50%;background:#fff; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.switch input:checked + .track{background:var(--primary)}
+.switch input:checked + .track::after{transform:translateX(19px)}
+.switch input:focus-visible + .track{box-shadow:var(--ring)}
+.switch .txt{font-size:.85rem; font-weight:600}
+.switch .txt small{display:block; font-weight:400; color:var(--muted); font-size:.75rem}
+
+.seg{display:flex; flex-wrap:wrap; gap:8px}
+.seg-opt{position:relative}
+.seg-opt input{position:absolute; opacity:0; inset:0; cursor:pointer}
+.seg-opt span{
+  display:block; padding:10px 15px; border-radius:11px; border:1px solid var(--border);
+  background:var(--surface-2); font-size:.85rem; font-weight:600; cursor:pointer; transition:.16s; min-height:44px; display:flex; align-items:center;
+}
+.seg-opt input:checked + span{border-color:var(--primary); background:var(--primary-light); color:var(--primary)}
+.seg-opt input:focus-visible + span{box-shadow:var(--ring)}
+
+/* ================= Alt kartlar / listeler ================= */
+.subcard{border:1px solid var(--border); border-radius:var(--radius); background:var(--surface-2); padding:18px; margin-bottom:16px}
+.subcard-head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px}
+.subcard-head h4{font-size:1rem; display:flex; align-items:center; gap:8px}
+.subtotal{font-size:.85rem; font-weight:700; color:var(--primary); font-variant-numeric:tabular-nums; background:var(--primary-light); padding:6px 12px; border-radius:99px}
+.rowlist{display:flex; flex-direction:column; gap:12px}
+.row-item{border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); padding:14px}
+.row-grid{display:grid; gap:10px; align-items:end}
+.row-actions{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border)}
+.row-total{font-size:.85rem; font-weight:700; font-variant-numeric:tabular-nums}
+.empty{
+  border:1px dashed var(--border); border-radius:var(--radius); padding:26px 18px; text-align:center; color:var(--muted);
+  background:var(--surface-2); font-size:.86rem;
+}
+.empty strong{display:block; color:var(--text); margin-bottom:4px; font-size:.95rem}
+
+.note{
+  display:flex; gap:11px; padding:13px 15px; border-radius:var(--radius); font-size:.83rem; line-height:1.55;
+  background:var(--warning-soft); color:var(--text); border:1px solid color-mix(in srgb,var(--accent) 30%, transparent); margin-top:14px;
+}
+.note .ic{flex:0 0 auto; font-size:1rem; line-height:1.3}
+.note-info{background:var(--primary-light); border-color:color-mix(in srgb,var(--primary) 22%, transparent)}
+
+.step-nav{display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; margin-top:22px; padding-top:18px; border-top:1px solid var(--border)}
+.step-nav .left,.step-nav .right{display:flex; gap:10px; flex-wrap:wrap}
+
+/* ================= Sonuç ================= */
+.result-hero{
+  background:linear-gradient(155deg,var(--primary),var(--primary-dark)); color:#fff;
+  border-radius:var(--radius-lg); padding:clamp(22px,4vw,34px); position:relative; overflow:hidden;
+}
+[data-theme="dark"] .result-hero{color:#08120E}
+.result-hero::after{
+  content:""; position:absolute; inset:0; opacity:.16; pointer-events:none;
+  background-image:repeating-linear-gradient(45deg,transparent 0 18px,rgba(255,255,255,.5) 18px 19px),
+                   repeating-linear-gradient(-45deg,transparent 0 18px,rgba(255,255,255,.5) 18px 19px);
+  -webkit-mask-image:radial-gradient(90% 80% at 88% 10%,#000,transparent 70%);
+  mask-image:radial-gradient(90% 80% at 88% 10%,#000,transparent 70%);
+}
+.result-hero .label{font-size:.85rem; opacity:.9; font-weight:600}
+.result-hero .amount{font-size:clamp(2.1rem,1.4rem + 3.6vw,3.4rem); font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.02em; margin:4px 0 12px}
+.result-hero .status{
+  display:inline-flex; gap:8px; align-items:center; background:rgba(255,255,255,.16); padding:9px 14px;
+  border-radius:12px; font-size:.86rem; font-weight:600; max-width:60ch; line-height:1.45; text-align:start;
+}
+[data-theme="dark"] .result-hero .status{background:rgba(0,0,0,.18)}
+.result-meta{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:20px; position:relative}
+@media (max-width:700px){.result-meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.result-meta div{background:rgba(255,255,255,.13); border-radius:12px; padding:11px 13px}
+[data-theme="dark"] .result-meta div{background:rgba(0,0,0,.16)}
+.result-meta dt{font-size:.74rem; opacity:.85}
+.result-meta dd{margin:2px 0 0; font-weight:700; font-size:.95rem; font-variant-numeric:tabular-nums}
+
+.donut-wrap{display:grid; grid-template-columns:180px minmax(0,1fr); gap:22px; align-items:center}
+@media (max-width:560px){.donut-wrap{grid-template-columns:1fr; justify-items:center; text-align:center}}
+.donut{
+  width:180px;height:180px;border-radius:50%; position:relative; flex:0 0 auto;
+  background:conic-gradient(var(--border) 0 100%);
+}
+.donut::after{
+  content:""; position:absolute; inset:26px; border-radius:50%; background:var(--surface);
+  box-shadow:inset 0 1px 6px rgba(0,0,0,.06);
+}
+.donut-center{position:absolute; inset:0; display:grid; place-content:center; text-align:center; z-index:1}
+.donut-center span{display:block; font-size:.7rem; color:var(--muted)}
+.donut-center strong{font-size:.95rem; font-variant-numeric:tabular-nums}
+.legend{display:flex; flex-direction:column; gap:9px; width:100%}
+.legend-item{display:flex; align-items:center; gap:10px; font-size:.85rem}
+.legend-dot{width:11px;height:11px;border-radius:4px; flex:0 0 auto}
+.legend-item .nm{flex:1; min-width:0}
+.legend-item .vl{font-weight:700; font-variant-numeric:tabular-nums}
+.legend-item .pc{color:var(--muted); font-size:.78rem; width:48px; text-align:end; font-variant-numeric:tabular-nums}
+
+.breakdown{width:100%; border-collapse:collapse; font-size:.88rem}
+.breakdown th,.breakdown td{padding:11px 6px; text-align:start; border-bottom:1px solid var(--border)}
+.breakdown td:last-child,.breakdown th:last-child{text-align:end; font-variant-numeric:tabular-nums; font-weight:600}
+.breakdown tr.total td{border-bottom:0; border-top:2px solid var(--primary); font-weight:800; font-size:.98rem; color:var(--primary); padding-top:13px}
+.breakdown tr.minus td:last-child{color:var(--danger)}
+
+.plan-out{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  background:var(--primary-light); border-radius:var(--radius); padding:16px 18px; margin-top:14px;
+}
+.plan-out .big{font-size:var(--step2); font-weight:800; color:var(--primary); font-variant-numeric:tabular-nums}
+
+/* ================= Akordeon ================= */
+.acc{border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); overflow:hidden; margin-bottom:10px}
+.acc-btn{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:14px; text-align:start;
+  padding:16px 18px; background:transparent; border:0; cursor:pointer; font-weight:650; font-size:.95rem;
+}
+.acc-btn:hover{background:var(--surface-2)}
+.acc-btn .ind{
+  width:26px;height:26px;border-radius:50%; background:var(--primary-light); color:var(--primary);
+  display:grid; place-items:center; flex:0 0 auto; transition:transform .22s; font-size:.9rem; font-weight:800;
+}
+.acc-btn[aria-expanded="true"] .ind{transform:rotate(45deg)}
+.acc-body{display:none; padding:0 18px 18px; color:var(--muted); font-size:.88rem; line-height:1.65}
+.acc-body.open{display:block}
+
+/* ================= Güven kartları ================= */
+.trust-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px}
+@media (max-width:900px){.trust-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.trust-grid{grid-template-columns:1fr}}
+.trust-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-sm)}
+.trust-card .ic{
+  width:42px;height:42px;border-radius:12px; background:var(--primary-light); color:var(--primary);
+  display:grid; place-items:center; font-size:1.15rem; margin-bottom:12px;
+}
+.trust-card h4{font-size:.98rem; margin-bottom:7px}
+.trust-card p{font-size:.84rem; color:var(--muted); line-height:1.6}
+
+/* ================= Modal ================= */
+.modal{
+  position:fixed; inset:0; z-index:120; display:none; align-items:center; justify-content:center; padding:18px;
+  background:rgba(12,22,18,.55); backdrop-filter:blur(3px);
+}
+.modal.open{display:flex}
+.modal-box{
+  background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); width:min(620px,100%);
+  max-height:88vh; display:flex; flex-direction:column; border:1px solid var(--border); animation:pop .2s ease;
+}
+@keyframes pop{from{opacity:0; transform:scale(.97) translateY(8px)} to{opacity:1; transform:none}}
+.modal-head{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:20px 22px; border-bottom:1px solid var(--border)}
+.modal-body{padding:22px; overflow-y:auto}
+.modal-foot{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; padding:16px 22px; border-top:1px solid var(--border)}
+
+/* ================= Toast ================= */
+.toasts{position:fixed; z-index:200; inset-block-end:20px; inset-inline:20px auto; display:flex; flex-direction:column; gap:10px; max-width:340px}
+@media (max-width:520px){.toasts{inset-inline:12px 12px; max-width:none}}
+.toast{
+  display:flex; gap:10px; align-items:flex-start; background:var(--surface); border:1px solid var(--border);
+  border-inline-start:4px solid var(--primary); border-radius:12px; padding:13px 15px; box-shadow:var(--shadow-lg);
+  font-size:.86rem; animation:slide .24s ease;
+}
+.toast.ok{border-inline-start-color:var(--success)}
+.toast.warn{border-inline-start-color:var(--accent)}
+.toast.err{border-inline-start-color:var(--danger)}
+@keyframes slide{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+
+/* Tooltip popover */
+.tip{
+  position:absolute; z-index:150; max-width:280px; background:var(--text); color:var(--background);
+  padding:10px 13px; border-radius:10px; font-size:.8rem; line-height:1.5; box-shadow:var(--shadow-lg);
+}
+[data-theme="dark"] .tip{background:var(--surface); color:var(--text); border:1px solid var(--border)}
+
+/* ================= Footer ================= */
+.footer{background:var(--surface); border-top:1px solid var(--border); padding:40px 0 28px; margin-top:30px}
+.footer-grid{display:grid; grid-template-columns:1.4fr repeat(3,minmax(0,1fr)); gap:26px}
+@media (max-width:800px){.footer-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.footer-grid{grid-template-columns:1fr}}
+.footer h5{margin:0 0 10px; font-size:.85rem; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.footer ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px}
+.footer a{color:var(--text); text-decoration:none; font-size:.88rem}
+.footer a:hover{color:var(--primary); text-decoration:underline}
+.footer-bottom{margin-top:28px; padding-top:18px; border-top:1px solid var(--border); font-size:.8rem; color:var(--muted); display:flex; gap:14px; justify-content:space-between; flex-wrap:wrap}
+
+
+/* =========================================================
+   MOBİL DENEYİM — dokunma hedefleri, alt özet çubuğu, sayfa akışı
+   ========================================================= */
+@media (max-width:768px){
+  .input,select.input{font-size:16px}          /* iOS'ta otomatik yakınlaşmayı engeller */
+  .wrap{padding-inline:16px}
+  .card{padding:16px; border-radius:18px}
+  .subcard{padding:14px}
+  .info-btn{width:26px;height:26px;font-size:.8rem}
+  .brand-sub{display:none}
+  .hero-btns .btn{flex:1 1 160px}
+  .donut{width:150px;height:150px}
+  .donut::after{inset:22px}
+  .donut-wrap{grid-template-columns:1fr; justify-items:center}
+}
+@media (max-width:560px){
+  .step-nav .left,.step-nav .right{width:100%}
+  .step-nav .btn{flex:1}
+  .subcard-head{align-items:flex-start}
+  .row-item{padding:12px}
+  .modal{padding:0; align-items:flex-end}
+  .modal-box{width:100%; max-height:94vh; border-radius:20px 20px 0 0}
+  .modal-foot{position:sticky; bottom:0; background:var(--surface)}
+  .modal-foot .btn{flex:1 1 auto}
+}
+.steps{scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch}
+.step-pill{scroll-snap-align:start}
+
+/* Alt özet çubuğu ve açılır özet paneli (yalnızca dar ekranlar) */
+.mobilebar,.sheet,.sheet-back{display:none}
+@media (max-width:1000px){
+  body{padding-bottom:92px}
+  .toasts{inset-block-end:104px}
+  .summary-panel{display:none}
+
+  .mobilebar{
+    display:block; position:fixed; inset-inline:0; bottom:0; z-index:80;
+    background:var(--surface); border-top:1px solid var(--border);
+    box-shadow:0 -8px 26px rgba(15,40,30,.14); padding-bottom:env(safe-area-inset-bottom);
+  }
+  .mobilebar-btn{
+    width:100%; display:flex; align-items:center; gap:12px; min-height:68px;
+    padding:12px 18px; background:transparent; border:0; cursor:pointer; text-align:start;
+  }
+  .mobilebar .mb-txt{flex:1; min-width:0}
+  .mobilebar .mb-label{display:block; font-size:.72rem; color:var(--muted); font-weight:600}
+  .mobilebar .mb-value{display:block; font-size:1.15rem; font-weight:800; color:var(--primary); font-variant-numeric:tabular-nums}
+  .mobilebar .mb-caret{transition:transform .22s; color:var(--muted); font-size:.8rem}
+  .mobilebar-btn[aria-expanded="true"] .mb-caret{transform:rotate(180deg)}
+
+  .sheet-back{display:block; position:fixed; inset:0; z-index:78; background:rgba(12,22,18,.45); opacity:0; pointer-events:none; transition:opacity .22s}
+  .sheet-back.open{opacity:1; pointer-events:auto}
+  .sheet{
+    display:block; position:fixed; inset-inline:0; bottom:0; z-index:79;
+    background:var(--surface); border-radius:22px 22px 0 0; border:1px solid var(--border); border-bottom:0;
+    box-shadow:0 -18px 44px rgba(12,22,18,.24); max-height:78vh; overflow-y:auto;
+    padding:10px 20px calc(96px + env(safe-area-inset-bottom));
+    transform:translateY(102%); transition:transform .26s ease;
+  }
+  .sheet.open{transform:none}
+  .sheet-grip{width:44px;height:4px;border-radius:99px;background:var(--border); margin:6px auto 14px}
+}
+
+/* ================= Yazdırma ================= */
+#printArea{display:none}
+@media print{
+  @page{margin:14mm}
+  body{background:#fff; color:#000; font-size:11pt}
+  .nav,.hero,.mobilebar,.sheet,.sheet-back,#calcSection,#reportSection,#faqSection,#trustSection,.footer,.toasts,.modal,.skip{display:none !important}
+  #printArea{display:block}
+  #printArea *{color:#000 !important}
+  .p-head{display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #174C3C; padding-bottom:10px; margin-bottom:16px}
+  .p-brand{font-size:20pt; font-weight:800; color:#174C3C !important}
+  .p-sub{font-size:9pt; color:#555 !important}
+  .p-sec{margin-bottom:14px; break-inside:avoid}
+  .p-sec h3{font-size:12pt; margin-bottom:6px; border-bottom:1px solid #ccc; padding-bottom:3px}
+  .p-table{width:100%; border-collapse:collapse; font-size:10pt}
+  .p-table td{padding:4px 2px; border-bottom:1px solid #e5e5e5}
+  .p-table td:last-child{text-align:right; font-weight:600}
+  .p-total{font-size:14pt; font-weight:800; color:#174C3C !important}
+  .p-note{font-size:8.5pt; color:#555 !important; border:1px solid #ccc; padding:8px; border-radius:6px; margin-top:14px}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">İçeriğe geç</a>
+
+<!-- ============== ÜST NAVİGASYON ============== -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true">۩</span>
+      <span>
+        <span class="brand-name" data-brand-name>Zekâtım</span>
+        <span class="brand-sub" data-brand-tagline>Varlıklarınızı tek yerde hesaplayın</span>
+      </span>
+    </a>
+
+    <nav class="nav-links" id="navLinks" aria-label="Ana menü">
+      <a href="#calcSection" data-act="nav-link">Hesaplama</a>
+      <a href="#assetsSection" data-act="nav-link">Varlıklarım</a>
+      <a href="#reportSection" data-act="nav-link">Rapor</a>
+      <a href="#faqSection" data-act="nav-link">Sık Sorulanlar</a>
+      <a href="#trustSection" data-act="nav-link">Hakkında</a>
+      <a class="btn btn-accent nav-cta" href="#calcSection" data-act="start">Hesaplamaya Başla</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" type="button" data-act="settings" aria-label="Gelişmiş ayarlar" title="Gelişmiş ayarlar">⚙</button>
+      <button class="icon-btn" type="button" data-act="theme" aria-label="Koyu temayı aç/kapat" aria-pressed="false" title="Koyu tema"><span data-theme-icon>◐</span></button>
+      <button class="icon-btn hamburger" type="button" data-act="menu" aria-label="Menüyü aç" aria-expanded="false" aria-controls="navLinks">☰</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<!-- ============== HERO ============== -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Bilgilendirme amaçlı hesaplama aracı</span>
+      <h1>Zekâtınızı kolayca hesaplayın</h1>
+      <p class="hero-lead">Altın, döviz, nakit, hisse, kripto, ticari mal, alacak ve borçlarınızı tek ekranda değerlendirerek yaklaşık zekât tutarınızı görün.</p>
+      <div class="hero-btns">
+        <button class="btn" type="button" data-act="start">Hesaplamaya Başla</button>
+        <button class="btn btn-ghost" type="button" data-act="how">Nasıl Hesaplanır?</button>
+      </div>
+      <p class="hero-note"><span aria-hidden="true">🔒</span> Girdiğiniz veriler yalnızca bu tarayıcıda saklanır, hiçbir sunucuya gönderilmez.</p>
+    </div>
+
+    <div class="card hero-card">
+      <div class="hero-card-head">
+        <h4>Anlık özet</h4>
+        <span class="chip" data-bind-out="nisabChipHero">Nisap bekleniyor</span>
+      </div>
+      <dl style="margin:0">
+        <div class="kv"><dt>Toplam varlık</dt><dd data-bind-out="heroGross">0,00 ₺</dd></div>
+        <div class="kv"><dt>Net zekât matrahı</dt><dd data-bind-out="heroNet">0,00 ₺</dd></div>
+        <div class="kv"><dt>Nisap değeri</dt><dd data-bind-out="heroNisab">0,00 ₺</dd></div>
+        <div class="kv kv-big"><dt>Tahmini zekât</dt><dd data-bind-out="heroZakat">0,00 ₺</dd></div>
+      </dl>
+      <p class="mini-note" style="margin-top:12px">Değerler siz yazdıkça güncellenir. Fiyatlar demo verilerdir.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== HESAPLAMA ============== -->
+<section class="section" id="calcSection">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Adım adım hesaplama</span>
+      <h2>Varlıklarınızı girin</h2>
+      <p>Yedi kısa adımda varlık ve borçlarınızı girin. Yazdığınız her değer anında özet panele yansır ve tarayıcınıza kaydedilir.</p>
+    </div>
+
+    <div class="calc-layout">
+      <div>
+        <!-- Adım göstergesi -->
+        <div class="steps" role="tablist" aria-label="Hesaplama adımları" id="stepBar"></div>
+        <div class="progress" role="progressbar" aria-label="Hesaplama ilerlemesi" aria-valuemin="1" aria-valuemax="7" aria-valuenow="1" id="progressBar"><span style="width:14%"></span></div>
+
+        <div class="card" id="assetsSection">
+
+          <!-- ====== ADIM 1: FİYATLAR VE NİSAP ====== -->
+          <section class="panel active" data-panel="1" role="tabpanel" aria-labelledby="steptab-1" tabindex="-1">
+            <div class="panel-head">
+              <h3>Fiyatlar ve nisap</h3>
+              <p>Hesaplamada kullanılacak birim fiyatları kontrol edin ve nisap yöntemini seçin.</p>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Birim fiyatlar <button class="info-btn" type="button" data-tip="Bu fiyatlar demo amaçlıdır ve gerçek piyasa verisi değildir. Kendi güncel fiyatlarınızı elle yazabilirsiniz." aria-label="Fiyatlar hakkında bilgi">i</button></h4>
+                <button class="btn btn-soft btn-sm" type="button" data-act="refresh-prices">Fiyatları güncelle</button>
+              </div>
+              <div class="grid g3">
+                <div class="field">
+                  <label for="p-gold">Gram altın</label>
+                  <div class="input-affix"><input class="input" id="p-gold" type="text" inputmode="decimal" data-bind="prices.gold" data-type="num"><span class="affix">₺/gr</span></div>
+                </div>
+                <div class="field">
+                  <label for="p-silver">Gram gümüş</label>
+                  <div class="input-affix"><input class="input" id="p-silver" type="text" inputmode="decimal" data-bind="prices.silver" data-type="num"><span class="affix">₺/gr</span></div>
+                </div>
+                <div class="field">
+                  <label for="p-usd">USD / TRY</label>
+                  <div class="input-affix"><input class="input" id="p-usd" type="text" inputmode="decimal" data-bind="prices.usd" data-type="num"><span class="affix">₺</span></div>
+                </div>
+                <div class="field">
+                  <label for="p-eur">EUR / TRY</label>
+                  <div class="input-affix"><input class="input" id="p-eur" type="text" inputmode="decimal" data-bind="prices.eur" data-type="num"><span class="affix">₺</span></div>
+                </div>
+                <div class="field">
+                  <label for="p-gbp">GBP / TRY</label>
+                  <div class="input-affix"><input class="input" id="p-gbp" type="text" inputmode="decimal" data-bind="prices.gbp" data-type="num"><span class="affix">₺</span></div>
+                </div>
+                <div class="field">
+                  <span class="field-label">Son güncelleme</span>
+                  <div class="input" style="display:flex;align-items:center;background:transparent;border-style:dashed" data-bind-out="priceUpdatedAt">—</div>
+                </div>
+              </div>
+              <div class="note"><span class="ic" aria-hidden="true">⚠</span><span><strong>Fiyatlar demo verisidir.</strong> Bu sürümde canlı piyasa bağlantısı bulunmaz. Gerçek hesaplama için güncel fiyatları elle girin.</span></div>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Nisap yöntemi</h4>
+                <span class="subtotal" data-bind-out="nisabValueOut">0,00 ₺</span>
+              </div>
+              <div class="seg" role="radiogroup" aria-label="Nisap yöntemi">
+                <label class="seg-opt"><input type="radio" name="nisabMethod" value="gold" data-bind="nisab.method" data-type="text"><span>Altın nisabı</span></label>
+                <label class="seg-opt"><input type="radio" name="nisabMethod" value="silver" data-bind="nisab.method" data-type="text"><span>Gümüş nisabı</span></label>
+                <label class="seg-opt"><input type="radio" name="nisabMethod" value="manual" data-bind="nisab.method" data-type="text"><span>Manuel nisap tutarı</span></label>
+              </div>
+              <div class="grid g2" style="margin-top:14px">
+                <div class="field" data-show="nisab-manual" hidden>
+                  <label for="n-manual">Manuel nisap tutarı</label>
+                  <div class="input-affix"><input class="input" id="n-manual" type="text" inputmode="decimal" data-bind="nisab.manualValue" data-type="num"><span class="affix">₺</span></div>
+                </div>
+                <div class="field">
+                  <span class="field-label">Kullanılan formül</span>
+                  <p class="hint" data-bind-out="nisabFormula">—</p>
+                </div>
+              </div>
+              <div class="note note-info"><span class="ic" aria-hidden="true">ℹ</span><span>Nisap ve zekât hesabında farklı ilmî değerlendirmeler bulunabilir. Hesaplama yönteminizi belirlerken güvendiğiniz bir uzmana danışmanız önerilir.</span></div>
+            </div>
+
+            <div class="step-nav">
+              <div class="left"><button class="btn btn-ghost" type="button" data-act="demo">Örnek verileri yükle</button></div>
+              <div class="right"><button class="btn" type="button" data-act="next">İleri</button></div>
+            </div>
+          </section>
+
+          <!-- ====== ADIM 2: NAKİT VE DÖVİZ ====== -->
+          <section class="panel" data-panel="2" role="tabpanel" aria-labelledby="steptab-2" tabindex="-1" hidden>
+            <div class="panel-head">
+              <h3>Nakit ve döviz</h3>
+              <p>Elinizdeki nakit, banka bakiyeleri ve döviz varlıklarını girin.</p>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Türk lirası varlıklar</h4>
+                <span class="subtotal" data-bind-out="subTL">0,00 ₺</span>
+              </div>
+              <div class="grid g2">
+                <div class="field"><label for="c-tl">Eldeki nakit TL</label>
+                  <div class="input-affix"><input class="input" id="c-tl" type="text" inputmode="decimal" data-bind="cash.tl" data-type="num"><span class="affix">₺</span></div></div>
+                <div class="field"><label for="c-demand">Vadesiz hesaplar</label>
+                  <div class="input-affix"><input class="input" id="c-demand" type="text" inputmode="decimal" data-bind="cash.demand" data-type="num"><span class="affix">₺</span></div></div>
+                <div class="field"><label for="c-part">Katılım hesapları</label>
+                  <div class="input-affix"><input class="input" id="c-part" type="text" inputmode="decimal" data-bind="cash.participation" data-type="num"><span class="affix">₺</span></div></div>
+                <div class="field"><label for="c-other">Diğer nakit varlıklar</label>
+                  <div class="input-affix"><input class="input" id="c-other" type="text" inputmode="decimal" data-bind="cash.otherCash" data-type="num"><span class="affix">₺</span></div></div>
+              </div>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Döviz</h4>
+                <span class="subtotal" data-bind-out="subFX">0,00 ₺</span>
+              </div>
+              <div class="grid g3">
+                <div class="field"><label for="c-usd">Amerikan doları</label>
+                  <div class="input-affix"><input class="input" id="c-usd" type="text" inputmode="decimal" data-bind="cash.usd" data-type="num"><span class="affix">USD</span></div>
+                  <span class="hint">TL karşılığı: <strong data-bind-out="usdTRY">0,00 ₺</strong></span></div>
+                <div class="field"><label for="c-eur">Euro</label>
+                  <div class="input-affix"><input class="input" id="c-eur" type="text" inputmode="decimal" data-bind="cash.eur" data-type="num"><span class="affix">EUR</span></div>
+                  <span class="hint">TL karşılığı: <strong data-bind-out="eurTRY">0,00 ₺</strong></span></div>
+                <div class="field"><label for="c-gbp">İngiliz sterlini</label>
+                  <div class="input-affix"><input class="input" id="c-gbp" type="text" inputmode="decimal" data-bind="cash.gbp" data-type="num"><span class="affix">GBP</span></div>
+                  <span class="hint">TL karşılığı: <strong data-bind-out="gbpTRY">0,00 ₺</strong></span></div>
+              </div>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Diğer dövizler</h4>
+                <span class="subtotal" data-bind-out="subFXOther">0,00 ₺</span>
+              </div>
+              <div class="rowlist" id="list-currencies"></div>
+              <button class="btn btn-ghost btn-sm" type="button" data-act="add" data-list="currencies" style="margin-top:12px">+ Döviz ekle</button>
+            </div>
+
+            <div class="step-nav">
+              <div class="left"><button class="btn btn-ghost" type="button" data-act="prev">Geri</button></div>
+              <div class="right">
+                <button class="btn btn-ghost" type="button" data-act="save">Kaydet</button>
+                <button class="btn" type="button" data-act="next">İleri</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ====== ADIM 3: ALTIN VE GÜMÜŞ ====== -->
+          <section class="panel" data-panel="3" role="tabpanel" aria-labelledby="steptab-3" tabindex="-1" hidden>
+            <div class="panel-head">
+              <h3>Altın ve gümüş</h3>
+              <p>Adet veya gram olarak girin; saf altın karşılıkları otomatik hesaplanır.</p>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Altın</h4>
+                <span class="subtotal" data-bind-out="subGold">0,00 ₺</span>
+              </div>
+              <div class="grid g3" id="goldFields"></div>
+              <label class="switch" style="margin-top:14px">
+                <input type="checkbox" data-bind="settings.includeJewelry" data-type="bool">
+                <span class="track" aria-hidden="true"></span>
+                <span class="txt">Ziynet ve kişisel kullanım altınlarını dahil et
+                  <small>Bilezik ve ayarlı takılar (14, 18, 22 ayar) hesaba katılsın mı?</small></span>
+              </label>
+              <div class="note"><span class="ic" aria-hidden="true">⚠</span><span>Ziynet eşyalarının zekâta tabi olup olmadığı konusunda mezhepler arasında farklı değerlendirmeler bulunabilir.</span></div>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Gümüş</h4>
+                <span class="subtotal" data-bind-out="subSilver">0,00 ₺</span>
+              </div>
+              <div class="grid g2">
+                <div class="field"><label for="g-silver">Gümüş miktarı</label>
+                  <div class="input-affix"><input class="input" id="g-silver" type="text" inputmode="decimal" data-bind="gold.silver" data-type="num"><span class="affix">gram</span></div>
+                  <span class="hint">Değer: <strong data-bind-out="silverValue">0,00 ₺</strong></span></div>
+                <div class="field">
+                  <span class="field-label">Toplam saf altın karşılığı</span>
+                  <div class="input" style="display:flex;align-items:center;background:transparent;border-style:dashed" data-bind-out="pureGoldGrams">0 gram</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-nav">
+              <div class="left"><button class="btn btn-ghost" type="button" data-act="prev">Geri</button></div>
+              <div class="right">
+                <button class="btn btn-ghost" type="button" data-act="save">Kaydet</button>
+                <button class="btn" type="button" data-act="next">İleri</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ====== ADIM 4: YATIRIMLAR ====== -->
+          <section class="panel" data-panel="4" role="tabpanel" aria-labelledby="steptab-4" tabindex="-1" hidden>
+            <div class="panel-head">
+              <h3>Yatırımlar</h3>
+              <p>Hisse, fon ve kripto varlıklarınızı satır satır ekleyin.</p>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Borsa hisseleri <button class="info-btn" type="button" data-tip="Hesaplama yöntemi olarak toplam piyasa değerini, kendi belirlediğiniz bir zekâta tabi oranı ya da yalnızca elde ettiğiniz temettü/nakit tutarını seçebilirsiniz." aria-label="Hisse hesaplaması hakkında bilgi">i</button></h4>
+                <span class="subtotal" data-bind-out="subStocks">0,00 ₺</span>
+              </div>
+              <div class="rowlist" id="list-stocks"></div>
+              <button class="btn btn-ghost btn-sm" type="button" data-act="add" data-list="stocks" style="margin-top:12px">+ Hisse ekle</button>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Yatırım fonları</h4>
+                <span class="subtotal" data-bind-out="subFunds">0,00 ₺</span>
+              </div>
+              <div class="rowlist" id="list-funds"></div>
+              <button class="btn btn-ghost btn-sm" type="button" data-act="add" data-list="funds" style="margin-top:12px">+ Fon ekle</button>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Kripto varlıklar</h4>
+                <span class="subtotal" data-bind-out="subCrypto">0,00 ₺</span>
+              </div>
+              <div class="rowlist" id="list-crypto"></div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+                <button class="btn btn-ghost btn-sm" type="button" data-act="add" data-list="crypto">+ Kripto ekle</button>
+                <button class="btn btn-ghost btn-sm" type="button" data-act="crypto-samples">Örnek satırları ekle</button>
+              </div>
+            </div>
+
+            <div class="note"><span class="ic" aria-hidden="true">⚠</span><span>Hisse, fon ve kripto varlıkların zekât hesabında yatırım amacı, ticaret niyeti ve varlık yapısına göre farklı yaklaşımlar bulunabilir.</span></div>
+
+            <div class="step-nav">
+              <div class="left"><button class="btn btn-ghost" type="button" data-act="prev">Geri</button></div>
+              <div class="right">
+                <button class="btn btn-ghost" type="button" data-act="save">Kaydet</button>
+                <button class="btn" type="button" data-act="next">İleri</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ====== ADIM 5: TİCARET VE ALACAKLAR ====== -->
+          <section class="panel" data-panel="5" role="tabpanel" aria-labelledby="steptab-5" tabindex="-1" hidden>
+            <div class="panel-head">
+              <h3>Ticaret ve alacaklar</h3>
+              <p>Ticari varlıklarınızı ve tahsil etmeyi beklediğiniz alacakları girin.</p>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Ticari mallar</h4>
+                <span class="subtotal" data-bind-out="subCommerce">0,00 ₺</span>
+              </div>
+              <div class="grid g2" id="commerceFields"></div>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Kişisel alacaklar</h4>
+                <span class="subtotal" data-bind-out="subReceivables">0,00 ₺</span>
+              </div>
+              <div class="rowlist" id="list-receivables"></div>
+              <button class="btn btn-ghost btn-sm" type="button" data-act="add" data-list="receivables" style="margin-top:12px">+ Alacak ekle</button>
+              <div class="note note-info"><span class="ic" aria-hidden="true">ℹ</span><span>Tahsili şüpheli alacakların hesaba dahil edilip edilmeyeceği kişisel duruma göre değişebilir. Gelişmiş ayarlardan düşük ihtimalli alacakları toplu olarak hariç tutabilirsiniz.</span></div>
+            </div>
+
+            <div class="step-nav">
+              <div class="left"><button class="btn btn-ghost" type="button" data-act="prev">Geri</button></div>
+              <div class="right">
+                <button class="btn btn-ghost" type="button" data-act="save">Kaydet</button>
+                <button class="btn" type="button" data-act="next">İleri</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ====== ADIM 6: BORÇLAR ====== -->
+          <section class="panel" data-panel="6" role="tabpanel" aria-labelledby="steptab-6" tabindex="-1" hidden>
+            <div class="panel-head">
+              <h3>Borçlar</h3>
+              <p>Düşülecek yükümlülüklerinizi girin ve düşme yöntemini seçin.</p>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head"><h4>Düşme yöntemi</h4></div>
+              <div class="seg" role="radiogroup" aria-label="Borç düşme yöntemi">
+                <label class="seg-opt"><input type="radio" name="debtMethod" value="full" data-bind="settings.debtMethod" data-type="text"><span>Borcun tamamını düş</span></label>
+                <label class="seg-opt"><input type="radio" name="debtMethod" value="twelve" data-bind="settings.debtMethod" data-type="text"><span>Yalnızca 12 ayda ödenecek kısmı düş</span></label>
+                <label class="seg-opt"><input type="radio" name="debtMethod" value="manual" data-bind="settings.debtMethod" data-type="text"><span>Manuel tutar belirle</span></label>
+              </div>
+              <div class="note"><span class="ic" aria-hidden="true">⚠</span><span>Uzun vadeli borçların tamamının mı yoksa yakın dönemde ödenecek kısmının mı düşüleceği konusunda farklı değerlendirmeler bulunabilir.</span></div>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head">
+                <h4>Borç kalemleri</h4>
+                <span class="subtotal" data-bind-out="subDebts">0,00 ₺</span>
+              </div>
+              <div class="rowlist" id="list-debts"></div>
+              <button class="btn btn-ghost btn-sm" type="button" data-act="add" data-list="debts" style="margin-top:12px">+ Borç ekle</button>
+            </div>
+
+            <div class="step-nav">
+              <div class="left"><button class="btn btn-ghost" type="button" data-act="prev">Geri</button></div>
+              <div class="right">
+                <button class="btn btn-ghost" type="button" data-act="save">Kaydet</button>
+                <button class="btn btn-accent" type="button" data-act="next">Sonucu gör</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ====== ADIM 7: SONUÇ ====== -->
+          <section class="panel" data-panel="7" role="tabpanel" aria-labelledby="steptab-7" tabindex="-1" hidden>
+            <div class="panel-head">
+              <h3>Sonuç</h3>
+              <p>Girdiğiniz bilgilere göre yaklaşık zekât tablonuz.</p>
+            </div>
+
+            <div class="result-hero">
+              <p class="label">Tahmini zekâtınız</p>
+              <p class="amount" data-bind-out="resZakat">0,00 ₺</p>
+              <p class="status" data-bind-out="resStatus">Hesaplama için varlıklarınızı girin.</p>
+              <dl class="result-meta">
+                <div><dt>Net zekât matrahı</dt><dd data-bind-out="resNet">0,00 ₺</dd></div>
+                <div><dt>Uygulanan zekât oranı</dt><dd data-bind-out="resRate">%2,5</dd></div>
+                <div><dt>Nisap yöntemi</dt><dd data-bind-out="resMethod">Altın nisabı</dd></div>
+                <div><dt>Nisap değeri</dt><dd data-bind-out="resNisab">0,00 ₺</dd></div>
+                <div><dt>Nisap üzerindeki tutar</dt><dd data-bind-out="resAbove">0,00 ₺</dd></div>
+                <div><dt>Hesaplama tarihi</dt><dd data-bind-out="resDate">—</dd></div>
+              </dl>
+            </div>
+
+            <div class="subcard" style="margin-top:18px">
+              <div class="subcard-head"><h4>Özet hesap</h4></div>
+              <table class="breakdown">
+                <caption class="sr-only">Zekât matrahı özeti</caption>
+                <tbody>
+                  <tr><td>Brüt zekâta tabi varlık</td><td data-bind-out="sumGross">0,00 ₺</td></tr>
+                  <tr class="minus"><td>Düşülen borçlar</td><td data-bind-out="sumDebts">0,00 ₺</td></tr>
+                  <tr><td>Net varlık</td><td data-bind-out="sumNet">0,00 ₺</td></tr>
+                  <tr><td>Zekât oranı</td><td data-bind-out="sumRate">%2,5</td></tr>
+                  <tr class="total"><td>Tahmini zekât</td><td data-bind-out="sumZakat">0,00 ₺</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head"><h4>Varlık dağılımı</h4></div>
+              <div class="donut-wrap">
+                <div class="donut" id="donut" role="img" aria-label="Varlık dağılımı halka grafiği">
+                  <div class="donut-center"><span>Brüt varlık</span><strong data-bind-out="donutTotal">0,00 ₺</strong></div>
+                </div>
+                <div class="legend" id="donutLegend"></div>
+              </div>
+            </div>
+
+            <div class="subcard">
+              <div class="subcard-head"><h4>Dağıtım planı</h4></div>
+              <div class="seg" role="radiogroup" aria-label="Ödeme planı">
+                <label class="seg-opt"><input type="radio" name="planMonths" value="1" data-bind="plan.months" data-type="num"><span>Tek seferde</span></label>
+                <label class="seg-opt"><input type="radio" name="planMonths" value="2" data-bind="plan.months" data-type="num"><span>2 ay</span></label>
+                <label class="seg-opt"><input type="radio" name="planMonths" value="3" data-bind="plan.months" data-type="num"><span>3 ay</span></label>
+                <label class="seg-opt"><input type="radio" name="planMonths" value="6" data-bind="plan.months" data-type="num"><span>6 ay</span></label>
+                <label class="seg-opt"><input type="radio" name="planMonths" value="12" data-bind="plan.months" data-type="num"><span>12 ay</span></label>
+              </div>
+              <div class="grid g2" style="margin-top:14px">
+                <div class="field">
+                  <label for="planCustom">Özel taksit sayısı</label>
+                  <div class="input-affix"><input class="input" id="planCustom" type="text" inputmode="numeric" data-bind="plan.custom" data-type="num" placeholder="Örn. 4"><span class="affix">ay</span></div>
+                  <span class="hint">Doldurulduğunda yukarıdaki seçim yerine bu değer kullanılır.</span>
+                </div>
+                <div class="field">
+                  <span class="field-label">Toplam ödenecek</span>
+                  <div class="input" style="display:flex;align-items:center;background:transparent;border-style:dashed" data-bind-out="planTotal">0,00 ₺</div>
+                </div>
+              </div>
+              <div class="plan-out">
+                <div><span class="mini-note" data-bind-out="planLabel">Tek seferde</span><div class="big" data-bind-out="planMonthly">0,00 ₺</div></div>
+                <button class="btn btn-soft btn-sm" type="button" data-act="goto-report">Raporu hazırla</button>
+              </div>
+              <div class="note note-info"><span class="ic" aria-hidden="true">ℹ</span><span>Zekâtın ne zaman ve nasıl ödenmesi gerektiği konusunda kendi durumunuza uygun dinî değerlendirme almanız önerilir.</span></div>
+            </div>
+
+            <div class="step-nav">
+              <div class="left">
+                <button class="btn btn-ghost" type="button" data-act="prev">Geri</button>
+                <button class="btn btn-danger" type="button" data-act="reset">Sıfırla</button>
+              </div>
+              <div class="right">
+                <button class="btn btn-ghost" type="button" data-act="save">Kaydet</button>
+                <button class="btn" type="button" data-act="print">Yazdır</button>
+              </div>
+            </div>
+          </section>
+
+        </div><!-- /card -->
+      </div>
+
+      <!-- ====== STICKY ÖZET PANELİ ====== -->
+      <aside class="summary-panel" aria-label="Anlık hesap özeti">
+        <div class="card">
+          <div class="summary-total">
+            <div class="label">Tahmini zekât</div>
+            <div class="value" data-bind-out="panelZakat">0,00 ₺</div>
+          </div>
+          <dl style="margin:0">
+            <div class="kv"><dt>Toplam varlık</dt><dd data-bind-out="panelGross">0,00 ₺</dd></div>
+            <div class="kv"><dt>Toplam borç</dt><dd data-bind-out="panelDebts">0,00 ₺</dd></div>
+            <div class="kv"><dt>Net varlık</dt><dd data-bind-out="panelNet">0,00 ₺</dd></div>
+            <div class="kv"><dt>Nisap tutarı</dt><dd data-bind-out="panelNisab">0,00 ₺</dd></div>
+          </dl>
+          <div class="nisab-bar" aria-hidden="true"><span data-bind-style="nisabBar" style="width:0%"></span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <span class="mini-note" data-bind-out="nisabRatio">Nisabın %0'ı</span>
+            <span class="chip" data-bind-out="panelStatus">Nisap altında</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+            <button class="btn btn-soft btn-sm btn-block" type="button" data-act="goto-result">Sonuç ekranına git</button>
+            <button class="btn btn-ghost btn-sm btn-block" type="button" data-act="settings">Gelişmiş ayarlar</button>
+          </div>
+          <p class="mini-note" style="margin-top:12px" data-bind-out="saveState">Otomatik kayıt açık.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============== RAPOR ============== -->
+<section class="section" id="reportSection" style="background:var(--surface-2);border-block:1px solid var(--border)">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Rapor ve yedekleme</span>
+      <h2>Hesabınızı kaydedin veya yazdırın</h2>
+      <p>Hesap özetinizi yazdırabilir, PDF olarak kaydedebilir ve verilerinizi JSON dosyası olarak yedekleyebilirsiniz.</p>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h4 style="margin-bottom:6px">Rapor çıktısı</h4>
+        <p class="mini-note" style="margin-bottom:16px">Rapor; fiyatlar, nisap yöntemi, varlık kalemleri, borçlar, net matrah ve tahmini zekât bilgilerini içerir.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" type="button" data-act="print">Yazdır</button>
+          <button class="btn btn-ghost" type="button" data-act="print">PDF olarak kaydet</button>
+        </div>
+        <p class="mini-note" style="margin-top:12px">PDF için tarayıcının yazdırma penceresinde hedef olarak “PDF olarak kaydet” seçeneğini işaretleyin.</p>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:6px">Veri yedekleme</h4>
+        <p class="mini-note" style="margin-bottom:16px">Tüm girdileriniz tek bir JSON dosyasına aktarılır; başka bir cihazda aynı dosyayı içe aktarabilirsiniz.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost" type="button" data-act="export">Verileri dışa aktar</button>
+          <button class="btn btn-ghost" type="button" data-act="import">Verileri içe aktar</button>
+          <input type="file" id="importFile" accept="application/json,.json" class="sr-only" aria-label="JSON dosyası seç">
+        </div>
+        <p class="mini-note" style="margin-top:12px" data-bind-out="lastSaved">Henüz kayıt yapılmadı.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== GÜVEN VE ŞEFFAFLIK ============== -->
+<section class="section" id="trustSection">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Hakkında</span>
+      <h2>Şeffaflık ve sınırlar</h2>
+      <p>Bu araç neyi yapar, neyi yapmaz? Kullanmadan önce bilmeniz gerekenler.</p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="ic" aria-hidden="true">🔒</div>
+        <h4>Verileriniz cihazınızda kalır</h4>
+        <p>Bu demo sürümünde girdiğiniz bilgiler yalnızca tarayıcınızın localStorage alanında saklanır.</p>
+      </div>
+      <div class="trust-card">
+        <div class="ic" aria-hidden="true">🧮</div>
+        <h4>Şeffaf hesaplama</h4>
+        <p>Hesaplamada kullanılan fiyatlar, oranlar ve formüller kullanıcı tarafından görülebilir.</p>
+      </div>
+      <div class="trust-card">
+        <div class="ic" aria-hidden="true">📖</div>
+        <h4>Fetva değildir</h4>
+        <p>Bu araç bilgilendirme ve yaklaşık hesaplama amacıyla hazırlanmıştır. Kişisel durumunuz için yetkin bir dinî uzmana danışmanız önerilir.</p>
+      </div>
+      <div class="trust-card">
+        <div class="ic" aria-hidden="true">📊</div>
+        <h4>Finansal tavsiye değildir</h4>
+        <p>Uygulama yatırım veya finansal danışmanlık hizmeti sunmaz.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SSS ============== -->
+<section class="section" id="faqSection" style="background:var(--surface-2);border-block:1px solid var(--border)">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Sık sorulanlar</span>
+      <h2>Merak edilenler</h2>
+      <p>Aşağıdaki açıklamalar genel bilgilendirme niteliğindedir; farklı ilmî görüşler bulunabilir.</p>
+    </div>
+    <div id="faqList" style="max-width:860px"></div>
+  </div>
+</section>
+</main>
+
+<!-- ============== FOOTER ============== -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="#top" style="margin-bottom:12px">
+          <span class="brand-mark" aria-hidden="true">۩</span>
+          <span><span class="brand-name" data-brand-name>Zekâtım</span></span>
+        </a>
+        <p class="mini-note" style="max-width:36ch" data-brand-tagline>Varlıklarınızı tek yerde hesaplayın, zekât yükümlülüğünüzü anlaşılır biçimde görün.</p>
+      </div>
+      <div>
+        <h5>Uygulama</h5>
+        <ul>
+          <li><a href="#calcSection" data-act="nav-link">Hesaplama</a></li>
+          <li><a href="#reportSection" data-act="nav-link">Rapor</a></li>
+          <li><a href="#faqSection" data-act="nav-link">Sık Sorulanlar</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Yasal</h5>
+        <ul>
+          <li><a href="#" data-act="legal" data-doc="privacy">Gizlilik</a></li>
+          <li><a href="#" data-act="legal" data-doc="terms">Kullanım Koşulları</a></li>
+          <li><a href="#" data-act="legal" data-doc="contact">İletişim</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Sürüm</h5>
+        <ul>
+          <li><span class="mini-note" data-bind-out="versionInfo">v0.1.0 — MVP</span></li>
+          <li><button class="btn btn-ghost btn-sm" type="button" data-act="settings">Gelişmiş ayarlar</button></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p><span data-brand-name>Zekâtım</span>, bilgilendirme amacıyla geliştirilmiş bir hesaplama aracıdır. Hesaplama sonuçları fetva, hukuk, yatırım veya finansal danışmanlık niteliği taşımaz.</p>
+      <p data-bind-out="footerYear">© 2026</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============== MODALLAR ============== -->
+<div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="settingsTitle" style="font-size:1.15rem">Gelişmiş ayarlar</h3>
+      <button class="icon-btn" type="button" data-act="close-modal" aria-label="Kapat">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid g2">
+        <div class="field">
+          <label for="s-rate">Zekât oranı</label>
+          <div class="input-affix"><input class="input" id="s-rate" type="text" inputmode="decimal" data-bind="settings.zakatRatePct" data-type="num"><span class="affix">%</span></div>
+          <span class="hint">Varsayılan oran <strong>%2,5</strong>'tir.</span>
+        </div>
+        <div class="field">
+          <label for="s-goldn">Altın nisabı</label>
+          <div class="input-affix"><input class="input" id="s-goldn" type="text" inputmode="decimal" data-bind="settings.goldNisabGram" data-type="num"><span class="affix">gram</span></div>
+          <span class="hint">Varsayılan <strong>80,18 gram</strong></span>
+        </div>
+        <div class="field">
+          <label for="s-silvern">Gümüş nisabı</label>
+          <div class="input-affix"><input class="input" id="s-silvern" type="text" inputmode="decimal" data-bind="settings.silverNisabGram" data-type="num"><span class="affix">gram</span></div>
+          <span class="hint">Varsayılan <strong>595 gram</strong></span>
+        </div>
+        <div class="field">
+          <label for="s-debt">Varsayılan borç yöntemi</label>
+          <select class="input" id="s-debt" data-bind="settings.debtMethod" data-type="text">
+            <option value="full">Borcun tamamını düş</option>
+            <option value="twelve">Yalnızca 12 ayda ödenecek kısmı düş</option>
+            <option value="manual">Manuel tutar belirle</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="s-currency">Para birimi</label>
+          <select class="input" id="s-currency" data-bind="settings.currency" data-type="text">
+            <option value="TRY">Türk lirası (₺)</option>
+            <option value="USD">Amerikan doları ($)</option>
+            <option value="EUR">Euro (€)</option>
+          </select>
+          <span class="hint">Yalnızca gösterim biçimini değiştirir; girişler TL kabul edilir.</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+        <label class="switch">
+          <input type="checkbox" data-bind="settings.includeJewelry" data-type="bool">
+          <span class="track" aria-hidden="true"></span>
+          <span class="txt">Ziynet altınlarını dahil et<small>Bilezik ve ayarlı takılar hesaba katılır.</small></span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" data-bind="settings.includeLowReceivables" data-type="bool">
+          <span class="track" aria-hidden="true"></span>
+          <span class="txt">Düşük tahsil ihtimalli alacakları dahil et<small>Kapalıyken “düşük” ve “belirsiz” alacaklar hesaba katılmaz.</small></span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" data-bind="settings.autoSave" data-type="bool">
+          <span class="track" aria-hidden="true"></span>
+          <span class="txt">Otomatik kayıt<small>Her değişiklikte veriler tarayıcıya yazılır.</small></span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" data-bind="settings.dark" data-type="bool">
+          <span class="track" aria-hidden="true"></span>
+          <span class="txt">Koyu tema<small>Göz yormayan koyu arayüz.</small></span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" type="button" data-act="clear-data">Verileri temizle</button>
+      <button class="btn btn-ghost" type="button" data-act="defaults">Varsayılanlara dön</button>
+      <button class="btn" type="button" data-act="close-modal">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="infoModal" role="dialog" aria-modal="true" aria-labelledby="infoTitle" hidden>
+  <div class="modal-box" style="width:min(560px,100%)">
+    <div class="modal-head">
+      <h3 id="infoTitle" style="font-size:1.1rem">Bilgi</h3>
+      <button class="icon-btn" type="button" data-act="close-modal" aria-label="Kapat">✕</button>
+    </div>
+    <div class="modal-body" id="infoBody"></div>
+    <div class="modal-foot"><button class="btn" type="button" data-act="close-modal">Kapat</button></div>
+  </div>
+</div>
+
+
+<!-- ============== MOBİL ALT ÖZET ============== -->
+<div class="sheet-back" id="sheetBack" data-act="sheet-close" hidden></div>
+<aside class="sheet" id="mobileSheet" aria-label="Hesap özeti" hidden>
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <div class="summary-total">
+    <div class="label">Tahmini zekât</div>
+    <div class="value" data-bind-out="panelZakat">0,00 ₺</div>
+  </div>
+  <dl style="margin:0">
+    <div class="kv"><dt>Toplam varlık</dt><dd data-bind-out="panelGross">0,00 ₺</dd></div>
+    <div class="kv"><dt>Toplam borç</dt><dd data-bind-out="panelDebts">0,00 ₺</dd></div>
+    <div class="kv"><dt>Net varlık</dt><dd data-bind-out="panelNet">0,00 ₺</dd></div>
+    <div class="kv"><dt>Nisap tutarı</dt><dd data-bind-out="panelNisab">0,00 ₺</dd></div>
+  </dl>
+  <div class="nisab-bar" aria-hidden="true"><span data-bind-style="nisabBar" style="width:0%"></span></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <span class="mini-note" data-bind-out="nisabRatio">Nisabın %0'ı</span>
+    <span class="chip" data-bind-out="panelStatus">Nisap altında</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+    <button class="btn btn-block" type="button" data-act="goto-result">Sonuç ekranına git</button>
+    <button class="btn btn-ghost btn-block" type="button" data-act="settings">Gelişmiş ayarlar</button>
+    <button class="btn btn-ghost btn-block" type="button" data-act="save">Kaydet</button>
+  </div>
+</aside>
+
+<div class="mobilebar">
+  <button class="mobilebar-btn" type="button" data-act="sheet" aria-expanded="false" aria-controls="mobileSheet">
+    <span class="mb-txt">
+      <span class="mb-label">Tahmini zekât</span>
+      <span class="mb-value" data-bind-out="panelZakat">0,00 ₺</span>
+    </span>
+    <span class="chip" data-bind-out="panelStatus">Nisap altında</span>
+    <span class="mb-caret" aria-hidden="true">▲</span>
+  </button>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ============== YAZDIRMA ALANI ============== -->
+<div id="printArea" aria-hidden="true"></div>
+
+<script>
+/* =========================================================================
+   ZEKÂTIM — Uygulama betiği
+   Katmanlar: PriceService / CalculationService / StorageService /
+              ReportService / ValidationService + UI
+   Not: Gerçek API çağrısı yapılmaz. İleride kullanılacak uç noktalar:
+   // GET  /api/prices
+   // POST /api/zakat/calculate
+   // GET  /api/users/me/assets
+   // POST /api/users/me/assets
+   // GET  /api/reports/:id
+   ========================================================================= */
+(function () {
+  "use strict";
+
+  /* ---------------------------------------------------------------------
+     1) MARKA — tek yerden değiştirilebilir
+     --------------------------------------------------------------------- */
+  var BRAND = {
+    name: "Zekâtım",
+    tagline: "Varlıklarınızı tek yerde hesaplayın, zekât yükümlülüğünüzü anlaşılır biçimde görün.",
+    version: "0.1.0"
+  };
+
+  /* ---------------------------------------------------------------------
+     2) SABİTLER — merkezî ayar nesneleri
+     --------------------------------------------------------------------- */
+  var DEFAULT_ZAKAT_RATE = 0.025;          // %2,5
+  var DEFAULT_GOLD_NISAB_GRAM = 80.18;     // altın nisabı
+  var DEFAULT_SILVER_NISAB_GRAM = 595;     // gümüş nisabı
+  var STORAGE_KEY = "zekatim_v1";
+
+  // Altın türleri ve saf altın karşılıkları
+  var GOLD_TYPES = [
+    { key: "gram",       label: "Gram altın",        unit: "gram", pure: 1 },
+    { key: "quarter",    label: "Çeyrek altın",      unit: "adet", pure: 1.6065 },
+    { key: "half",       label: "Yarım altın",       unit: "adet", pure: 3.213 },
+    { key: "full",       label: "Tam altın",         unit: "adet", pure: 6.426 },
+    { key: "cumhuriyet", label: "Cumhuriyet altını", unit: "adet", pure: 6.608 },
+    { key: "k14",        label: "14 ayar altın",     unit: "gram", pure: 14 / 24, jewelry: true },
+    { key: "k18",        label: "18 ayar altın",     unit: "gram", pure: 18 / 24, jewelry: true },
+    { key: "k22",        label: "22 ayar bilezik",   unit: "gram", pure: 22 / 24, jewelry: true },
+    { key: "k24",        label: "24 ayar altın",     unit: "gram", pure: 1 },
+    { key: "other",      label: "Diğer altın",       unit: "gram", pure: 1 }
+  ];
+
+  // Ticari varlık alanları ve bilgi metinleri
+  var COMMERCE_FIELDS = [
+    { key: "stockValue",        label: "Ticari stokların satış değeri", tip: "Ticari stoklar genel olarak alış maliyeti yerine güncel satış veya piyasa değeri üzerinden değerlendirilebilir." },
+    { key: "cashRegister",      label: "Kasadaki ticari nakit",         tip: "İşletme kasasında bulunan ve ticari faaliyette kullanılan nakit tutar." },
+    { key: "bankBalance",       label: "Ticari banka bakiyesi",         tip: "İşletme adına açılmış hesaplardaki bakiyeler." },
+    { key: "otherGoods",        label: "Satışa konu diğer mallar",      tip: "Satmak niyetiyle elde tutulan diğer mal, emtia ve ürünler." },
+    { key: "tradeReceivables",  label: "Ticari alacaklar",              tip: "Müşteri ve bayilerden tahsil edilmeyi bekleyen ticari alacaklar." },
+    { key: "notes",            label: "Tahsil edilebilir senetler",    tip: "Vadesi gelmiş ya da yakında gelecek, tahsili beklenen senetler." },
+    { key: "strongReceivables", label: "Tahsil edilmesi kuvvetle muhtemel alacaklar", tip: "Karşı tarafın ödeme gücü ve niyeti bilinen, tahsili kuvvetle muhtemel alacaklar." }
+  ];
+
+  var DEBT_TYPES = ["Kredi kartı borcu", "Kısa vadeli bireysel borç", "Ticari borç", "Ödenmesi yaklaşan taksit", "Vergi borcu", "Kira borcu", "Maaş ve personel borcu", "Diğer borçlar"];
+
+  var PROBABILITIES = [
+    { v: "high", t: "Yüksek" }, { v: "mid", t: "Orta" },
+    { v: "low", t: "Düşük" }, { v: "unknown", t: "Belirsiz" }
+  ];
+
+  var CATEGORY_COLORS = {
+    cash: "#174C3C", gold: "#B99045", equity: "#3E7F63",
+    crypto: "#7A6DB0", commerce: "#C0703B", receivable: "#5B8DAE"
+  };
+
+  /* ---------------------------------------------------------------------
+     3) VARSAYILAN DURUM (state)
+     --------------------------------------------------------------------- */
+  function defaultState() {
+    var gold = {};
+    GOLD_TYPES.forEach(function (g) { gold[g.key] = 0; });
+    gold.silver = 0;
+
+    var commerce = {};
+    COMMERCE_FIELDS.forEach(function (f) { commerce[f.key] = 0; });
+
+    return {
+      version: BRAND.version,
+      step: 1,
+      prices: { gold: 4400, silver: 50, usd: 41.5, eur: 48, gbp: 55.5, updatedAt: null },
+      nisab: { method: "gold", manualValue: 0 },
+      settings: {
+        zakatRatePct: DEFAULT_ZAKAT_RATE * 100,
+        goldNisabGram: DEFAULT_GOLD_NISAB_GRAM,
+        silverNisabGram: DEFAULT_SILVER_NISAB_GRAM,
+        debtMethod: "twelve",
+        includeJewelry: true,
+        includeLowReceivables: false,
+        autoSave: true,
+        currency: "TRY",
+        dark: false
+      },
+      cash: { tl: 0, demand: 0, participation: 0, otherCash: 0, usd: 0, eur: 0, gbp: 0 },
+      currencies: [],
+      gold: gold,
+      stocks: [],
+      funds: [],
+      crypto: [],
+      commerce: commerce,
+      receivables: [],
+      debts: [],
+      plan: { months: 1, custom: 0 },
+      savedAt: null
+    };
+  }
+
+  var state = defaultState();
+  var uid = 0;
+  function nextId() { uid += 1; return "r" + Date.now().toString(36) + uid; }
+
+  /* ---------------------------------------------------------------------
+     4) YARDIMCILAR
+     --------------------------------------------------------------------- */
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  // Kullanıcı metinlerini ekrana yazarken kaçış uygula
+  function esc(str) {
+    return String(str == null ? "" : str)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function el(tag, attrs, kids) {
+    var node = document.createElement(tag);
+    if (attrs) {
+      Object.keys(attrs).forEach(function (k) {
+        var v = attrs[k];
+        if (v === null || v === undefined || v === false) return;
+        if (k === "text") { node.textContent = v; }
+        else if (k === "class") { node.className = v; }
+        else { node.setAttribute(k, v === true ? "" : v); }
+      });
+    }
+    (kids || []).forEach(function (c) { if (c) node.appendChild(c); });
+    return node;
+  }
+
+  function getPath(obj, path) {
+    return path.split(".").reduce(function (o, k) { return (o == null ? undefined : o[k]); }, obj);
+  }
+  function setPath(obj, path, value) {
+    var parts = path.split("."), o = obj;
+    for (var i = 0; i < parts.length - 1; i++) { if (o[parts[i]] == null) o[parts[i]] = {}; o = o[parts[i]]; }
+    o[parts[parts.length - 1]] = value;
+  }
+
+  /* ---------------------------------------------------------------------
+     5) ValidationService — giriş doğrulama
+     --------------------------------------------------------------------- */
+  var ValidationService = {
+    /* Hem virgül hem nokta kabul edilir.
+       "4.400" -> 4400 (binlik), "41,50" -> 41.5, "1.5" -> 1.5 */
+    parseNumber: function (raw) {
+      if (typeof raw === "number") return { value: raw, error: null };
+      var s = String(raw == null ? "" : raw).trim().replace(/\s/g, "").replace(/[₺$€£]/g, "");
+      if (s === "") return { value: 0, error: null };
+      var negative = /^-/.test(s);
+      s = s.replace(/-/g, "");
+      var hasComma = s.indexOf(",") > -1, hasDot = s.indexOf(".") > -1;
+      if (hasComma && hasDot) {
+        if (s.lastIndexOf(",") > s.lastIndexOf(".")) s = s.replace(/\./g, "").replace(",", ".");
+        else s = s.replace(/,/g, "");
+      } else if (hasComma) {
+        var cParts = s.split(",");
+        s = cParts.slice(0, -1).join("") + "." + cParts[cParts.length - 1];
+      } else if (hasDot) {
+        var dParts = s.split(".");
+        var last = dParts[dParts.length - 1];
+        if (dParts.length > 2 || (last.length === 3 && dParts[0].length <= 3 && s.length > 4)) {
+          s = dParts.join(""); // binlik ayırıcı
+        }
+      }
+      var n = parseFloat(s);
+      if (!isFinite(n)) return { value: 0, error: "Sayısal bir değer girin." };
+      if (negative || n < 0) return { value: 0, error: "Negatif değer kullanılamaz, 0 kabul edildi." };
+      return { value: n, error: null };
+    },
+    mark: function (input, message) {
+      if (!input) return;
+      var holder = input.closest(".field") || input.parentElement;
+      var box = holder ? holder.querySelector(".err") : null;
+      if (message) {
+        input.setAttribute("aria-invalid", "true");
+        if (!box && holder) { box = el("p", { class: "err" }); holder.appendChild(box); }
+        if (box) box.textContent = message;
+      } else {
+        input.removeAttribute("aria-invalid");
+        if (box) box.textContent = "";
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------------
+     6) Biçimlendirme
+     --------------------------------------------------------------------- */
+  function money(n) {
+    var cur = (state.settings && state.settings.currency) || "TRY";
+    try {
+      return new Intl.NumberFormat("tr-TR", { style: "currency", currency: cur, maximumFractionDigits: 2 }).format(isFinite(n) ? n : 0);
+    } catch (e) {
+      return new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(isFinite(n) ? n : 0) + " " + cur;
+    }
+  }
+  function num(n, d) {
+    return new Intl.NumberFormat("tr-TR", { maximumFractionDigits: d === undefined ? 2 : d }).format(isFinite(n) ? n : 0);
+  }
+  function pct(n) { return "%" + num(n, 2); }
+  function dateTR(ts) {
+    var d = ts ? new Date(ts) : new Date();
+    return new Intl.DateTimeFormat("tr-TR", { dateStyle: "long", timeStyle: "short" }).format(d);
+  }
+
+  /* ---------------------------------------------------------------------
+     7) StorageService — localStorage (bellek yedekli)
+     --------------------------------------------------------------------- */
+  var StorageService = (function () {
+    var memory = {};
+    var available = (function () {
+      try { window.localStorage.setItem("__t", "1"); window.localStorage.removeItem("__t"); return true; }
+      catch (e) { return false; }
+    })();
+    return {
+      isPersistent: available,
+      save: function (data) {
+        var payload = JSON.stringify(data);
+        try { if (available) window.localStorage.setItem(STORAGE_KEY, payload); else memory[STORAGE_KEY] = payload; return true; }
+        catch (e) { memory[STORAGE_KEY] = payload; return false; }
+      },
+      load: function () {
+        try {
+          var raw = available ? window.localStorage.getItem(STORAGE_KEY) : memory[STORAGE_KEY];
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+      },
+      clear: function () {
+        try { if (available) window.localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        delete memory[STORAGE_KEY];
+      }
+    };
+  })();
+
+  /* ---------------------------------------------------------------------
+     8) PriceService — demo fiyat yönetimi
+     Gerçek sürümde: GET /api/prices
+     --------------------------------------------------------------------- */
+  var PriceService = {
+    get: function () { return state.prices; },
+    set: function (key, value) { state.prices[key] = value; },
+    /* Demo güncelleme: küçük rastgele sapmalar üretir. */
+    refreshDemo: function () {
+      return new Promise(function (resolve) {
+        window.setTimeout(function () {
+          ["gold", "silver", "usd", "eur", "gbp"].forEach(function (k) {
+            var drift = 1 + (Math.random() - 0.5) * 0.03; // ±%1,5
+            state.prices[k] = Math.round(state.prices[k] * drift * 100) / 100;
+          });
+          state.prices.updatedAt = Date.now();
+          resolve(state.prices);
+        }, 850);
+      });
+    }
+  };
+
+  /* ---------------------------------------------------------------------
+     9) CalculationService — tüm hesaplama mantığı
+     Gerçek sürümde: POST /api/zakat/calculate
+     --------------------------------------------------------------------- */
+  var CalculationService = {
+    goldPureGrams: function (s) {
+      return GOLD_TYPES.reduce(function (sum, g) {
+        if (g.jewelry && !s.settings.includeJewelry) return sum;
+        return sum + (Number(s.gold[g.key]) || 0) * g.pure;
+      }, 0);
+    },
+    stockValue: function (row) {
+      var total = (Number(row.qty) || 0) * (Number(row.price) || 0);
+      if (row.method === "ratio") return total * (Math.min(100, Number(row.ratio) || 0) / 100);
+      if (row.method === "dividend") return Number(row.cashOnly) || 0;
+      return total;
+    },
+    fundValue: function (row) {
+      return (Number(row.qty) || 0) * (Number(row.price) || 0) * (Math.min(100, Number(row.ratio) || 0) / 100);
+    },
+    cryptoValue: function (row) { return (Number(row.amount) || 0) * (Number(row.price) || 0); },
+    receivableIncluded: function (row, s) {
+      if (!row.include) return false;
+      if (!s.settings.includeLowReceivables && (row.probability === "low" || row.probability === "unknown")) return false;
+      return true;
+    },
+    debtValue: function (row, s) {
+      if (s.settings.debtMethod === "full") return Number(row.total) || 0;
+      if (s.settings.debtMethod === "manual") return Number(row.manual) || 0;
+      return Number(row.yearly) || 0;
+    },
+    nisabValue: function (s) {
+      if (s.nisab.method === "manual") return Number(s.nisab.manualValue) || 0;
+      if (s.nisab.method === "silver") return (Number(s.settings.silverNisabGram) || 0) * (Number(s.prices.silver) || 0);
+      return (Number(s.settings.goldNisabGram) || 0) * (Number(s.prices.gold) || 0);
+    },
+    compute: function (s) {
+      var p = s.prices;
+      var tlCash = ["tl", "demand", "participation", "otherCash"].reduce(function (a, k) { return a + (Number(s.cash[k]) || 0); }, 0);
+      var usdTRY = (Number(s.cash.usd) || 0) * (Number(p.usd) || 0);
+      var eurTRY = (Number(s.cash.eur) || 0) * (Number(p.eur) || 0);
+      var gbpTRY = (Number(s.cash.gbp) || 0) * (Number(p.gbp) || 0);
+      var otherFX = s.currencies.reduce(function (a, r) { return a + (Number(r.amount) || 0) * (Number(r.rate) || 0); }, 0);
+      var fx = usdTRY + eurTRY + gbpTRY + otherFX;
+      var cashAndCurrencies = tlCash + fx;
+
+      var pureGold = CalculationService.goldPureGrams(s);
+      var goldValue = pureGold * (Number(p.gold) || 0);
+      var silverValue = (Number(s.gold.silver) || 0) * (Number(p.silver) || 0);
+      var goldAndSilver = goldValue + silverValue;
+
+      var stocksTotal = s.stocks.reduce(function (a, r) { return a + CalculationService.stockValue(r); }, 0);
+      var fundsTotal = s.funds.reduce(function (a, r) { return a + CalculationService.fundValue(r); }, 0);
+      var stocksAndFunds = stocksTotal + fundsTotal;
+      var cryptoAssets = s.crypto.reduce(function (a, r) { return a + CalculationService.cryptoValue(r); }, 0);
+
+      var commercialAssets = COMMERCE_FIELDS.reduce(function (a, f) { return a + (Number(s.commerce[f.key]) || 0); }, 0);
+      var receivables = s.receivables.reduce(function (a, r) {
+        return a + (CalculationService.receivableIncluded(r, s) ? (Number(r.amount) || 0) : 0);
+      }, 0);
+      var otherAssets = 0;
+
+      var grossAssets = cashAndCurrencies + goldAndSilver + stocksAndFunds + cryptoAssets + commercialAssets + receivables + otherAssets;
+      var deductibleDebts = s.debts.reduce(function (a, r) { return a + CalculationService.debtValue(r, s); }, 0);
+
+      var netZakatBase = Math.max(0, grossAssets - deductibleDebts);
+      var nisab = CalculationService.nisabValue(s);
+      var isAboveNisab = netZakatBase >= nisab && nisab > 0;
+      var rate = (Number(s.settings.zakatRatePct) || 0) / 100;
+      var estimatedZakat = isAboveNisab ? netZakatBase * rate : 0;
+
+      var months = (Number(s.plan.custom) || 0) > 0 ? Math.round(Number(s.plan.custom)) : (Number(s.plan.months) || 1);
+      months = Math.max(1, Math.min(120, months));
+
+      return {
+        tlCash: tlCash, usdTRY: usdTRY, eurTRY: eurTRY, gbpTRY: gbpTRY, otherFX: otherFX, fx: fx,
+        cashAndCurrencies: cashAndCurrencies,
+        pureGold: pureGold, goldValue: goldValue, silverValue: silverValue, goldAndSilver: goldAndSilver,
+        stocksTotal: stocksTotal, fundsTotal: fundsTotal, stocksAndFunds: stocksAndFunds,
+        cryptoAssets: cryptoAssets, commercialAssets: commercialAssets, receivables: receivables,
+        grossAssets: grossAssets, deductibleDebts: deductibleDebts, netZakatBase: netZakatBase,
+        nisab: nisab, isAboveNisab: isAboveNisab, rate: rate, estimatedZakat: estimatedZakat,
+        months: months, monthly: estimatedZakat / months,
+        ratioToNisab: nisab > 0 ? Math.min(100, (netZakatBase / nisab) * 100) : 0,
+        aboveAmount: Math.max(0, netZakatBase - nisab),
+        categories: [
+          { key: "cash", label: "Nakit ve döviz", value: cashAndCurrencies, color: CATEGORY_COLORS.cash },
+          { key: "gold", label: "Altın ve gümüş", value: goldAndSilver, color: CATEGORY_COLORS.gold },
+          { key: "equity", label: "Hisse ve fon", value: stocksAndFunds, color: CATEGORY_COLORS.equity },
+          { key: "crypto", label: "Kripto", value: cryptoAssets, color: CATEGORY_COLORS.crypto },
+          { key: "commerce", label: "Ticari varlık", value: commercialAssets, color: CATEGORY_COLORS.commerce },
+          { key: "receivable", label: "Alacaklar", value: receivables, color: CATEGORY_COLORS.receivable }
+        ]
+      };
+    }
+  };
+
+  /* ---------------------------------------------------------------------
+     10) ReportService — JSON dışa/içe aktarma ve yazdırma
+     Gerçek sürümde: GET /api/reports/:id
+     --------------------------------------------------------------------- */
+  var ReportService = {
+    exportJSON: function () {
+      var payload = JSON.stringify({ app: BRAND.name, version: BRAND.version, exportedAt: new Date().toISOString(), data: state }, null, 2);
+      var blob = new Blob([payload], { type: "application/json;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = el("a", { href: url, download: "zekatim-" + new Date().toISOString().slice(0, 10) + ".json" });
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      window.setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    },
+    importJSON: function (file, onDone) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var parsed = JSON.parse(String(reader.result));
+          var data = parsed && parsed.data ? parsed.data : parsed;
+          if (!data || typeof data !== "object") throw new Error("format");
+          onDone(null, mergeState(data));
+        } catch (e) { onDone(new Error("Dosya okunamadı. Geçerli bir Zekâtım JSON dosyası seçin."), null); }
+      };
+      reader.onerror = function () { onDone(new Error("Dosya okunamadı."), null); };
+      reader.readAsText(file);
+    },
+    print: function () { buildPrintReport(); window.print(); }
+  };
+
+  /* İçe aktarılan veriyi varsayılan şema ile birleştirir (eksik alanları tamamlar). */
+  function mergeState(incoming) {
+    var base = defaultState();
+    ["prices", "nisab", "settings", "cash", "gold", "commerce", "plan"].forEach(function (k) {
+      if (incoming[k] && typeof incoming[k] === "object") {
+        Object.keys(base[k]).forEach(function (f) {
+          if (incoming[k][f] !== undefined && incoming[k][f] !== null) base[k][f] = incoming[k][f];
+        });
+      }
+    });
+    ["currencies", "stocks", "funds", "crypto", "receivables", "debts"].forEach(function (k) {
+      if (Array.isArray(incoming[k])) {
+        base[k] = incoming[k].map(function (r) {
+          var copy = Object.assign({}, r);
+          if (!copy.id) copy.id = nextId();
+          return copy;
+        });
+      }
+    });
+    if (incoming.step) base.step = Math.min(7, Math.max(1, Number(incoming.step) || 1));
+    return base;
+  }
+
+  /* ---------------------------------------------------------------------
+     11) UI — bildirimler, modal, tooltip
+     --------------------------------------------------------------------- */
+  function toast(message, kind) {
+    var box = $("#toasts");
+    var node = el("div", { class: "toast " + (kind || "") }, [
+      el("span", { "aria-hidden": "true", text: kind === "err" ? "✕" : kind === "warn" ? "!" : "✓" }),
+      el("span", { text: message })
+    ]);
+    box.appendChild(node);
+    window.setTimeout(function () {
+      node.style.transition = "opacity .3s, transform .3s";
+      node.style.opacity = "0"; node.style.transform = "translateY(8px)";
+      window.setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 320);
+    }, 3200);
+  }
+
+  var lastFocused = null;
+  function openModal(id) {
+    var m = document.getElementById(id);
+    if (!m) return;
+    lastFocused = document.activeElement;
+    m.hidden = false; m.classList.add("open");
+    var f = m.querySelector("button, input, select, a[href]");
+    if (f) f.focus();
+  }
+  function closeModals() {
+    $$(".modal.open").forEach(function (m) { m.classList.remove("open"); m.hidden = true; });
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+  }
+  function openInfo(title, body) {
+    $("#infoTitle").textContent = title;
+    var host = $("#infoBody");
+    host.textContent = "";
+    (Array.isArray(body) ? body : [body]).forEach(function (paragraph) {
+      host.appendChild(el("p", { text: paragraph, style: "margin-bottom:10px;color:var(--muted);font-size:.9rem;line-height:1.65" }));
+    });
+    openModal("infoModal");
+  }
+
+  var activeTip = null;
+  function closeTip() { if (activeTip && activeTip.parentNode) activeTip.parentNode.removeChild(activeTip); activeTip = null; }
+  function showTip(trigger) {
+    closeTip();
+    var text = trigger.getAttribute("data-tip") || "";
+    var tip = el("div", { class: "tip", role: "tooltip", text: text });
+    document.body.appendChild(tip);
+    var r = trigger.getBoundingClientRect();
+    var top = window.scrollY + r.bottom + 8;
+    var left = window.scrollX + r.left - tip.offsetWidth / 2 + r.width / 2;
+    left = Math.max(12, Math.min(left, window.innerWidth - tip.offsetWidth - 12));
+    tip.style.top = top + "px"; tip.style.left = left + "px";
+    activeTip = tip;
+  }
+
+  /* ---------------------------------------------------------------------
+     12) Form üreticileri
+     --------------------------------------------------------------------- */
+  function fmtInput(v) { return (Number(v) || 0) === 0 ? "" : num(v, 4); }
+
+  function labeledField(labelText, control, hint) {
+    var kids = [el("span", { class: "field-label", text: labelText }), control];
+    if (hint) kids.push(hint);
+    return el("label", { class: "field" }, kids);
+  }
+
+  function rowNumInput(list, id, field, value, affix, placeholder) {
+    var input = el("input", {
+      class: "input", type: "text", inputmode: "decimal", value: fmtInput(value),
+      placeholder: placeholder || "0", "data-row": list, "data-id": id, "data-field": field, "data-type": "num"
+    });
+    if (!affix) return input;
+    return el("span", { class: "input-affix" }, [input, el("span", { class: "affix", text: affix })]);
+  }
+  function rowTextInput(list, id, field, value, placeholder) {
+    return el("input", {
+      class: "input", type: "text", value: value == null ? "" : String(value), placeholder: placeholder || "",
+      "data-row": list, "data-id": id, "data-field": field, "data-type": "text"
+    });
+  }
+  function rowDateInput(list, id, field, value) {
+    return el("input", { class: "input", type: "date", value: value || "", "data-row": list, "data-id": id, "data-field": field, "data-type": "text" });
+  }
+  function rowSelect(list, id, field, value, options) {
+    var sel = el("select", { class: "input", "data-row": list, "data-id": id, "data-field": field, "data-type": "text" });
+    options.forEach(function (o) {
+      var opt = el("option", { value: o.v, text: o.t });
+      if (String(o.v) === String(value)) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    return sel;
+  }
+  function rowFooter(list, row, totalText) {
+    return el("div", { class: "row-actions" }, [
+      el("span", { class: "row-total", "data-total-for": list + ":" + row.id, text: totalText }),
+      el("button", { class: "btn btn-danger btn-sm", type: "button", "data-act": "del", "data-list": list, "data-id": row.id, text: "Sil" })
+    ]);
+  }
+  function rowGrid(kids, min) {
+    return el("div", { class: "row-grid", style: "grid-template-columns:repeat(auto-fit,minmax(" + (min || 150) + "px,1fr))" }, kids);
+  }
+
+  /* Satır şablonları */
+  var ROWS = {
+    currencies: {
+      empty: { title: "Henüz özel döviz yok", text: "Listede olmayan bir para birimini kur bilgisiyle birlikte ekleyebilirsiniz." },
+      create: function () { return { id: nextId(), name: "", amount: 0, rate: 0 }; },
+      render: function (row) {
+        return el("div", { class: "row-item" }, [
+          rowGrid([
+            labeledField("Para birimi", rowTextInput("currencies", row.id, "name", row.name, "Örn. CHF")),
+            labeledField("Miktar", rowNumInput("currencies", row.id, "amount", row.amount)),
+            labeledField("TL karşılığı kur", rowNumInput("currencies", row.id, "rate", row.rate, "₺"))
+          ]),
+          rowFooter("currencies", row, money(0))
+        ]);
+      },
+      total: function (row) { return (Number(row.amount) || 0) * (Number(row.rate) || 0); }
+    },
+    stocks: {
+      empty: { title: "Hisse eklenmedi", text: "Portföyünüzdeki hisseleri adet ve güncel fiyatıyla ekleyin." },
+      create: function () { return { id: nextId(), name: "", qty: 0, price: 0, method: "market", ratio: 100, cashOnly: 0 }; },
+      render: function (row) {
+        var methodSel = rowSelect("stocks", row.id, "method", row.method, [
+          { v: "market", t: "Toplam piyasa değeri" },
+          { v: "ratio", t: "Zekâta tabi oranı manuel belirle" },
+          { v: "dividend", t: "Yalnızca temettü / nakit tutarı" }
+        ]);
+        var kids = [
+          labeledField("Hisse adı veya kodu", rowTextInput("stocks", row.id, "name", row.name, "Örn. THYAO")),
+          labeledField("Adet", rowNumInput("stocks", row.id, "qty", row.qty)),
+          labeledField("Güncel birim fiyat", rowNumInput("stocks", row.id, "price", row.price, "₺")),
+          labeledField("Hesaplama yöntemi", methodSel)
+        ];
+        if (row.method === "ratio") kids.push(labeledField("Zekâta tabi oran", rowNumInput("stocks", row.id, "ratio", row.ratio, "%")));
+        if (row.method === "dividend") kids.push(labeledField("Temettü / nakit tutarı", rowNumInput("stocks", row.id, "cashOnly", row.cashOnly, "₺")));
+        return el("div", { class: "row-item" }, [rowGrid(kids, 160), rowFooter("stocks", row, money(0))]);
+      },
+      total: function (row) { return CalculationService.stockValue(row); }
+    },
+    funds: {
+      empty: { title: "Fon eklenmedi", text: "Yatırım fonlarınızı pay miktarı ve güncel pay fiyatıyla ekleyin." },
+      create: function () { return { id: nextId(), name: "", qty: 0, price: 0, ratio: 100 }; },
+      render: function (row) {
+        return el("div", { class: "row-item" }, [
+          rowGrid([
+            labeledField("Fon adı", rowTextInput("funds", row.id, "name", row.name, "Örn. Katılım Fonu")),
+            labeledField("Pay miktarı", rowNumInput("funds", row.id, "qty", row.qty)),
+            labeledField("Güncel pay fiyatı", rowNumInput("funds", row.id, "price", row.price, "₺")),
+            labeledField("Zekâta tabi oran", rowNumInput("funds", row.id, "ratio", row.ratio, "%"))
+          ], 160),
+          rowFooter("funds", row, money(0))
+        ]);
+      },
+      total: function (row) { return CalculationService.fundValue(row); }
+    },
+    crypto: {
+      empty: { title: "Kripto varlık eklenmedi", text: "Varlık adı, miktar ve güncel TL fiyatını girerek ekleyin." },
+      create: function () { return { id: nextId(), name: "", symbol: "", amount: 0, price: 0 }; },
+      render: function (row) {
+        return el("div", { class: "row-item" }, [
+          rowGrid([
+            labeledField("Varlık adı", rowTextInput("crypto", row.id, "name", row.name, "Örn. Bitcoin")),
+            labeledField("Sembol", rowTextInput("crypto", row.id, "symbol", row.symbol, "BTC")),
+            labeledField("Miktar", rowNumInput("crypto", row.id, "amount", row.amount)),
+            labeledField("Güncel TL fiyatı", rowNumInput("crypto", row.id, "price", row.price, "₺"))
+          ], 150),
+          rowFooter("crypto", row, money(0))
+        ]);
+      },
+      total: function (row) { return CalculationService.cryptoValue(row); }
+    },
+    receivables: {
+      empty: { title: "Alacak eklenmedi", text: "Tahsil etmeyi beklediğiniz alacakları ekleyip hangilerinin hesaba katılacağını seçin." },
+      create: function () { return { id: nextId(), desc: "", amount: 0, dueDate: "", probability: "high", include: true }; },
+      render: function (row) {
+        var inc = el("input", { type: "checkbox", "data-row": "receivables", "data-id": row.id, "data-field": "include", "data-type": "bool" });
+        inc.checked = !!row.include;
+        var sw = el("label", { class: "switch", style: "min-height:44px" }, [
+          inc, el("span", { class: "track", "aria-hidden": "true" }),
+          el("span", { class: "txt", text: "Hesaba dahil et" })
+        ]);
+        return el("div", { class: "row-item" }, [
+          rowGrid([
+            labeledField("Alacak açıklaması", rowTextInput("receivables", row.id, "desc", row.desc, "Örn. Ahmet Bey borcu")),
+            labeledField("Tutar", rowNumInput("receivables", row.id, "amount", row.amount, "₺")),
+            labeledField("Beklenen tahsil tarihi", rowDateInput("receivables", row.id, "dueDate", row.dueDate)),
+            labeledField("Tahsil ihtimali", rowSelect("receivables", row.id, "probability", row.probability, PROBABILITIES))
+          ], 170),
+          el("div", { style: "margin-top:10px" }, [sw]),
+          rowFooter("receivables", row, money(0))
+        ]);
+      },
+      total: function (row) { return CalculationService.receivableIncluded(row, state) ? (Number(row.amount) || 0) : 0; }
+    },
+    debts: {
+      empty: { title: "Borç eklenmedi", text: "Düşülmesini istediğiniz borç kalemlerini ekleyin." },
+      create: function () { return { id: nextId(), type: DEBT_TYPES[0], desc: "", total: 0, yearly: 0, manual: 0 }; },
+      render: function (row) {
+        var kids = [
+          labeledField("Borç türü", rowSelect("debts", row.id, "type", row.type, DEBT_TYPES.map(function (t) { return { v: t, t: t }; }))),
+          labeledField("Açıklama", rowTextInput("debts", row.id, "desc", row.desc, "Örn. Banka kredi kartı")),
+          labeledField("Toplam borç", rowNumInput("debts", row.id, "total", row.total, "₺")),
+          labeledField("Bu yıl ödenecek tutar", rowNumInput("debts", row.id, "yearly", row.yearly, "₺"))
+        ];
+        if (state.settings.debtMethod === "manual") {
+          kids.push(labeledField("Hesaba dahil edilecek tutar", rowNumInput("debts", row.id, "manual", row.manual, "₺")));
+        }
+        return el("div", { class: "row-item" }, [rowGrid(kids, 170), rowFooter("debts", row, money(0))]);
+      },
+      total: function (row) { return CalculationService.debtValue(row, state); }
+    }
+  };
+
+  function renderList(list) {
+    var host = document.getElementById("list-" + list);
+    if (!host) return;
+    host.textContent = "";
+    var rows = state[list];
+    if (!rows.length) {
+      var e = ROWS[list].empty;
+      host.appendChild(el("div", { class: "empty" }, [
+        el("strong", { text: e.title }), el("span", { text: e.text })
+      ]));
+      return;
+    }
+    rows.forEach(function (row) { host.appendChild(ROWS[list].render(row)); });
+  }
+  function renderAllLists() { Object.keys(ROWS).forEach(renderList); }
+
+  /* Altın alanları */
+  function renderGoldFields() {
+    var host = $("#goldFields");
+    host.textContent = "";
+    GOLD_TYPES.forEach(function (g) {
+      var input = el("input", {
+        class: "input", type: "text", inputmode: "decimal", placeholder: "0",
+        "data-bind": "gold." + g.key, "data-type": "num", value: fmtInput(state.gold[g.key])
+      });
+      var hint = el("span", { class: "hint" }, [
+        document.createTextNode("Değer: "), el("strong", { "data-gold-value": g.key, text: money(0) })
+      ]);
+      var field = el("div", { class: "field" }, [
+        el("label", { class: "field-label", text: g.label + (g.jewelry ? " (ziynet)" : "") }),
+        el("span", { class: "input-affix" }, [input, el("span", { class: "affix", text: g.unit })]),
+        hint
+      ]);
+      // etiket-girdi ilişkisi
+      var id = "gold-" + g.key;
+      input.id = id; field.querySelector("label").setAttribute("for", id);
+      host.appendChild(field);
+    });
+  }
+
+  /* Ticari alanlar */
+  function renderCommerceFields() {
+    var host = $("#commerceFields");
+    host.textContent = "";
+    COMMERCE_FIELDS.forEach(function (f) {
+      var id = "com-" + f.key;
+      var input = el("input", {
+        class: "input", id: id, type: "text", inputmode: "decimal", placeholder: "0",
+        "data-bind": "commerce." + f.key, "data-type": "num", value: fmtInput(state.commerce[f.key])
+      });
+      var label = el("label", { class: "field-label", for: id }, [
+        document.createTextNode(f.label),
+        el("button", { class: "info-btn", type: "button", "data-tip": f.tip, "aria-label": f.label + " hakkında bilgi", text: "i" })
+      ]);
+      host.appendChild(el("div", { class: "field" }, [
+        label, el("span", { class: "input-affix" }, [input, el("span", { class: "affix", text: "₺" })])
+      ]));
+    });
+  }
+
+  /* Adım göstergesi */
+  var STEP_LABELS = ["Fiyatlar ve nisap", "Nakit ve döviz", "Altın ve gümüş", "Yatırımlar", "Ticaret ve alacaklar", "Borçlar", "Sonuç"];
+  function renderStepBar() {
+    var bar = $("#stepBar");
+    bar.textContent = "";
+    STEP_LABELS.forEach(function (label, i) {
+      var n = i + 1;
+      var btn = el("button", {
+        class: "step-pill" + (n < state.step ? " done" : ""), type: "button", role: "tab",
+        id: "steptab-" + n, "data-act": "step", "data-step": n,
+        "aria-current": n === state.step ? "true" : "false",
+        "aria-controls": "panel-" + n
+      }, [el("span", { class: "num", text: String(n) }), el("span", { text: label })]);
+      bar.appendChild(btn);
+    });
+    try {
+      var current = bar.querySelector('[aria-current="true"]');
+      if (current && bar.scrollTo) bar.scrollTo({ left: Math.max(0, current.offsetLeft - 40), behavior: "smooth" });
+    } catch (e) {}
+    $("#progressBar").firstElementChild.style.width = Math.round((state.step / 7) * 100) + "%";
+    $("#progressBar").setAttribute("aria-valuenow", String(state.step));
+  }
+
+  function showStep(n, focus) {
+    state.step = Math.min(7, Math.max(1, n));
+    $$(".panel").forEach(function (p) {
+      var isActive = Number(p.getAttribute("data-panel")) === state.step;
+      p.classList.toggle("active", isActive);
+      p.hidden = !isActive;
+    });
+    renderStepBar();
+    if (focus !== false) {
+      var active = $('.panel[data-panel="' + state.step + '"]');
+      if (active) {
+        active.focus({ preventScroll: true });
+        var top = $("#calcSection").getBoundingClientRect().top + window.scrollY - 90;
+        window.scrollTo({ top: top, behavior: "smooth" });
+      }
+    }
+    persist();
+  }
+
+  /* ---------------------------------------------------------------------
+     13) Çıktı katmanı — hesap sonuçlarını ekrana yaz
+     --------------------------------------------------------------------- */
+  function out(key, text) {
+    $$('[data-bind-out="' + key + '"]').forEach(function (n) { n.textContent = text; });
+  }
+  function chipClass(key, cls) {
+    $$('[data-bind-out="' + key + '"]').forEach(function (n) { n.className = "chip " + cls; });
+  }
+
+  var NISAB_LABELS = { gold: "Altın nisabı", silver: "Gümüş nisabı", manual: "Manuel nisap" };
+
+  function refresh() {
+    var r = CalculationService.compute(state);
+
+    // Hero + panel
+    out("heroGross", money(r.grossAssets));
+    out("heroNet", money(r.netZakatBase));
+    out("heroNisab", money(r.nisab));
+    out("heroZakat", money(r.estimatedZakat));
+    out("nisabChipHero", r.isAboveNisab ? "Nisap aşıldı" : "Nisap altında");
+    chipClass("nisabChipHero", r.isAboveNisab ? "chip-ok" : "chip-no");
+
+    out("panelZakat", money(r.estimatedZakat));
+    out("panelGross", money(r.grossAssets));
+    out("panelDebts", money(r.deductibleDebts));
+    out("panelNet", money(r.netZakatBase));
+    out("panelNisab", money(r.nisab));
+    out("panelStatus", r.isAboveNisab ? "Nisap aşıldı" : "Nisap altında");
+    chipClass("panelStatus", r.isAboveNisab ? "chip-ok" : "chip-no");
+    out("nisabRatio", "Nisabın " + pct(r.ratioToNisab) + "'ı");
+    $$('[data-bind-style="nisabBar"]').forEach(function (n) { n.style.width = Math.round(r.ratioToNisab) + "%"; });
+
+    // Adım 1
+    out("priceUpdatedAt", state.prices.updatedAt ? dateTR(state.prices.updatedAt) : "Demo başlangıç değerleri");
+    out("nisabValueOut", money(r.nisab));
+    var formula = state.nisab.method === "gold"
+      ? num(state.settings.goldNisabGram, 2) + " gr × " + money(state.prices.gold) + " = " + money(r.nisab)
+      : state.nisab.method === "silver"
+        ? num(state.settings.silverNisabGram, 2) + " gr × " + money(state.prices.silver) + " = " + money(r.nisab)
+        : "Manuel olarak girilen tutar: " + money(r.nisab);
+    out("nisabFormula", formula);
+
+    // Adım 2
+    out("subTL", money(r.tlCash));
+    out("subFX", money(r.usdTRY + r.eurTRY + r.gbpTRY));
+    out("usdTRY", money(r.usdTRY));
+    out("eurTRY", money(r.eurTRY));
+    out("gbpTRY", money(r.gbpTRY));
+    out("subFXOther", money(r.otherFX));
+
+    // Adım 3
+    out("subGold", money(r.goldValue));
+    out("subSilver", money(r.silverValue));
+    out("silverValue", money(r.silverValue));
+    out("pureGoldGrams", num(r.pureGold, 2) + " gram");
+    GOLD_TYPES.forEach(function (g) {
+      var included = !(g.jewelry && !state.settings.includeJewelry);
+      var val = included ? (Number(state.gold[g.key]) || 0) * g.pure * (Number(state.prices.gold) || 0) : 0;
+      $$('[data-gold-value="' + g.key + '"]').forEach(function (n) {
+        n.textContent = included ? money(val) : "hariç tutuldu";
+      });
+    });
+
+    // Adım 4-6
+    out("subStocks", money(r.stocksTotal));
+    out("subFunds", money(r.fundsTotal));
+    out("subCrypto", money(r.cryptoAssets));
+    out("subCommerce", money(r.commercialAssets));
+    out("subReceivables", money(r.receivables));
+    out("subDebts", money(r.deductibleDebts));
+
+    // Satır toplamları
+    Object.keys(ROWS).forEach(function (list) {
+      state[list].forEach(function (row) {
+        var node = $('[data-total-for="' + list + ':' + row.id + '"]');
+        if (!node) return;
+        var v = ROWS[list].total(row);
+        var prefix = list === "debts" ? "Düşülecek: " : list === "receivables" ? "Hesaba giren: " : "Toplam: ";
+        node.textContent = prefix + money(v);
+      });
+    });
+
+    // Adım 7
+    out("resZakat", money(r.estimatedZakat));
+    out("resStatus", r.isAboveNisab
+      ? "Girdiğiniz bilgilere göre net varlığınız nisap tutarını aşıyor. Tahmini zekât tutarınız yukarıda gösterilmiştir."
+      : "Girdiğiniz bilgilere göre net varlığınız seçilen nisap tutarını aşmıyor.");
+    out("resNet", money(r.netZakatBase));
+    out("resRate", pct(state.settings.zakatRatePct));
+    out("resMethod", NISAB_LABELS[state.nisab.method] || "Altın nisabı");
+    out("resNisab", money(r.nisab));
+    out("resAbove", money(r.aboveAmount));
+    out("resDate", dateTR());
+    out("sumGross", money(r.grossAssets));
+    out("sumDebts", "− " + money(r.deductibleDebts));
+    out("sumNet", money(r.netZakatBase));
+    out("sumRate", pct(state.settings.zakatRatePct));
+    out("sumZakat", money(r.estimatedZakat));
+
+    // Dağıtım planı
+    out("planTotal", money(r.estimatedZakat));
+    out("planMonthly", money(r.monthly));
+    out("planLabel", r.months === 1 ? "Tek seferde ödenecek" : r.months + " ay boyunca aylık ödeme");
+
+    renderDonut(r);
+    out("versionInfo", "v" + BRAND.version + " — MVP");
+    out("footerYear", "© " + new Date().getFullYear() + " " + BRAND.name);
+    out("saveState", state.settings.autoSave
+      ? (StorageService.isPersistent ? "Otomatik kayıt açık." : "Otomatik kayıt açık (bu ortamda geçici bellek kullanılıyor).")
+      : "Otomatik kayıt kapalı. Kaydet düğmesini kullanın.");
+    out("lastSaved", state.savedAt ? "Son kayıt: " + dateTR(state.savedAt) : "Henüz kayıt yapılmadı.");
+    return r;
+  }
+
+  function renderDonut(r) {
+    var donut = $("#donut"), legend = $("#donutLegend");
+    if (!donut || !legend) return;
+    var items = r.categories.filter(function (c) { return c.value > 0; });
+    var total = items.reduce(function (a, c) { return a + c.value; }, 0);
+    legend.textContent = "";
+    out("donutTotal", money(r.grossAssets));
+
+    if (!total) {
+      donut.style.background = "conic-gradient(var(--border) 0 100%)";
+      donut.setAttribute("aria-label", "Henüz varlık girilmedi");
+      legend.appendChild(el("p", { class: "mini-note", text: "Varlık girdikçe dağılım burada gösterilir." }));
+      return;
+    }
+    var stops = [], acc = 0, described = [];
+    items.forEach(function (c) {
+      var start = (acc / total) * 100;
+      acc += c.value;
+      var end = (acc / total) * 100;
+      stops.push(c.color + " " + start.toFixed(2) + "% " + end.toFixed(2) + "%");
+      described.push(c.label + " " + Math.round((c.value / total) * 100) + "%");
+      legend.appendChild(el("div", { class: "legend-item" }, [
+        el("span", { class: "legend-dot", style: "background:" + c.color, "aria-hidden": "true" }),
+        el("span", { class: "nm", text: c.label }),
+        el("span", { class: "vl", text: money(c.value) }),
+        el("span", { class: "pc", text: "%" + num((c.value / total) * 100, 1) })
+      ]));
+    });
+    donut.style.background = "conic-gradient(" + stops.join(",") + ")";
+    donut.setAttribute("aria-label", "Varlık dağılımı: " + described.join(", "));
+  }
+
+  /* ---------------------------------------------------------------------
+     14) Yazdırma raporu
+     --------------------------------------------------------------------- */
+  function pRow(label, value) {
+    return el("tr", null, [el("td", { text: label }), el("td", { text: value })]);
+  }
+  function pSection(title, rows) {
+    var table = el("table", { class: "p-table" }, [el("tbody", null, rows)]);
+    return el("div", { class: "p-sec" }, [el("h3", { text: title }), table]);
+  }
+  function buildPrintReport() {
+    var r = CalculationService.compute(state);
+    var host = $("#printArea");
+    host.textContent = "";
+
+    host.appendChild(el("div", { class: "p-head" }, [
+      el("div", null, [
+        el("div", { class: "p-brand", text: BRAND.name }),
+        el("div", { class: "p-sub", text: BRAND.tagline })
+      ]),
+      el("div", { class: "p-sub", text: "Hesaplama tarihi: " + dateTR() })
+    ]));
+
+    host.appendChild(pSection("Fiyat bilgileri", [
+      pRow("Gram altın", money(state.prices.gold)),
+      pRow("Gram gümüş", money(state.prices.silver)),
+      pRow("USD / TRY", num(state.prices.usd, 4)),
+      pRow("EUR / TRY", num(state.prices.eur, 4)),
+      pRow("GBP / TRY", num(state.prices.gbp, 4)),
+      pRow("Fiyat kaynağı", "Demo / kullanıcı girişi")
+    ]));
+
+    host.appendChild(pSection("Nisap", [
+      pRow("Yöntem", NISAB_LABELS[state.nisab.method] || "Altın nisabı"),
+      pRow("Nisap değeri", money(r.nisab)),
+      pRow("Durum", r.isAboveNisab ? "Nisap aşıldı" : "Nisap altında")
+    ]));
+
+    host.appendChild(pSection("Varlık kategorileri", r.categories.map(function (c) {
+      return pRow(c.label, money(c.value));
+    }).concat([pRow("Brüt zekâta tabi varlık", money(r.grossAssets))])));
+
+    var debtRows = state.debts.length
+      ? state.debts.map(function (d) {
+          return pRow((d.desc ? d.desc + " — " : "") + d.type, money(CalculationService.debtValue(d, state)));
+        })
+      : [pRow("Borç kaydı", "Yok")];
+    debtRows.push(pRow("Toplam düşülen borç", money(r.deductibleDebts)));
+    host.appendChild(pSection("Borçlar", debtRows));
+
+    host.appendChild(pSection("Sonuç", [
+      pRow("Net zekât matrahı", money(r.netZakatBase)),
+      pRow("Zekât oranı", pct(state.settings.zakatRatePct)),
+      pRow("Ödeme planı", r.months === 1 ? "Tek seferde" : r.months + " ay (aylık " + money(r.monthly) + ")")
+    ]));
+
+    host.appendChild(el("p", { class: "p-total", text: "Tahmini zekât: " + money(r.estimatedZakat) }));
+    host.appendChild(el("p", {
+      class: "p-note",
+      text: BRAND.name + ", bilgilendirme amacıyla geliştirilmiş bir hesaplama aracıdır. Hesaplama sonuçları fetva, hukuk, yatırım veya finansal danışmanlık niteliği taşımaz. Nisap, borç düşümü ve varlık türlerinin değerlendirilmesinde farklı ilmî görüşler bulunabilir; kişisel durumunuz için yetkin bir uzmana danışmanız önerilir."
+    }));
+  }
+
+  /* ---------------------------------------------------------------------
+     15) Kalıcılık
+     --------------------------------------------------------------------- */
+  var saveTimer = null;
+  function persist(force) {
+    if (!state.settings.autoSave && !force) return;
+    window.clearTimeout(saveTimer);
+    saveTimer = window.setTimeout(function () {
+      state.savedAt = Date.now();
+      StorageService.save(state);
+      out("lastSaved", "Son kayıt: " + dateTR(state.savedAt));
+    }, force ? 0 : 350);
+  }
+
+  /* ---------------------------------------------------------------------
+     16) Tema
+     --------------------------------------------------------------------- */
+  function applyTheme() {
+    document.documentElement.setAttribute("data-theme", state.settings.dark ? "dark" : "light");
+    $$('[data-act="theme"]').forEach(function (b) { b.setAttribute("aria-pressed", state.settings.dark ? "true" : "false"); });
+    $$("[data-theme-icon]").forEach(function (n) { n.textContent = state.settings.dark ? "☀" : "◐"; });
+  }
+
+  /* ---------------------------------------------------------------------
+     17) Formu duruma göre doldur (hydrate)
+     --------------------------------------------------------------------- */
+  function hydrate() {
+    $$("[data-bind]").forEach(function (node) {
+      var path = node.getAttribute("data-bind");
+      var type = node.getAttribute("data-type") || "text";
+      var value = getPath(state, path);
+      if (node.type === "radio") { node.checked = String(node.value) === String(value); }
+      else if (node.type === "checkbox") { node.checked = !!value; }
+      else if (type === "num") { node.value = fmtInput(value); }
+      else { node.value = value == null ? "" : String(value); }
+    });
+    $$("[data-show='nisab-manual']").forEach(function (n) { n.hidden = state.nisab.method !== "manual"; });
+    $$("[data-brand-name]").forEach(function (n) { n.textContent = BRAND.name; });
+    $$("[data-brand-tagline]").forEach(function (n) { if (n.classList.contains("brand-sub")) return; n.textContent = BRAND.tagline; });
+    applyTheme();
+  }
+
+
+  /* Mobil özet paneli */
+  function toggleSheet(force) {
+    var sheet = document.getElementById("mobileSheet");
+    var back = document.getElementById("sheetBack");
+    var btn = document.querySelector('[data-act="sheet"]');
+    if (!sheet) return;
+    var open = force === undefined ? !sheet.classList.contains("open") : force;
+    sheet.hidden = false; back.hidden = false;
+    // yeniden akış (transition tetiklensin)
+    void sheet.offsetWidth;
+    sheet.classList.toggle("open", open);
+    back.classList.toggle("open", open);
+    if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+    if (!open) {
+      window.setTimeout(function () {
+        if (!sheet.classList.contains("open")) { sheet.hidden = true; back.hidden = true; }
+      }, 280);
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     18) SSS içeriği
+     --------------------------------------------------------------------- */
+  var FAQ = [
+    ["Zekât oranı kaçtır?", "Yaygın uygulamada nakit, altın, gümüş, ticaret malı gibi varlıklar için kırkta bir, yani %2,5 oranı esas alınır. Tarım ürünleri, hayvanlar ve madenler gibi bazı varlık türlerinde farklı oranlar gündeme gelebilir. Bu uygulama varsayılan olarak %2,5 kullanır; gelişmiş ayarlardan değiştirebilirsiniz."],
+    ["Nisap nedir?", "Nisap, zekât yükümlülüğünün doğması için gereken asgari varlık eşiği olarak tanımlanır. Net varlığı bu eşiğin altında kalan kişiye zekât düşmediği kabul edilir. Eşiğin hangi ölçüye göre belirleneceği konusunda farklı değerlendirmeler bulunur."],
+    ["Altın nisabı nasıl hesaplanır?", "Yaygın kabule göre yaklaşık 80,18 gram altının güncel piyasa değeri esas alınır. Uygulamada bu değer, ayarlardaki gram miktarı ile girdiğiniz gram altın fiyatının çarpımıyla bulunur. Bazı hesaplamalarda 85 gram gibi farklı gram değerleri de kullanılabilmektedir."],
+    ["Gümüş nisabı nasıl hesaplanır?", "Yaklaşık 595 gram gümüşün güncel değeri esas alınır. Gümüş nisabı genellikle altın nisabından düşük çıktığı için daha fazla kişiyi yükümlü hale getirir. Hangi ölçünün tercih edileceği kişisel tercih ve danışılan görüşe göre değişebilir."],
+    ["Borçlar zekât hesabından düşülür mü?", "Genel yaklaşımda vadesi gelmiş ve ödenmesi gereken borçların matrahtan düşülebileceği kabul edilir. Uzun vadeli kredilerin tamamının mı yoksa yalnızca yakın dönemde ödenecek kısmının mı düşüleceği tartışmalıdır. Uygulama varsayılan olarak önümüzdeki 12 ayda ödenecek kısmı düşer, dilerseniz yöntemi değiştirebilirsiniz."],
+    ["Ziynet altınları zekâta tabi midir?", "Kadınların kullandığı takı ve ziynet eşyalarının zekâta tabi olup olmadığı mezhepler arasında farklı değerlendirilen bir konudur. Bir kısım görüş bunların da nisap hesabına katılmasını uygun görürken, başka görüşler kişisel kullanımdaki takıları hariç tutar. Uygulamada bu tercihi bir anahtarla belirleyebilirsiniz."],
+    ["Kripto paralara zekât düşer mi?", "Kripto varlıklar yeni bir varlık türü olduğu için değerlendirmeler çeşitlilik gösterir. Bunları ticaret malı ya da nakit benzeri kabul eden yaklaşımlar, güncel piyasa değeri üzerinden hesaba katılmasını uygun görür. Varlığın niteliği ve elde tutma amacı değerlendirmeyi etkileyebilir."],
+    ["Hisseler nasıl hesaplanır?", "Yaygın yaklaşımlardan biri, ticaret niyetiyle alınan hisselerin güncel piyasa değerinin tamamını hesaba katmaktır. Uzun vadeli ortaklık amacıyla tutulan hisselerde, şirketin zekâta tabi varlıklarına denk gelen oranın ya da yalnızca elde edilen temettünün esas alındığı görüşler de vardır. Uygulamada bu üç yöntemden birini seçebilirsiniz."],
+    ["Ticari malların hangi değeri esas alınır?", "Ticari stoklar genel olarak alış maliyeti yerine güncel satış veya piyasa değeri üzerinden değerlendirilebilir. Değerleme günü olarak zekât hesabının yapıldığı tarih esas alınır. Sektöre ve stok yapısına göre farklı yöntemler tercih edilebilir."],
+    ["Alacaklar zekât hesabına dahil edilir mi?", "Tahsil edileceği kuvvetle muhtemel alacakların hesaba katılması yaygın bir yaklaşımdır. Tahsili şüpheli veya ihtilaflı alacaklar için, tahsil edildiği yıl hesaba katılmasını uygun gören değerlendirmeler bulunur. Uygulamada her alacağın hesaba dahil edilip edilmeyeceğini tek tek seçebilirsiniz."],
+    ["Zekât taksitle ödenebilir mi?", "Zekâtın yükümlülük doğduğunda geciktirilmeden ödenmesi tavsiye edilir. Bununla birlikte ihtiyaç sahiplerinin durumu veya ödeme gücü gözetilerek yıl içinde bölümler hâlinde ödenmesini uygun gören değerlendirmeler de vardır. Uygulamadaki dağıtım planı yalnızca planlama kolaylığı sağlar."],
+    ["Bu uygulamanın sonucu fetva niteliğinde midir?", "Hayır. Bu araç yaklaşık bir hesaplama yapar ve bilgilendirme amacı taşır. Sonuçlar dinî hüküm, hukuki görüş veya finansal danışmanlık yerine geçmez. Kendi durumunuza uygun değerlendirme için yetkin bir uzmana danışmanız önerilir."]
+  ];
+
+  function renderFAQ() {
+    var host = $("#faqList");
+    host.textContent = "";
+    FAQ.forEach(function (item, i) {
+      var bodyId = "faq-body-" + i;
+      var btn = el("button", {
+        class: "acc-btn", type: "button", "data-act": "acc", "aria-expanded": "false", "aria-controls": bodyId
+      }, [el("span", { text: (i + 1) + ". " + item[0] }), el("span", { class: "ind", "aria-hidden": "true", text: "+" })]);
+      var body = el("div", { class: "acc-body", id: bodyId }, [el("p", { text: item[1] })]);
+      host.appendChild(el("div", { class: "acc" }, [btn, body]));
+    });
+  }
+
+  var LEGAL = {
+    privacy: ["Gizlilik", [
+      "Bu demo sürümde hiçbir veri sunucuya gönderilmez. Girdiğiniz tüm bilgiler yalnızca kullandığınız tarayıcının localStorage alanında tutulur ve istediğiniz an gelişmiş ayarlardan silinebilir.",
+      "Uygulama çerez kullanmaz, analitik izleme yapmaz ve üçüncü taraflarla veri paylaşmaz. Verilerinizi JSON olarak dışa aktararak kendi cihazınızda yedekleyebilirsiniz.",
+      "Sunucu tarafı bir sürüm geliştirildiğinde KVKK aydınlatma metni, açık rıza yönetimi ve veri silme talebi akışları ayrıca sunulacaktır."
+    ]],
+    terms: ["Kullanım Koşulları", [
+      "Zekâtım, yaklaşık hesaplama yapan bir bilgilendirme aracıdır. Hesaplama sonuçları fetva, hukuki görüş, yatırım tavsiyesi veya finansal danışmanlık niteliği taşımaz.",
+      "Fiyat verileri demo amaçlıdır ve gerçek piyasa verisi değildir. Doğru sonuç için güncel fiyatları kendiniz girmelisiniz.",
+      "Uygulamayı kullanmanızdan doğabilecek sonuçlardan kullanıcı sorumludur. Kendi durumunuza uygun değerlendirme için yetkin bir uzmana danışmanız önerilir."
+    ]],
+    contact: ["İletişim", [
+      "Bu sürüm bir MVP çalışmasıdır ve henüz canlı bir destek kanalı bulunmamaktadır.",
+      "Geri bildirim, hata bildirimi ve iş birliği talepleri için proje sahibiyle iletişime geçebilirsiniz."
+    ]]
+  };
+
+  /* ---------------------------------------------------------------------
+     19) Örnek (demo) veriler
+     --------------------------------------------------------------------- */
+  function loadDemoData() {
+    state.cash.tl = 120000;
+    state.cash.demand = 250000;
+    state.cash.usd = 3000;
+    state.cash.eur = 1500;
+    state.gold.gram = 75;
+    state.gold.quarter = 10;
+    state.stocks = [{ id: nextId(), name: "Örnek Hisse", qty: 1000, price: 180, method: "market", ratio: 100, cashOnly: 0 }];
+    state.crypto = [{ id: nextId(), name: "Bitcoin", symbol: "BTC", amount: 0.03, price: 3000000 }];
+    state.commerce.stockValue = 300000;
+    state.receivables = [{ id: nextId(), desc: "Örnek alacak", amount: 100000, dueDate: "", probability: "high", include: true }];
+    state.debts = [{ id: nextId(), type: "Kısa vadeli bireysel borç", desc: "Örnek kısa vadeli borç", total: 140000, yearly: 140000, manual: 140000 }];
+    renderAllLists(); hydrate(); refresh(); persist(true);
+    toast("Örnek veriler yüklendi.", "ok");
+  }
+  function clearDemoData() {
+    var fresh = defaultState();
+    fresh.prices = state.prices;
+    fresh.settings = state.settings;
+    fresh.nisab = state.nisab;
+    fresh.step = state.step;
+    state = fresh;
+    renderAllLists(); hydrate(); refresh(); persist(true);
+    toast("Girilen veriler temizlendi.", "ok");
+  }
+
+  /* ---------------------------------------------------------------------
+     20) Olay yönetimi — tümü delege edilmiş dinleyicilerle (inline onclick yok)
+     --------------------------------------------------------------------- */
+  function applyFieldValue(node) {
+    var path = node.getAttribute("data-bind");
+    var list = node.getAttribute("data-row");
+    var type = node.getAttribute("data-type") || "text";
+    var value;
+
+    if (node.type === "checkbox") value = node.checked;
+    else if (node.type === "radio") { if (!node.checked) return null; value = type === "num" ? Number(node.value) : node.value; }
+    else if (type === "num") {
+      var res = ValidationService.parseNumber(node.value);
+      ValidationService.mark(node, res.error);
+      value = res.value;
+    } else value = node.value;
+
+    if (path) { setPath(state, path, value); return { kind: "bind", path: path }; }
+    if (list) {
+      var id = node.getAttribute("data-id"), field = node.getAttribute("data-field");
+      var row = state[list].filter(function (r) { return r.id === id; })[0];
+      if (row) row[field] = value;
+      return { kind: "row", list: list, field: field };
+    }
+    return null;
+  }
+
+  function onFieldEvent(e) {
+    var node = e.target;
+    if (!node || (!node.hasAttribute("data-bind") && !node.hasAttribute("data-row"))) return;
+    var info = applyFieldValue(node);
+    if (!info) return;
+
+    if (info.kind === "bind") {
+      if (info.path === "settings.dark") applyTheme();
+      if (info.path === "nisab.method") {
+        $$("[data-show='nisab-manual']").forEach(function (n) { n.hidden = state.nisab.method !== "manual"; });
+        $$('[data-bind="nisab.method"]').forEach(function (n) { n.checked = n.value === state.nisab.method; });
+      }
+      if (info.path === "settings.debtMethod") {
+        $$('[data-bind="settings.debtMethod"]').forEach(function (n) {
+          if (n.type === "radio") n.checked = n.value === state.settings.debtMethod; else n.value = state.settings.debtMethod;
+        });
+        renderList("debts");
+      }
+      if (info.path === "plan.months") {
+        state.plan.custom = 0;
+        var ci = $("#planCustom"); if (ci) ci.value = "";
+      }
+      if (info.path === "settings.currency") hydrate();
+    } else if (info.kind === "row" && info.list === "stocks" && info.field === "method") {
+      renderList("stocks");
+    }
+    refresh();
+    persist();
+  }
+
+  document.addEventListener("input", onFieldEvent);
+  document.addEventListener("change", onFieldEvent);
+
+  document.addEventListener("click", function (e) {
+    var tipBtn = e.target.closest("[data-tip]");
+    if (tipBtn) { e.preventDefault(); if (activeTip) closeTip(); else showTip(tipBtn); return; }
+    if (activeTip) closeTip();
+
+    var trigger = e.target.closest("[data-act]");
+    if (!trigger) {
+      var openM = e.target.classList && e.target.classList.contains("modal");
+      if (openM) closeModals();
+      return;
+    }
+    var act = trigger.getAttribute("data-act");
+
+    switch (act) {
+      case "menu": {
+        var links = $("#navLinks");
+        var open = links.classList.toggle("open");
+        trigger.setAttribute("aria-expanded", open ? "true" : "false");
+        break;
+      }
+      case "nav-link":
+        $("#navLinks").classList.remove("open");
+        $$('[data-act="menu"]').forEach(function (b) { b.setAttribute("aria-expanded", "false"); });
+        break;
+      case "theme":
+        state.settings.dark = !state.settings.dark;
+        applyTheme(); hydrate(); persist();
+        break;
+      case "settings": e.preventDefault(); toggleSheet(false); openModal("settingsModal"); break;
+      case "close-modal": closeModals(); break;
+      case "start":
+        e.preventDefault();
+        showStep(state.step || 1);
+        break;
+      case "how":
+        openInfo("Nasıl hesaplanır?", [
+          "1) Fiyatlar ve nisap: Gram altın, gümüş ve döviz kurlarını kontrol edin, nisabı altın ya da gümüş üzerinden seçin.",
+          "2) Varlıklar: Nakit, döviz, altın, gümüş, hisse, fon, kripto, ticari mal ve alacaklarınızı girin. Her kalem TL karşılığına çevrilir.",
+          "3) Borçlar: Düşülecek yükümlülüklerinizi ekleyin ve tamamının mı yoksa 12 aylık kısmının mı düşüleceğini seçin.",
+          "Formül: Brüt varlık − düşülebilir borç = net matrah. Net matrah nisabı aşıyorsa, tahmini zekât = net matrah × %2,5.",
+          "Sonuçlar yaklaşık değerlerdir ve fetva niteliği taşımaz."
+        ]);
+        break;
+      case "next": showStep(state.step + 1); break;
+      case "prev": showStep(state.step - 1); break;
+      case "step": showStep(Number(trigger.getAttribute("data-step"))); break;
+      case "save":
+        persist(true);
+        toast(StorageService.isPersistent ? "Veriler bu tarayıcıya kaydedildi." : "Veriler geçici bellekte tutuluyor.", "ok");
+        break;
+      case "reset":
+        if (window.confirm("Girdiğiniz tüm varlık ve borç bilgileri silinsin mi? Fiyatlar ve ayarlar korunur.")) clearDemoData();
+        break;
+      case "demo": loadDemoData(); break;
+      case "refresh-prices": {
+        if (trigger.disabled) break;
+        var original = trigger.textContent;
+        trigger.disabled = true;
+        trigger.textContent = "";
+        trigger.appendChild(el("span", { class: "spin", "aria-hidden": "true" }));
+        trigger.appendChild(el("span", { text: "Güncelleniyor" }));
+        PriceService.refreshDemo().then(function () {
+          trigger.disabled = false;
+          trigger.textContent = original;
+          hydrate(); refresh(); persist();
+          toast("Demo fiyatları güncellendi.", "ok");
+        });
+        break;
+      }
+      case "add": {
+        var list = trigger.getAttribute("data-list");
+        state[list].push(ROWS[list].create());
+        renderList(list); refresh(); persist();
+        break;
+      }
+      case "del": {
+        var dl = trigger.getAttribute("data-list"), did = trigger.getAttribute("data-id");
+        state[dl] = state[dl].filter(function (r) { return r.id !== did; });
+        renderList(dl); refresh(); persist();
+        toast("Satır silindi.", "warn");
+        break;
+      }
+      case "crypto-samples":
+        [["Bitcoin", "BTC"], ["Ethereum", "ETH"], ["Tether", "USDT"]].forEach(function (c) {
+          state.crypto.push({ id: nextId(), name: c[0], symbol: c[1], amount: 0, price: 0 });
+        });
+        renderList("crypto"); refresh(); persist();
+        toast("Örnek kripto satırları eklendi.", "ok");
+        break;
+      case "sheet": toggleSheet(); break;
+      case "sheet-close": toggleSheet(false); break;
+      case "goto-result": toggleSheet(false); showStep(7); break;
+      case "goto-report":
+        $("#reportSection").scrollIntoView({ behavior: "smooth", block: "start" });
+        break;
+      case "print": ReportService.print(); break;
+      case "export":
+        ReportService.exportJSON();
+        toast("JSON dosyası indiriliyor.", "ok");
+        break;
+      case "import": $("#importFile").click(); break;
+      case "clear-data":
+        if (window.confirm("Kayıtlı tüm veriler silinsin mi? Bu işlem geri alınamaz.")) {
+          StorageService.clear();
+          state = defaultState();
+          renderAllLists(); renderGoldFields(); renderCommerceFields(); hydrate(); refresh(); showStep(1, false);
+          closeModals();
+          toast("Tüm veriler silindi.", "warn");
+        }
+        break;
+      case "defaults": {
+        var d = defaultState();
+        state.settings = d.settings;
+        state.nisab = d.nisab;
+        state.prices = d.prices;
+        hydrate(); renderList("debts"); refresh(); persist();
+        toast("Ayarlar varsayılan değerlere döndürüldü.", "ok");
+        break;
+      }
+      case "legal": {
+        e.preventDefault();
+        var doc = LEGAL[trigger.getAttribute("data-doc")];
+        if (doc) openInfo(doc[0], doc[1]);
+        break;
+      }
+      case "acc": {
+        var expanded = trigger.getAttribute("aria-expanded") === "true";
+        trigger.setAttribute("aria-expanded", expanded ? "false" : "true");
+        var body = document.getElementById(trigger.getAttribute("aria-controls"));
+        if (body) body.classList.toggle("open", !expanded);
+        break;
+      }
+      default: break;
+    }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeTip();
+      closeModals();
+      toggleSheet(false);
+      var links = $("#navLinks");
+      if (links) links.classList.remove("open");
+    }
+  });
+
+  window.addEventListener("resize", closeTip);
+  window.addEventListener("beforeprint", buildPrintReport);
+
+  /* ---------------------------------------------------------------------
+     21) Başlatma
+     --------------------------------------------------------------------- */
+  function init() {
+    // Panellere kimlik ver (sekme erişilebilirliği için)
+    $$(".panel").forEach(function (p) { p.id = "panel-" + p.getAttribute("data-panel"); });
+
+    // Kayıtlı veriyi yükle
+    var saved = StorageService.load();
+    if (saved) {
+      try { state = mergeState(saved); } catch (err) { state = defaultState(); }
+      if (saved.savedAt) state.savedAt = saved.savedAt;
+    }
+
+    renderGoldFields();
+    renderCommerceFields();
+    renderAllLists();
+    renderFAQ();
+    hydrate();
+    showStep(state.step || 1, false);
+    refresh();
+
+    // JSON içe aktarma
+    var fileInput = $("#importFile");
+    fileInput.addEventListener("change", function () {
+      var file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      ReportService.importJSON(file, function (err, merged) {
+        fileInput.value = "";
+        if (err) { toast(err.message, "err"); return; }
+        state = merged;
+        renderGoldFields(); renderCommerceFields(); renderAllLists(); hydrate();
+        showStep(state.step || 1, false); refresh(); persist(true);
+        toast("Veriler içe aktarıldı.", "ok");
+      });
+    });
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+
+  /* =========================================================================
+     GELECEK SÜRÜM NOTLARI (backend entegrasyonu için yer tutucu yorumlar)
+     -------------------------------------------------------------------------
+     - Kullanıcı kimlik doğrulama (e-posta + parola / OTP), oturum yenileme
+     - Şifrelenmiş veri saklama (istemci tarafı şifreleme + sunucuda at-rest)
+     - Sunucu tarafı hesaplama (CalculationService.compute aynı sözleşmeyle
+       POST /api/zakat/calculate uç noktasına taşınabilir)
+     - Audit log (hesaplama geçmişi, kim neyi ne zaman değiştirdi)
+     - KVKK aydınlatma metni ve açık rıza yönetimi
+     - Veri silme talebi ve kullanıcı verisi dışa aktarma akışları
+     - İki faktörlü doğrulama
+     - Rol bazlı erişim (bireysel kullanıcı / aile / danışman)
+     - Aile hesabı: ortak varlık havuzu ve paylaşımlı raporlar
+     - Muhasebeci veya danışman erişimi: salt-okunur paylaşım bağlantısı
+     Not: Hassas veriler hiçbir koşulda console'a yazdırılmaz.
+     ========================================================================= */
+})();
+
+</script>
+</body>
+</html>
