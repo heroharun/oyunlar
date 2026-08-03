@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
+<meta name="description" content="İyilik Adası - çocuklar için reklamsız, güvenli, öğretici iyilik oyunu.">
+<meta name="theme-color" content="#368A70">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="İyilik Adası">
+<meta name="color-scheme" content="light">
+<title>İyilik Adası — Öğren, iyilik yap, adanı güzelleştir.</title>
+<!--
+  =========================================================================
+  İYİLİK ADASI  ·  tek dosya · vanilla JS · offline · reklamsız
+  Alternatif marka adları: Minik Mümin, İyilik Bahçesi, Güzel Ahlak,
+  Bereket Adası, Hilal Kasabası  (BRAND sabitinden değiştirilebilir)
+  -------------------------------------------------------------------------
+  PWA NOTU: Bu sürüm tek HTML dosyasıdır. İleride PWA'ya çevirmek için
+  manifest.webmanifest + service-worker.js eklenip <link rel="manifest">
+  ile bağlanması yeterlidir. Tüm varlıklar zaten gömülü olduğu için
+  cache stratejisi "cache-first" olabilir.
+  GÜVENLİK NOTU: Hiçbir kişisel veri toplanmaz, sunucuya veri gönderilmez.
+  =========================================================================
+-->
+<style>
+/* ===================== 1. DEĞİŞKENLER & TEMEL ===================== */
+:root{
+  --sky:#BFE6F4; --grass:#9FD389; --cream:#FFF8E8;
+  --primary:#368A70; --primary-dark:#236653;
+  --gold:#F3C969; --coral:#F29D85; --purple:#A58BD4; --blue:#72AEE6;
+  --text:#31423C; --muted:#6C7D76; --surface:#FFFFFF;
+  --danger:#D87575; --success:#5AAA78;
+  --line:rgba(49,66,60,.12);
+  --shadow-sm:0 2px 6px rgba(35,102,83,.10);
+  --shadow:0 6px 18px rgba(35,102,83,.14);
+  --shadow-lg:0 18px 44px rgba(35,102,83,.24);
+  --r-s:12px; --r-m:18px; --r-l:26px; --r-xl:34px;
+  --fs:1rem;
+  --ff:"Trebuchet MS","Segoe UI",Verdana,system-ui,-apple-system,sans-serif;
+  --dur:.32s;
+  --pad-t:env(safe-area-inset-top,0px);
+  --pad-b:env(safe-area-inset-bottom,0px);
+}
+html[data-night="1"]{
+  --sky:#2C4258; --grass:#3E6B52; --cream:#22302C;
+  --text:#EAF3EE; --muted:#A9BEB4; --surface:#2B3A35;
+  --line:rgba(234,243,238,.16);
+  --primary:#57B99B; --primary-dark:#3E9A80;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:var(--ff); font-size:var(--fs); color:var(--text);
+  background:var(--cream);
+  -webkit-tap-highlight-color:transparent;
+  -webkit-text-size-adjust:100%;
+  overscroll-behavior-y:none;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+h1,h2,h3,h4,p{margin:0}
+ul{margin:0;padding:0;list-style:none}
+:focus-visible{outline:3px solid var(--purple);outline-offset:3px;border-radius:8px}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+html[data-motion="0"] *,
+html[data-motion="0"] *::before,
+html[data-motion="0"] *::after{animation-duration:.001s!important;transition-duration:.001s!important}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}
+}
+
+/* ===================== 2. UYGULAMA İSKELETİ ===================== */
+#app{min-height:100dvh;display:flex;flex-direction:column}
+.screen{display:none;flex:1;flex-direction:column;min-height:0}
+.screen.on{display:flex}
+
+/* ---- Açılış animasyonu ---- */
+#splash{
+  position:fixed;inset:0;z-index:200;display:grid;place-items:center;
+  background:linear-gradient(180deg,var(--sky),#DFF3E4 60%,var(--grass));
+  transition:opacity .5s ease,visibility .5s;
+}
+#splash.gone{opacity:0;visibility:hidden;pointer-events:none}
+.splash-logo{text-align:center;animation:logoIn 1s cubic-bezier(.2,1.2,.3,1) both}
+.splash-logo .mark{width:132px;height:132px;margin:0 auto 14px;filter:drop-shadow(0 10px 22px rgba(35,102,83,.3))}
+.splash-logo h1{font-size:2.1rem;letter-spacing:.5px;color:var(--primary-dark)}
+.splash-logo p{color:#40695c;margin-top:6px;font-size:.95rem}
+@keyframes logoIn{from{opacity:0;transform:translateY(24px) scale(.86)}to{opacity:1;transform:none}}
+
+/* ===================== 3. ÜST BİLGİ ÇUBUĞU ===================== */
+#topbar{
+  position:sticky;top:0;z-index:60;
+  padding:calc(8px + var(--pad-t)) 10px 8px;
+  background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 88%,var(--cream)));
+  border-bottom:1px solid var(--line);
+  box-shadow:var(--shadow-sm);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.tb-id{display:flex;align-items:center;gap:9px;min-width:0;flex:1 1 170px}
+.tb-ava{width:46px;height:46px;flex:0 0 46px;border-radius:50%;background:var(--sky);overflow:hidden;border:3px solid var(--surface);box-shadow:var(--shadow-sm)}
+.tb-ava svg{display:block;width:100%;height:100%}
+.tb-meta{min-width:0}
+.tb-name{font-weight:700;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw}
+.tb-lvl{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.xpbar{width:92px;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.xpbar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--coral));transition:width .6s cubic-bezier(.3,1.3,.4,1)}
+.tb-stats{display:flex;gap:6px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:99px;
+  background:var(--cream);border:1px solid var(--line);font-weight:700;font-size:.85rem;white-space:nowrap;
+}
+.chip b{font-variant-numeric:tabular-nums}
+.chip.star{background:color-mix(in srgb,var(--gold) 26%,var(--surface))}
+.chip.kind{background:color-mix(in srgb,var(--coral) 24%,var(--surface))}
+.tb-acts{display:flex;gap:6px;margin-left:auto}
+.iconbtn{
+  width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:1.2rem;
+  background:var(--cream);border:1px solid var(--line);transition:transform .18s,background .18s;
+}
+.iconbtn:hover{background:color-mix(in srgb,var(--primary) 14%,var(--surface))}
+.iconbtn:active{transform:scale(.92)}
+.iconbtn.badge-dot{position:relative}
+.iconbtn.badge-dot::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:var(--coral);border:2px solid var(--surface)}
+@media(max-width:560px){
+  .tb-stats .chip span.lbl{display:none}
+  .tb-name{max-width:28vw}
+  .xpbar{width:66px}
+  .iconbtn{width:40px;height:40px;font-size:1.05rem;border-radius:12px}
+}
+
+/* ===================== 4. ADA HARİTASI ===================== */
+#islandScreen{background:linear-gradient(180deg,var(--sky) 0%,#D9F0E4 46%,var(--grass) 100%)}
+.island-wrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 12px calc(96px + var(--pad-b));-webkit-overflow-scrolling:touch}
+.island-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.island-stage{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;
+  background:rgba(255,255,255,.82);border:1px solid var(--line);font-weight:700;font-size:.86rem;box-shadow:var(--shadow-sm)
+}
+html[data-night="1"] .island-stage{background:rgba(43,58,53,.86)}
+.scene{
+  position:relative;border-radius:var(--r-xl);overflow:hidden;
+  box-shadow:var(--shadow);border:3px solid rgba(255,255,255,.7);
+  background:linear-gradient(180deg,#CFEBF8,#E6F6EA 55%,#A9DA92);
+  aspect-ratio:16/10;max-height:44dvh;
+}
+html[data-night="1"] .scene{background:linear-gradient(180deg,#2A3E56,#31544A 55%,#3E6B52)}
+.scene svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cloud{animation:drift 46s linear infinite}
+.cloud.b{animation-duration:68s;animation-delay:-20s}
+@keyframes drift{from{transform:translateX(-24%)}to{transform:translateX(124%)}}
+.bird{animation:flap 3.4s ease-in-out infinite}
+@keyframes flap{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.sprout{transform-origin:bottom center;animation:sprout .8s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes sprout{from{transform:scale(0) translateY(8px);opacity:0}to{transform:scale(1);opacity:1}}
+.hero-bounce{transform-origin:bottom center;animation:hop 2.6s ease-in-out infinite}
+@keyframes hop{0%,88%,100%{transform:translateY(0)}92%{transform:translateY(-6px)}96%{transform:translateY(-2px)}}
+
+.regions{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;margin-top:14px}
+.region{
+  position:relative;border-radius:var(--r-m);padding:12px 8px 11px;text-align:center;
+  background:rgba(255,255,255,.9);border:1px solid var(--line);box-shadow:var(--shadow-sm);
+  transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+html[data-night="1"] .region{background:rgba(43,58,53,.9)}
+.region:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.region:active{transform:scale(.96)}
+.region .ico{font-size:1.9rem;line-height:1}
+.region .rn{font-size:.79rem;font-weight:700;line-height:1.24}
+.region.locked{opacity:.58;filter:grayscale(.55)}
+.region.locked::after{content:"🔒";position:absolute;top:6px;right:8px;font-size:.86rem}
+.region .lv{font-size:.66rem;color:var(--muted);font-weight:700}
+
+/* ===================== 5. ALT MENÜ ===================== */
+#dock{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;
+  display:flex;gap:2px;padding:6px 6px calc(6px + var(--pad-b));
+  background:color-mix(in srgb,var(--surface) 94%,transparent);
+  backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  box-shadow:0 -6px 20px rgba(35,102,83,.10);
+}
+.dock-b{flex:1;border-radius:var(--r-s);padding:7px 2px 5px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.63rem;font-weight:700;color:var(--muted);transition:background .18s,color .18s}
+.dock-b i{font-style:normal;font-size:1.28rem;line-height:1}
+.dock-b.on{color:var(--primary-dark);background:color-mix(in srgb,var(--primary) 15%,transparent)}
+.dock-b:active{transform:scale(.94)}
+
+/* ===================== 6. SAYFA / PANEL ORTAK ===================== */
+.page{flex:1;overflow-y:auto;padding:14px 14px calc(96px + var(--pad-b));-webkit-overflow-scrolling:touch}
+.page-h{margin-bottom:12px}
+.page-h h2{font-size:1.4rem;color:var(--primary-dark);display:flex;align-items:center;gap:8px}
+.page-h p{color:var(--muted);font-size:.86rem;margin-top:4px;max-width:60ch}
+.sec-t{font-size:1rem;font-weight:700;margin:18px 0 9px;display:flex;align-items:center;gap:7px;color:var(--primary-dark)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:13px;box-shadow:var(--shadow-sm)}
+.grid{display:grid;gap:11px}
+.g2{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.g3{grid-template-columns:repeat(auto-fill,minmax(122px,1fr))}
+.empty{text-align:center;color:var(--muted);padding:26px 12px;font-size:.9rem}
+
+/* ---- Butonlar ---- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:46px;padding:11px 18px;border-radius:99px;font-weight:700;font-size:.92rem;
+  background:var(--primary);color:#fff;box-shadow:0 4px 0 var(--primary-dark);
+  transition:transform .12s,box-shadow .12s,filter .18s;
+}
+.btn:hover{filter:brightness(1.06)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--primary-dark)}
+.btn.ghost{background:var(--cream);color:var(--text);box-shadow:0 3px 0 var(--line);border:1px solid var(--line)}
+.btn.ghost:active{box-shadow:0 0 0 var(--line)}
+.btn.gold{background:var(--gold);color:#5A4310;box-shadow:0 4px 0 #C79F3E}
+.btn.coral{background:var(--coral);color:#5C2A1D;box-shadow:0 4px 0 #C97A63}
+.btn.dangerb{background:var(--danger);box-shadow:0 4px 0 #A84F4F}
+.btn.sm{min-height:38px;padding:8px 14px;font-size:.83rem}
+.btn.wide{width:100%}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.spk{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;background:var(--sky);border:1px solid var(--line);font-size:1rem}
+.spk:active{transform:scale(.9)}
+
+/* ===================== 7. GÖREV KARTLARI ===================== */
+.quest{display:flex;gap:11px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:12px;box-shadow:var(--shadow-sm);transition:opacity .3s,transform .3s}
+.quest .qi{width:48px;height:48px;flex:0 0 48px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;background:var(--cream)}
+.quest .qb{flex:1;min-width:0}
+.quest h4{font-size:.98rem;line-height:1.3}
+.quest p{font-size:.82rem;color:var(--muted);margin-top:3px;line-height:1.42}
+.rewards{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.rw{font-size:.72rem;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--cream);border:1px solid var(--line)}
+.qacts{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.quest.done{opacity:.62}
+.quest.done .qi{background:color-mix(in srgb,var(--success) 26%,var(--surface))}
+.quest.done h4{text-decoration:line-through;text-decoration-color:var(--muted)}
+.quest.pop{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+
+/* ===================== 8. MODAL ===================== */
+.modal{position:fixed;inset:0;z-index:120;display:none;align-items:flex-end;justify-content:center;padding:0}
+.modal.on{display:flex}
+.modal-bg{position:absolute;inset:0;background:rgba(24,44,38,.5);backdrop-filter:blur(3px);animation:fade .25s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{
+  position:relative;width:100%;max-width:620px;max-height:92dvh;display:flex;flex-direction:column;
+  background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;
+  box-shadow:var(--shadow-lg);animation:up .34s cubic-bezier(.2,1.1,.3,1);
+  padding-bottom:var(--pad-b);
+}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media(min-width:640px){
+  .modal{align-items:center;padding:20px}
+  .sheet{border-radius:var(--r-xl);max-height:88dvh}
+}
+.sheet-h{display:flex;align-items:center;gap:10px;padding:15px 15px 10px;border-bottom:1px solid var(--line)}
+.sheet-h h3{flex:1;font-size:1.12rem;color:var(--primary-dark);min-width:0}
+.sheet-b{padding:15px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.sheet-f{padding:11px 15px calc(13px + var(--pad-b));border-top:1px solid var(--line);display:flex;gap:9px;flex-wrap:wrap}
+.sheet-f .btn{flex:1;min-width:130px}
+.x{width:38px;height:38px;border-radius:50%;background:var(--cream);display:grid;place-items:center;font-size:1.1rem;border:1px solid var(--line)}
+
+/* ===================== 9. TOAST & KONFETİ ===================== */
+#toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + var(--pad-b));z-index:150;display:flex;flex-direction:column;gap:8px;width:min(94vw,430px);pointer-events:none}
+.toast{
+  background:var(--primary-dark);color:#fff;padding:12px 16px;border-radius:var(--r-m);
+  box-shadow:var(--shadow-lg);font-size:.9rem;font-weight:700;display:flex;gap:9px;align-items:center;
+  animation:tin .3s cubic-bezier(.2,1.3,.4,1);
+}
+.toast.good{background:var(--success)}
+.toast.warn{background:#B9812C}
+.toast.info{background:var(--blue);color:#123048}
+@keyframes tin{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
+#confetti{position:fixed;inset:0;z-index:190;pointer-events:none;overflow:hidden}
+.cf{position:absolute;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{from{transform:translateY(-12vh) rotate(0)}to{transform:translateY(108vh) rotate(760deg);opacity:.15}}
+
+/* ===================== 10. MİNİ OYUN ORTAK ===================== */
+.mg-top{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.pill{padding:6px 12px;border-radius:99px;background:var(--cream);border:1px solid var(--line);font-size:.78rem;font-weight:700}
+.slots{display:flex;flex-wrap:wrap;gap:7px;min-height:58px;padding:9px;border-radius:var(--r-m);background:var(--cream);border:2px dashed var(--line);align-content:flex-start}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.chipbtn{
+  padding:11px 15px;border-radius:14px;background:var(--surface);border:2px solid var(--line);
+  font-weight:700;font-size:.92rem;box-shadow:var(--shadow-sm);transition:transform .14s,background .2s
+}
+.chipbtn:active{transform:scale(.94)}
+.chipbtn.used{opacity:.35;pointer-events:none}
+.chipbtn.ok{background:color-mix(in srgb,var(--success) 24%,var(--surface));border-color:var(--success)}
+.chipbtn.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.stepcard{display:flex;align-items:center;gap:9px;padding:11px;border-radius:14px;background:var(--surface);border:2px solid var(--line);font-weight:700;font-size:.9rem;text-align:left;width:100%;box-shadow:var(--shadow-sm)}
+.stepcard .n{width:28px;height:28px;flex:0 0 28px;border-radius:50%;background:var(--cream);display:grid;place-items:center;font-size:.8rem}
+.stepcard.ok{background:color-mix(in srgb,var(--success) 20%,var(--surface));border-color:var(--success)}
+.stepcard.used{opacity:.35;pointer-events:none}
+.opt{display:block;width:100%;text-align:left;padding:13px 15px;border-radius:var(--r-m);background:var(--surface);border:2px solid var(--line);font-size:.92rem;font-weight:600;margin-bottom:9px;box-shadow:var(--shadow-sm);transition:transform .14s}
+.opt:active{transform:scale(.98)}
+.opt.good{background:color-mix(in srgb,var(--success) 22%,var(--surface));border-color:var(--success)}
+.opt.soft{background:color-mix(in srgb,var(--gold) 24%,var(--surface));border-color:var(--gold)}
+.note{background:var(--cream);border-left:5px solid var(--blue);border-radius:var(--r-s);padding:11px 13px;font-size:.85rem;line-height:1.5;margin-top:11px}
+.note.warnn{border-left-color:var(--gold)}
+
+/* Hafıza oyunu */
+.memo{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mcard{aspect-ratio:3/4;border-radius:14px;background:linear-gradient(150deg,var(--primary),var(--primary-dark));display:grid;place-items:center;font-size:1.7rem;color:#fff;box-shadow:var(--shadow-sm);transition:transform .28s,background .28s}
+.mcard span{opacity:0;transform:scale(.4);transition:opacity .2s,transform .25s}
+.mcard.open,.mcard.matched{background:var(--surface);border:2px solid var(--gold)}
+.mcard.open span,.mcard.matched span{opacity:1;transform:none}
+.mcard.matched{border-color:var(--success);background:color-mix(in srgb,var(--success) 20%,var(--surface))}
+.mcard:active{transform:scale(.95)}
+.mlbl{font-size:.55rem;font-weight:700;color:var(--text);margin-top:2px;opacity:0}
+.mcard.matched .mlbl,.mcard.open .mlbl{opacity:1}
+
+/* Eşleştirme (dua / namaz) */
+.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mitem{padding:11px;border-radius:14px;background:var(--surface);border:2px solid var(--line);font-size:.82rem;font-weight:700;text-align:center;min-height:62px;display:grid;place-items:center;box-shadow:var(--shadow-sm)}
+.mitem.sel{border-color:var(--purple);background:color-mix(in srgb,var(--purple) 16%,var(--surface))}
+.mitem.done{border-color:var(--success);background:color-mix(in srgb,var(--success) 18%,var(--surface));opacity:.75;pointer-events:none}
+.mitem .big{font-size:1.6rem;display:block}
+
+/* Ramazan sofra */
+.foodrow{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:var(--surface);border:1px solid var(--line);margin-bottom:9px;flex-wrap:wrap}
+.foodrow .fi{font-size:1.6rem}
+.foodrow .fn{flex:1;font-weight:700;font-size:.88rem;min-width:110px}
+.foodrow .fb{display:flex;gap:5px;flex-wrap:wrap}
+.tinybtn{padding:7px 10px;border-radius:99px;background:var(--cream);border:1px solid var(--line);font-size:.74rem;font-weight:700}
+.tinybtn.pick{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* ===================== 11. ROZET / KÜTÜPHANE / DÜKKÂN ===================== */
+.badge{text-align:center;padding:13px 8px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.badge .bi{font-size:2rem;display:block;line-height:1.2}
+.badge .bn{font-size:.76rem;font-weight:700;margin-top:5px;line-height:1.25}
+.badge .bd{font-size:.66rem;color:var(--muted);margin-top:4px;line-height:1.3}
+.badge.got{background:linear-gradient(160deg,color-mix(in srgb,var(--gold) 28%,var(--surface)),var(--surface));border-color:var(--gold);animation:glow 3.4s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 rgba(243,201,105,0)}50%{box-shadow:0 0 16px rgba(243,201,105,.6)}}
+.badge.lock{opacity:.55;filter:grayscale(.7)}
+
+.cats{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.cat{padding:8px 14px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-size:.8rem;font-weight:700;white-space:nowrap}
+.cat.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.lc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:13px;box-shadow:var(--shadow-sm)}
+.lc .lh{display:flex;align-items:center;gap:9px}
+.lc .lh .li{font-size:1.6rem}
+.lc h4{font-size:.96rem;flex:1}
+.lc p{font-size:.84rem;color:var(--muted);margin-top:7px;line-height:1.5}
+.src{font-size:.68rem;color:var(--muted);margin-top:8px;font-style:italic}
+.lc.learned{border-color:var(--success);background:color-mix(in srgb,var(--success) 8%,var(--surface))}
+
+.shopitem{text-align:center;padding:12px 8px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:6px;align-items:center}
+.shopitem .si{font-size:2rem}
+.shopitem .sn{font-size:.78rem;font-weight:700;line-height:1.25}
+.shopitem.owned{border-color:var(--success)}
+.shopitem.equipped{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,var(--surface))}
+
+/* ===================== 12. FORM / AYARLAR ===================== */
+.field{margin-bottom:13px}
+.field label{display:block;font-weight:700;font-size:.86rem;margin-bottom:6px}
+.inp{width:100%;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-size:1rem}
+.inp:focus{border-color:var(--primary);outline:none}
+.hint{font-size:.75rem;color:var(--muted);margin-top:5px;line-height:1.4}
+.row{display:flex;align-items:center;justify-content:space-between;gap:11px;padding:11px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.row:last-child{border-bottom:0}
+.row .rl{font-weight:700;font-size:.9rem}
+.row .rs{font-size:.74rem;color:var(--muted);margin-top:2px;max-width:36ch}
+.sw{width:56px;height:32px;flex:0 0 56px;border-radius:99px;background:var(--line);position:relative;transition:background .22s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:var(--shadow-sm);transition:transform .22s}
+.sw.on{background:var(--success)}
+.sw.on::after{transform:translateX(24px)}
+.seg{display:flex;gap:5px;background:var(--cream);padding:4px;border-radius:99px;border:1px solid var(--line)}
+.seg button{padding:8px 13px;border-radius:99px;font-size:.8rem;font-weight:700}
+.seg button.on{background:var(--primary);color:#fff}
+.avagrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.avapick{border-radius:var(--r-m);padding:7px;background:var(--surface);border:3px solid var(--line)}
+.avapick.on{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,var(--surface))}
+.avapick svg{width:100%;height:auto;display:block}
+.colors{display:flex;gap:9px;flex-wrap:wrap}
+.colorpick{width:44px;height:44px;border-radius:50%;border:3px solid var(--line)}
+.colorpick.on{border-color:var(--text);transform:scale(1.1)}
+
+/* Onboarding */
+#onboard{background:linear-gradient(180deg,var(--sky),var(--cream) 70%);overflow-y:auto;padding:calc(18px + var(--pad-t)) 16px calc(24px + var(--pad-b))}
+.ob-card{max-width:520px;margin:0 auto;background:var(--surface);border-radius:var(--r-xl);padding:20px;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
+.ob-card h2{font-size:1.4rem;color:var(--primary-dark);text-align:center}
+.ob-card>p.sub{text-align:center;color:var(--muted);font-size:.88rem;margin:6px 0 16px}
+
+/* Hikâye */
+.story-line{font-size:.98rem;line-height:1.65;white-space:pre-line}
+.story-item{display:flex;gap:11px;align-items:center;padding:12px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.story-item .sni{width:44px;height:44px;flex:0 0 44px;border-radius:50%;background:var(--cream);display:grid;place-items:center;font-size:1.4rem}
+.story-item.done .sni{background:color-mix(in srgb,var(--success) 26%,var(--surface))}
+.story-item.lockd{opacity:.55}
+
+/* Süre dolumu */
+.rest{text-align:center;padding:10px 0}
+.rest .em{font-size:3.4rem;display:block;margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<!-- ===================== SPLASH ===================== -->
+<div id="splash" role="status" aria-label="Yükleniyor">
+  <div class="splash-logo">
+    <svg class="mark" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="56" fill="#FFF8E8"/>
+      <circle cx="60" cy="60" r="56" fill="none" stroke="#368A70" stroke-width="5"/>
+      <path d="M8 78c14-8 26 6 40 0s24-10 38-4 22 6 26 4v22H8Z" fill="#9FD389"/>
+      <path d="M60 30a20 20 0 1 0 15 33 16 16 0 1 1-15-33Z" fill="#F3C969"/>
+      <circle cx="82" cy="36" r="4" fill="#F3C969"/>
+      <path d="M44 84c0-9 7-16 16-16s16 7 16 16Z" fill="#368A70"/>
+    </svg>
+    <h1>İyilik Adası</h1>
+    <p>Öğren, iyilik yap, adanı güzelleştir.</p>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- ===================== ONBOARDING ===================== -->
+  <section id="onboard" class="screen" aria-labelledby="obTitle">
+    <div class="ob-card">
+      <h2 id="obTitle">Adaya hoş geldin!</h2>
+      <p class="sub">Önce kendini tanıtalım. Bu bilgiler yalnızca senin cihazında kalır.</p>
+
+      <div class="field">
+        <label for="obName">Oyun adın</label>
+        <input class="inp" id="obName" type="text" maxlength="16" placeholder="Örnek: Minik Kaşif" autocomplete="off" spellcheck="false">
+        <p class="hint">Gerçek adını yazmak zorunda değilsin. Kendine bir oyun adı seçebilirsin.</p>
+      </div>
+
+      <div class="field">
+        <label id="avaLbl">Avatarını seç</label>
+        <div class="avagrid" id="obAvatars" role="radiogroup" aria-labelledby="avaLbl"></div>
+      </div>
+
+      <div class="field">
+        <label id="ageLbl">Yaş grubun</label>
+        <div class="seg" id="obAge" role="radiogroup" aria-labelledby="ageLbl">
+          <button type="button" class="on" data-act="ob-age" data-v="6-8" role="radio" aria-checked="true">6–8 yaş</button>
+          <button type="button" data-act="ob-age" data-v="9-10" role="radio" aria-checked="false">9–10 yaş</button>
+          <button type="button" data-act="ob-age" data-v="11-12" role="radio" aria-checked="false">11–12 yaş</button>
+        </div>
+        <p class="hint">Doğum tarihi sormuyoruz. Bu seçim yalnızca metin uzunluğunu ayarlar.</p>
+      </div>
+
+      <div class="field">
+        <label id="colLbl">Sevdiğin renk</label>
+        <div class="colors" id="obColors" role="radiogroup" aria-labelledby="colLbl"></div>
+      </div>
+
+      <button class="btn wide" data-act="ob-start" type="button">Adaya çık 🌱</button>
+      <p class="hint" style="text-align:center;margin-top:12px">Reklam yok · Satın alma yok · Sohbet yok · İnternet gerekmez</p>
+    </div>
+  </section>
+
+  <!-- ===================== ÜST ÇUBUK ===================== -->
+  <header id="topbar" hidden>
+    <div class="tb-id">
+      <div class="tb-ava" id="tbAva" aria-hidden="true"></div>
+      <div class="tb-meta">
+        <div class="tb-name" id="tbName">Oyuncu</div>
+        <div class="tb-lvl">
+          <span id="tbLvl">Seviye 1</span>
+          <span class="xpbar" role="progressbar" aria-label="Deneyim çubuğu" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="tbXpBar"><i id="tbXpFill"></i></span>
+        </div>
+      </div>
+    </div>
+    <div class="tb-stats">
+      <span class="chip star" title="Yıldız">⭐ <b id="tbStars">0</b></span>
+      <span class="chip kind" title="İyilik puanı">💚 <b id="tbKind">0</b></span>
+    </div>
+    <div class="tb-acts">
+      <button class="iconbtn" data-act="open-quests" type="button" aria-label="Günlük görevler" id="btnQuests">📋</button>
+      <button class="iconbtn" data-act="go-badges" type="button" aria-label="Rozetler">🏅</button>
+      <button class="iconbtn" data-act="open-settings" type="button" aria-label="Ayarlar">⚙️</button>
+      <button class="iconbtn" data-act="open-parent" type="button" aria-label="Ebeveyn alanı">👨‍👩‍👧</button>
+    </div>
+  </header>
+
+  <!-- ===================== ADA HARİTASI ===================== -->
+  <section id="islandScreen" class="screen" aria-labelledby="isTitle">
+    <div class="island-wrap">
+      <div class="island-head">
+        <h2 id="isTitle" class="sr">Ada haritası</h2>
+        <span class="island-stage">🏝️ <span id="stageName">Başlangıç</span></span>
+        <span class="island-stage">🌸 <span id="islandCount">0</span> güzellik</span>
+      </div>
+      <div class="scene" id="scene" aria-label="Adanın görünümü" role="img"></div>
+      <h3 class="sec-t">🗺️ Ada bölgeleri</h3>
+      <div class="regions" id="regions"></div>
+    </div>
+  </section>
+
+  <!-- ===================== GÖREVLER ===================== -->
+  <section id="questScreen" class="screen" aria-labelledby="qTitle">
+    <div class="page">
+      <div class="page-h">
+        <h2 id="qTitle">📋 Günlük Görevler</h2>
+        <p id="questIntro">Bugün için küçük iyilikler seni bekliyor. Acele yok, istediğini seç.</p>
+      </div>
+      <div class="grid" id="questList"></div>
+      <h3 class="sec-t">👨‍👩‍👧 Ailenden gelen görevler</h3>
+      <div class="grid" id="parentQuestList"></div>
+      <h3 class="sec-t">🌟 İyilik yolculuğun</h3>
+      <div class="card" id="journeyCard"></div>
+    </div>
+  </section>
+
+  <!-- ===================== MİNİ OYUNLAR ===================== -->
+  <section id="gameScreen" class="screen" aria-labelledby="gTitle">
+    <div class="page">
+      <div class="page-h">
+        <h2 id="gTitle">🎲 Mini Oyunlar</h2>
+        <p>Oynayarak öğren. Yanlış cevap için ceza yok, tekrar denemek serbest.</p>
+      </div>
+      <div class="grid g2" id="gameList"></div>
+    </div>
+  </section>
+
+  <!-- ===================== HİKÂYE ===================== -->
+  <section id="storyScreen" class="screen" aria-labelledby="sTitle">
+    <div class="page">
+      <div class="page-h">
+        <h2 id="sTitle">📖 Hikâye</h2>
+        <p>Ada solgun geldiğin gün. Sen iyilik yaptıkça yeniden canlanıyor.</p>
+      </div>
+      <div class="grid" id="storyList"></div>
+    </div>
+  </section>
+
+  <!-- ===================== KÜTÜPHANE ===================== -->
+  <section id="libScreen" class="screen" aria-labelledby="lTitle">
+    <div class="page">
+      <div class="page-h">
+        <h2 id="lTitle">📚 Bilgi Kütüphanesi</h2>
+        <p>Kısa kartlar. Dinle, oku, "Öğrendim" de ve küçük soruyu yanıtla.</p>
+      </div>
+      <div class="cats" id="libCats" role="tablist" aria-label="Kategoriler"></div>
+      <div class="grid" id="libList"></div>
+    </div>
+  </section>
+
+  <!-- ===================== ROZETLER ===================== -->
+  <section id="badgeScreen" class="screen" aria-labelledby="bTitle">
+    <div class="page">
+      <div class="page-h">
+        <h2 id="bTitle">🏅 Rozetlerim</h2>
+        <p id="badgeCount">0 rozet kazandın.</p>
+      </div>
+      <h3 class="sec-t">✨ Kazandıkların</h3>
+      <div class="grid g3" id="badgeGot"></div>
+      <h3 class="sec-t">🔒 Henüz kazanılmadı</h3>
+      <div class="grid g3" id="badgeLock"></div>
+    </div>
+  </section>
+
+  <!-- ===================== AVATAR & ATÖLYE ===================== -->
+  <section id="avatarScreen" class="screen" aria-labelledby="aTitle">
+    <div class="page">
+      <div class="page-h">
+        <h2 id="aTitle">🧢 Avatarım ve Ada Atölyesi</h2>
+        <p>Yıldızlarınla eşya alabilirsin. Ne aldığını her zaman önceden görürsün. Sürpriz kutu yok.</p>
+      </div>
+      <div class="card" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div style="width:110px;flex:0 0 110px" id="avaBig"></div>
+        <div style="flex:1;min-width:150px">
+          <div style="font-weight:700;font-size:1.05rem" id="avaName">Oyuncu</div>
+          <div class="hint" id="avaEquipped">Takılı eşya yok.</div>
+          <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">
+            <button class="btn sm ghost" data-act="change-avatar" type="button">Avatarı değiştir</button>
+            <button class="btn sm ghost" data-act="unequip-all" type="button">Eşyaları çıkar</button>
+          </div>
+        </div>
+      </div>
+      <h3 class="sec-t">🎁 Eşya Sandığı</h3>
+      <div class="grid g3" id="shopList"></div>
+      <div class="note">Seccade, Kur'an-ı Kerim gibi ibadet eşyaları oyun parasıyla satılmaz. Onlar oyunun ödülü değil, hayatın bir parçasıdır.</div>
+    </div>
+  </section>
+
+  <!-- ===================== ALT MENÜ ===================== -->
+  <nav id="dock" hidden aria-label="Ana menü">
+    <button class="dock-b on" data-act="nav" data-s="islandScreen" type="button"><i>🏝️</i>Ada</button>
+    <button class="dock-b" data-act="nav" data-s="questScreen" type="button"><i>📋</i>Görevler</button>
+    <button class="dock-b" data-act="nav" data-s="gameScreen" type="button"><i>🎲</i>Oyunlar</button>
+    <button class="dock-b" data-act="nav" data-s="storyScreen" type="button"><i>📖</i>Hikâye</button>
+    <button class="dock-b" data-act="nav" data-s="libScreen" type="button"><i>📚</i>Bilgi</button>
+    <button class="dock-b" data-act="nav" data-s="avatarScreen" type="button"><i>🧢</i>Avatar</button>
+  </nav>
+</div>
+
+<!-- ===================== GENEL MODAL ===================== -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+  <div class="modal-bg" data-act="close-modal"></div>
+  <div class="sheet">
+    <div class="sheet-h">
+      <h3 id="modalTitle">Başlık</h3>
+      <button class="spk" data-act="speak-modal" type="button" aria-label="Sesli dinle" id="modalSpk">🔊</button>
+      <button class="x" data-act="close-modal" type="button" aria-label="Kapat">✕</button>
+    </div>
+    <div class="sheet-b" id="modalBody"></div>
+    <div class="sheet-f" id="modalFoot"></div>
+  </div>
+</div>
+
+<div id="toasts" aria-live="polite" aria-atomic="false"></div>
+<div id="confetti" aria-hidden="true"></div>
+
+<script>
+"use strict";
+/* =========================================================================
+   BÖLÜM A · MARKA & SABİTLER
+   ========================================================================= */
+const BRAND = {
+  name: "İyilik Adası",
+  slogan: "Öğren, iyilik yap, adanı güzelleştir.",
+  storageKey: "iyilik_adasi_v1",
+  parentCode: "1234",           // PROTOTİP kodu. Gerçek üründe ebeveyn kendi kodunu belirler.
+  defaultDailyMinutes: 30,
+  dailyQuestCount: 5
+};
+
+const LEVEL_THRESHOLDS = [0,100,250,450,700,1000,1400,1900,2500,3200];
+
+const ISLAND_STAGES = [
+  { min:0,  name:"Başlangıç" },
+  { min:6,  name:"Filizlenen Ada" },
+  { min:14, name:"İyilik Bahçesi" },
+  { min:26, name:"Bereketli Kasaba" },
+  { min:42, name:"Işık Adası" }
+];
+
+const AVATAR_COLORS = ["#368A70","#72AEE6","#A58BD4","#F29D85","#F3C969","#5AAA78"];
+
+/* Bölgeler — her biri gerçek bir ekran/oyun açar */
+const REGIONS = [
+  { id:"ev",        name:"Ev",                  icon:"🏠", level:1, act:{t:"nav", v:"questScreen"} },
+  { id:"bahce",     name:"İyilik Bahçesi",      icon:"🌷", level:1, act:{t:"game", v:"memory"} },
+  { id:"kutuphane", name:"Bilgi Kütüphanesi",   icon:"📚", level:1, act:{t:"nav", v:"libScreen"} },
+  { id:"cesme",     name:"Abdest Çeşmesi",      icon:"⛲", level:1, act:{t:"game", v:"abdest"} },
+  { id:"rozet",     name:"Rozet Tepesi",        icon:"🏅", level:2, act:{t:"nav", v:"badgeScreen"} },
+  { id:"meydan",    name:"Namaz Meydanı",       icon:"🕌", level:3, act:{t:"game", v:"vakit"} },
+  { id:"carsi",     name:"Yardımlaşma Çarşısı", icon:"🧺", level:4, act:{t:"nav", v:"avatarScreen"} },
+  { id:"koru",      name:"Hayvanlar Korusu",    icon:"🐦", level:5, act:{t:"game", v:"davranis"} },
+  { id:"ramazan",   name:"Ramazan Sokağı",      icon:"🌙", level:6, act:{t:"ramazan"} },
+  { id:"hac",       name:"Hac ve Umre Köşesi",  icon:"🕋", level:7, act:{t:"lib", v:"Hac ve Umre"} }
+];
+
+/* =========================================================================
+   BÖLÜM B · GÖREV KİTAPLIĞI
+   ========================================================================= */
+const QUEST_LIBRARY = [
+  {id:"q-selam",   title:"Birine selam ver",           description:"Bugün ailenden veya arkadaşlarından birine güzelce selam ver.", category:"guzel-ahlak", icon:"👋", xp:20, stars:5, kindness:10, repeatable:true, tag:"selam"},
+  {id:"q-besmele", title:"Yemeğe besmeleyle başla",    description:"Sofraya oturunca besmele çekmeyi hatırla.", category:"ibadet", icon:"🍽️", xp:20, stars:5, kindness:10, repeatable:true, tag:"besmele"},
+  {id:"q-oda",     title:"Odandaki bir eşyayı düzenle",description:"Yerinde olmayan tek bir şeyi yerine koy. Küçük başlamak yeter.", category:"temizlik", icon:"🧸", xp:18, stars:4, kindness:8, repeatable:true, tag:"temizlik"},
+  {id:"q-anne",    title:"Anne veya babana yardım et", description:"Bir işlerinde yanlarında ol. Küçük bir yardım bile çok değerli.", category:"aile", icon:"🤝", xp:25, stars:6, kindness:14, repeatable:true, tag:"yardim"},
+  {id:"q-guzelsoz",title:"Bir güzel söz söyle",        description:"Birini sevindirecek bir cümle kur. Gülümsemesini izle.", category:"guzel-ahlak", icon:"💬", xp:18, stars:4, kindness:10, repeatable:true, tag:"guzelsoz"},
+  {id:"q-paylas",  title:"Bir oyuncağını paylaş",      description:"Kardeşinle veya bir arkadaşınla oyuncağını paylaş.", category:"paylasma", icon:"🧩", xp:22, stars:5, kindness:12, repeatable:true, tag:"paylasma"},
+  {id:"q-hayvan",  title:"Bir hayvana su ver",         description:"Kapının önüne küçük bir kap su bırak. Kuşlar da susar.", category:"merhamet", icon:"🐈", xp:22, stars:6, kindness:12, repeatable:true, tag:"hayvan"},
+  {id:"q-su",      title:"İsraf etmeden su kullan",    description:"Ellerini yıkarken musluğu kısık tut, işin bitince kapat.", category:"israf", icon:"💧", xp:20, stars:5, kindness:10, repeatable:true, tag:"israf"},
+  {id:"q-tesekkur",title:"Bir büyüğüne teşekkür et",   description:"Sana bir iyilik yapan büyüğüne teşekkür etmeyi unutma.", category:"guzel-ahlak", icon:"🙏", xp:18, stars:4, kindness:10, repeatable:true, tag:"tesekkur"},
+  {id:"q-dua",     title:"Öğrendiğin bir duayı tekrar et", description:"Bildiğin kısa bir duayı sessizce tekrar et.", category:"ibadet", icon:"🤲", xp:20, stars:5, kindness:10, repeatable:true, tag:"dua"},
+  {id:"q-sofra",   title:"Sofrayı kurmaya yardım et",  description:"Tabakları, bardakları yerleştirmeye yardım et.", category:"aile", icon:"🍲", xp:24, stars:6, kindness:12, repeatable:true, tag:"yardim"},
+  {id:"q-kitap",   title:"Kitabını yerine koy",        description:"Okuduğun kitabı düzgünce rafına yerleştir.", category:"temizlik", icon:"📕", xp:16, stars:4, kindness:8, repeatable:true, tag:"temizlik"},
+  {id:"q-arkadas", title:"Bir arkadaşını sevindir",    description:"Ona güzel bir şey söyle veya küçük bir sürpriz yap.", category:"paylasma", icon:"🎈", xp:22, stars:5, kindness:12, repeatable:true, tag:"arkadas"},
+  {id:"q-cop",     title:"Çöpünü çöp kutusuna at",     description:"Yerde gördüğün çöpü, güvenliyse kutuya at.", category:"cevre", icon:"🗑️", xp:18, stars:4, kindness:10, repeatable:true, tag:"cevre"},
+  {id:"q-duabiri", title:"Birine dua et",              description:"Sevdiğin biri için içinden güzel bir dua et.", category:"ibadet", icon:"💫", xp:20, stars:5, kindness:12, repeatable:true, tag:"dua"},
+  {id:"q-komsu",   title:"Komşunuza bir iyilik yap",   description:"Büyüklerinle birlikte komşunuza selam ver veya küçük bir yardım yap.", category:"komsu", icon:"🏘️", xp:26, stars:7, kindness:15, repeatable:true, tag:"komsu"},
+  {id:"q-sadaka",  title:"Sadaka kutusuna bir şey koy",description:"Harçlığından küçük bir miktarı sadaka kutusuna ayır.", category:"paylasma", icon:"🫙", xp:26, stars:6, kindness:16, repeatable:true, tag:"sadaka"},
+  {id:"q-sabir",   title:"Sabırla bekle",              description:"Sıranı beklerken sabırlı ol. Sabır güzel bir huydur.", category:"guzel-ahlak", icon:"⏳", xp:18, stars:4, kindness:10, repeatable:true, tag:"sabir"},
+  {id:"q-sukur",   title:"Bugün için şükret",          description:"Sahip olduğun güzel üç şeyi düşün ve şükret.", category:"ibadet", icon:"🌈", xp:20, stars:5, kindness:12, repeatable:true, tag:"sukur"},
+  {id:"q-cicek",   title:"Bir bitkiyi sula",           description:"Evdeki veya bahçedeki bir bitkiye su ver.", category:"cevre", icon:"🪴", xp:18, stars:5, kindness:10, repeatable:true, tag:"cevre"},
+  {id:"q-dogru",   title:"Doğruyu söyle",              description:"Bugün zor gelse bile doğruyu söylemeyi seç.", category:"guzel-ahlak", icon:"✅", xp:24, stars:6, kindness:14, repeatable:true, tag:"dogruluk"},
+  {id:"q-emanet",  title:"Aldığın eşyayı geri ver",    description:"Ödünç aldığın bir şeyi sahibine güzelce geri ver.", category:"emanet", icon:"📦", xp:22, stars:5, kindness:12, repeatable:true, tag:"emanet"},
+  {id:"q-namaz",   title:"Namaz vaktini öğren",        description:"Bugünkü bir namaz vaktinin adını büyüklerine sor.", category:"ibadet", icon:"🕌", xp:20, stars:5, kindness:10, repeatable:true, tag:"namaz", selfReport:true},
+  {id:"q-kuran",   title:"Kur'an dinle veya bak",      description:"Kısa bir süre Kur'an dinle ya da harflerine bak.", category:"ibadet", icon:"📖", xp:24, stars:6, kindness:12, repeatable:true, tag:"kuran", selfReport:true}
+];
+
+/* =========================================================================
+   BÖLÜM C · BİLGİ KÜTÜPHANESİ
+   verified:false → dinî kaynak atfı YAPILMAZ, genel ahlak/eğitim bilgisi olarak sunulur.
+   Ayet/hadis eklenecekse: içerik uzmanı tarafından doğrulanmalı, sonra verified:true yapılmalıdır.
+   ========================================================================= */
+const CONTENT_LIBRARY = [
+  {id:"c-1", category:"Güzel Ahlak", icon:"💬", title:"Güzel söz söylemek", description:"Güzel söz, karşındaki kişinin gününü değiştirebilir. Konuşmadan önce 'bu söz sevindirir mi, üzer mi?' diye düşün. Kırıcı bir cümle yerine iyi bir cümle seçmek her zaman mümkündür.", q:"Konuşmadan önce ne düşünmeliyiz?", a:["Bu söz sevindirir mi?","Kim daha yüksek sesle konuşuyor?"], ok:0, sourceLabel:"Genel ahlak bilgisi", verified:false, reviewedBy:null, source:null},
+  {id:"c-2", category:"Güzel Ahlak", icon:"✅", title:"Doğruluk", description:"Doğru söylemek bazen zordur ama içini rahatlatır. Yanlış bir şey yaptığında saklamak yerine anlatmak, sorunu küçültür. Doğru olan çocuğa herkes güvenir.", q:"Yanlış yaptığında en güzel davranış hangisi?", a:["Saklamak","Doğruyu söylemek"], ok:1, sourceLabel:"Genel ahlak bilgisi", verified:false, reviewedBy:null, source:null},
+  {id:"c-3", category:"Güzel Ahlak", icon:"⏳", title:"Sabır", description:"Sabır, beklemeyi bilmektir. Sıra beklerken, bir işi öğrenirken ya da canın sıkıldığında sabır seni sakinleştirir. Sabreden kişi daha az öfkelenir.", q:"Sabır ne demektir?", a:["Hemen istemek","Beklemeyi bilmek"], ok:1, sourceLabel:"Genel ahlak bilgisi", verified:false, reviewedBy:null, source:null},
+  {id:"c-4", category:"Güzel Ahlak", icon:"🙇", title:"Özür dilemek", description:"Herkes hata yapar. Önemli olan hatayı fark edip özür dileyebilmektir. Özür dilemek küçültmez, tam tersine büyütür.", q:"Hata yapınca ne yaparız?", a:["Özür dileriz","Görmezden geliriz"], ok:0, sourceLabel:"Genel ahlak bilgisi", verified:false, reviewedBy:null, source:null},
+  {id:"c-5", category:"Dualar", icon:"🤲", title:"Dua nedir?", description:"Dua, Allah'a içimizden veya sesli olarak seslenmemizdir. İstediğin dilde dua edebilirsin. Dua için özel bir zaman şartı yoktur; her an dua edebilirsin.", q:"Dua hangi dilde edilebilir?", a:["Sadece tek bir dilde","İstediğin dilde"], ok:1, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-6", category:"Dualar", icon:"🍽️", title:"Yemek duası", description:"Yemeğe başlarken besmele çekeriz, bittiğinde ise şükrederiz. Bu kısa alışkanlık, önümüzdeki nimetin kıymetini hatırlatır.", q:"Yemeğe nasıl başlarız?", a:["Besmele ile","Hızlıca"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-7", category:"Dualar", icon:"🌙", title:"Uyumadan önce", description:"Uyumadan önce günü düşünüp şükretmek güzel bir alışkanlıktır. Kısa bir dua ile yatmak insanı huzurlu uyutur.", q:"Uyumadan önce ne yapmak güzeldir?", a:["Şükredip dua etmek","Yüksek sesle bağırmak"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-8", category:"Namaz Bilgileri", icon:"🕌", title:"Beş vakit namaz", description:"Namaz vakitlerinin adları şunlardır: sabah, öğle, ikindi, akşam ve yatsı. Vakitler günün farklı saatlerine dağılmıştır.", q:"Akşamdan sonraki vaktin adı nedir?", a:["Yatsı","İkindi"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-9", category:"Namaz Bilgileri", icon:"🧭", title:"Kıble", description:"Namaz kılarken Kâbe yönüne dönülür. Bu yöne kıble denir. Kıble yönü bulunduğun şehre göre değişir.", q:"Namazda hangi yöne dönülür?", a:["Kıble yönüne","Rüzgâr yönüne"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-10", category:"Namaz Bilgileri", icon:"🧎", title:"Namazın hareketleri", description:"Namazda ayakta durma, eğilme ve yere kapanma gibi hareketler vardır. Bunların isimlerini büyüklerinden öğrenebilirsin. Uygulamalarda küçük farklar olabilir.", q:"Namazın hareketlerini kimden öğrenebilirsin?", a:["Büyüklerinden","Kimseden"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-11", category:"Abdest Bilgileri", icon:"⛲", title:"Abdest nedir?", description:"Abdest, namaz öncesinde belirli uzuvları su ile yıkamaktır. Temizlik hem bedeni hem de kişiyi ferahlatır. Bazı ayrıntılarda mezhepler arasında farklar bulunabilir.", q:"Abdestte ne kullanılır?", a:["Su","Toprak boyası"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-12", category:"Abdest Bilgileri", icon:"💧", title:"Abdestte israf", description:"Abdest alırken suyu bol bol akıtmak gerekmez. Az su ile de güzelce abdest alınabilir. Suyu boşa akıtmamak güzel bir davranıştır.", q:"Abdest alırken suyu nasıl kullanmalıyız?", a:["İsraf etmeden","Sonuna kadar açarak"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-13", category:"Peygamberimizin Güzel Davranışları", icon:"😊", title:"Güler yüz", description:"Peygamberimizin güler yüzlü ve yumuşak huylu olduğu anlatılır. Güler yüz göstermek karşındaki kişiyi rahatlatır. Bu davranışı sen de deneyebilirsin.", q:"Güler yüz ne yapar?", a:["Karşıdakini rahatlatır","Kimseyi ilgilendirmez"], ok:0, sourceLabel:"Kaynak eklenecek — içerik uzmanı tarafından doğrulanmalıdır", verified:false, reviewedBy:null, source:null},
+  {id:"c-14", category:"Peygamberimizin Güzel Davranışları", icon:"🤝", title:"Sözünde durmak", description:"Verilen sözü tutmak güvenilir olmanın yoludur. Söz verirken düşün, verdiğinde ise yerine getirmeye çalış.", q:"Söz verince ne yaparız?", a:["Tutmaya çalışırız","Unuturuz"], ok:0, sourceLabel:"Kaynak eklenecek — içerik uzmanı tarafından doğrulanmalıdır", verified:false, reviewedBy:null, source:null},
+  {id:"c-15", category:"Ramazan", icon:"🌙", title:"Ramazan ayı", description:"Ramazan, paylaşmanın ve sabrın öne çıktığı bir aydır. Sofralar kalabalıklaşır, komşulara ikramlar gider. Çocuklar oruç tutmak zorunda değildir.", q:"Ramazanda ne artar?", a:["Paylaşmak","Kavga"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-16", category:"Ramazan", icon:"🍲", title:"İftar sofrası", description:"İftar, orucun açıldığı andır. Sofrada ihtiyacın kadar yemek almak israfı önler. Artan yiyecekler paylaşılabilir veya saklanabilir.", q:"Sofrada ne kadar yemek alırız?", a:["İhtiyacımız kadar","Tabak taşana kadar"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-17", category:"Hac ve Umre", icon:"🕋", title:"Kâbe", description:"Kâbe, Mekke şehrinde bulunan kutsal bir yapıdır. Dünyanın her yerinden insanlar oraya yönelir. Hac ve umre için pek çok insan Mekke'yi ziyaret eder.", q:"Kâbe hangi şehirdedir?", a:["Mekke","İstanbul"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-18", category:"Hac ve Umre", icon:"🧳", title:"Hac yolculuğu", description:"Hac, belirli bir zamanda yapılan bir yolculuktur. İnsanlar sade beyaz kıyafetler giyer ve herkes eşit görünür. Bu, insanların birbirinden farksız olduğunu hatırlatır.", q:"Hacda insanlar nasıl görünür?", a:["Birbirine eşit","Herkes farklı"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-19", category:"Paylaşmak ve Yardımlaşmak", icon:"🧺", title:"Paylaşmak azaltmaz", description:"Bir şeyi paylaşınca elindeki azalır gibi görünür ama sevincin çoğalır. Paylaşan çocuğun arkadaşı çok olur.", q:"Paylaşınca ne çoğalır?", a:["Sevinç","Kavga"], ok:0, sourceLabel:"Genel ahlak bilgisi", verified:false, reviewedBy:null, source:null},
+  {id:"c-20", category:"Paylaşmak ve Yardımlaşmak", icon:"🫙", title:"Sadaka", description:"Sadaka, ihtiyacı olana yapılan yardımdır. Para vermek şart değildir; güler yüz göstermek, yardım etmek de bir iyiliktir.", q:"Sadaka sadece para mıdır?", a:["Hayır, iyilik de sadakadır","Evet sadece paradır"], ok:0, sourceLabel:"Temel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-21", category:"Hayvanlara Merhamet", icon:"🐦", title:"Susayan hayvanlar", description:"Sokaktaki kediler, köpekler ve kuşlar özellikle sıcak günlerde susar. Kapının önüne bırakılan küçük bir kap su onlar için çok değerlidir.", q:"Sıcak günlerde hayvanlar için ne yapabiliriz?", a:["Su bırakabiliriz","Kovalayabiliriz"], ok:0, sourceLabel:"Genel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-22", category:"Hayvanlara Merhamet", icon:"🐈", title:"Korkutmadan yaklaş", description:"Hayvanlara yaklaşırken sakin ol, ani hareket yapma. Tanımadığın bir hayvana dokunmadan önce mutlaka büyüğüne sor.", q:"Tanımadığın hayvana dokunmadan önce?", a:["Büyüğüne sor","Hemen dokun"], ok:0, sourceLabel:"Güvenlik bilgisi", verified:false, reviewedBy:null, source:null},
+  {id:"c-23", category:"Çevreyi Korumak", icon:"🌳", title:"Ağaçlar nefes verir", description:"Ağaçlar havayı temizler ve gölge verir. Bir fidan dikmek ya da bir bitkiyi sulamak, dünyaya yapılan küçük bir iyiliktir.", q:"Ağaçlar ne yapar?", a:["Havayı temizler","Gürültü yapar"], ok:0, sourceLabel:"Genel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-24", category:"Çevreyi Korumak", icon:"♻️", title:"Geri dönüşüm", description:"Kâğıt, cam ve plastik ayrı kutulara atılırsa yeniden kullanılabilir. Böylece daha az çöp, daha temiz bir çevre olur.", q:"Geri dönüşüm ne sağlar?", a:["Daha az çöp","Daha çok çöp"], ok:0, sourceLabel:"Genel bilgi", verified:false, reviewedBy:null, source:null},
+  {id:"c-25", category:"Temizlik", icon:"🧼", title:"Elleri yıkamak", description:"Yemekten önce ve sonra elleri yıkamak hem temizliktir hem de sağlıktır. Sabunla 20 saniye yıkamak yeterlidir.", q:"Elleri ne kadar yıkamalıyız?", a:["Yaklaşık 20 saniye","1 saniye"], ok:0, sourceLabel:"Sağlık bilgisi", verified:false, reviewedBy:null, source:null}
+];
+
+/* =========================================================================
+   BÖLÜM D · ROZETLER
+   ========================================================================= */
+const BADGES = [
+  {id:"b-ilk",      name:"İlk İyilik",         icon:"🌱", desc:"İlk görevini tamamla.",                  check:s=>s.statistics.questsDone>=1},
+  {id:"b-soz",      name:"Güzel Söz Ustası",   icon:"💬", desc:"Güzel söz görevlerini 3 kez yap.",        check:s=>tagCount(s,"guzelsoz")>=3},
+  {id:"b-yardim",   name:"Yardımsever",        icon:"🤝", desc:"Yardım görevlerini 5 kez yap.",           check:s=>tagCount(s,"yardim")>=5},
+  {id:"b-temiz",    name:"Temizlik Kahramanı", icon:"🧼", desc:"Temizlik görevlerini 4 kez yap.",         check:s=>tagCount(s,"temizlik")>=4},
+  {id:"b-paylas",   name:"Paylaşımcı",         icon:"🧩", desc:"Paylaşma görevlerini 3 kez yap.",         check:s=>tagCount(s,"paylasma")>=3},
+  {id:"b-hayvan",   name:"Hayvan Dostu",       icon:"🐈", desc:"Hayvanlarla ilgili 3 görev yap.",         check:s=>tagCount(s,"hayvan")>=3},
+  {id:"b-su",       name:"Su Koruyucusu",      icon:"💧", desc:"İsraf etmeme görevini 3 kez yap.",        check:s=>tagCount(s,"israf")>=3},
+  {id:"b-dua",      name:"Dua Öğrencisi",      icon:"🤲", desc:"Dua Eşleştirme oyununu tamamla.",         check:s=>(s.progress.miniScores.dua||0)>=1},
+  {id:"b-bilgi",    name:"Bilgi Kâşifi",       icon:"🔎", desc:"10 bilgi kartı öğren.",                   check:s=>s.progress.learned.length>=10},
+  {id:"b-abdest",   name:"Abdest Sıralayıcısı",icon:"⛲", desc:"Abdest sıralamasını doğru tamamla.",      check:s=>(s.progress.miniScores.abdest||0)>=1},
+  {id:"b-hafiza",   name:"Hafıza Ustası",      icon:"🧠", desc:"Hafıza oyununu 20 hamlede bitir.",        check:s=>(s.progress.bestMemoryMoves||99)<=20},
+  {id:"b-sabir",    name:"Sabırlı Oyuncu",     icon:"⏳", desc:"Bir mini oyunu 3 kez oyna.",              check:s=>Object.values(s.progress.miniScores||{}).some(v=>v>=3)},
+  {id:"b-yedi",     name:"Yedi Günlük İyilik", icon:"📅", desc:"7 farklı günde görev tamamla.",           check:s=>s.statistics.activeDays.length>=7},
+  {id:"b-bahce",    name:"Bahçe Kurucusu",     icon:"🌷", desc:"Adanda 10 güzellik biriktir.",            check:s=>islandTotal(s)>=10},
+  {id:"b-ada",      name:"Ada Geliştiricisi",  icon:"🏝️", desc:"Adanı Bereketli Kasaba yap.",             check:s=>islandTotal(s)>=26},
+  {id:"b-besmele",  name:"Besmele Dostu",      icon:"📿", desc:"Besmele sıralama oyununu tamamla.",       check:s=>(s.progress.miniScores.besmele||0)>=1},
+  {id:"b-hikaye",   name:"Hikâye Yolcusu",     icon:"📖", desc:"3 hikâye bölümünü bitir.",                check:s=>s.story.completed.length>=3},
+  {id:"b-ramazan",  name:"İsraf Etmeyen",      icon:"🌙", desc:"Ramazan sofrası görevini tamamla.",       check:s=>(s.progress.miniScores.iftar||0)>=1},
+  {id:"b-seviye5",  name:"Beşinci Basamak",    icon:"⭐", desc:"5. seviyeye ulaş.",                       check:s=>s.progress.level>=5},
+  {id:"b-vakit",    name:"Vakit Bilgini",      icon:"🕌", desc:"Namaz vakitleri oyununu tamamla.",        check:s=>(s.progress.miniScores.vakit||0)>=1}
+];
+
+/* =========================================================================
+   BÖLÜM E · MİNİ OYUN VERİLERİ
+   ========================================================================= */
+const BESMELE_PARTS = ["Bis","mil","lah","ir","rah","ma","nir","ra","hîm"];
+
+const ABDEST_STEPS = [
+  {n:"Niyet",  i:"💭"}, {n:"Eller", i:"🖐️"}, {n:"Ağız", i:"👄"},
+  {n:"Burun",  i:"👃"}, {n:"Yüz",   i:"😊"}, {n:"Kollar",i:"💪"},
+  {n:"Başın mesh edilmesi", i:"🧠"}, {n:"Kulaklar", i:"👂"}, {n:"Ayaklar", i:"🦶"}
+];
+
+const SCENARIOS = [
+  {t:"Parkta yerde çöp gördün. Ne yaparsın?", o:["Görmezden gelirim.","Güvenliyse çöp kutusuna atarım.","Başkasını suçlarım."], ok:1, why:"Yerdeki çöpü güvenliyse kutuya atmak, hem parkı hem herkesi düşünmek demektir."},
+  {t:"Kardeşin senin oyuncağınla oynamak istiyor. Ne yaparsın?", o:["Sıra ile oynarız.","Saklarım.","Ağlayana kadar vermem."], ok:0, why:"Sıra ile oynamak paylaşmanın en kolay yoludur. İkiniz de eğlenirsiniz."},
+  {t:"Camı yanlışlıkla sen kırdın. Kimse görmedi. Ne yaparsın?", o:["Sessiz kalırım.","Kardeşimi gösteririm.","Anneme söylerim."], ok:2, why:"Doğruyu söylemek zor gelebilir ama içini rahatlatır ve güvenilir biri olursun."},
+  {t:"Arkadaşın sana kalemini emanet etti. Ne yaparsın?", o:["Bende kalır.","Bitirince geri veririm.","Başkasına veririm."], ok:1, why:"Emanet, sahibine geri verilmek üzere alınır. Geri vermek güveni büyütür."},
+  {t:"Annen mutfakta çok yoğun. Ne yaparsın?", o:["Odama giderim.","Yardım edebilir miyim diye sorarım.","Sesi açarım."], ok:1, why:"Yardım teklif etmek, sevdiğin kişiye 'seni görüyorum' demektir."},
+  {t:"Sokakta susamış bir kedi gördün. Ne yaparsın?", o:["Kovalarım.","Büyüğüme söyleyip su bırakırım.","Görmezden gelirim."], ok:1, why:"Hayvanlara merhamet güzeldir. Yaklaşırken büyüğüne danışmak da güvenli olmanı sağlar."},
+  {t:"Tabağında yiyemeyeceğin kadar yemek var. Ne yaparsın?", o:["Yarısını çöpe atarım.","Kalanını saklarım veya paylaşırım.","Zorla yerim."], ok:1, why:"Yemeği çöpe atmak israftır. Saklamak veya paylaşmak hem nimeti hem sağlığını korur."},
+  {t:"Arkadaşın yeni bir dil konuşuyor ve bazı kelimeleri karıştırıyor. Ne yaparsın?", o:["Gülerim.","Sabırla dinlerim.","Taklit ederim."], ok:1, why:"Sabırla dinlemek, arkadaşının kendini güvende hissetmesini sağlar."},
+  {t:"Sıra beklerken biri önüne geçti. Ne yaparsın?", o:["Kibarca sıranın burada olduğunu söylerim.","İterim.","Bağırırım."], ok:0, why:"Kibarca konuşmak sorunu çözer; bağırmak büyütür."},
+  {t:"Arkadaşını yanlışlıkla üzdün. Ne yaparsın?", o:["Konuyu kapatırım.","Özür dilerim.","Ben de küserim."], ok:1, why:"Özür dilemek arkadaşlığı onarır ve seni küçültmez."},
+  {t:"Musluğu açtın, dişlerini fırçalıyorsun. Ne yaparsın?", o:["Sonuna kadar açık bırakırım.","Fırçalarken kapatırım.","Umursamam."], ok:1, why:"Suyu boşa akıtmamak israftan korunmaktır. Küçük bir hareket, büyük bir fark."},
+  {t:"Yaşlı bir komşun elinde poşetlerle merdivende. Ne yaparsın?", o:["Büyüğümle birlikte yardım teklif ederim.","Hızlıca geçerim.","Bakarım."], ok:0, why:"Komşuya yardım güzel bir davranıştır. Büyüğünle birlikte yapmak seni de güvende tutar."},
+  {t:"Sınıfta biri yanlış cevap verdi ve herkes güldü. Ne yaparsın?", o:["Ben de gülerim.","Gülmem, sonra ona destek olurum.","Daha yüksek sesle gülerim."], ok:1, why:"Kimseyle alay etmemek merhamettir. Destek olmak arkadaşını cesaretlendirir."},
+  {t:"Yerde para buldun. Ne yaparsın?", o:["Cebime atarım.","Bir büyüğe teslim ederim.","Saklarım."], ok:1, why:"Bulduğun şey senin değildir. Büyüğüne teslim etmek doğru olandır."},
+  {t:"Oyun oynarken kaybettin. Ne yaparsın?", o:["Oyunu bozarım.","Tebrik eder, tekrar denerim.","Küserim."], ok:1, why:"Kaybetmek de oyunun parçasıdır. Tebrik etmek olgunluktur."},
+  {t:"Kardeşin ödevini yapamıyor ve üzgün. Ne yaparsın?", o:["Alay ederim.","Yanına oturur, birlikte bakarız.","Görmezden gelirim."], ok:1, why:"Yanında olmak bazen cevaptan daha çok işe yarar."},
+  {t:"Bahçedeki çiçekleri koparmak istiyorsun. Ne yaparsın?", o:["Hepsini koparırım.","Yerinde bırakır, seyrederim.","Ezerim."], ok:1, why:"Çiçek yerinde güzeldir ve daha uzun yaşar. Çevreyi korumak da bir iyiliktir."},
+  {t:"Sana bir sır verildi ve kimseye söylememen istendi. Ne yaparsın?", o:["Herkese anlatırım.","Saklarım; ama biri zarar görecekse büyüğüme söylerim.","Şaka gibi yayarım."], ok:1, why:"Söz tutmak emanettir. Ancak birinin canı veya güvenliği söz konusuysa mutlaka bir büyüğüne söylemelisin."}
+];
+
+const DUA_PAIRS = [
+  {sit:"Yemeğe başlarken", ico:"🍽️", dua:"Bismillah"},
+  {sit:"Yemekten sonra",   ico:"🍵", dua:"Elhamdülillah"},
+  {sit:"Eve girerken",     ico:"🚪", dua:"Selamünaleyküm"},
+  {sit:"Evden çıkarken",   ico:"🎒", dua:"Bismillah, tevekkeltü alallah"},
+  {sit:"Uyumadan önce",    ico:"🌙", dua:"Allahümme bismike emûtü ve ahyâ"},
+  {sit:"Uyanınca",         ico:"☀️", dua:"Elhamdülillâhillezî ahyânâ"}
+];
+
+const PRAYER_TIMES = [
+  {n:"Sabah", ico:"🌅", desc:"Gün doğmadan önce, gökyüzü yeni aydınlanırken"},
+  {n:"Öğle",  ico:"☀️", desc:"Güneş tam tepedeyken ve biraz sonrasında"},
+  {n:"İkindi",ico:"🌤️", desc:"Öğleden sonra, gölgeler uzarken"},
+  {n:"Akşam", ico:"🌇", desc:"Güneş battıktan hemen sonra"},
+  {n:"Yatsı", ico:"🌌", desc:"Hava tamamen karardıktan sonra"}
+];
+
+const MEMORY_PAIRS = [
+  {i:"💧", n:"Su vermek"}, {i:"👋", n:"Selam vermek"}, {i:"🤝", n:"Yardım etmek"},
+  {i:"🧩", n:"Paylaşmak"}, {i:"🙏", n:"Teşekkür etmek"}, {i:"🧼", n:"Temizlik"},
+  {i:"📕", n:"Kitap okumak"}, {i:"🤲", n:"Dua etmek"}
+];
+
+/* Ramazan · israf etmeme mini görevi */
+const IFTAR_ITEMS = [
+  {i:"🍲", n:"Sıcak çorba (2 kase)",     ok:"sofra",  why:"Herkese birer kase yeter. Sofraya koy."},
+  {i:"🍞", n:"Yarım ekmek",              ok:"sofra",  why:"Bu kadar ekmek sofra için yeterli."},
+  {i:"🍇", n:"Bir tabak üzüm",           ok:"sofra",  why:"Meyve sofrada güzel durur ve bitirilir."},
+  {i:"🥘", n:"Fazladan büyük tencere",   ok:"paylas", why:"Fazlasını komşuya ikram etmek hem paylaşmak hem israfı önlemektir."},
+  {i:"🍰", n:"Bütün bir pasta",          ok:"paylas", why:"Tek başına bitmez. Paylaşmak en güzeli."},
+  {i:"🥗", n:"Kalan salata",             ok:"buzdolabi", why:"Salata buzdolabında bekleyip yarın yenebilir."},
+  {i:"🍚", n:"Artan pilav",              ok:"buzdolabi", why:"Saklanırsa yarın da yenir, çöpe gitmez."},
+  {i:"🥤", n:"Açılmış ayran",            ok:"buzdolabi", why:"Soğukta saklanır, bozulmaz."}
+];
+const IFTAR_DESTS = [{k:"sofra",n:"Sofraya",i:"🍽️"},{k:"paylas",n:"Paylaş",i:"🎁"},{k:"buzdolabi",n:"Sakla",i:"🧊"}];
+
+/* =========================================================================
+   BÖLÜM F · HİKÂYE
+   ========================================================================= */
+const STORY_CHAPTERS = [
+  {
+    id:"s1", title:"Adaya İlk Adım", icon:"⛵", level:1,
+    text:"Küçük tekne kıyıya yanaştı. Ada sessizdi. Toprak kuru, dallar çıplaktı.\n\nKıyıda yaşlı bir bahçıvan seni bekliyordu. 'Bu ada,' dedi, 'burada yapılan iyiliklerle yeşerir.'\n\nElinde bir tohum uzattı.",
+    q:"Tohumu ne yaparsın?",
+    opts:[
+      {t:"Toprağa dikerim.", good:true,  fb:"Tohum toprakla buluştu. Adanın ilk yeşilliği senin elinle başladı."},
+      {t:"Cebime koyarım.",  good:false, fb:"Cebinde tohum filizlenmez. Bahçıvan gülümsedi: 'Denemek her zaman serbest.' Toprağa birlikte diktiniz."},
+      {t:"Bahçıvana geri veririm.", good:false, fb:"Bahçıvan tohumu geri almadı. 'Bu ada senin,' dedi. Sonra birlikte diktiniz."}
+    ],
+    reward:{xp:30, stars:8, kindness:10, island:"flowers"}
+  },
+  {
+    id:"s2", title:"Susayan Çiçekler", icon:"💧", level:1,
+    text:"Sabah kalktığında bahçedeki çiçeklerin boynu bükük duruyordu.\n\nÇeşmeden gelen su ince bir dere gibi akıyordu ama musluk sonuna kadar açıktı.",
+    q:"Ne yaparsın?",
+    opts:[
+      {t:"Musluğu kısıp kovayla sularım.", good:true, fb:"Hem çiçekler suya kavuştu hem de bir damla bile boşa gitmedi."},
+      {t:"Musluğu sonuna kadar açarım.", good:false, fb:"Çiçekler suya doydu ama çok su boşa aktı. Bahçıvan: 'Bir dahakine kovayı deneyelim mi?' dedi."},
+      {t:"Yağmuru beklerim.", good:false, fb:"Yağmur gelmedi. Çiçekler seni bekledi. Akşam suladın; onlar da doğruldu."}
+    ],
+    reward:{xp:35, stars:9, kindness:12, island:"flowers"}
+  },
+  {
+    id:"s3", title:"Kayıp Kitap", icon:"📕", level:2,
+    text:"Kütüphanenin merdivenlerinde üstü tozlu bir kitap buldun. İçinde küçük bir isim yazılıydı: Zeynep.\n\nZeynep, adanın öbür ucundaki evde yaşıyordu.",
+    q:"Kitapla ne yaparsın?",
+    opts:[
+      {t:"Zeynep'e götürürüm.", good:true, fb:"Zeynep kitabını üç gündür arıyormuş. Sevincini görmek, okumaktan da güzeldi."},
+      {t:"Önce ben okurum, sonra veririm.", good:false, fb:"Kitap güzeldi ama Zeynep merak içindeydi. Ertesi gün götürdüğünde ikiniz birlikte okudunuz."},
+      {t:"Rafa bırakırım.", good:false, fb:"Kitap rafta bekledi. Bahçıvan: 'Emanet, sahibini bulunca huzur bulur,' dedi. Sonra birlikte götürdünüz."}
+    ],
+    reward:{xp:40, stars:10, kindness:15, island:"lanterns"}
+  },
+  {
+    id:"s4", title:"Yaralı Kuş", icon:"🐦", level:3,
+    text:"Ağacın altında kanadı incinmiş küçük bir kuş duruyordu. Korkuyla sana bakıyordu.",
+    q:"Ne yaparsın?",
+    opts:[
+      {t:"Bir büyüğe haber veririm.", good:true, fb:"Bahçıvan kuşu güvenle aldı, birkaç gün baktınız. Kuş iyileşince adanın üstünde iki tur attı."},
+      {t:"Hemen elime alırım.", good:false, fb:"Kuş daha çok korktu. Sonra bahçıvanı çağırdın; birlikte sakinleştirdiniz. Yardım isterken korkmaya gerek yok."},
+      {t:"Uzaktan izlerim.", good:false, fb:"Kuş uzun süre orada kaldı. Akşam bahçıvanı çağırdın ve birlikte baktınız."}
+    ],
+    reward:{xp:45, stars:12, kindness:18, island:"birds"}
+  },
+  {
+    id:"s5", title:"İyilik Şenliği", icon:"🎉", level:4,
+    text:"Ada artık yemyeşildi. Bahçıvan meydanda bir şenlik hazırladı. Sofralar kuruldu, fenerler yakıldı.\n\nSofrada senin için ayrılmış kocaman bir tabak vardı. Ama yan masada, tabağı boş bir çocuk oturuyordu.",
+    q:"Ne yaparsın?",
+    opts:[
+      {t:"Tabağımı onunla paylaşırım.", good:true, fb:"İki tabak yerine bir sofra oldu. O gece adadaki bütün fenerler biraz daha parlak yandı."},
+      {t:"Bahçıvana söylerim.", good:true, fb:"Bahçıvan hemen bir tabak daha getirdi. Fark etmek de bir iyiliktir."},
+      {t:"Kendi tabağımı yerim.", good:false, fb:"Yemek bitti ama içinde bir düşünce kaldı. Ertesi gün ona kendi elinle bir tabak götürdün."}
+    ],
+    reward:{xp:60, stars:15, kindness:25, island:"lanterns"}
+  }
+];
+
+/* =========================================================================
+   BÖLÜM G · EŞYA SANDIĞI (kozmetik · rastgele kutu YOK, fiyat açık)
+   ========================================================================= */
+const SHOP_ITEMS = [
+  {id:"i-canta",   name:"Renkli çanta",    icon:"🎒", cost:20,  slot:"acc"},
+  {id:"i-sapka",   name:"Şapka",           icon:"🧢", cost:25,  slot:"head"},
+  {id:"i-atki",    name:"Atkı",            icon:"🧣", cost:25,  slot:"neck"},
+  {id:"i-yagmur",  name:"Yağmurluk",       icon:"🧥", cost:35,  slot:"body"},
+  {id:"i-kitap",   name:"Kitap",           icon:"📗", cost:20,  slot:"hand"},
+  {id:"i-sulama",  name:"Sulama kabı",     icon:"🪣", cost:30,  slot:"hand"},
+  {id:"i-fener",   name:"Fener",           icon:"🏮", cost:40,  slot:"hand"},
+  {id:"i-bisiklet",name:"Bisiklet",        icon:"🚲", cost:70,  slot:"pet"},
+  {id:"i-ucurtma", name:"Uçurtma",         icon:"🪁", cost:45,  slot:"pet"},
+  {id:"i-kedi",    name:"Sevimli kedi",    icon:"🐱", cost:80,  slot:"pet"},
+  {id:"i-kus",     name:"Muhabbet kuşu",   icon:"🐤", cost:60,  slot:"pet"},
+  {id:"i-bere",    name:"Bere",            icon:"👒", cost:25,  slot:"head"}
+];
+
+/* =========================================================================
+   BÖLÜM H · AVATAR ÇİZİMİ (inline SVG · gerçekçi yüz detayı yok)
+   ========================================================================= */
+const AVATAR_SKINS = ["#F5D6BC","#E7BE9B","#C99168","#8D5F42"];
+const HAIRS = ["#3C3230","#5A4033","#2E2A2A","#6B4A2F"];
+/* plain=true → arkadaki daire çizilmez (ada sahnesine gömmek için) */
+function avatarSVG(idx, color, items, plain){
+  const skin = AVATAR_SKINS[idx % 4], hair = HAIRS[idx % 4];
+  const has = k => (items||[]).indexOf(k)>-1;
+  const bodyColor = has("i-yagmur") ? "#5AAA78" : (color || "#368A70");
+  let back = "", front = "", hat = "";
+
+  /* Sırt çantası: gövdeye askıyla bağlı */
+  if(has("i-canta")){
+    back += '<path d="M38 74 Q30 76 26 82" stroke="#C79F3E" stroke-width="3.5" fill="none" stroke-linecap="round"/>'
+          + '<rect x="14" y="78" width="16" height="18" rx="6" fill="#F3C969"/><rect x="14" y="85" width="16" height="3" fill="#DBAE47"/>';
+  }
+  /* Elde tutulan eşya */
+  const handItem = has("i-fener") ? "🏮" : has("i-sulama") ? "🪣" : has("i-kitap") ? "📗" : "";
+  if(handItem) front += '<text x="80" y="93" font-size="17" text-anchor="middle">'+handItem+'</text>';
+  /* Arkadaş / araç */
+  const pet = has("i-kedi") ? "🐱" : has("i-kus") ? "🐤" : has("i-bisiklet") ? "🚲" : has("i-ucurtma") ? "🪁" : "";
+  if(pet) front += '<text x="20" y="97" font-size="17" text-anchor="middle">'+pet+'</text>';
+  /* Atkı: boyunda */
+  if(has("i-atki")){
+    front += '<rect x="34" y="64" width="32" height="11" rx="5.5" fill="#72AEE6"/>'
+           + '<rect x="56" y="72" width="8" height="15" rx="4" fill="#5C97CF"/>';
+  }
+  /* Şapka / bere: saçın ÜSTÜNE */
+  if(has("i-sapka")) hat = '<path d="M30 30c0-11 9-17 20-17s20 6 20 17Z" fill="#F29D85"/><rect x="24" y="28" width="52" height="6" rx="3" fill="#D87575"/>';
+  else if(has("i-bere")) hat = '<path d="M29 31c2-12 10-18 21-18s19 6 21 18Z" fill="#A58BD4"/><circle cx="50" cy="11" r="4" fill="#8E71C4"/>';
+
+  return '<svg viewBox="0 0 100 100" role="img" aria-label="Avatar">'
+  + (plain ? "" : '<circle cx="50" cy="50" r="50" fill="#EAF6F1"/>')
+  + back
+  + '<path d="M28 98c0-14 10-25 22-25s22 11 22 25Z" fill="'+bodyColor+'"/>'
+  + '<rect x="44" y="62" width="12" height="12" rx="4" fill="'+skin+'"/>'
+  + '<circle cx="50" cy="44" r="21" fill="'+skin+'"/>'
+  + '<path d="M29 41c0-13 9-22 21-22s21 9 21 22c-4-7-12-10-21-10s-17 3-21 10Z" fill="'+hair+'"/>'
+  + hat
+  + '<circle cx="42" cy="45" r="2.6" fill="#3C3230"/><circle cx="58" cy="45" r="2.6" fill="#3C3230"/>'
+  + '<circle cx="42.9" cy="44.1" r=".9" fill="#fff"/><circle cx="58.9" cy="44.1" r=".9" fill="#fff"/>'
+  + '<path d="M44 53.5c2 2.8 10 2.8 12 0" stroke="#B5715C" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
+  + '<circle cx="35.5" cy="50" r="3.4" fill="#F29D85" opacity=".45"/><circle cx="64.5" cy="50" r="3.4" fill="#F29D85" opacity=".45"/>'
+  + front
+  + '</svg>';
+}
+
+/* =========================================================================
+   BÖLÜM I · YARDIMCILAR
+   ========================================================================= */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+function esc(v){ return String(v==null?"":v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function todayKey(d){ const t=d||new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+function shuffle(arr, seed){
+  const a = arr.slice(); let s = seed==null ? Math.random()*1e9 : seed;
+  const rnd = () => { s = (s*9301 + 49297) % 233280; return s/233280; };
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor((seed==null?Math.random():rnd())*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function seedFromString(str){ let h=0; for(let i=0;i<str.length;i++){ h=(h*31 + str.charCodeAt(i))|0; } return Math.abs(h)%233280; }
+function tagCount(s, tag){ return (s.statistics.tagCounts && s.statistics.tagCounts[tag]) || 0; }
+function islandTotal(s){ const i=s.island||{}; return (i.flowers||0)+(i.trees||0)+(i.birds||0)+(i.benches||0)+(i.lanterns||0)+(i.paths||0); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+/* =========================================================================
+   BÖLÜM J · STORAGE SERVICE  (localStorage + bellek yedeği)
+   ========================================================================= */
+const StorageService = {
+  mem:{}, ok:true,
+  init(){
+    try{ const k="__t"; localStorage.setItem(k,"1"); localStorage.removeItem(k); this.ok=true; }
+    catch(e){ this.ok=false; }
+    return this.ok;
+  },
+  get(key){
+    try{ return this.ok ? localStorage.getItem(key) : (this.mem[key]||null); }
+    catch(e){ return this.mem[key]||null; }
+  },
+  set(key,val){
+    try{ if(this.ok) localStorage.setItem(key,val); else this.mem[key]=val; }
+    catch(e){ this.mem[key]=val; this.ok=false; }
+  },
+  remove(key){
+    try{ if(this.ok) localStorage.removeItem(key); }catch(e){}
+    delete this.mem[key];
+  }
+};
+
+/* =========================================================================
+   BÖLÜM K · OYUN DURUMU
+   ========================================================================= */
+function defaultState(){
+  return {
+    player:{ name:"", avatar:0, ageGroup:"6-8", color:AVATAR_COLORS[0], createdAt:Date.now() },
+    progress:{ level:1, xp:0, unlocked:["ev","bahce","kutuphane","cesme"], learned:[], miniScores:{}, bestMemoryMoves:null, intro:false },
+    currency:{ stars:0, kindness:0 },
+    quests:{ date:"", daily:[], done:[] },
+    badges:[],
+    island:{ flowers:0, trees:0, birds:0, benches:0, lanterns:0, paths:0 },
+    settings:{ sound:true, music:false, night:false, reducedMotion:false, fontSize:100, dailyLimit:BRAND.defaultDailyMinutes, notifications:true, autosave:true },
+    statistics:{ questsDone:0, playSeconds:0, dayKey:"", todaySeconds:0, activeDays:[], tagCounts:{}, gamePlays:{}, questsToday:0 },
+    inventory:{ owned:[], equipped:[] },
+    story:{ chapter:0, completed:[], choices:{} },
+    parent:{ customQuests:[], code:BRAND.parentCode }
+  };
+}
+let gameState = defaultState();
+
+const GameStateService = {
+  load(){
+    const raw = StorageService.get(BRAND.storageKey);
+    if(!raw) return false;
+    try{
+      const parsed = JSON.parse(raw);
+      gameState = this.merge(defaultState(), parsed);
+      return !!(gameState.player && gameState.player.name);
+    }catch(e){
+      Toast.show("Kayıt dosyası okunamadı, yeni oyun başlatıldı.","warn");
+      gameState = defaultState();
+      return false;
+    }
+  },
+  /* Eksik alanları varsayılanla tamamlar (eski kayıt uyumu) */
+  merge(base, incoming){
+    if(!incoming || typeof incoming!=="object") return base;
+    const out = Array.isArray(base) ? base.slice() : Object.assign({}, base);
+    Object.keys(base).forEach(k=>{
+      const b = base[k], v = incoming[k];
+      if(v===undefined || v===null) return;
+      if(Array.isArray(b)) out[k] = Array.isArray(v) ? v : b;
+      else if(typeof b==="object") out[k] = this.merge(b, v);
+      else if(typeof v===typeof b) out[k] = v;
+    });
+    return out;
+  },
+  save(){
+    if(!gameState.settings.autosave) return;
+    this.forceSave();
+  },
+  forceSave(){
+    try{ StorageService.set(BRAND.storageKey, JSON.stringify(gameState)); }
+    catch(e){ Toast.show("İlerleme kaydedilemedi.","warn"); }
+  },
+  reset(){
+    const settings = Object.assign({}, gameState.settings);
+    gameState = defaultState();
+    gameState.settings = settings;
+    this.forceSave();
+  },
+  exportJSON(){ return JSON.stringify(gameState, null, 2); },
+  importJSON(text){
+    let parsed;
+    try{ parsed = JSON.parse(text); }
+    catch(e){ return "Dosya okunamadı. Geçerli bir JSON değil."; }
+    if(!parsed || typeof parsed!=="object" || !parsed.player) return "Bu dosya İyilik Adası kaydı gibi görünmüyor.";
+    gameState = this.merge(defaultState(), parsed);
+    if(!gameState.player.name) gameState.player.name = "Oyuncu";
+    this.forceSave();
+    return null;
+  }
+};
+
+/* Merkezî güncelleme: state değişince her şeyi tazele */
+function commit(opts){
+  const o = opts||{};
+  BadgeService.checkAll();
+  IslandService.updateStage();
+  GameStateService.save();
+  UI.renderTopbar();
+  if(o.full!==false){ UI.renderIsland(); UI.renderQuests(); UI.renderBadges(); UI.renderShop(); UI.renderStory(); }
+}
+
+/* =========================================================================
+   BÖLÜM L · SEVİYE & ÖDÜL
+   ========================================================================= */
+const LevelService = {
+  levelFor(xp){
+    let lv = 1;
+    for(let i=0;i<LEVEL_THRESHOLDS.length;i++){ if(xp>=LEVEL_THRESHOLDS[i]) lv=i+1; }
+    return lv;
+  },
+  progress(xp){
+    const lv = this.levelFor(xp);
+    const cur = LEVEL_THRESHOLDS[lv-1];
+    const next = LEVEL_THRESHOLDS[lv] != null ? LEVEL_THRESHOLDS[lv] : cur;
+    if(next===cur) return {pct:100, cur, next, lv};
+    return {pct: clamp(Math.round((xp-cur)/(next-cur)*100),0,100), cur, next, lv};
+  },
+  regionsFor(lv){ return REGIONS.filter(r=>r.level===lv); }
+};
+
+const RewardService = {
+  give(r, silent){
+    const before = gameState.progress.level;
+    if(r.xp) gameState.progress.xp += r.xp;
+    if(r.stars) gameState.currency.stars += r.stars;
+    if(r.kindness) gameState.currency.kindness += r.kindness;
+    if(r.island) IslandService.grow(r.island);
+    const after = LevelService.levelFor(gameState.progress.xp);
+    gameState.progress.level = after;
+    if(!silent){
+      const parts = [];
+      if(r.xp) parts.push("+"+r.xp+" XP");
+      if(r.stars) parts.push("+"+r.stars+" ⭐");
+      if(r.kindness) parts.push("+"+r.kindness+" 💚");
+      if(parts.length) Toast.show(parts.join("  ·  "),"good");
+      Confetti.burst(r.big?60:22);
+      AudioService.chime();
+    }
+    if(after>before) setTimeout(()=>LevelUp.show(before, after), 620);
+    return after>before;
+  }
+};
+
+const IslandService = {
+  keys:["flowers","trees","birds","benches","lanterns","paths"],
+  grow(kind){
+    const k = kind && this.keys.indexOf(kind)>-1 ? kind : this.keys[islandTotal(gameState) % this.keys.length];
+    gameState.island[k] = (gameState.island[k]||0)+1;
+  },
+  growAuto(){
+    const t = islandTotal(gameState);
+    this.grow(this.keys[t % this.keys.length]);
+  },
+  stage(){
+    const t = islandTotal(gameState);
+    let s = ISLAND_STAGES[0];
+    ISLAND_STAGES.forEach(x=>{ if(t>=x.min) s=x; });
+    return s;
+  },
+  updateStage(){ /* aşama türetilmiş değerdir, ayrıca saklanmaz */ }
+};
+
+/* =========================================================================
+   BÖLÜM M · ROZETLER
+   ========================================================================= */
+const BadgeService = {
+  checkAll(){
+    BADGES.forEach(b=>{
+      if(gameState.badges.indexOf(b.id)>-1) return;
+      let ok=false;
+      try{ ok = !!b.check(gameState); }catch(e){ ok=false; }
+      if(ok){
+        gameState.badges.push(b.id);
+        setTimeout(()=>{
+          Toast.show("🏅 Yeni rozet: "+b.name,"good");
+          Confetti.burst(30);
+        }, 400);
+      }
+    });
+  },
+  got(id){ return gameState.badges.indexOf(id)>-1; }
+};
+
+/* =========================================================================
+   BÖLÜM N · SES (SpeechSynthesis + hafif Web Audio tonu)
+   ========================================================================= */
+const AudioService = {
+  ctx:null, voice:null,
+  init(){
+    if(!("speechSynthesis" in window)) return;
+    const pick = () => {
+      const vs = window.speechSynthesis.getVoices() || [];
+      this.voice = vs.find(v=>/tr/i.test(v.lang)) || null;
+    };
+    pick();
+    try{ window.speechSynthesis.onvoiceschanged = pick; }catch(e){}
+  },
+  speak(text){
+    if(!gameState.settings.sound) { Toast.show("Ses kapalı. Ayarlardan açabilirsin.","info"); return; }
+    if(!("speechSynthesis" in window)){ Toast.show("Bu tarayıcı sesli okumayı desteklemiyor.","info"); return; }
+    try{
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(text).slice(0,600));
+      u.lang = "tr-TR"; u.rate = 0.94; u.pitch = 1.05;
+      if(this.voice) u.voice = this.voice;
+      window.speechSynthesis.speak(u);
+    }catch(e){ /* sessizce yoksay */ }
+  },
+  stop(){ try{ window.speechSynthesis.cancel(); }catch(e){} },
+  tone(freq, dur, vol){
+    if(!gameState.settings.sound) return;
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      if(!this.ctx) this.ctx = new AC();
+      if(this.ctx.state==="suspended") this.ctx.resume();
+      const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+      o.type="sine"; o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(vol||0.06, this.ctx.currentTime+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime+(dur||0.18));
+      o.connect(g); g.connect(this.ctx.destination);
+      o.start(); o.stop(this.ctx.currentTime+(dur||0.18)+0.02);
+    }catch(e){}
+  },
+  chime(){ this.tone(660,.14,.05); setTimeout(()=>this.tone(880,.18,.045),110); },
+  blip(){ this.tone(520,.1,.04); },
+  soft(){ this.tone(320,.14,.035); }
+};
+
+/* =========================================================================
+   BÖLÜM O · TOAST · KONFETİ · SEVİYE MODALI
+   ========================================================================= */
+const Toast = {
+  show(msg, kind){
+    const box = $("#toasts"); if(!box) return;
+    const el = document.createElement("div");
+    el.className = "toast " + (kind||"");
+    el.textContent = msg;
+    box.appendChild(el);
+    setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(10px)"; el.style.transition="all .3s"; }, 2400);
+    setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 2800);
+  }
+};
+
+const Confetti = {
+  burst(n){
+    if(gameState.settings.reducedMotion) return;
+    if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const box = $("#confetti"); if(!box) return;
+    const cols = ["#F3C969","#F29D85","#A58BD4","#72AEE6","#5AAA78","#9FD389"];
+    for(let i=0;i<(n||24);i++){
+      const p = document.createElement("i");
+      p.className="cf";
+      p.style.left = Math.random()*100+"vw";
+      p.style.background = cols[i%cols.length];
+      p.style.animationDuration = (1.5+Math.random()*1.3)+"s";
+      p.style.animationDelay = (Math.random()*.35)+"s";
+      box.appendChild(p);
+      setTimeout(()=>{ if(p.parentNode) p.parentNode.removeChild(p); }, 3200);
+    }
+  }
+};
+
+const LevelUp = {
+  show(from, to){
+    const opened = [];
+    for(let lv=from+1; lv<=to; lv++) LevelService.regionsFor(lv).forEach(r=>opened.push(r));
+    opened.forEach(r=>{ if(gameState.progress.unlocked.indexOf(r.id)<0) gameState.progress.unlocked.push(r.id); });
+    const newBadges = BADGES.filter(b=>BadgeService.got(b.id)).slice(-2);
+    let html = '<div style="text-align:center"><div style="font-size:3.4rem">🎉</div>'
+      + '<p style="font-size:1.15rem;font-weight:700;margin:6px 0 2px">Yeni seviyeye ulaştın!</p>'
+      + '<p style="color:var(--muted)">Seviye '+to+' · İyilik yolculuğun devam ediyor.</p></div>';
+    if(opened.length){
+      html += '<h4 class="sec-t">🗺️ Açılan bölgeler</h4><div class="grid">'
+        + opened.map(r=>'<div class="card" style="display:flex;gap:10px;align-items:center"><span style="font-size:1.8rem">'+r.icon+'</span><b>'+esc(r.name)+'</b></div>').join("")
+        + '</div>';
+    }
+    if(newBadges.length){
+      html += '<h4 class="sec-t">🏅 Rozetlerin</h4><div class="grid g3">'
+        + newBadges.map(b=>'<div class="badge got"><span class="bi">'+b.icon+'</span><span class="bn">'+esc(b.name)+'</span></div>').join("")
+        + '</div>';
+    }
+    const nextStory = STORY_CHAPTERS.find(c=>c.level<=to && gameState.story.completed.indexOf(c.id)<0);
+    if(nextStory) html += '<div class="note">📖 Yeni hikâye bölümü hazır: <b>'+esc(nextStory.title)+'</b></div>';
+    Modal.open({ title:"Tebrikler!", body:html, speak:"Yeni seviyeye ulaştın. Seviye "+to+".",
+      foot:[{label:"Devam et", act:"close-modal", cls:""}] });
+    Confetti.burst(70); AudioService.chime();
+    GameStateService.save();
+    UI.renderIsland();
+  }
+};
+
+/* =========================================================================
+   BÖLÜM P · MODAL
+   ========================================================================= */
+const Modal = {
+  speakText:"", lastFocus:null, stack:0,
+  open(cfg){
+    const m = $("#modal");
+    this.speakText = cfg.speak || "";
+    this.lastFocus = document.activeElement;
+    $("#modalTitle").textContent = cfg.title || "";
+    $("#modalBody").innerHTML = cfg.body || "";
+    $("#modalSpk").hidden = !cfg.speak;
+    const foot = $("#modalFoot");
+    foot.innerHTML = (cfg.foot||[]).map(b=>
+      '<button type="button" class="btn '+(b.cls||"")+'" data-act="'+esc(b.act)+'"'+(b.data?' data-v="'+esc(b.data)+'"':"")+'>'+esc(b.label)+'</button>'
+    ).join("");
+    foot.hidden = !(cfg.foot||[]).length;
+    m.hidden = false; m.classList.add("on");
+    document.body.style.overflow="hidden";
+    const f = m.querySelector(".sheet-b button, .sheet-f button, .x");
+    if(f) setTimeout(()=>f.focus(), 60);
+    if(cfg.autoSpeak && cfg.speak) AudioService.speak(cfg.speak);
+  },
+  setBody(html){ $("#modalBody").innerHTML = html; },
+  close(){
+    const m = $("#modal");
+    m.classList.remove("on"); m.hidden = true;
+    document.body.style.overflow="";
+    AudioService.stop();
+    if(this.lastFocus && this.lastFocus.focus) { try{ this.lastFocus.focus(); }catch(e){} }
+  },
+  isOpen(){ return $("#modal").classList.contains("on"); }
+};
+
+/* =========================================================================
+   BÖLÜM Q · GÖREV SERVİSİ
+   ========================================================================= */
+const QuestService = {
+  /* Günlük görevleri tarihe göre deterministik seç → aynı gün aynı liste */
+  ensureToday(){
+    const key = todayKey();
+    if(gameState.quests.date === key && gameState.quests.daily.length) return;
+    const seed = seedFromString(key + "|" + (gameState.player.name||""));
+    const pool = shuffle(QUEST_LIBRARY, seed);
+    gameState.quests.date = key;
+    gameState.quests.daily = pool.slice(0, BRAND.dailyQuestCount).map(q=>({id:q.id, status:"open"}));
+    gameState.statistics.questsToday = 0;
+    /* Yeni gün: ebeveyn görevlerinin süresi geçmişse işaretle */
+  },
+  byId(id){ return QUEST_LIBRARY.find(q=>q.id===id); },
+  complete(id){
+    const entry = gameState.quests.daily.find(d=>d.id===id);
+    if(!entry || entry.status==="done") return false;   // çift tıklama koruması
+    const q = this.byId(id); if(!q) return false;
+    entry.status = "done";
+    this.registerDone(q.tag, {xp:q.xp, stars:q.stars, kindness:q.kindness});
+    return true;
+  },
+  later(id){
+    const entry = gameState.quests.daily.find(d=>d.id===id);
+    if(!entry || entry.status==="done") return;
+    entry.status = entry.status==="later" ? "open" : "later";
+    GameStateService.save();
+  },
+  registerDone(tag, reward){
+    gameState.statistics.questsDone++;
+    gameState.statistics.questsToday++;
+    if(tag){ gameState.statistics.tagCounts[tag] = (gameState.statistics.tagCounts[tag]||0)+1; }
+    const k = todayKey();
+    if(gameState.statistics.activeDays.indexOf(k)<0) gameState.statistics.activeDays.push(k);
+    IslandService.growAuto();
+    RewardService.give(reward);
+    const msgs = ["Güzel bir iyilik yaptın.","İyilik Bahçen büyüyor.","Harika bir davranış.","Bugün birini sevindirdin.","Küçük iyilikler dünyayı güzelleştirir."];
+    Toast.show(msgs[gameState.statistics.questsDone % msgs.length], "good");
+  },
+  completeParent(pid){
+    const pq = gameState.parent.customQuests.find(p=>p.id===pid);
+    if(!pq || pq.done) return false;
+    pq.done = true; pq.doneAt = Date.now();
+    this.registerDone("aile", {xp:pq.xp||20, stars:pq.stars||5, kindness:10});
+    return true;
+  }
+};
+
+/* =========================================================================
+   BÖLÜM R · ARAYÜZ ÇİZİMİ
+   ========================================================================= */
+const UI = {
+  current:"islandScreen",
+
+  nav(id){
+    $$(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+    $$(".dock-b").forEach(b=>{
+      const on = b.dataset.s===id;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-current", on?"page":"false");
+    });
+    this.current = id;
+    const pg = $("#"+id+" .page") || $("#"+id+" .island-wrap");
+    if(pg) pg.scrollTop = 0;
+  },
+
+  renderAll(){
+    this.renderTopbar(); this.renderIsland(); this.renderQuests();
+    this.renderGames(); this.renderStory(); this.renderLibrary();
+    this.renderBadges(); this.renderShop();
+  },
+
+  renderTopbar(){
+    const p = LevelService.progress(gameState.progress.xp);
+    $("#tbAva").innerHTML = avatarSVG(gameState.player.avatar, gameState.player.color, gameState.inventory.equipped);
+    $("#tbName").textContent = gameState.player.name || "Oyuncu";
+    $("#tbLvl").textContent = "Seviye " + gameState.progress.level;
+    $("#tbXpFill").style.width = p.pct + "%";
+    const bar = $("#tbXpBar");
+    bar.setAttribute("aria-valuenow", p.pct);
+    bar.setAttribute("aria-valuetext", gameState.progress.xp + " XP, seviye " + gameState.progress.level);
+    $("#tbStars").textContent = gameState.currency.stars;
+    $("#tbKind").textContent = gameState.currency.kindness;
+    const openQ = gameState.quests.daily.filter(d=>d.status!=="done").length;
+    $("#btnQuests").classList.toggle("badge-dot", openQ>0);
+  },
+
+  /* ---- Ada sahnesi: sayaçlara göre inline SVG üretilir ---- */
+  renderIsland(){
+    const i = gameState.island, night = gameState.settings.night;
+    const S = [];
+    S.push('<svg viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" aria-hidden="true">');
+    /* gök */
+    S.push(night
+      ? '<circle cx="340" cy="42" r="19" fill="#F3F0DC" opacity=".92"/><circle cx="332" cy="38" r="17" fill="#2C4258"/>'
+      : '<circle cx="342" cy="40" r="22" fill="#F3C969" opacity=".9"/>');
+    S.push('<g class="cloud"><ellipse cx="60" cy="40" rx="28" ry="12" fill="#fff" opacity=".8"/><ellipse cx="80" cy="44" rx="18" ry="9" fill="#fff" opacity=".8"/></g>');
+    S.push('<g class="cloud b"><ellipse cx="210" cy="26" rx="22" ry="9" fill="#fff" opacity=".62"/></g>');
+    /* kuşlar */
+    for(let b=0;b<Math.min(i.birds,6);b++){
+      const x = 96 + b*44, y = 58 + (b%3)*18;
+      S.push('<g class="bird" style="animation-delay:'+(b*.35)+'s"><path d="M'+x+' '+y+' q7 -7 14 0 q7 -7 14 0" stroke="'+(night?"#CFE0D6":"#3F6B5D")+'" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>');
+    }
+    /* tepeler */
+    S.push('<path d="M0 148 Q100 130 200 146 T400 140 V250 H0Z" fill="'+(night?"#3E6B52":"#9FD389")+'"/>');
+    S.push('<path d="M0 182 Q120 166 260 180 T400 174 V250 H0Z" fill="'+(night?"#4C7C60":"#8CC97A")+'" opacity=".92"/>');
+    /* yol */
+    if(i.paths>0) S.push('<path d="M20 250 Q120 216 200 206 T392 190" stroke="'+(night?"#6E8C7E":"#EDE0BD")+'" stroke-width="'+(9+Math.min(i.paths,5)*2)+'" fill="none" stroke-linecap="round" opacity=".95"/>');
+    /* ağaçlar — arka planda, yapıların arasında boşluk bırakır */
+    const treeX = [104,126,150,232,254,276,86,300];
+    for(let t=0;t<Math.min(i.trees,8);t++){
+      const x = treeX[t], y = 150 + (t%2)*7;
+      S.push('<g class="sprout" style="animation-delay:'+(t*.07)+'s"><rect x="'+(x-3)+'" y="'+y+'" width="6" height="17" rx="3" fill="#8A6A4B"/><circle cx="'+x+'" cy="'+(y-5)+'" r="13" fill="'+(night?"#2F7A55":"#57A574")+'"/><circle cx="'+(x-8)+'" cy="'+(y+2)+'" r="9" fill="'+(night?"#37916A":"#6DBE87")+'"/><circle cx="'+(x+8)+'" cy="'+(y+2)+'" r="8" fill="'+(night?"#31865F":"#63B67F")+'"/></g>');
+    }
+    /* ev */
+    S.push('<g><rect x="20" y="120" width="52" height="38" rx="5" fill="'+(night?"#5A4A3A":"#F7EBD6")+'"/><path d="M14 122 46 98 78 122Z" fill="#F29D85"/><rect x="38" y="137" width="16" height="21" rx="3" fill="#368A70"/><rect x="24" y="128" width="11" height="10" rx="2" fill="#BFE6F4"/></g>');
+    /* kütüphane */
+    S.push('<g><rect x="322" y="120" width="60" height="42" rx="6" fill="'+(night?"#4A5A66":"#DCEDF7")+'"/><rect x="330" y="112" width="44" height="10" rx="4" fill="#72AEE6"/><rect x="344" y="140" width="16" height="22" rx="3" fill="#236653"/></g>');
+    /* çeşme — ağaçların arasındaki boşlukta */
+    S.push('<g><rect x="180" y="140" width="36" height="24" rx="7" fill="'+(night?"#41586B":"#CFE7F3")+'"/><rect x="195" y="122" width="7" height="20" rx="3" fill="#9DB6C4"/><circle cx="198.5" cy="119" r="6.5" fill="#72AEE6"/><path d="M191 152h15" stroke="#9BCBE4" stroke-width="3" stroke-linecap="round"/></g>');
+    /* fenerler */
+    for(let l=0;l<Math.min(i.lanterns,6);l++){
+      const x = 46 + l*62;
+      S.push('<g><rect x="'+(x-2)+'" y="176" width="4" height="26" fill="#7C6A55"/><circle cx="'+x+'" cy="174" r="7" fill="'+(night?"#F3C969":"#FFE9AE")+'"/>'+(night?'<circle cx="'+x+'" cy="174" r="15" fill="#F3C969" opacity=".25"/>':'')+'</g>');
+    }
+    /* banklar */
+    for(let b=0;b<Math.min(i.benches,4);b++){
+      const x = 252 + b*34;
+      S.push('<g><rect x="'+x+'" y="192" width="28" height="5" rx="2" fill="#B98A5E"/><rect x="'+(x+2)+'" y="197" width="4" height="9" fill="#8A6A4B"/><rect x="'+(x+22)+'" y="197" width="4" height="9" fill="#8A6A4B"/></g>');
+    }
+    /* çiçekler — ön planda, iki sıra */
+    for(let f=0;f<Math.min(i.flowers,16);f++){
+      const x = 18 + (f%8)*48 + (f>7?24:0), y = 214 + Math.floor(f/8)*22;
+      const c = ["#F29D85","#A58BD4","#F3C969","#72AEE6"][f%4];
+      S.push('<g class="sprout" style="animation-delay:'+(f*.05)+'s"><rect x="'+(x-1)+'" y="'+y+'" width="2.4" height="13" fill="#4F8B4A"/><circle cx="'+x+'" cy="'+y+'" r="5.4" fill="'+c+'"/><circle cx="'+x+'" cy="'+y+'" r="2.1" fill="#FFF8E8"/></g>');
+    }
+    /* oyuncu — en önde, arka daire olmadan */
+    S.push('<g class="hero-bounce" transform="translate(126,166) scale(.52)">'
+      + avatarSVG(gameState.player.avatar, gameState.player.color, gameState.inventory.equipped, true)
+        .replace(/^<svg[^>]*>/,"").replace(/<\/svg>$/,"")
+      + '</g>');
+    S.push('</svg>');
+    $("#scene").innerHTML = S.join("");
+    $("#scene").setAttribute("aria-label", "Ada görünümü: " + IslandService.stage().name + ", " + islandTotal(gameState) + " güzellik");
+    $("#stageName").textContent = IslandService.stage().name;
+    $("#islandCount").textContent = islandTotal(gameState);
+
+    /* Bölge kartları */
+    $("#regions").innerHTML = REGIONS.map(r=>{
+      const open = gameState.progress.unlocked.indexOf(r.id)>-1 || gameState.progress.level>=r.level;
+      if(open && gameState.progress.unlocked.indexOf(r.id)<0) gameState.progress.unlocked.push(r.id);
+      return '<button type="button" class="region'+(open?"":" locked")+'" data-act="region" data-v="'+r.id+'" aria-label="'+esc(r.name)+(open?"":", kilitli")+'">'
+        + '<span class="ico" aria-hidden="true">'+r.icon+'</span><span class="rn">'+esc(r.name)+'</span>'
+        + (open?'':'<span class="lv">'+r.level+'. seviye</span>')+'</button>';
+    }).join("");
+  },
+
+  renderQuests(){
+    QuestService.ensureToday();
+    const list = $("#questList");
+    list.innerHTML = gameState.quests.daily.map(d=>{
+      const q = QuestService.byId(d.id); if(!q) return "";
+      const done = d.status==="done";
+      return '<article class="quest'+(done?" done":"")+'" data-q="'+q.id+'">'
+        + '<div class="qi" aria-hidden="true">'+q.icon+'</div>'
+        + '<div class="qb"><h4>'+esc(q.title)+'</h4><p>'+esc(q.description)+'</p>'
+        + '<div class="rewards"><span class="rw">+'+q.xp+' XP</span><span class="rw">+'+q.stars+' ⭐</span><span class="rw">+'+q.kindness+' 💚</span>'
+        + (d.status==="later"?'<span class="rw">⏰ Daha sonra</span>':'')+'</div>'
+        + '<div class="qacts">'
+        + (done
+            ? '<span class="rw" style="background:color-mix(in srgb,var(--success) 25%,var(--surface))">✅ Tamamlandı</span>'
+            : (q.selfReport
+                ? '<button class="btn sm" type="button" data-act="quest-self" data-v="'+q.id+'">Yaptım</button>'
+                  +'<button class="btn sm ghost" type="button" data-act="quest-not" data-v="'+q.id+'">Yapmadım</button>'
+                : '<button class="btn sm" type="button" data-act="quest-do" data-v="'+q.id+'">Yaptım</button>'
+                  +'<button class="btn sm ghost" type="button" data-act="quest-later" data-v="'+q.id+'">Daha sonra</button>'))
+        + '<button class="spk" type="button" data-act="speak" data-v="'+esc(q.title+". "+q.description)+'" aria-label="Görevi sesli dinle">🔊</button>'
+        + '</div></div></article>';
+    }).join("") || '<p class="empty">Bugün için görev hazırlanıyor…</p>';
+
+    const pl = $("#parentQuestList");
+    const pq = gameState.parent.customQuests;
+    pl.innerHTML = pq.length ? pq.map(p=>
+      '<article class="quest'+(p.done?" done":"")+'">'
+      + '<div class="qi" aria-hidden="true">👨‍👩‍👧</div>'
+      + '<div class="qb"><h4>'+esc(p.title)+'</h4><p>'+esc(p.desc||"")+'</p>'
+      + '<div class="rewards"><span class="rw">+'+(p.xp||20)+' XP</span><span class="rw">+'+(p.stars||5)+' ⭐</span>'
+      + (p.due?'<span class="rw">📅 '+esc(p.due)+'</span>':'')+'</div>'
+      + '<div class="qacts">'+(p.done
+        ? '<span class="rw">✅ Tamamlandı</span>'
+        : '<button class="btn sm" type="button" data-act="pquest-do" data-v="'+esc(p.id)+'">Yaptım</button>')
+      + '<button class="spk" type="button" data-act="speak" data-v="'+esc(p.title+". "+(p.desc||""))+'" aria-label="Sesli dinle">🔊</button></div>'
+      + '</div></article>'
+    ).join("") : '<p class="empty">Ailenden gelen özel bir görev yok.</p>';
+
+    const doneToday = gameState.quests.daily.filter(d=>d.status==="done").length;
+    $("#journeyCard").innerHTML =
+      '<div class="row"><div><div class="rl">Bugün tamamlanan</div><div class="rs">Beş görevin '+doneToday+' tanesi bitti.</div></div><b style="font-size:1.3rem">'+doneToday+'/'+gameState.quests.daily.length+'</b></div>'
+      + '<div class="row"><div><div class="rl">Toplam iyilik</div><div class="rs">Başladığın günden bu yana.</div></div><b style="font-size:1.3rem">'+gameState.statistics.questsDone+'</b></div>'
+      + '<div class="row"><div><div class="rl">İyilik yaptığın günler</div><div class="rs">Bir gün kaçırsan da yolculuğun devam eder.</div></div><b style="font-size:1.3rem">'+gameState.statistics.activeDays.length+'</b></div>';
+  },
+
+  renderGames(){
+    const games = MiniGameService.list();
+    $("#gameList").innerHTML = games.map(g=>
+      '<button type="button" class="card" data-act="game" data-v="'+g.id+'" style="text-align:left;display:flex;gap:11px;align-items:center">'
+      + '<span style="font-size:2rem" aria-hidden="true">'+g.icon+'</span>'
+      + '<span style="flex:1"><b style="display:block;font-size:.96rem">'+esc(g.name)+'</b>'
+      + '<span style="font-size:.78rem;color:var(--muted);display:block;margin-top:3px">'+esc(g.desc)+'</span>'
+      + '<span class="rw" style="display:inline-block;margin-top:7px">'+((gameState.progress.miniScores[g.id]||0))+' kez oynadın</span></span></button>'
+    ).join("");
+  },
+
+  renderStory(){
+    $("#storyList").innerHTML = STORY_CHAPTERS.map((c,idx)=>{
+      const done = gameState.story.completed.indexOf(c.id)>-1;
+      const prevDone = idx===0 || gameState.story.completed.indexOf(STORY_CHAPTERS[idx-1].id)>-1;
+      const open = prevDone && gameState.progress.level>=c.level;
+      return '<button type="button" class="story-item'+(done?" done":"")+(open?"":" lockd")+'" data-act="story" data-v="'+c.id+'">'
+        + '<span class="sni" aria-hidden="true">'+c.icon+'</span>'
+        + '<span style="flex:1;text-align:left"><b style="display:block">'+(idx+1)+'. '+esc(c.title)+'</b>'
+        + '<span style="font-size:.78rem;color:var(--muted)">'+(done?"Tamamlandı — tekrar okuyabilirsin":(open?"Okumaya hazır":(prevDone?(c.level+". seviyede açılır"):"Önceki bölümü bitir")))+'</span></span>'
+        + '<span aria-hidden="true">'+(done?"✅":(open?"▶️":"🔒"))+'</span></button>';
+    }).join("");
+  },
+
+  libCat:"Hepsi",
+  renderLibrary(){
+    const cats = ["Hepsi"].concat(Array.from(new Set(CONTENT_LIBRARY.map(c=>c.category))));
+    $("#libCats").innerHTML = cats.map(c=>
+      '<button type="button" class="cat'+(c===this.libCat?" on":"")+'" role="tab" aria-selected="'+(c===this.libCat)+'" data-act="libcat" data-v="'+esc(c)+'">'+esc(c)+'</button>'
+    ).join("");
+    const items = CONTENT_LIBRARY.filter(c=>this.libCat==="Hepsi"||c.category===this.libCat);
+    $("#libList").innerHTML = items.map(c=>{
+      const learned = gameState.progress.learned.indexOf(c.id)>-1;
+      return '<article class="lc'+(learned?" learned":"")+'">'
+        + '<div class="lh"><span class="li" aria-hidden="true">'+c.icon+'</span><h4>'+esc(c.title)+'</h4>'
+        + '<button class="spk" type="button" data-act="speak" data-v="'+esc(c.title+". "+c.description)+'" aria-label="Bilgiyi sesli dinle">🔊</button></div>'
+        + '<p>'+esc(c.description)+'</p>'
+        + '<div class="src">'+esc(c.sourceLabel)+(c.verified?"":" · doğrulanmamış içerik, dinî kaynak atfı yapılmamıştır")+'</div>'
+        + '<div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">'
+        + (learned?'<span class="rw">✅ Öğrendim</span>':'<button class="btn sm" type="button" data-act="learn" data-v="'+c.id+'">Öğrendim</button>')
+        + '<button class="btn sm ghost" type="button" data-act="quiz" data-v="'+c.id+'">Küçük soru</button></div>'
+        + '</article>';
+    }).join("") || '<p class="empty">Bu kategoride kart yok.</p>';
+  },
+
+  renderBadges(){
+    const got = BADGES.filter(b=>BadgeService.got(b.id));
+    const lock = BADGES.filter(b=>!BadgeService.got(b.id));
+    $("#badgeCount").textContent = got.length + " / " + BADGES.length + " rozet kazandın.";
+    $("#badgeGot").innerHTML = got.length ? got.map(b=>
+      '<div class="badge got"><span class="bi" aria-hidden="true">'+b.icon+'</span><span class="bn">'+esc(b.name)+'</span><span class="bd">'+esc(b.desc)+'</span></div>').join("")
+      : '<p class="empty">Henüz rozet yok. İlk görevini tamamlayınca burası dolmaya başlar.</p>';
+    $("#badgeLock").innerHTML = lock.map(b=>
+      '<div class="badge lock"><span class="bi" aria-hidden="true">🔒</span><span class="bn">'+esc(b.name)+'</span><span class="bd">'+esc(b.desc)+'</span></div>').join("")
+      || '<p class="empty">Bütün rozetleri topladın.</p>';
+  },
+
+  renderShop(){
+    $("#avaBig").innerHTML = avatarSVG(gameState.player.avatar, gameState.player.color, gameState.inventory.equipped);
+    $("#avaName").textContent = gameState.player.name || "Oyuncu";
+    const eq = gameState.inventory.equipped.map(id=>{ const it=SHOP_ITEMS.find(s=>s.id===id); return it?it.icon+" "+it.name:""; }).filter(Boolean);
+    $("#avaEquipped").textContent = eq.length ? "Takılı: "+eq.join(", ") : "Takılı eşya yok.";
+    $("#shopList").innerHTML = SHOP_ITEMS.map(it=>{
+      const owned = gameState.inventory.owned.indexOf(it.id)>-1;
+      const equipped = gameState.inventory.equipped.indexOf(it.id)>-1;
+      const canBuy = gameState.currency.stars >= it.cost;
+      return '<div class="shopitem'+(equipped?" equipped":(owned?" owned":""))+'">'
+        + '<span class="si" aria-hidden="true">'+it.icon+'</span><span class="sn">'+esc(it.name)+'</span>'
+        + (owned
+          ? '<button class="btn sm '+(equipped?"gold":"ghost")+'" type="button" data-act="equip" data-v="'+it.id+'">'+(equipped?"Çıkar":"Tak")+'</button>'
+          : '<button class="btn sm'+(canBuy?"":" ghost")+'" type="button" data-act="buy" data-v="'+it.id+'"'+(canBuy?"":" disabled")+'>'+it.cost+' ⭐</button>')
+        + '</div>';
+    }).join("");
+  }
+};
+
+/* =========================================================================
+   BÖLÜM S · MİNİ OYUNLAR
+   ========================================================================= */
+function mgFoot(html){ const f=$("#modalFoot"); f.innerHTML=html; f.hidden=!html; }
+
+const MiniGameService = {
+  st:null,
+  list(){
+    return [
+      {id:"besmele",  icon:"📿", name:"Besmele Sıralama",   desc:"Heceleri doğru sıraya diz."},
+      {id:"abdest",   icon:"⛲", name:"Abdest Sıralama",     desc:"Adımları sırayla seç."},
+      {id:"davranis", icon:"🤔", name:"Doğru Davranışı Seç", desc:"Günlük durumlarda en güzel davranış."},
+      {id:"dua",      icon:"🤲", name:"Dua Eşleştirme",      desc:"Duayı doğru anla eşleştir."},
+      {id:"memory",   icon:"🧠", name:"İyilik Hafıza Oyunu", desc:"Aynı iyilikleri bul."},
+      {id:"vakit",    icon:"🕌", name:"Namaz Vakitlerini Tanı", desc:"Günün hangi anı hangi vakit?"},
+      {id:"iftar",    icon:"🌙", name:"İftar Sofrası",       desc:"İsraf etmeden sofrayı düzenle."}
+    ];
+  },
+  open(id){
+    const g = this.list().find(x=>x.id===id);
+    if(!g) return;
+    gameState.statistics.gamePlays[id] = (gameState.statistics.gamePlays[id]||0)+1;
+    GameStateService.save();
+    Modal.open({title:g.icon+" "+g.name, body:"", speak:g.name+". "+g.desc});
+    this["start_"+id]();
+  },
+  finish(id, reward, msg){
+    gameState.progress.miniScores[id] = (gameState.progress.miniScores[id]||0)+1;
+    RewardService.give(reward);
+    Toast.show(msg||"Tamamladın!","good");
+    commit();
+    UI.renderGames();
+  },
+
+  /* ---------- 1. Besmele Sıralama ---------- */
+  start_besmele(){
+    this.st = { order:[], pool:shuffle(BESMELE_PARTS) };
+    this.renderBesmele();
+  },
+  renderBesmele(){
+    const s = this.st;
+    const done = s.order.length===BESMELE_PARTS.length;
+    Modal.setBody(
+      '<div class="mg-top"><span class="pill">Sıra: '+s.order.length+' / '+BESMELE_PARTS.length+'</span></div>'
+      + '<div class="slots" aria-live="polite">'+(s.order.length? s.order.map(p=>'<span class="chipbtn ok">'+esc(p)+'</span>').join("") : '<span style="color:var(--muted);font-size:.85rem">Heceleri buraya sırayla ekle</span>')+'</div>'
+      + '<div class="chips">'+s.pool.map((p,i)=>'<button type="button" class="chipbtn'+(s.order.indexOf(p)>-1?" used":"")+'" data-act="mg" data-v="besmele:'+i+'">'+esc(p)+'</button>').join("")+'</div>'
+      + (done ? '<div class="note">Bismillâhirrahmânirrahîm — "Rahmân ve Rahîm olan Allah\'ın adıyla." Besmele, bir işe başlarken söylenir.</div>' : '<div class="note">İpucu: "Bis" ile başlar. Yanlış seçersen bir şey olmaz, tekrar dene.</div>')
+    );
+    mgFoot(done
+      ? '<button class="btn" type="button" data-act="mg" data-v="besmele:speak">🔊 Dinle</button><button class="btn ghost" type="button" data-act="close-modal">Bitir</button>'
+      : '<button class="btn ghost" type="button" data-act="mg" data-v="besmele:reset">Baştan başla</button>');
+  },
+  hit_besmele(v){
+    const s = this.st;
+    if(v==="reset"){ this.start_besmele(); return; }
+    if(v==="speak"){ AudioService.speak("Bismillâhirrahmânirrahîm"); return; }
+    const idx = parseInt(v,10), part = s.pool[idx];
+    if(s.order.indexOf(part)>-1) return;
+    if(part === BESMELE_PARTS[s.order.length]){
+      s.order.push(part); AudioService.blip(); this.renderBesmele();
+      if(s.order.length===BESMELE_PARTS.length){
+        AudioService.speak("Bismillâhirrahmânirrahîm");
+        this.finish("besmele",{xp:25,stars:6,kindness:5,island:"flowers"},"Besmeleyi doğru sıraladın!");
+      }
+    }else{
+      AudioService.soft();
+      const btn = document.querySelector('[data-v="besmele:'+idx+'"]');
+      if(btn){ btn.classList.add("shake"); setTimeout(()=>btn.classList.remove("shake"),420); }
+      Toast.show("Bir daha bakalım. Sıradaki hece hangisi olabilir?","info");
+    }
+  },
+
+  /* ---------- 2. Abdest Sıralama ---------- */
+  start_abdest(){
+    this.st = { order:[], pool:shuffle(ABDEST_STEPS.map((s,i)=>({ name:s.n, icon:s.i, idx:i }))) };
+    this.renderAbdest();
+  },
+  renderAbdest(){
+    const s = this.st, done = s.order.length===ABDEST_STEPS.length;
+    Modal.setBody(
+      '<div class="mg-top"><span class="pill">'+s.order.length+' / '+ABDEST_STEPS.length+' adım</span></div>'
+      + '<div class="slots" aria-live="polite">'+(s.order.length
+          ? s.order.map((n,k)=>'<span class="chipbtn ok">'+(k+1)+'. '+esc(ABDEST_STEPS[n].n)+'</span>').join("")
+          : '<span style="color:var(--muted);font-size:.85rem">Doğru adımı seçtikçe burası dolar</span>')+'</div>'
+      + '<div class="grid" style="margin-top:12px">'+s.pool.map(p=>
+          '<button type="button" class="stepcard'+(s.order.indexOf(p.idx)>-1?" used":"")+'" data-act="mg" data-v="abdest:'+p.idx+'">'
+          + '<span class="n" aria-hidden="true">'+p.icon+'</span>'+esc(p.name)+'</button>'
+        ).join("")+'</div>'
+      + '<div class="note warnn">Bu sıralama sade bir öğrenme çalışmasıdır. Bu konuda farklı uygulamalar bulunabilir. Ailenden veya güvendiğin bir din görevlisinden bilgi alabilirsin.</div>'
+    );
+    mgFoot(done
+      ? '<button class="btn ghost" type="button" data-act="close-modal">Bitir</button>'
+      : '<button class="btn ghost" type="button" data-act="mg" data-v="abdest:reset">Baştan başla</button>');
+  },
+  hit_abdest(v){
+    if(v==="reset"){ this.start_abdest(); return; }
+    const s=this.st, i=parseInt(v,10);
+    if(s.order.indexOf(i)>-1) return;
+    if(i === s.order.length){
+      s.order.push(i); AudioService.blip(); this.renderAbdest();
+      if(s.order.length===ABDEST_STEPS.length){
+        this.finish("abdest",{xp:30,stars:8,kindness:6,island:"paths"},"Abdest adımlarını sıraladın!");
+      }
+    }else{
+      AudioService.soft();
+      Toast.show("Bir daha düşünelim. Şimdi hangi adım gelir?","info");
+    }
+  },
+
+  /* ---------- 3. Doğru Davranışı Seç ---------- */
+  start_davranis(){
+    this.st = { qs: shuffle(SCENARIOS).slice(0,3), i:0, good:0, answered:false };
+    this.renderDavranis();
+  },
+  renderDavranis(){
+    const s = this.st, q = s.qs[s.i];
+    if(!q){ return; }
+    Modal.setBody(
+      '<div class="mg-top"><span class="pill">Soru '+(s.i+1)+' / '+s.qs.length+'</span><span class="pill">En güzel davranış: '+s.good+'</span></div>'
+      + '<p style="font-size:1rem;font-weight:700;line-height:1.5;margin-bottom:12px">'+esc(q.t)+'</p>'
+      + q.o.map((o,k)=>'<button type="button" class="opt" data-act="mg" data-v="davranis:'+k+'" id="dopt'+k+'">'+esc(o)+'</button>').join("")
+      + '<div id="dfb"></div>'
+    );
+    mgFoot('<button class="btn ghost" type="button" data-act="speak" data-v="'+esc(q.t)+'">🔊 Soruyu dinle</button>');
+  },
+  hit_davranis(v){
+    const s=this.st;
+    if(v==="next"){
+      s.i++; s.answered=false;
+      if(s.i>=s.qs.length){
+        this.finish("davranis",{xp:20+s.good*8, stars:5+s.good*2, kindness:10+s.good*4, island:"benches"},"Üç durumu da düşündün!");
+        Modal.setBody('<div style="text-align:center;padding:14px"><div style="font-size:3rem">🌟</div><p style="font-weight:700;margin-top:8px">Düşünerek seçtin.</p><p style="color:var(--muted);margin-top:6px">Üç durumdan '+s.good+' tanesinde en güzel davranışı buldun. Her seferinde biraz daha kolaylaşacak.</p></div>');
+        mgFoot('<button class="btn" type="button" data-act="mg" data-v="davranis:again">Tekrar oyna</button><button class="btn ghost" type="button" data-act="close-modal">Kapat</button>');
+        return;
+      }
+      this.renderDavranis(); return;
+    }
+    if(v==="again"){ this.start_davranis(); return; }
+    if(s.answered) return;
+    const q = s.qs[s.i], k = parseInt(v,10), ok = k===q.ok;
+    s.answered = true;
+    if(ok){ s.good++; AudioService.chime(); } else { AudioService.soft(); }
+    const okBtn = document.getElementById("dopt"+q.ok);
+    if(okBtn) okBtn.classList.add("good");
+    if(!ok){ const b=document.getElementById("dopt"+k); if(b) b.classList.add("soft"); }
+    const fb = document.getElementById("dfb");
+    if(fb) fb.innerHTML = '<div class="note">'+(ok?"Doğru düşündün. ":"Bir daha düşünelim. En güzel davranış hangisi olabilir? ")+esc(q.why)+'</div>';
+    mgFoot('<button class="btn" type="button" data-act="mg" data-v="davranis:next">Devam</button>');
+  },
+
+  /* ---------- 4 & 6. Eşleştirme (dua / vakit) ---------- */
+  startMatch(id, pairs, leftKey, rightKey, title){
+    this.st = { id, pairs, left:shuffle(pairs.map((p,i)=>i)), right:shuffle(pairs.map((p,i)=>i)), sel:null, done:[], leftKey, rightKey, title };
+    this.renderMatch();
+  },
+  renderMatch(){
+    const s=this.st;
+    const cell = (i, side) => {
+      const p = s.pairs[i];
+      const isDone = s.done.indexOf(i)>-1;
+      const sel = s.sel && s.sel.side===side && s.sel.i===i;
+      const txt = side==="L"
+        ? '<span class="big" aria-hidden="true">'+(p.ico||"")+'</span>'+esc(p[s.leftKey])
+        : esc(p[s.rightKey]);
+      return '<button type="button" class="mitem'+(isDone?" done":"")+(sel?" sel":"")+'" data-act="mg" data-v="'+s.id+':'+side+i+'">'+txt+'</button>';
+    };
+    let rows = '<div class="matchgrid">';
+    const n = Math.max(s.left.length, s.right.length);
+    for(let r=0;r<n;r++){
+      rows += cell(s.left[r],"L") + cell(s.right[r],"R");
+    }
+    rows += '</div>';
+    Modal.setBody(
+      '<div class="mg-top"><span class="pill">Eşleşen: '+s.done.length+' / '+s.pairs.length+'</span></div>'
+      + '<p style="font-size:.86rem;color:var(--muted);margin-bottom:10px">Soldan birini, sonra sağdan eşini seç.</p>'
+      + rows
+      + (s.id==="dua" ? '<div class="note">Dualar kısa ve yaşa uygun tutulmuştur. Anlamlarını ailenle birlikte konuşabilirsin.</div>' : '<div class="note">Bu bölüm ibadet takibi değildir; vakitlerin adlarını öğrenmek içindir.</div>')
+    );
+    mgFoot(s.done.length===s.pairs.length
+      ? '<button class="btn ghost" type="button" data-act="close-modal">Bitir</button>'
+      : '<button class="btn ghost" type="button" data-act="mg" data-v="'+s.id+':reset">Karıştır</button>');
+  },
+  hitMatch(v){
+    const s=this.st;
+    if(v==="reset"){ this.startMatch(s.id, s.pairs, s.leftKey, s.rightKey, s.title); return; }
+    const side = v[0], i = parseInt(v.slice(1),10);
+    if(s.done.indexOf(i)>-1) return;
+    if(!s.sel || s.sel.side===side){ s.sel = {side, i}; AudioService.blip(); this.renderMatch(); return; }
+    if(s.sel.i === i){
+      s.done.push(i); s.sel=null; AudioService.chime(); this.renderMatch();
+      if(s.done.length===s.pairs.length){
+        if(s.id==="dua") this.finish("dua",{xp:30,stars:8,kindness:8,island:"lanterns"},"Duaları eşleştirdin!");
+        else this.finish("vakit",{xp:28,stars:7,kindness:6,island:"lanterns"},"Vakitleri tanıdın!");
+      }
+    }else{
+      s.sel=null; AudioService.soft(); this.renderMatch();
+      Toast.show("Bu ikisi eşleşmedi. Tekrar deneyebilirsin.","info");
+    }
+  },
+  start_dua(){ this.startMatch("dua", DUA_PAIRS, "sit", "dua"); },
+  start_vakit(){ this.startMatch("vakit", PRAYER_TIMES.map(p=>({ico:p.ico, desc:p.desc, n:p.n})), "desc", "n"); },
+
+  /* ---------- 5. Hafıza ---------- */
+  start_memory(){
+    const deck = shuffle(MEMORY_PAIRS.concat(MEMORY_PAIRS).map((p,i)=>({p, key:i%MEMORY_PAIRS.length, uid:i})));
+    this.st = { deck, open:[], matched:[], moves:0, t0:Date.now(), timer:null, busy:false };
+    this.renderMemory();
+    clearInterval(this._mt);
+    this._mt = setInterval(()=>{
+      const el = document.getElementById("memTime");
+      if(!el){ clearInterval(this._mt); return; }
+      el.textContent = Math.floor((Date.now()-this.st.t0)/1000)+" sn";
+    }, 1000);
+  },
+  renderMemory(){
+    const s=this.st;
+    Modal.setBody(
+      '<div class="mg-top"><span class="pill">Hamle: '+s.moves+'</span><span class="pill">⏱ <span id="memTime">0 sn</span></span><span class="pill">'+s.matched.length/2+' / '+MEMORY_PAIRS.length+'</span></div>'
+      + '<div class="memo">'+s.deck.map((c,i)=>{
+          const open = s.open.indexOf(i)>-1, mt = s.matched.indexOf(i)>-1;
+          return '<button type="button" class="mcard'+(mt?" matched":(open?" open":""))+'" data-act="mg" data-v="memory:'+i+'" aria-label="'+(open||mt?esc(c.p.n):"Kapalı kart")+'"><span>'+(open||mt?c.p.i:"❓")+'<span class="mlbl">'+(open||mt?esc(c.p.n):"")+'</span></span></button>';
+        }).join("")+'</div>'
+    );
+    mgFoot('<button class="btn ghost" type="button" data-act="mg" data-v="memory:reset">Yeniden karıştır</button>');
+  },
+  hit_memory(v){
+    const s=this.st;
+    if(v==="reset"){ this.start_memory(); return; }
+    if(s.busy) return;
+    const i = parseInt(v,10);
+    if(s.open.indexOf(i)>-1 || s.matched.indexOf(i)>-1) return;
+    s.open.push(i);
+    AudioService.blip();
+    this.renderMemory();
+    if(s.open.length===2){
+      s.moves++; s.busy = true;
+      const [a,b] = s.open;
+      if(s.deck[a].key === s.deck[b].key){
+        setTimeout(()=>{
+          s.matched.push(a,b); s.open=[]; s.busy=false; AudioService.chime(); this.renderMemory();
+          if(s.matched.length === s.deck.length){
+            clearInterval(this._mt);
+            const best = gameState.progress.bestMemoryMoves;
+            if(best==null || s.moves<best) gameState.progress.bestMemoryMoves = s.moves;
+            this.finish("memory",{xp:30,stars:8,kindness:6,island:"trees"},"Bütün çiftleri buldun! "+s.moves+" hamle.");
+          }
+        }, 480);
+      }else{
+        setTimeout(()=>{ s.open=[]; s.busy=false; this.renderMemory(); }, 820);
+      }
+    }
+  },
+
+  /* ---------- 7. Ramazan · İftar Sofrası ---------- */
+  start_iftar(){
+    this.st = { picks:{}, checked:false };
+    this.renderIftar();
+  },
+  renderIftar(){
+    const s=this.st;
+    Modal.setBody(
+      '<p style="font-size:.9rem;line-height:1.5;margin-bottom:12px">Sofrada dört kişi var. Her yiyecek için en güzel kararı seç: sofraya koy, komşuyla paylaş veya sakla. Hiçbir şey çöpe gitmesin.</p>'
+      + IFTAR_ITEMS.map((it,i)=>{
+        const pick = s.picks[i];
+        const ok = s.checked && pick===it.ok;
+        return '<div class="foodrow"'+(ok?' style="border-color:var(--success)"':'')+'>'
+          + '<span class="fi" aria-hidden="true">'+it.i+'</span><span class="fn">'+esc(it.n)+'</span>'
+          + '<span class="fb">'+IFTAR_DESTS.map(d=>'<button type="button" class="tinybtn'+(pick===d.k?" pick":"")+'" data-act="mg" data-v="iftar:'+i+'|'+d.k+'">'+d.i+' '+d.n+'</button>').join("")+'</span>'
+          + (s.checked ? '<div style="flex-basis:100%;font-size:.78rem;color:var(--muted);margin-top:4px">'+(pick===it.ok?"✅ ":"💡 ")+esc(it.why)+'</div>' : '')
+          + '</div>';
+      }).join("")
+      + '<div class="note">İsraf etmemek, nimetin kıymetini bilmektir. Artan yemek çöpe değil, paylaşmaya veya saklamaya gider.</div>'
+    );
+    const all = Object.keys(s.picks).length===IFTAR_ITEMS.length;
+    mgFoot(s.checked
+      ? '<button class="btn" type="button" data-act="mg" data-v="iftar:again">Tekrar dene</button><button class="btn ghost" type="button" data-act="close-modal">Bitir</button>'
+      : '<button class="btn" type="button" data-act="mg" data-v="iftar:check"'+(all?"":" disabled")+'>Sofrayı kontrol et</button>');
+  },
+  hit_iftar(v){
+    const s=this.st;
+    if(v==="again"){ this.start_iftar(); return; }
+    if(v==="check"){
+      s.checked = true;
+      const right = IFTAR_ITEMS.filter((it,i)=>s.picks[i]===it.ok).length;
+      this.renderIftar();
+      if(right===IFTAR_ITEMS.length){
+        this.finish("iftar",{xp:40,stars:10,kindness:15,island:"lanterns"},"Sofrada hiçbir şey israf olmadı!");
+      }else{
+        RewardService.give({xp:10, stars:3, kindness:5});
+        Toast.show(right+" / "+IFTAR_ITEMS.length+" doğru. Açıklamaları okuyup tekrar deneyebilirsin.","info");
+      }
+      return;
+    }
+    const parts = v.split("|");
+    s.picks[parseInt(parts[0],10)] = parts[1];
+    AudioService.blip();
+    this.renderIftar();
+  },
+
+  hit(payload){
+    const idx = payload.indexOf(":");
+    const id = payload.slice(0,idx), v = payload.slice(idx+1);
+    if(id==="besmele") this.hit_besmele(v);
+    else if(id==="abdest") this.hit_abdest(v);
+    else if(id==="davranis") this.hit_davranis(v);
+    else if(id==="memory") this.hit_memory(v);
+    else if(id==="iftar") this.hit_iftar(v);
+    else if(id==="dua" || id==="vakit") this.hitMatch(v);
+  }
+};
+
+/* =========================================================================
+   BÖLÜM T · HİKÂYE SERVİSİ
+   ========================================================================= */
+const StoryService = {
+  cur:null,
+  open(id){
+    const c = STORY_CHAPTERS.find(x=>x.id===id); if(!c) return;
+    const idx = STORY_CHAPTERS.indexOf(c);
+    const prevDone = idx===0 || gameState.story.completed.indexOf(STORY_CHAPTERS[idx-1].id)>-1;
+    if(!prevDone){ Toast.show("Önce bir önceki bölümü tamamla.","info"); return; }
+    if(gameState.progress.level < c.level){ Toast.show("Bu bölüm "+c.level+". seviyede açılıyor.","info"); return; }
+    this.cur = c;
+    Modal.open({
+      title: c.icon+" "+c.title,
+      body: '<p class="story-line">'+esc(c.text)+'</p>'
+          + '<h4 class="sec-t">'+esc(c.q)+'</h4>'
+          + c.opts.map((o,k)=>'<button type="button" class="opt" data-act="story-pick" data-v="'+k+'">'+esc(o.t)+'</button>').join(""),
+      speak: c.text + " " + c.q
+    });
+    mgFoot('<button class="btn ghost" type="button" data-act="speak" data-v="'+esc(c.text+" "+c.q)+'">🔊 Hikâyeyi dinle</button>');
+  },
+  pick(k){
+    const c = this.cur; if(!c) return;
+    const o = c.opts[parseInt(k,10)]; if(!o) return;
+    const already = gameState.story.completed.indexOf(c.id)>-1;
+    gameState.story.choices[c.id] = k;
+    Modal.setBody(
+      '<div class="note">'+esc(o.fb)+'</div>'
+      + (already ? '<p class="hint" style="margin-top:12px">Bu bölümü daha önce tamamlamıştın; ödül tekrar verilmez.</p>' : '')
+    );
+    mgFoot('<button class="btn" type="button" data-act="close-modal">Devam</button>');
+    if(!already){
+      gameState.story.completed.push(c.id);
+      gameState.story.chapter = Math.max(gameState.story.chapter, STORY_CHAPTERS.indexOf(c)+1);
+      RewardService.give(Object.assign({big:true}, c.reward));
+    }
+    AudioService.speak(o.fb);
+    commit();
+  }
+};
+
+/* =========================================================================
+   BÖLÜM U · AYARLAR
+   ========================================================================= */
+const SettingsService = {
+  apply(){
+    const s = gameState.settings;
+    document.documentElement.dataset.night = s.night ? "1" : "0";
+    document.documentElement.dataset.motion = s.reducedMotion ? "0" : "1";
+    document.documentElement.style.fontSize = clamp(s.fontSize,85,130) + "%";
+    const tc = document.querySelector('meta[name="theme-color"]');
+    if(tc) tc.setAttribute("content", s.night ? "#22302C" : "#368A70");
+  },
+  toggle(key){
+    gameState.settings[key] = !gameState.settings[key];
+    if(key==="sound" && !gameState.settings.sound) AudioService.stop();
+    if(key==="music") Toast.show(gameState.settings.music ? "Hafif ortam sesi açık." : "Ortam sesi kapalı.","info");
+    this.apply(); GameStateService.forceSave();
+  },
+  fontSize(v){ gameState.settings.fontSize = clamp(v,85,130); this.apply(); GameStateService.forceSave(); },
+  openPanel(){
+    const s = gameState.settings;
+    const sw = (k,label,desc) => '<div class="row"><div><div class="rl">'+label+'</div><div class="rs">'+desc+'</div></div>'
+      + '<button type="button" class="sw'+(s[k]?" on":"")+'" role="switch" aria-checked="'+(!!s[k])+'" aria-label="'+label+'" data-act="set-toggle" data-v="'+k+'"></button></div>';
+    Modal.open({
+      title:"⚙️ Ayarlar",
+      body: sw("sound","Ses","Sesli okuma ve küçük oyun sesleri.")
+        + sw("music","Ortam sesi","Çok hafif, tekrarsız tonlar.")
+        + sw("night","Gece modu","Gözü yormayan koyu görünüm.")
+        + sw("reducedMotion","Düşük hareket","Animasyonları azaltır.")
+        + sw("autosave","Otomatik kayıt","Her değişiklikte ilerlemeni kaydeder.")
+        + sw("notifications","Hatırlatma balonları","Ekrandaki küçük bilgi mesajları.")
+        + '<div class="row"><div><div class="rl">Yazı boyutu</div><div class="rs">Şu an %'+s.fontSize+'</div></div>'
+        + '<div class="seg"><button type="button" data-act="font" data-v="-5">A−</button><button type="button" data-act="font" data-v="0">Sıfırla</button><button type="button" data-act="font" data-v="5">A+</button></div></div>'
+        + '<div class="row"><div><div class="rl">Tam ekran</div><div class="rs">Oyun uygulaması gibi görünsün.</div></div>'
+        + '<button class="btn sm ghost" type="button" data-act="fullscreen">Aç / Kapat</button></div>'
+        + '<div class="row"><div><div class="rl">Günlük süre</div><div class="rs">Ebeveyn alanından değiştirilir. Şu an '+s.dailyLimit+' dakika.</div></div></div>'
+        + '<h4 class="sec-t">💾 Verilerim</h4>'
+        + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        + '<button class="btn sm ghost" type="button" data-act="export">JSON dışa aktar</button>'
+        + '<button class="btn sm ghost" type="button" data-act="import">JSON içe aktar</button>'
+        + '<button class="btn sm dangerb" type="button" data-act="ask-reset">Yeni oyun başlat</button></div>'
+        + '<div class="note">Bu oyun internetsiz çalışır, hiçbir bilgi cihazından dışarı çıkmaz. Reklam ve satın alma yoktur.</div>',
+      foot:[{label:"Kapat", act:"close-modal", cls:"ghost"}]
+    });
+  }
+};
+
+/* =========================================================================
+   BÖLÜM V · OYUN SÜRESİ / DİJİTAL SAĞLIK
+   ========================================================================= */
+const PlaytimeService = {
+  timer:null, warned:false,
+  start(){
+    this.rollDay();
+    clearInterval(this.timer);
+    this.timer = setInterval(()=>this.tick(), 1000);
+    document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) this.rollDay(); });
+  },
+  rollDay(){
+    const k = todayKey();
+    if(gameState.statistics.dayKey !== k){
+      gameState.statistics.dayKey = k;
+      gameState.statistics.todaySeconds = 0;
+      this.warned = false;
+    }
+  },
+  tick(){
+    if(document.hidden) return;
+    if($("#onboard").classList.contains("on")) return;
+    gameState.statistics.playSeconds++;
+    gameState.statistics.todaySeconds++;
+    if(gameState.statistics.todaySeconds % 20 === 0) GameStateService.save();
+    const limit = (gameState.settings.dailyLimit||30)*60;
+    if(!this.warned && gameState.statistics.todaySeconds >= limit){
+      this.warned = true;
+      this.restModal();
+    }
+  },
+  restModal(){
+    Modal.open({
+      title:"🌤️ Mola zamanı",
+      body:'<div class="rest"><span class="em">🌳</span>'
+        + '<p style="font-weight:700;font-size:1.02rem;line-height:1.5">Bugünkü oyun süren tamamlandı.</p>'
+        + '<p style="color:var(--muted);margin-top:8px;line-height:1.55">Biraz dinlenebilir, ailene yardım edebilir veya dışarıda oynayabilirsin. İyilik yolculuğun burada bitmiyor — yarın kaldığın yerden devam eder.</p></div>',
+      speak:"Bugünkü oyun süren tamamlandı. Biraz dinlenebilir, ailene yardım edebilir veya dışarıda oynayabilirsin.",
+      foot:[
+        {label:"Oyunu kaydet ve çık", act:"rest-save", cls:""},
+        {label:"Bir görev yapıp çıkayım", act:"rest-quest", cls:"ghost"},
+        {label:"Ebeveyne sor", act:"rest-parent", cls:"ghost"}
+      ]
+    });
+  },
+  fmt(sec){
+    const m = Math.floor(sec/60), h = Math.floor(m/60);
+    return h>0 ? h+" sa "+(m%60)+" dk" : m+" dk";
+  }
+};
+
+/* =========================================================================
+   BÖLÜM W · EBEVEYN ALANI
+   ========================================================================= */
+const ParentService = {
+  unlocked:false,
+  open(){
+    if(!this.unlocked){ this.askCode(); return; }
+    this.panel();
+  },
+  askCode(){
+    Modal.open({
+      title:"👨‍👩‍👧 Ebeveyn alanı",
+      body:'<p style="font-size:.9rem;line-height:1.55;color:var(--muted)">Bu bölüm yetişkinler içindir. Devam etmek için dört haneli kodu girin.</p>'
+        + '<div class="field" style="margin-top:14px"><label for="pcode">Ebeveyn kodu</label>'
+        + '<input class="inp" id="pcode" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••">'
+        + '<p class="hint">Prototip kodu: <b>1234</b>. Gerçek üründe bu kod ebeveyn tarafından belirlenmeli ve cihazda şifrelenmiş biçimde saklanmalıdır.</p></div>'
+        + '<div id="pcodeErr" style="color:var(--danger);font-size:.84rem;font-weight:700"></div>',
+      foot:[{label:"Gir", act:"parent-code", cls:""},{label:"Vazgeç", act:"close-modal", cls:"ghost"}]
+    });
+    setTimeout(()=>{ const el=$("#pcode"); if(el) el.focus(); }, 120);
+  },
+  tryCode(){
+    const el = $("#pcode"); if(!el) return;
+    if(el.value === (gameState.parent.code||BRAND.parentCode)){
+      this.unlocked = true; this.panel();
+    }else{
+      const e = $("#pcodeErr"); if(e) e.textContent = "Kod doğru değil. Tekrar deneyin.";
+      el.value = ""; el.focus();
+    }
+  },
+  panel(){
+    const st = gameState.statistics;
+    const doneToday = gameState.quests.daily.filter(d=>d.status==="done").length
+      + gameState.parent.customQuests.filter(p=>p.done && p.doneAt && todayKey(new Date(p.doneAt))===todayKey()).length;
+    const plays = Object.entries(st.gamePlays||{}).sort((a,b)=>b[1]-a[1]);
+    const gname = id => (MiniGameService.list().find(g=>g.id===id)||{}).name || id;
+    Modal.open({
+      title:"👨‍👩‍👧 Ebeveyn alanı",
+      body:
+        '<h4 class="sec-t">📊 Özet</h4>'
+        + '<div class="row"><div class="rl">Toplam oyun süresi</div><b>'+PlaytimeService.fmt(st.playSeconds)+'</b></div>'
+        + '<div class="row"><div class="rl">Bugünkü süre</div><b>'+PlaytimeService.fmt(st.todaySeconds)+' / '+gameState.settings.dailyLimit+' dk</b></div>'
+        + '<div class="row"><div class="rl">Bugün tamamlanan görev</div><b>'+doneToday+'</b></div>'
+        + '<div class="row"><div class="rl">Öğrenilen bilgi kartı</div><b>'+gameState.progress.learned.length+' / '+CONTENT_LIBRARY.length+'</b></div>'
+        + '<div class="row"><div class="rl">Kazanılan rozet</div><b>'+gameState.badges.length+' / '+BADGES.length+'</b></div>'
+        + '<div class="row"><div class="rl">Seviye</div><b>'+gameState.progress.level+' · '+gameState.progress.xp+' XP</b></div>'
+        + '<div class="row"><div class="rl">En çok oynanan oyunlar</div><div style="text-align:right;font-size:.82rem">'
+        + (plays.length ? plays.slice(0,3).map(p=>esc(gname(p[0]))+" ("+p[1]+")").join("<br>") : "Henüz oynanmadı")+'</div></div>'
+
+        + '<h4 class="sec-t">⏱️ Günlük süre sınırı</h4>'
+        + '<div class="row"><div><div class="rl">Önerilen süre</div><div class="rs">Süre dolunca oyun kapanmaz; çocuğa nazik bir mola önerisi gösterilir.</div></div>'
+        + '<div class="seg">'+[15,30,45,60].map(v=>'<button type="button" class="'+(gameState.settings.dailyLimit===v?"on":"")+'" data-act="limit" data-v="'+v+'">'+v+' dk</button>').join("")+'</div></div>'
+        + '<div class="row"><div><div class="rl">Ses</div><div class="rs">Sesli okuma ve oyun sesleri.</div></div>'
+        + '<button type="button" class="sw'+(gameState.settings.sound?" on":"")+'" role="switch" aria-checked="'+gameState.settings.sound+'" aria-label="Ses" data-act="set-toggle" data-v="sound"></button></div>'
+        + '<div class="row"><div><div class="rl">Bildirim balonları</div><div class="rs">Ekrandaki kısa bilgi mesajları.</div></div>'
+        + '<button type="button" class="sw'+(gameState.settings.notifications?" on":"")+'" role="switch" aria-checked="'+gameState.settings.notifications+'" aria-label="Bildirimler" data-act="set-toggle" data-v="notifications"></button></div>'
+
+        + '<h4 class="sec-t">📝 Çocuğa özel görev ekle</h4>'
+        + '<div class="field"><label for="pqTitle">Görev adı</label><input class="inp" id="pqTitle" maxlength="48" placeholder="Örnek: Kitaplığını düzenle"></div>'
+        + '<div class="field"><label for="pqDesc">Açıklama</label><input class="inp" id="pqDesc" maxlength="90" placeholder="Kısa bir açıklama"></div>'
+        + '<div style="display:flex;gap:9px;flex-wrap:wrap">'
+        + '<div class="field" style="flex:1;min-width:110px"><label for="pqXp">Ödül XP</label><input class="inp" id="pqXp" type="number" min="5" max="80" value="20"></div>'
+        + '<div class="field" style="flex:1;min-width:110px"><label for="pqStars">Ödül ⭐</label><input class="inp" id="pqStars" type="number" min="1" max="30" value="5"></div>'
+        + '<div class="field" style="flex:1;min-width:130px"><label for="pqDue">Son tarih</label><input class="inp" id="pqDue" type="date"></div></div>'
+        + '<button class="btn wide sm" type="button" data-act="pq-add">Görevi ekle</button>'
+        + '<div class="grid" style="margin-top:11px">'
+        + (gameState.parent.customQuests.length ? gameState.parent.customQuests.map(p=>
+            '<div class="card" style="display:flex;gap:9px;align-items:center"><b style="flex:1;font-size:.88rem">'+(p.done?"✅ ":"")+esc(p.title)+'</b>'
+            + '<button class="btn sm dangerb" type="button" data-act="pq-del" data-v="'+esc(p.id)+'">Sil</button></div>').join("")
+          : '<p class="empty">Henüz özel görev eklenmedi.</p>')+'</div>'
+        + '<div class="note">Özel görevler puanla baskı kurmak için değil, günlük hayatta küçük sorumluluklar kazandırmak içindir. Çocuk görevi yapmadığında ceza uygulanmaz.</div>'
+
+        + '<h4 class="sec-t">💾 Veri</h4>'
+        + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        + '<button class="btn sm ghost" type="button" data-act="export">JSON dışa aktar</button>'
+        + '<button class="btn sm ghost" type="button" data-act="import">JSON içe aktar</button>'
+        + '<button class="btn sm gold" type="button" data-act="demo">Demo ilerlemesini yükle</button>'
+        + '<button class="btn sm dangerb" type="button" data-act="ask-reset">Verileri sıfırla</button></div>'
+        + '<div class="note">KVKK notu: Bu prototip hiçbir kişisel veri toplamaz, sunucuya bağlanmaz ve çocuklar arası iletişim içermez. Gerçek dağıtımda ebeveyn onayı akışı, veri minimizasyonu, sunucu tarafı şifreleme, içerik moderasyonu, güvenli kimlik doğrulama, yaşa uygun tasarım, veri silme/dışa aktarma ve analitiklerin anonimleştirilmesi ele alınmalıdır.</div>',
+      foot:[{label:"Kapat", act:"close-modal", cls:"ghost"},{label:"Kilitle", act:"parent-lock", cls:""}]
+    });
+  },
+  addQuest(){
+    const t = ($("#pqTitle").value||"").trim();
+    if(!t){ Toast.show("Görev adı boş olamaz.","warn"); return; }
+    const xp = clamp(parseInt($("#pqXp").value,10)||20,5,80);
+    const stars = clamp(parseInt($("#pqStars").value,10)||5,1,30);
+    const due = $("#pqDue").value || "";
+    gameState.parent.customQuests.push({ id:"pq-"+Date.now(), title:t.slice(0,48), desc:($("#pqDesc").value||"").trim().slice(0,90), xp, stars, due, done:false });
+    GameStateService.forceSave();
+    Toast.show("Görev eklendi.","good");
+    UI.renderQuests();
+    this.panel();
+  },
+  delQuest(id){
+    gameState.parent.customQuests = gameState.parent.customQuests.filter(p=>p.id!==id);
+    GameStateService.forceSave(); UI.renderQuests(); this.panel();
+  },
+  loadDemo(){
+    gameState.progress.xp = 850;
+    gameState.progress.level = LevelService.levelFor(850);
+    gameState.currency.stars = 240;
+    gameState.currency.kindness = 460;
+    gameState.statistics.questsDone = 12;
+    gameState.statistics.tagCounts = {selam:2, yardim:5, temizlik:4, guzelsoz:3, paylasma:3, hayvan:1, israf:1};
+    gameState.statistics.activeDays = ["2025-01-01","2025-01-02","2025-01-03","2025-01-04","2025-01-05","2025-01-06","2025-01-07"];
+    gameState.island = { flowers:8, trees:5, birds:3, benches:2, lanterns:2, paths:2 };
+    gameState.progress.unlocked = ["ev","bahce","kutuphane","cesme","rozet","meydan","carsi","koru"];
+    gameState.progress.learned = CONTENT_LIBRARY.slice(0,6).map(c=>c.id);
+    gameState.progress.miniScores = {besmele:1, abdest:1, memory:2};
+    gameState.progress.bestMemoryMoves = 19;
+    gameState.inventory.owned = ["i-canta","i-sapka","i-kitap","i-atki"];
+    gameState.inventory.equipped = ["i-sapka","i-canta"];
+    gameState.story.completed = ["s1","s2"];
+    gameState.story.chapter = 2;
+    gameState.badges = [];
+    BadgeService.checkAll();
+    GameStateService.forceSave();
+    commit();
+    Toast.show("Demo ilerlemesi yüklendi. İstediğiniz zaman sıfırlayabilirsiniz.","good");
+    this.panel();
+  }
+};
+
+/* =========================================================================
+   BÖLÜM X · VERİ DIŞA / İÇE AKTARMA
+   ========================================================================= */
+const DataIO = {
+  exportJSON(){
+    try{
+      const blob = new Blob([GameStateService.exportJSON()], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "iyilik-adasi-kayit-"+todayKey()+".json";
+      document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 800);
+      Toast.show("Kayıt dosyası indirildi.","good");
+    }catch(e){ Toast.show("Dışa aktarma bu tarayıcıda çalışmadı.","warn"); }
+  },
+  importJSON(){
+    const inp = document.createElement("input");
+    inp.type="file"; inp.accept="application/json,.json";
+    inp.addEventListener("change", ()=>{
+      const f = inp.files && inp.files[0];
+      if(!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        const err = GameStateService.importJSON(String(rd.result||""));
+        if(err){ Toast.show(err,"warn"); return; }
+        SettingsService.apply(); commit(); UI.renderLibrary(); UI.renderGames();
+        Modal.close();
+        Toast.show("Kayıt yüklendi.","good");
+      };
+      rd.onerror = () => Toast.show("Dosya okunamadı.","warn");
+      rd.readAsText(f);
+    });
+    inp.click();
+  }
+};
+
+/* =========================================================================
+   BÖLÜM Y · BAŞLANGIÇ EKRANI (profil oluşturma)
+   ========================================================================= */
+const Onboard = {
+  draft:{ avatar:0, color:AVATAR_COLORS[0], age:"6-8" },
+  render(){
+    $("#obAvatars").innerHTML = [0,1,2,3].map(i=>
+      '<button type="button" class="avapick'+(this.draft.avatar===i?" on":"")+'" role="radio" aria-checked="'+(this.draft.avatar===i)+'" aria-label="Çocuk '+(i+1)+'" data-act="ob-avatar" data-v="'+i+'">'
+      + avatarSVG(i, this.draft.color, []) + '</button>').join("");
+    $("#obColors").innerHTML = AVATAR_COLORS.map(c=>
+      '<button type="button" class="colorpick'+(this.draft.color===c?" on":"")+'" role="radio" aria-checked="'+(this.draft.color===c)+'" aria-label="Renk '+c+'" style="background:'+c+'" data-act="ob-color" data-v="'+c+'"></button>').join("");
+  },
+  start(){
+    let name = ($("#obName").value||"").trim().replace(/\s+/g," ").slice(0,16);
+    if(!name) name = "Minik Kaşif";
+    gameState.player.name = name;
+    gameState.player.avatar = this.draft.avatar;
+    gameState.player.color = this.draft.color;
+    gameState.player.ageGroup = this.draft.age;
+    gameState.player.createdAt = Date.now();
+    GameStateService.forceSave();
+    App.enterGame(true);
+  }
+};
+
+/* =========================================================================
+   BÖLÜM Z · UYGULAMA AKIŞI
+   ========================================================================= */
+const App = {
+  boot(){
+    StorageService.init();
+    const has = GameStateService.load();
+    SettingsService.apply();
+    AudioService.init();
+    Onboard.draft.avatar = gameState.player.avatar||0;
+    Onboard.draft.color = gameState.player.color||AVATAR_COLORS[0];
+    Onboard.draft.age = gameState.player.ageGroup||"6-8";
+    if(!StorageService.ok) Toast.show("Bu tarayıcıda kayıt kapalı. İlerlemen yalnızca bu oturumda tutulur.","warn");
+    setTimeout(()=>{ $("#splash").classList.add("gone"); }, 1250);
+    if(has){ setTimeout(()=>this.enterGame(false), 900); }
+    else{ setTimeout(()=>{ Onboard.render(); UI.nav("onboard"); }, 900); }
+  },
+
+  enterGame(isNew){
+    $("#topbar").hidden = false;
+    $("#dock").hidden = false;
+    QuestService.ensureToday();
+    if(isNew){
+      /* Demo akışı: ilk görev "Birine selam ver" olsun */
+      if(!gameState.quests.daily.some(d=>d.id==="q-selam")){
+        gameState.quests.daily.pop();
+        gameState.quests.daily.unshift({id:"q-selam", status:"open"});
+      }
+    }
+    PlaytimeService.start();
+    UI.renderAll();
+    UI.nav("islandScreen");
+    if(isNew && !gameState.progress.intro){
+      gameState.progress.intro = true;
+      GameStateService.forceSave();
+      setTimeout(()=>this.intro(), 500);
+    }
+  },
+
+  intro(){
+    const text = "Merhaba "+(gameState.player.name)+"!\n\nBu ada uzun zamandır sessiz. Toprağı kuru, dalları çıplak.\n\nBurada bir kural var: yapılan her iyilik adada bir güzellik açar.\n\nHazırsan ilk iyiliğinle başlayalım.";
+    Modal.open({
+      title:"⛵ Adaya hoş geldin",
+      body:'<p class="story-line">'+esc(text)+'</p>'
+        + '<div class="note">İlk görevin hazır: <b>Birine selam ver.</b> Gerçek hayatta yaptığında "Yaptım" düğmesine bas.</div>',
+      speak:text,
+      foot:[{label:"İlk görevime git", act:"go-first-quest", cls:""}]
+    });
+  },
+
+  quiz(id){
+    const c = CONTENT_LIBRARY.find(x=>x.id===id); if(!c) return;
+    Modal.open({
+      title:"❓ "+c.title,
+      body:'<p style="font-weight:700;font-size:1rem;line-height:1.5;margin-bottom:12px">'+esc(c.q)+'</p>'
+        + c.a.map((a,k)=>'<button type="button" class="opt" data-act="quiz-ans" data-v="'+c.id+':'+k+'">'+esc(a)+'</button>').join("")
+        + '<div id="qzfb"></div>',
+      speak:c.q+". "+c.a.join(", ")
+    });
+  },
+  quizAnswer(payload){
+    const [id,k] = payload.split(":");
+    const c = CONTENT_LIBRARY.find(x=>x.id===id); if(!c) return;
+    const ok = parseInt(k,10)===c.ok;
+    const fb = document.getElementById("qzfb");
+    if(fb) fb.innerHTML = '<div class="note">'+(ok?"Doğru! ":"Bir daha bakalım: ")+esc(c.a[c.ok])+'. '+esc(c.description.split(".")[0])+'.</div>';
+    $$("#modalBody .opt").forEach((b,i)=>{ if(i===c.ok) b.classList.add("good"); });
+    mgFoot('<button class="btn" type="button" data-act="close-modal">Tamam</button>');
+    if(ok && gameState.progress.learned.indexOf(c.id)<0){
+      gameState.progress.learned.push(c.id);
+      RewardService.give({xp:12, stars:3, kindness:4, island:"trees"});
+      commit(); UI.renderLibrary();
+    }else if(ok){ AudioService.chime(); }
+    else AudioService.soft();
+  },
+
+  learn(id){
+    if(gameState.progress.learned.indexOf(id)>-1) return;
+    gameState.progress.learned.push(id);
+    RewardService.give({xp:15, stars:4, kindness:5, island:"trees"});
+    commit(); UI.renderLibrary();
+    Toast.show("Bilgi kartını öğrendin.","good");
+  },
+
+  region(id){
+    const r = REGIONS.find(x=>x.id===id); if(!r) return;
+    const open = gameState.progress.unlocked.indexOf(r.id)>-1 || gameState.progress.level>=r.level;
+    if(!open){
+      Modal.open({ title:r.icon+" "+r.name,
+        body:'<div style="text-align:center;padding:12px"><div style="font-size:3rem">🔒</div>'
+          + '<p style="margin-top:10px;font-weight:700">Bu bölge '+r.level+'. seviyede açılacak.</p>'
+          + '<p style="color:var(--muted);margin-top:8px">Şu an seviye '+gameState.progress.level+'. Görev yaptıkça ve öğrendikçe seviyen yükselir.</p></div>',
+        speak:"Bu bölge "+r.level+". seviyede açılacak.",
+        foot:[{label:"Tamam", act:"close-modal", cls:"ghost"}] });
+      return;
+    }
+    if(r.act.t==="nav"){ UI.nav(r.act.v); }
+    else if(r.act.t==="game"){ MiniGameService.open(r.act.v); }
+    else if(r.act.t==="lib"){ UI.libCat = r.act.v; UI.renderLibrary(); UI.nav("libScreen"); }
+    else if(r.act.t==="ramazan"){ this.ramazan(); }
+  },
+
+  ramazan(){
+    Modal.open({
+      title:"🌙 Ramazan Sokağı",
+      body:'<p style="line-height:1.6;font-size:.94rem">Ramazan Sokağı, paylaşmanın ve sabrın konuşulduğu yerdir. Şu an burada çalışan bir görev var; sokak zamanla büyüyecek.</p>'
+        + '<h4 class="sec-t">▶️ Şimdi oynayabilirsin</h4>'
+        + '<button type="button" class="story-item" data-act="game" data-v="iftar"><span class="sni">🍽️</span><span style="flex:1;text-align:left"><b style="display:block">İftar Sofrası</b><span style="font-size:.78rem;color:var(--muted)">Sofrayı israf etmeden düzenle.</span></span><span>▶️</span></button>'
+        + '<h4 class="sec-t">🔜 Yakında eklenecek</h4>'
+        + '<ul style="display:grid;gap:7px">'
+        + ["Ramazan takvimi","İftar sofrası hazırlama genişletmesi","İsraf etmeme haftalık görevi","Paylaşma görevleri","Sadaka kutusu","Ramazan bilgi kartları","Bayram hazırlığı","Aile etkinlikleri"]
+            .map(x=>'<li class="card" style="padding:10px;font-size:.85rem">🌙 '+esc(x)+'</li>').join("")
+        + '</ul>',
+      speak:"Ramazan Sokağı. İftar sofrası oyununu şimdi oynayabilirsin.",
+      foot:[{label:"Kapat", act:"close-modal", cls:"ghost"}]
+    });
+  },
+
+  avatarPicker(){
+    Modal.open({
+      title:"🧢 Avatarını seç",
+      body:'<div class="avagrid" id="mAva">'+[0,1,2,3].map(i=>
+          '<button type="button" class="avapick'+(gameState.player.avatar===i?" on":"")+'" data-act="pick-avatar" data-v="'+i+'" aria-label="Çocuk '+(i+1)+'">'+avatarSVG(i, gameState.player.color, gameState.inventory.equipped)+'</button>').join("")+'</div>'
+        + '<h4 class="sec-t">🎨 Renk</h4><div class="colors">'+AVATAR_COLORS.map(c=>
+          '<button type="button" class="colorpick'+(gameState.player.color===c?" on":"")+'" style="background:'+c+'" data-act="pick-color" data-v="'+c+'" aria-label="Renk"></button>').join("")+'</div>',
+      foot:[{label:"Tamam", act:"close-modal", cls:""}]
+    });
+  },
+
+  buy(id){
+    const it = SHOP_ITEMS.find(s=>s.id===id); if(!it) return;
+    if(gameState.inventory.owned.indexOf(id)>-1) return;
+    if(gameState.currency.stars < it.cost){ Toast.show("Bu eşya için "+it.cost+" yıldız gerekiyor.","info"); return; }
+    gameState.currency.stars -= it.cost;
+    gameState.inventory.owned.push(id);
+    gameState.inventory.equipped.push(id);
+    AudioService.chime(); Confetti.burst(18);
+    Toast.show(it.icon+" "+it.name+" senin oldu.","good");
+    commit();
+  },
+  equip(id){
+    const i = gameState.inventory.equipped.indexOf(id);
+    if(i>-1) gameState.inventory.equipped.splice(i,1);
+    else gameState.inventory.equipped.push(id);
+    AudioService.blip();
+    commit();
+  },
+
+  askReset(){
+    Modal.open({
+      title:"⚠️ Yeni oyun başlat",
+      body:'<p style="line-height:1.6">Bütün ilerleme silinecek: seviye, yıldızlar, rozetler, ada gelişimi ve hikâye. Bu işlem geri alınamaz.</p>'
+        + '<div class="note">Silmeden önce <b>JSON dışa aktar</b> ile kaydını yedekleyebilirsiniz.</div>',
+      foot:[{label:"Vazgeç", act:"close-modal", cls:"ghost"},{label:"Evet, sıfırla", act:"do-reset", cls:"dangerb"}]
+    });
+  },
+  doReset(){
+    GameStateService.reset();
+    ParentService.unlocked = false;
+    SettingsService.apply();
+    Modal.close();
+    $("#topbar").hidden = true; $("#dock").hidden = true;
+    Onboard.draft = { avatar:0, color:AVATAR_COLORS[0], age:"6-8" };
+    Onboard.render();
+    $("#obName").value = "";
+    UI.nav("onboard");
+    Toast.show("Yeni oyun hazır.","good");
+  },
+
+  fullscreen(){
+    try{
+      if(!document.fullscreenElement){
+        if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        else Toast.show("Bu tarayıcı tam ekranı desteklemiyor.","info");
+      }else if(document.exitFullscreen) document.exitFullscreen();
+    }catch(e){ Toast.show("Tam ekran açılamadı.","info"); }
+  }
+};
+
+/* =========================================================================
+   BÖLÜM AA · OLAY YÖNETİMİ (tek delegasyon · inline onclick yok)
+   ========================================================================= */
+document.addEventListener("click", function(ev){
+  const t = ev.target.closest("[data-act]");
+  if(!t) return;
+  const act = t.dataset.act, v = t.dataset.v;
+
+  switch(act){
+    /* --- gezinme --- */
+    case "nav": UI.nav(t.dataset.s); break;
+    case "region": App.region(v); break;
+    case "go-badges": UI.nav("badgeScreen"); break;
+    case "open-quests": UI.nav("questScreen"); break;
+    case "open-settings": SettingsService.openPanel(); break;
+    case "open-parent": ParentService.open(); break;
+    case "close-modal": Modal.close(); break;
+
+    /* --- onboarding --- */
+    case "ob-avatar": Onboard.draft.avatar = parseInt(v,10); Onboard.render(); break;
+    case "ob-color": Onboard.draft.color = v; Onboard.render(); break;
+    case "ob-age":
+      Onboard.draft.age = v;
+      $$("#obAge button").forEach(b=>{ const on=b.dataset.v===v; b.classList.toggle("on",on); b.setAttribute("aria-checked",on); });
+      break;
+    case "ob-start": Onboard.start(); break;
+    case "go-first-quest": Modal.close(); UI.nav("questScreen"); break;
+
+    /* --- görevler --- */
+    case "quest-do":
+      if(QuestService.complete(v)){ commit(); const c=document.querySelector('[data-q="'+v+'"]'); if(c) c.classList.add("pop"); }
+      break;
+    case "quest-later": QuestService.later(v); UI.renderQuests(); break;
+    case "quest-self":
+      if(QuestService.complete(v)) commit();
+      break;
+    case "quest-not":
+      Toast.show("Sorun değil. Hazır olduğunda yeniden deneyebilirsin.","info");
+      AudioService.speak("Sorun değil. Hazır olduğunda yeniden deneyebilirsin.");
+      break;
+    case "pquest-do": if(QuestService.completeParent(v)) commit(); break;
+
+    /* --- kütüphane --- */
+    case "libcat": UI.libCat = v; UI.renderLibrary(); break;
+    case "learn": App.learn(v); break;
+    case "quiz": App.quiz(v); break;
+    case "quiz-ans": App.quizAnswer(v); break;
+
+    /* --- oyunlar & hikâye --- */
+    case "game": MiniGameService.open(v); break;
+    case "mg": MiniGameService.hit(v); break;
+    case "story": StoryService.open(v); break;
+    case "story-pick": StoryService.pick(v); break;
+
+    /* --- avatar & atölye --- */
+    case "buy": App.buy(v); break;
+    case "equip": App.equip(v); break;
+    case "unequip-all": gameState.inventory.equipped = []; commit(); break;
+    case "change-avatar": App.avatarPicker(); break;
+    case "pick-avatar": gameState.player.avatar = parseInt(v,10); commit(); App.avatarPicker(); break;
+    case "pick-color": gameState.player.color = v; commit(); App.avatarPicker(); break;
+
+    /* --- ses --- */
+    case "speak": AudioService.speak(v); break;
+    case "speak-modal": AudioService.speak(Modal.speakText); break;
+
+    /* --- ayarlar --- */
+    case "set-toggle":
+      SettingsService.toggle(v);
+      t.classList.toggle("on", !!gameState.settings[v]);
+      t.setAttribute("aria-checked", !!gameState.settings[v]);
+      UI.renderIsland();
+      break;
+    case "font":
+      SettingsService.fontSize(v==="0" ? 100 : gameState.settings.fontSize + parseInt(v,10));
+      SettingsService.openPanel();
+      break;
+    case "fullscreen": App.fullscreen(); break;
+    case "export": DataIO.exportJSON(); break;
+    case "import": DataIO.importJSON(); break;
+    case "ask-reset": App.askReset(); break;
+    case "do-reset": App.doReset(); break;
+
+    /* --- ebeveyn --- */
+    case "parent-code": ParentService.tryCode(); break;
+    case "parent-lock": ParentService.unlocked=false; Modal.close(); Toast.show("Ebeveyn alanı kilitlendi.","info"); break;
+    case "pq-add": ParentService.addQuest(); break;
+    case "pq-del": ParentService.delQuest(v); break;
+    case "demo": ParentService.loadDemo(); break;
+    case "limit":
+      gameState.settings.dailyLimit = parseInt(v,10);
+      PlaytimeService.warned = false;
+      GameStateService.forceSave(); ParentService.panel();
+      break;
+
+    /* --- mola --- */
+    case "rest-save": GameStateService.forceSave(); Modal.close(); Toast.show("İlerlemen kaydedildi. Yarın görüşürüz!","good"); break;
+    case "rest-quest": Modal.close(); UI.nav("questScreen"); break;
+    case "rest-parent": Modal.close(); ParentService.open(); break;
+  }
+});
+
+/* Enter tuşu ile ebeveyn kodu / oyuncu adı */
+document.addEventListener("keydown", function(ev){
+  if(ev.key==="Escape" && Modal.isOpen()){ Modal.close(); return; }
+  if(ev.key!=="Enter") return;
+  if(ev.target && ev.target.id==="pcode"){ ev.preventDefault(); ParentService.tryCode(); }
+  if(ev.target && ev.target.id==="obName"){ ev.preventDefault(); Onboard.start(); }
+});
+
+/* Toast ayarı kapalıysa bilgi balonlarını gösterme (ödül/uyarı hariç) */
+const _toastShow = Toast.show.bind(Toast);
+Toast.show = function(msg, kind){
+  if(kind==="info" && gameState.settings && gameState.settings.notifications===false) return;
+  _toastShow(msg, kind);
+};
+
+/* Sayfa kapanırken kaydet */
+window.addEventListener("beforeunload", ()=>{ try{ GameStateService.forceSave(); }catch(e){} });
+document.addEventListener("visibilitychange", ()=>{ if(document.hidden) GameStateService.forceSave(); });
+
+/* =========================================================================
+   BÖLÜM AB · DEBUG KÖPRÜSÜ  (?debug=1 ile panel açılır)
+   Global ad alanı, otomatik testlerin ve geliştirme panelinin erişimi içindir.
+   ========================================================================= */
+(function(){
+  try{
+    Object.defineProperty(window, "gameState", { get:()=>gameState, set:v=>{ gameState=v; }, configurable:true });
+  }catch(e){}
+  const api = { BRAND, LEVEL_THRESHOLDS, ISLAND_STAGES, REGIONS, QUEST_LIBRARY, CONTENT_LIBRARY, BADGES,
+    SCENARIOS, DUA_PAIRS, PRAYER_TIMES, MEMORY_PAIRS, ABDEST_STEPS, BESMELE_PARTS, IFTAR_ITEMS,
+    STORY_CHAPTERS, SHOP_ITEMS, AVATAR_COLORS, GameStateService, StorageService, QuestService,
+    RewardService, LevelService, BadgeService, ParentService, AudioService, MiniGameService,
+    StoryService, SettingsService, PlaytimeService, IslandService, UI, App, Modal, Toast,
+    Confetti, Onboard, DataIO, LevelUp, commit, esc, todayKey, islandTotal, avatarSVG };
+  Object.keys(api).forEach(k=>{ try{ window[k] = api[k]; }catch(e){} });
+  window.IA = api;
+
+  if(/[?&]debug=1/.test(location.search)){
+    const box = document.createElement("div");
+    box.id = "debugPanel";
+    box.style.cssText = "position:fixed;left:8px;bottom:96px;z-index:180;background:rgba(20,36,31,.94);color:#fff;padding:10px;border-radius:14px;font:12px/1.5 monospace;max-width:230px";
+    const btn = (label, fn) => { const b=document.createElement("button"); b.textContent=label;
+      b.style.cssText="display:block;width:100%;margin:3px 0;padding:6px;border-radius:8px;background:#368A70;color:#fff;font:inherit"; b.addEventListener("click",fn); box.appendChild(b); };
+    const info = document.createElement("div"); box.appendChild(info);
+    btn("+100 XP", ()=>{ RewardService.give({xp:100}); commit(); });
+    btn("+100 ⭐", ()=>{ gameState.currency.stars+=100; commit(); });
+    btn("Ada +5 güzellik", ()=>{ for(let i=0;i<5;i++) IslandService.growAuto(); commit(); });
+    btn("Tüm bölgeleri aç", ()=>{ gameState.progress.level=10; gameState.progress.xp=LEVEL_THRESHOLDS[9]; commit(); });
+    btn("Rozetleri kontrol et", ()=>{ BadgeService.checkAll(); commit(); });
+    btn("Paneli kapat", ()=>box.remove());
+    document.body.appendChild(box);
+    setInterval(()=>{ info.textContent = "Lv"+gameState.progress.level+" · "+gameState.progress.xp+"xp · "
+      +gameState.currency.stars+"⭐ · ada "+islandTotal(gameState)+" · rozet "+gameState.badges.length; }, 700);
+  }
+})();
+
+/* Başlat */
+App.boot();
+</script>
+</body>
+</html>
