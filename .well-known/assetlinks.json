@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.masalpark.app",
+      "sha256_cert_fingerprints": [
+        "19:A8:94:33:F4:E3:5B:47:2A:BF:A1:35:F4:72:68:12:31:4B:FD:F5:4E:48:B2:D8:CE:1A:74:8F:8F:31:36:22"
+      ]
+    }
+  }
+]
