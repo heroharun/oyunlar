@@ -325,6 +325,26 @@ button{font-family:inherit;color:inherit;border:0;background:none}
   *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
     transition-duration:.001ms !important}
 }
+
+/* ── mobil kompakt (kısa ekranlarda menü sığsın) ── */
+@media (max-height:860px){
+  #menuSahne{height:118px}
+  #patiKutu{padding:8px 10px;gap:8px}
+  #patiKutu svg{width:50px;height:50px}
+  #ek-menu .izgara{grid-template-columns:1fr 1fr;gap:6px}
+  #ek-menu .pano{padding:10px;margin:6px 0}
+  #ek-menu .izgara .b{font-size:14px;padding:9px 6px;min-height:46px;margin:0}
+  #ek-menu h1{font-size:1.15rem;margin:6px 0 2px}
+  #ek-menu p.orta{font-size:.8rem;margin:2px 0}
+  #menuSahne{height:100px}
+  #patiKutu svg{width:40px;height:40px}
+  #patiKutu{font-size:.82rem;line-height:1.35}
+  #ek-menu .izgara .b{font-size:13px;padding:7px 4px;line-height:1.15}
+  #ek-menu>p.orta:last-child{display:none}
+  #menuSahne{height:84px}
+  #uyg{padding-bottom:80px}
+  .b.kucuk{min-height:38px;padding:5px 10px;font-size:13.5px}
+}
 </style>
 </head>
 <body>
