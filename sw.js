@@ -1,5 +1,5 @@
 /* Oyun Salonu SW — ziyaret edilen sayfaları önbelleğe alır, çevrimdışı çalıştırır */
-const CACHE = 'oyunlar-v1';
+const CACHE = 'oyunlar-v2';
 
 self.addEventListener('install', e => { self.skipWaiting(); });
 self.addEventListener('activate', e => {
@@ -24,7 +24,8 @@ self.addEventListener('fetch', e => {
       /* çevrimdışı: önbellekten ver */
       const hit = await cache.match(req, { ignoreSearch: true });
       if (hit) return hit;
-      const portal = await cache.match('/oyunlar/');
+      /* kapsam kökü: github.io'da /oyunlar/, masalpark.com'da / — ikisinde de çalışır */
+      const portal = await cache.match(self.registration.scope);
       if (portal && req.mode === 'navigate') return portal;
       throw err;
     }

@@ -7,7 +7,7 @@
     <script>
       /* GitHub Pages bu dosyayı derlenmemiş hâliyle sunar (kaynak girişi).
          Orada isek oynanabilir derlemeye yönlendir; dev sunucusu ve dist bundan etkilenmez. */
-      if (location.hostname.endsWith('github.io') && !location.pathname.includes('/dist')) {
+      if ((location.hostname.endsWith('github.io') || location.hostname.endsWith('masalpark.com')) && !location.pathname.includes('/dist')) {
         location.replace('./dist/');
       }
     </script>
