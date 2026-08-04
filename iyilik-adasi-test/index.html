@@ -1,0 +1,3003 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="day" data-fs="md">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#368A70">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="İyilik Adası">
+<meta name="description" content="Çocuklar için reklamsız, güvenli ve öğretici iyilik oyunu. Öğren, iyilik yap, adanı güzelleştir.">
+<title>İyilik Adası — Öğren, iyilik yap, adanı güzelleştir</title>
+<!-- PWA notu: Bu sürüm tek dosyadır. İleride manifest.json + service worker eklenerek
+     çevrimdışı kurulabilir bir PWA'ya dönüştürülebilir. -->
+<style>
+/* =====================================================================
+   İYİLİK ADASI — Tasarım belirteçleri
+   ===================================================================== */
+:root{
+  --sky:#BFE6F4; --grass:#9FD389; --cream:#FFF8E8;
+  --primary:#368A70; --primary-dark:#236653;
+  --gold:#F3C969; --coral:#F29D85; --purple:#A58BD4; --blue:#72AEE6;
+  --text:#31423C; --muted:#6C7D76; --surface:#FFFFFF;
+  --danger:#D87575; --success:#5AAA78;
+  --line:#E4EDE7;
+  --r-s:12px; --r-m:18px; --r-l:26px; --r-xl:34px;
+  --sh-1:0 2px 0 rgba(49,66,60,.06), 0 6px 18px rgba(49,66,60,.08);
+  --sh-2:0 4px 0 rgba(49,66,60,.08), 0 14px 34px rgba(49,66,60,.14);
+  --sh-in:inset 0 -3px 0 rgba(0,0,0,.10);
+  --font:"Trebuchet MS","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --bar-h:62px;
+}
+html[data-theme="night"]{
+  --sky:#2B3B54; --grass:#3D6B52; --cream:#222C2E;
+  --primary:#5FBF9E; --primary-dark:#409B80;
+  --gold:#D9B25C; --coral:#C98878; --purple:#9C86C4; --blue:#6795C0;
+  --text:#E8F1EC; --muted:#A6B7B0; --surface:#2A3638;
+  --danger:#D18B8B; --success:#6DBE8F;
+  --line:#3A4A48;
+  --sh-1:0 2px 0 rgba(0,0,0,.2), 0 6px 18px rgba(0,0,0,.25);
+  --sh-2:0 4px 0 rgba(0,0,0,.25), 0 14px 34px rgba(0,0,0,.35);
+}
+html[data-fs="sm"]{font-size:15px}
+html[data-fs="md"]{font-size:17px}
+html[data-fs="lg"]{font-size:19.5px}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;font-family:var(--font);color:var(--text);
+  background:var(--cream);line-height:1.5;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+h1,h2,h3,h4{margin:0;line-height:1.2;letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--purple);outline-offset:2px;border-radius:10px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.wrap{width:100%;max-width:980px;margin:0 auto;padding:0 14px}
+
+/* Düşük hareket modu ve sistem tercihi */
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
+html[data-motion="low"] *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.08s !important}
+
+/* ---------- Genel düğmeler ---------- */
+.btn{
+  --bg:var(--surface);--fg:var(--text);
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:52px;padding:10px 20px;border:0;border-radius:var(--r-m);
+  background:var(--bg);color:var(--fg);font-weight:700;font-size:1rem;
+  box-shadow:var(--sh-1),var(--sh-in);transition:transform .12s ease,filter .15s ease;
+}
+.btn:hover{filter:brightness(1.04)}
+.btn:active{transform:translateY(2px);box-shadow:var(--sh-1)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.btn-primary{--bg:var(--primary);--fg:#fff}
+.btn-gold{--bg:var(--gold);--fg:#4A3A12}
+.btn-coral{--bg:var(--coral);--fg:#4A2A22}
+.btn-purple{--bg:var(--purple);--fg:#fff}
+.btn-soft{--bg:var(--line);--fg:var(--text)}
+.btn-danger{--bg:var(--danger);--fg:#fff}
+.btn-sm{min-height:42px;padding:6px 14px;font-size:.92rem;border-radius:var(--r-s)}
+.btn-block{width:100%}
+.btn-round{width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;font-size:1.15rem}
+
+/* ---------- Üst çubuk ---------- */
+.topbar{
+  position:sticky;top:0;z-index:50;background:var(--surface);
+  border-bottom:3px solid var(--line);padding:8px 0;
+  padding-top:calc(8px + env(safe-area-inset-top));
+}
+.topbar-in{display:flex;align-items:center;gap:10px}
+.avatar-btn{
+  width:52px;height:52px;flex:0 0 auto;border:0;border-radius:50%;padding:0;overflow:hidden;
+  background:var(--sky);box-shadow:var(--sh-1);
+}
+.avatar-btn svg{width:100%;height:100%;display:block}
+.who{min-width:0;flex:1 1 auto}
+.who .nm{font-weight:800;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xp-row{display:flex;align-items:center;gap:7px;margin-top:3px}
+.lvl{
+  background:var(--primary);color:#fff;border-radius:999px;padding:1px 9px;
+  font-size:.72rem;font-weight:800;flex:0 0 auto;
+}
+.xp-bar{flex:1 1 auto;height:11px;background:var(--line);border-radius:999px;overflow:hidden;min-width:60px}
+.xp-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--gold),var(--success));transition:width .6s cubic-bezier(.3,1.4,.5,1)}
+.xp-txt{font-size:.68rem;color:var(--muted);white-space:nowrap;flex:0 0 auto}
+.coins{display:flex;gap:6px;flex:0 0 auto}
+.coin{
+  display:flex;align-items:center;gap:4px;background:var(--cream);border:2px solid var(--line);
+  border-radius:999px;padding:4px 10px;font-weight:800;font-size:.85rem;white-space:nowrap;
+}
+.coin.bump{animation:bump .5s ease}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.25)}100%{transform:scale(1)}}
+.topbar-tools{display:flex;gap:6px;flex:0 0 auto}
+.tool{
+  width:44px;height:44px;border:0;border-radius:14px;background:var(--cream);
+  font-size:1.15rem;box-shadow:var(--sh-1);display:grid;place-items:center;
+}
+@media (max-width:720px){
+  .coins .coin.hide-m{display:none}
+  .topbar-tools .tool.hide-m{display:none}
+  .avatar-btn{width:44px;height:44px}
+}
+
+/* ---------- Ada sahnesi ---------- */
+.stage-card{
+  position:relative;margin:14px 0;border-radius:var(--r-xl);overflow:hidden;
+  box-shadow:var(--sh-2);background:var(--sky);
+}
+.island-svg{width:100%;height:auto;display:block}
+.pins{position:absolute;inset:0}
+.pin{
+  position:absolute;transform:translate(-50%,-50%);
+  display:grid;justify-items:center;gap:2px;border:0;background:transparent;padding:0;
+}
+.pin .bubble{
+  width:clamp(42px,7.6vw,60px);height:clamp(42px,7.6vw,60px);border-radius:50%;
+  display:grid;place-items:center;font-size:clamp(1.1rem,2.6vw,1.6rem);
+  background:var(--surface);box-shadow:0 3px 0 rgba(0,0,0,.12),0 8px 16px rgba(0,0,0,.18);
+  border:3px solid var(--gold);transition:transform .18s ease;
+}
+.pin:hover .bubble{transform:translateY(-3px) scale(1.05)}
+.pin .cap{
+  font-size:.62rem;font-weight:800;background:rgba(255,255,255,.9);color:#31423C;
+  border-radius:999px;padding:1px 7px;white-space:nowrap;box-shadow:0 2px 5px rgba(0,0,0,.12);
+}
+html[data-theme="night"] .pin .cap{background:rgba(42,54,56,.92);color:#E8F1EC}
+.pin.locked .bubble{border-color:#C9D3CE;filter:grayscale(.65) opacity(.85)}
+.pin.locked .cap{opacity:.8}
+.pin.new .bubble{animation:pinPop 1.8s ease infinite}
+@keyframes pinPop{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.stage-flag{
+  position:absolute;left:12px;top:12px;background:rgba(255,255,255,.92);border-radius:999px;
+  padding:5px 12px;font-size:.78rem;font-weight:800;box-shadow:var(--sh-1);
+}
+html[data-theme="night"] .stage-flag{background:rgba(42,54,56,.92)}
+.cloud{animation:drift 46s linear infinite}
+.cloud.c2{animation-duration:64s}
+@keyframes drift{from{transform:translateX(-140px)}to{transform:translateX(1140px)}}
+.bird{animation:fly 9s ease-in-out infinite}
+@keyframes fly{0%,100%{transform:translate(0,0)}50%{transform:translate(14px,-10px)}}
+.sway{transform-origin:bottom center;animation:sway 5.5s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-2.2deg)}50%{transform:rotate(2.2deg)}}
+.grow{animation:grow .6s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes grow{from{transform:scale(0) translateY(10px);opacity:0}to{transform:scale(1);opacity:1}}
+.hop{animation:hop 3.4s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-7px)}}
+
+/* ---------- Bölge şeridi (mobil dostu erişim) ---------- */
+.region-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.region-strip::-webkit-scrollbar{height:4px}
+.region-strip::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.rchip{
+  flex:0 0 auto;display:flex;align-items:center;gap:7px;border:0;border-radius:999px;
+  background:var(--surface);box-shadow:var(--sh-1);padding:8px 14px;font-weight:700;font-size:.84rem;min-height:44px;
+}
+.rchip .em{font-size:1.1rem}
+.rchip.locked{opacity:.6}
+.rchip .lv{font-size:.68rem;color:var(--muted)}
+
+/* ---------- Ana menü ---------- */
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 22px}
+@media (max-width:640px){.menu-grid{grid-template-columns:repeat(2,1fr)}}
+.menu-btn{
+  border:0;border-radius:var(--r-m);background:var(--surface);box-shadow:var(--sh-1),var(--sh-in);
+  padding:14px 8px;display:grid;justify-items:center;gap:5px;min-height:96px;
+  transition:transform .12s ease;
+}
+.menu-btn:active{transform:translateY(2px)}
+.menu-btn .ic{font-size:1.7rem;line-height:1}
+.menu-btn .lb{font-weight:800;font-size:.86rem;text-align:center}
+.menu-btn .sub{font-size:.68rem;color:var(--muted)}
+.menu-btn.accent{background:var(--primary);color:#fff}
+.menu-btn.accent .sub{color:rgba(255,255,255,.8)}
+
+/* ---------- Kartlar ---------- */
+.card{background:var(--surface);border-radius:var(--r-m);box-shadow:var(--sh-1);padding:14px}
+.section-title{display:flex;align-items:center;gap:8px;margin:18px 0 10px;font-size:1.05rem;font-weight:800}
+.section-title .line{flex:1;height:3px;background:var(--line);border-radius:3px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--cream);border:2px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.75rem;font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:.82rem}
+
+/* Görev kartı */
+.quest{
+  display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;
+  background:var(--surface);border-radius:var(--r-m);padding:14px;box-shadow:var(--sh-1);
+  border-left:6px solid var(--gold);
+}
+.quest.done{border-left-color:var(--success);opacity:.75}
+.quest .qi{font-size:1.9rem;line-height:1}
+.quest h4{font-size:1rem}
+.quest .desc{font-size:.85rem;color:var(--muted);margin-top:2px}
+.rewards{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.rw{font-size:.72rem;font-weight:800;border-radius:999px;padding:2px 9px;background:var(--cream);border:2px solid var(--line)}
+.quest-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.quest.pop{animation:questPop .5s ease}
+@keyframes questPop{0%{transform:scale(1)}40%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+/* ---------- Modal / sayfa katmanı ---------- */
+.sheet{
+  position:fixed;inset:0;z-index:120;display:none;
+  background:rgba(30,45,40,.5);backdrop-filter:blur(2px);
+}
+.sheet.open{display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:721px){.sheet.open{align-items:center}}
+.sheet-box{
+  background:var(--cream);width:100%;max-width:720px;max-height:92vh;display:flex;flex-direction:column;
+  border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--sh-2);animation:up .28s cubic-bezier(.2,1.2,.4,1);
+}
+@media (min-width:721px){.sheet-box{border-radius:var(--r-xl);max-height:88vh}}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet-head{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:3px solid var(--line);
+  background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;flex:0 0 auto;
+}
+.sheet-head h2{font-size:1.12rem;flex:1;min-width:0}
+.sheet-head .ic{font-size:1.5rem}
+.sheet-body{padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;gap:12px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.sheet-foot{padding:12px 16px;border-top:3px solid var(--line);background:var(--surface);display:flex;gap:8px;flex-wrap:wrap;flex:0 0 auto;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+
+/* ---------- Toast ---------- */
+.toasts{position:fixed;left:0;right:0;bottom:14px;z-index:200;display:grid;gap:8px;justify-items:center;pointer-events:none;padding:0 12px}
+.toast{
+  background:var(--surface);border-radius:999px;padding:10px 18px;box-shadow:var(--sh-2);
+  font-weight:700;font-size:.9rem;display:flex;gap:8px;align-items:center;max-width:92vw;
+  animation:toastIn .3s cubic-bezier(.2,1.4,.4,1);border:3px solid var(--line);
+}
+.toast.good{border-color:var(--success)}
+.toast.info{border-color:var(--blue)}
+.toast.warn{border-color:var(--gold)}
+.toast.out{animation:toastOut .3s ease forwards}
+@keyframes toastIn{from{transform:translateY(16px) scale(.95);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastOut{to{transform:translateY(10px);opacity:0}}
+
+/* ---------- Konfeti ---------- */
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:300;overflow:hidden}
+.cf{position:absolute;width:10px;height:14px;border-radius:3px;animation:fall 1.5s ease-in forwards}
+@keyframes fall{
+  0%{transform:translateY(-20px) rotate(0);opacity:1}
+  100%{transform:translateY(85vh) rotate(540deg);opacity:0}
+}
+
+/* ---------- Onboarding ---------- */
+.boot{
+  position:fixed;inset:0;z-index:400;background:linear-gradient(180deg,var(--sky),var(--cream));
+  display:grid;place-items:center;text-align:center;padding:20px;
+}
+.boot.hide{display:none}
+.logo-wrap{display:grid;justify-items:center;gap:10px;animation:logoIn .9s cubic-bezier(.2,1.3,.4,1)}
+@keyframes logoIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.logo-mark{width:120px;height:120px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.15))}
+.logo-name{font-size:2rem;font-weight:800;color:var(--primary-dark)}
+.logo-sub{color:var(--muted);font-size:.95rem}
+.setup{background:var(--surface);border-radius:var(--r-xl);box-shadow:var(--sh-2);padding:20px;max-width:520px;width:100%;text-align:left;display:grid;gap:14px}
+.field{display:grid;gap:6px}
+.field label{font-weight:800;font-size:.9rem}
+.inp{
+  width:100%;min-height:52px;border:3px solid var(--line);border-radius:var(--r-m);
+  padding:10px 14px;background:var(--cream);
+}
+.inp:focus{outline:none;border-color:var(--primary)}
+.pick{display:flex;gap:8px;flex-wrap:wrap}
+.pick button{
+  border:3px solid var(--line);background:var(--surface);border-radius:var(--r-m);padding:8px 12px;
+  font-weight:700;font-size:.85rem;min-height:46px;
+}
+.pick button.on{border-color:var(--primary);background:#EAF5F0;color:var(--primary-dark)}
+html[data-theme="night"] .pick button.on{background:#2F4A42}
+.avatars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.av-opt{border:3px solid var(--line);background:var(--surface);border-radius:var(--r-m);padding:6px;min-height:0}
+.av-opt.on{border-color:var(--primary);background:#EAF5F0}
+html[data-theme="night"] .av-opt.on{background:#2F4A42}
+.av-opt svg{width:100%;height:auto;display:block}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:42px;height:42px;border-radius:50%;border:3px solid var(--line)}
+.sw.on{border-color:var(--text);transform:scale(1.08)}
+
+/* ---------- Mini oyun ortak ---------- */
+.tiles{display:flex;flex-wrap:wrap;gap:8px}
+.tile{
+  border:0;border-radius:var(--r-s);background:var(--surface);box-shadow:var(--sh-1),var(--sh-in);
+  padding:10px 14px;font-weight:800;min-height:50px;
+}
+.tile.on{background:var(--primary);color:#fff}
+.tile.ok{background:var(--success);color:#fff}
+.tile.no{animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.slots{display:flex;flex-wrap:wrap;gap:8px;min-height:56px;padding:8px;background:var(--surface);border-radius:var(--r-m);border:3px dashed var(--line)}
+.slot{border-radius:var(--r-s);background:var(--cream);padding:8px 12px;font-weight:800;border:0}
+.mg-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mg-stat{background:var(--surface);border-radius:999px;padding:4px 12px;font-weight:800;font-size:.8rem;box-shadow:var(--sh-1)}
+.opt-btn{
+  display:flex;gap:10px;align-items:center;text-align:left;width:100%;border:0;
+  background:var(--surface);border-radius:var(--r-m);padding:14px;box-shadow:var(--sh-1);font-weight:700;min-height:56px;
+}
+.opt-btn .em{font-size:1.3rem}
+.opt-btn.good{background:#E6F5EC;box-shadow:0 0 0 3px var(--success) inset}
+.opt-btn.soft{background:#FDF1E6;box-shadow:0 0 0 3px var(--gold) inset}
+html[data-theme="night"] .opt-btn.good{background:#2E4A3C}
+html[data-theme="night"] .opt-btn.soft{background:#4A4030}
+.feedback{border-radius:var(--r-m);padding:12px 14px;font-weight:700;font-size:.9rem;background:var(--surface);box-shadow:var(--sh-1)}
+.feedback.good{border-left:6px solid var(--success)}
+.feedback.think{border-left:6px solid var(--gold)}
+
+/* Hafıza oyunu */
+.mem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mem{
+  aspect-ratio:1/1;border:0;border-radius:var(--r-m);background:var(--primary);color:transparent;
+  font-size:1.7rem;display:grid;place-items:center;box-shadow:var(--sh-1),var(--sh-in);transition:transform .2s ease;
+}
+.mem.up{background:var(--surface);color:inherit;transform:rotateY(0)}
+.mem.matched{background:#E6F5EC;color:inherit;animation:bump .5s ease}
+html[data-theme="night"] .mem.matched{background:#2E4A3C}
+@media (max-width:420px){.mem-grid{grid-template-columns:repeat(4,1fr);gap:6px}.mem{font-size:1.35rem}}
+@media (max-width:560px){.pin .cap{display:none}.pin .bubble{border-width:2px}}
+
+/* Eşleştirme */
+.match-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.match-cols{grid-template-columns:1fr}}
+
+/* Kütüphane */
+.lib-cats{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.lib-cats button{flex:0 0 auto;border:3px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-weight:700;font-size:.82rem;min-height:44px}
+.lib-cats button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.lib-card{background:var(--surface);border-radius:var(--r-m);box-shadow:var(--sh-1);padding:14px;display:grid;gap:8px}
+.lib-card .ttl{display:flex;gap:10px;align-items:center;font-weight:800}
+.lib-card .ttl .em{font-size:1.6rem}
+.src-note{font-size:.7rem;color:var(--muted);background:var(--cream);border-radius:10px;padding:6px 10px}
+
+/* Rozetler */
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.badge{background:var(--surface);border-radius:var(--r-m);box-shadow:var(--sh-1);padding:12px;text-align:center;display:grid;gap:4px}
+.badge .em{font-size:2rem}
+.badge .bn{font-weight:800;font-size:.82rem}
+.badge .bd{font-size:.7rem;color:var(--muted)}
+.badge.locked{filter:grayscale(1);opacity:.55}
+.badge.earned{animation:shine 2.6s ease-in-out infinite}
+@keyframes shine{0%,100%{box-shadow:var(--sh-1)}50%{box-shadow:0 0 0 3px var(--gold),var(--sh-1)}}
+
+/* Atölye */
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.shop-item{background:var(--surface);border-radius:var(--r-m);box-shadow:var(--sh-1);padding:12px;display:grid;gap:6px;justify-items:center;text-align:center}
+.shop-item .em{font-size:1.9rem}
+.shop-item .nm{font-weight:800;font-size:.85rem}
+.shop-item.owned{outline:3px solid var(--success)}
+
+/* Ebeveyn */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.stat{background:var(--surface);border-radius:var(--r-m);box-shadow:var(--sh-1);padding:12px;text-align:center}
+.stat .v{font-size:1.4rem;font-weight:800;color:var(--primary)}
+.stat .k{font-size:.72rem;color:var(--muted)}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.switch{
+  width:56px;height:32px;border-radius:999px;border:0;background:var(--line);position:relative;flex:0 0 auto;padding:0;
+}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .2s ease;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.switch[aria-checked="true"]{background:var(--success)}
+.switch[aria-checked="true"]::after{left:28px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border-radius:var(--r-m);padding:12px 14px;box-shadow:var(--sh-1)}
+.set-row .t{font-weight:800;font-size:.92rem}
+.set-row .d{font-size:.74rem;color:var(--muted)}
+
+/* Hikâye */
+.story-text{background:var(--surface);border-radius:var(--r-m);padding:16px;box-shadow:var(--sh-1);font-size:1rem;line-height:1.6}
+.story-scene{border-radius:var(--r-m);overflow:hidden;box-shadow:var(--sh-1)}
+.story-scene svg{width:100%;height:auto;display:block}
+.chapter-list{display:grid;gap:8px}
+.chapter{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--r-m);padding:12px;box-shadow:var(--sh-1);border:0;width:100%;text-align:left}
+.chapter .n{width:34px;height:34px;border-radius:50%;background:var(--gold);color:#4A3A12;display:grid;place-items:center;font-weight:800;flex:0 0 auto}
+.chapter.done .n{background:var(--success);color:#fff}
+.chapter.locked{opacity:.55}
+
+/* Seviye modalı */
+.level-up{text-align:center;display:grid;gap:10px;justify-items:center}
+.level-up .big{font-size:3rem;animation:bump .8s ease}
+.reward-line{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
+/* Genel yardımcılar */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.grid-2{grid-template-columns:1fr}}
+.center{text-align:center}
+.mt{margin-top:10px}
+.empty{background:var(--surface);border-radius:var(--r-m);padding:22px;text-align:center;color:var(--muted);box-shadow:var(--sh-1)}
+.footer-note{text-align:center;color:var(--muted);font-size:.74rem;padding:18px 10px 26px}
+</style>
+</head>
+<body>
+
+<!-- ================= AÇILIŞ / PROFİL ================= -->
+<div class="boot" id="boot">
+  <div class="wrap" id="bootInner">
+    <div class="logo-wrap">
+      <svg class="logo-mark" viewBox="0 0 120 120" aria-hidden="true">
+        <circle cx="60" cy="60" r="56" fill="#BFE6F4"/>
+        <path d="M18 78c10-8 22-12 42-12s32 4 42 12v20H18z" fill="#9FD389"/>
+        <path d="M60 26c-9 0-16 7-16 16s7 16 16 16c3 0 6-1 8-2-4-2-7-7-7-12 0-6 4-11 9-13-3-3-6-5-10-5z" fill="#F3C969"/>
+        <circle cx="80" cy="34" r="3" fill="#F3C969"/>
+        <path d="M46 78v-8c0-4 3-7 7-7h14c4 0 7 3 7 7v8z" fill="#368A70"/>
+        <path d="M42 70l18-14 18 14z" fill="#236653"/>
+      </svg>
+      <div class="logo-name" data-brand>İyilik Adası</div>
+      <div class="logo-sub" data-tagline>Öğren, iyilik yap, adanı güzelleştir.</div>
+    </div>
+    <div id="setupHost" class="mt"></div>
+  </div>
+</div>
+
+<!-- ================= OYUN ================= -->
+<div id="app" hidden>
+
+  <header class="topbar">
+    <div class="wrap topbar-in">
+      <button class="avatar-btn" type="button" data-act="panel" data-panel="avatar" aria-label="Avatarım">
+        <span id="avatarSlot"></span>
+      </button>
+      <div class="who">
+        <div class="nm" id="playerName">Oyuncu</div>
+        <div class="xp-row">
+          <span class="lvl" id="levelChip">Sv 1</span>
+          <span class="xp-bar" role="progressbar" aria-label="Deneyim çubuğu" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="xpBar"><span class="xp-fill" id="xpFill"></span></span>
+          <span class="xp-txt" id="xpText">0 / 100</span>
+        </div>
+      </div>
+      <div class="coins">
+        <span class="coin" id="coinStars" title="Yıldız">⭐ <span id="starCount">0</span></span>
+        <span class="coin hide-m" id="coinKind" title="İyilik puanı">💚 <span id="kindCount">0</span></span>
+      </div>
+      <div class="topbar-tools">
+        <button class="tool" type="button" data-act="panel" data-panel="quests" aria-label="Günlük görevler" title="Günlük görevler">📋</button>
+        <button class="tool hide-m" type="button" data-act="panel" data-panel="badges" aria-label="Rozetler" title="Rozetler">🏅</button>
+        <button class="tool hide-m" type="button" data-act="panel" data-panel="parent" aria-label="Ebeveyn alanı" title="Ebeveyn alanı">👨‍👩‍👧</button>
+        <button class="tool" type="button" data-act="panel" data-panel="settings" aria-label="Ayarlar" title="Ayarlar">⚙️</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" id="main">
+    <section class="stage-card" aria-label="İyilik Adası haritası">
+      <div id="islandHost"></div>
+      <div class="pins" id="pins"></div>
+      <div class="stage-flag" id="stageFlag">Başlangıç Adası</div>
+    </section>
+
+    <nav class="region-strip" id="regionStrip" aria-label="Ada bölgeleri"></nav>
+
+    <h2 class="section-title"><span>Ana Menü</span><span class="line"></span></h2>
+    <nav class="menu-grid" id="menuGrid" aria-label="Ana menü"></nav>
+
+    <h2 class="section-title"><span>Bugünün İyilikleri</span><span class="line"></span>
+      <button class="btn btn-sm btn-soft" type="button" data-act="panel" data-panel="quests">Tümü</button>
+    </h2>
+    <div id="questPreview" style="display:grid;gap:10px"></div>
+
+    <p class="footer-note">
+      İyilik Adası reklamsız ve çevrimdışı çalışır. Veriler yalnızca bu cihazda saklanır.<br>
+      Dinî bilgilerde farklı uygulamalar bulunabilir; ailenden veya güvendiğin bir din görevlisinden bilgi alabilirsin.
+    </p>
+  </main>
+</div>
+
+<!-- ================= PANEL KATMANI ================= -->
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-box">
+    <div class="sheet-head">
+      <span class="ic" id="sheetIcon" aria-hidden="true">📋</span>
+      <h2 id="sheetTitle">Panel</h2>
+      <button class="btn btn-sm btn-soft" type="button" data-act="speak-panel" id="sheetSpeak" aria-label="Sesli oku">🔊</button>
+      <button class="btn btn-sm btn-soft" type="button" data-act="close-sheet" aria-label="Kapat">✕</button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+    <div class="sheet-foot" id="sheetFoot" hidden></div>
+  </div>
+</div>
+
+<!-- ================= KÜÇÜK DİYALOG ================= -->
+<div class="sheet" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+  <div class="sheet-box" style="max-width:460px">
+    <div class="sheet-head">
+      <span class="ic" id="dialogIcon" aria-hidden="true">✨</span>
+      <h2 id="dialogTitle">Bilgi</h2>
+      <button class="btn btn-sm btn-soft" type="button" data-act="close-dialog" aria-label="Kapat">✕</button>
+    </div>
+    <div class="sheet-body" id="dialogBody"></div>
+    <div class="sheet-foot" id="dialogFoot"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div class="confetti" id="confetti" aria-hidden="true"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<script>
+/* =====================================================================
+   İYİLİK ADASI
+   Bölümler: 1) Ayarlar  2) İçerik verileri  3) Servisler
+             4) Arayüz  5) Mini oyunlar  6) Paneller  7) Başlatma
+   Alternatif proje adları: Minik Mümin · İyilik Bahçesi · Güzel Ahlak ·
+   Bereket Adası · Hilal Kasabası
+   ===================================================================== */
+(function () {
+  "use strict";
+
+  /* ---------------------------------------------------------------
+     1) MERKEZİ AYARLAR (marka adı buradan değiştirilir)
+     --------------------------------------------------------------- */
+  const APP = {
+    brand: "İyilik Adası",
+    tagline: "Öğren, iyilik yap, adanı güzelleştir.",
+    version: "1.0.0",
+    storageKey: "iyilik_adasi_v1",
+    parentCode: "1234",           // Yalnızca prototip kodudur
+    dailyQuestCount: 5,
+    defaultTimeLimitMin: 30
+  };
+
+  const LEVEL_THRESHOLDS = [0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200];
+
+  const ISLAND_STAGES = [
+    { name: "Başlangıç Adası", need: 0 },
+    { name: "Filizlenen Ada", need: 4 },
+    { name: "İyilik Bahçesi", need: 10 },
+    { name: "Bereketli Kasaba", need: 18 },
+    { name: "Işık Adası", need: 28 }
+  ];
+
+  /* ---------------------------------------------------------------
+     2) İÇERİK VERİLERİ
+     --------------------------------------------------------------- */
+  const REGIONS = [
+    { id: "ev",         name: "Ev",                  icon: "🏠", x: 26, y: 62, level: 1, opens: "quests",   desc: "Günlük iyilik görevlerin burada." },
+    { id: "bahce",      name: "İyilik Bahçesi",      icon: "🌷", x: 47, y: 74, level: 1, opens: "atolye",   desc: "Yıldızlarınla adanı süsle." },
+    { id: "kutuphane",  name: "Bilgi Kütüphanesi",   icon: "📚", x: 71, y: 63, level: 1, opens: "library",  desc: "Kısa bilgi kartlarını oku." },
+    { id: "cesme",      name: "Abdest Çeşmesi",      icon: "🚰", x: 16, y: 45, level: 1, opens: "mg:abdest",desc: "Abdest sıralama oyunu." },
+    { id: "rozet",      name: "Rozet Tepesi",        icon: "🏅", x: 60, y: 34, level: 2, opens: "badges",   desc: "Kazandığın rozetler." },
+    { id: "meydan",     name: "Namaz Meydanı",       icon: "🕌", x: 40, y: 45, level: 3, opens: "mg:vakit", desc: "Namaz vakitlerini tanı." },
+    { id: "carsi",      name: "Yardımlaşma Çarşısı", icon: "🧺", x: 82, y: 44, level: 4, opens: "mg:davranis", desc: "Doğru davranışı seç." },
+    { id: "koru",       name: "Hayvanlar Korusu",    icon: "🐦", x: 26, y: 26, level: 5, opens: "mg:hafiza",desc: "İyilik hafıza oyunu." },
+    { id: "ramazan",    name: "Ramazan Sokağı",      icon: "🌙", x: 74, y: 22, level: 6, opens: "ramazan",  desc: "İftar sofrası ve paylaşma." },
+    { id: "hac",        name: "Hac ve Umre Köşesi",  icon: "🕋", x: 50, y: 14, level: 7, opens: "hac",      desc: "Kâbe ve yolculuk bilgileri." }
+  ];
+
+  const QUEST_LIBRARY = [
+    { id: "q-selam",    title: "Birine selam ver",           description: "Ailenden veya arkadaşlarından birine güzelce selam ver.", category: "guzel-ahlak", icon: "👋", xp: 20, stars: 5, kindness: 10 },
+    { id: "q-besmele",  title: "Besmeleyle başla",           description: "Yemeğe başlarken besmele çek.",                          category: "ibadet",      icon: "🍽️", xp: 20, stars: 5, kindness: 10 },
+    { id: "q-duzen",    title: "Bir eşyanı yerine koy",      description: "Odandaki bir eşyayı düzenli yerine koy.",                category: "temizlik",    icon: "🧸", xp: 15, stars: 4, kindness: 8 },
+    { id: "q-yardim",   title: "Anne veya babana yardım et", description: "Küçük bir işte yardımcı ol.",                            category: "aile",        icon: "🤝", xp: 25, stars: 6, kindness: 14 },
+    { id: "q-guzelsoz", title: "Bir güzel söz söyle",        description: "Birini sevindirecek güzel bir cümle kur.",               category: "guzel-ahlak", icon: "💬", xp: 20, stars: 5, kindness: 12 },
+    { id: "q-paylas",   title: "Oyuncağını paylaş",          description: "Bir oyuncağını kardeşinle veya arkadaşınla paylaş.",     category: "paylasma",    icon: "🧩", xp: 25, stars: 6, kindness: 14 },
+    { id: "q-hayvan",   title: "Bir hayvana su ver",         description: "Kuşlara veya sokak hayvanlarına su bırak.",              category: "merhamet",    icon: "🐈", xp: 25, stars: 6, kindness: 15 },
+    { id: "q-su",       title: "Suyu israf etme",            description: "Elini yıkarken musluğu az açık tut.",                    category: "cevre",       icon: "💧", xp: 20, stars: 5, kindness: 12 },
+    { id: "q-tesekkur", title: "Bir büyüğüne teşekkür et",   description: "Sana yardım eden birine teşekkür et.",                   category: "guzel-ahlak", icon: "🙏", xp: 15, stars: 4, kindness: 10 },
+    { id: "q-dua",      title: "Öğrendiğin duayı tekrar et", description: "Bildiğin kısa bir duayı sessizce tekrar et.",            category: "ibadet",      icon: "🤲", xp: 20, stars: 5, kindness: 10 },
+    { id: "q-sofra",    title: "Sofraya yardım et",          description: "Sofrayı kurmaya veya toplamaya yardım et.",              category: "aile",        icon: "🍲", xp: 25, stars: 6, kindness: 14 },
+    { id: "q-kitap",    title: "Kitabını yerine koy",        description: "Okuduğun kitabı düzgünce rafına yerleştir.",             category: "temizlik",    icon: "📖", xp: 15, stars: 4, kindness: 8 },
+    { id: "q-arkadas",  title: "Bir arkadaşını sevindir",    description: "Arkadaşına güzel bir sürpriz yap veya yardım et.",       category: "paylasma",    icon: "🎈", xp: 25, stars: 6, kindness: 15 },
+    { id: "q-cop",      title: "Çöpünü çöp kutusuna at",     description: "Çevreni temiz tutmak için çöpünü kutuya at.",            category: "cevre",       icon: "🗑️", xp: 15, stars: 4, kindness: 10 },
+    { id: "q-duaet",    title: "Birine dua et",              description: "Sevdiğin biri için içinden güzel bir dua et.",           category: "ibadet",      icon: "💫", xp: 20, stars: 5, kindness: 12 },
+    { id: "q-komsu",    title: "Komşuya iyilik",             description: "Komşunuza selam ver veya küçük bir yardımda bulun.",     category: "merhamet",    icon: "🏘️", xp: 25, stars: 6, kindness: 15 }
+  ];
+
+  /* Bilgi kartları — dinî kaynak gerektiren ifadeler doğrulanana kadar
+     genel ahlak ve eğitim bilgisi olarak sunulur (verified:false). */
+  const LIBRARY_CARDS = [
+    { id: "content-1",  category: "Güzel Ahlak", icon: "💬", title: "Güzel söz söylemek", description: "Güzel sözler insanı sevindirir. Konuşurken yumuşak ve kırıcı olmayan kelimeler seçmek güzel bir davranıştır. Kızgınken beklemek de güzel sözün bir parçasıdır.", quiz: { q: "Kızgınken ne yapmak daha güzeldir?", options: ["Hemen bağırmak", "Biraz beklemek"], answer: 1 } },
+    { id: "content-2",  category: "Güzel Ahlak", icon: "🤝", title: "Selamlaşmak", description: "Selam vermek karşımızdakine iyi dilekte bulunmaktır. Selam veren de alan da mutlu olur. Selamı güler yüzle vermek daha da güzeldir.", quiz: { q: "Selam vermek ne anlama gelir?", options: ["İyi dilek", "Şaka yapmak"], answer: 0 } },
+    { id: "content-3",  category: "Dualar", icon: "🍽️", title: "Yemek duası", description: "Yemeğe başlarken besmele çekilir, bittiğinde şükredilir. Bu, yemeğe saygı göstermenin güzel bir yoludur.", quiz: { q: "Yemeğe nasıl başlarız?", options: ["Besmeleyle", "Koşarak"], answer: 0 } },
+    { id: "content-4",  category: "Dualar", icon: "🌙", title: "Uyumadan önce", description: "Uyumadan önce güzel bir dua etmek insanı huzurlu hissettirir. Günü değerlendirip şükretmek de güzeldir.", quiz: { q: "Uyumadan önce ne yapmak güzeldir?", options: ["Dua etmek", "Kavga etmek"], answer: 0 } },
+    { id: "content-5",  category: "Peygamberimizin Güzel Davranışları", icon: "😊", title: "Güler yüzlü olmak", description: "Peygamberimizin güler yüzlü ve nazik biri olduğu anlatılır. Güler yüz insanların arasını güzelleştirir. Bu kart genel bilgi olarak hazırlanmıştır.", quiz: { q: "Güler yüz ne sağlar?", options: ["Kırgınlık", "Sevgi"], answer: 1 } },
+    { id: "content-6",  category: "Peygamberimizin Güzel Davranışları", icon: "🕊️", title: "Merhametli olmak", description: "Küçüklere şefkat, büyüklere saygı güzel bir ahlaktır. Merhamet, canlılara nazik davranmayı da içerir. Bu kart genel bilgi olarak hazırlanmıştır.", quiz: { q: "Merhamet kime gösterilir?", options: ["Herkese ve canlılara", "Sadece kendimize"], answer: 0 } },
+    { id: "content-7",  category: "Namaz Bilgileri", icon: "🕌", title: "Namaz vakitleri", description: "Günde beş vakit namaz vardır: sabah, öğle, ikindi, akşam ve yatsı. Vakitler güneşin durumuna göre belirlenir.", quiz: { q: "Günde kaç vakit namaz vardır?", options: ["Üç", "Beş"], answer: 1 } },
+    { id: "content-8",  category: "Namaz Bilgileri", icon: "🧭", title: "Kıble nedir?", description: "Namaz kılarken yönelinen yöne kıble denir. Kıble, Mekke'deki Kâbe yönüdür.", quiz: { q: "Kıble hangi yöndür?", options: ["Kâbe yönü", "Kuzey"], answer: 0 } },
+    { id: "content-9",  category: "Abdest Bilgileri", icon: "💧", title: "Abdest nedir?", description: "Abdest, namaz gibi ibadetlerden önce belirli uzuvların su ile yıkanmasıdır. Temizlik hem beden hem gönül için güzeldir.", quiz: { q: "Abdest neyle alınır?", options: ["Su ile", "Kum ile"], answer: 0 } },
+    { id: "content-10", category: "Abdest Bilgileri", icon: "🚰", title: "Abdestte israf", description: "Abdest alırken suyu az ve dikkatli kullanmak güzeldir. Musluğu boşa akıtmamak çevreye de iyilik yapmaktır.", quiz: { q: "Abdest alırken su nasıl kullanılır?", options: ["Bol bol akıtılır", "Ölçülü kullanılır"], answer: 1 } },
+    { id: "content-11", category: "Ramazan", icon: "🌙", title: "Ramazan ayı", description: "Ramazan, oruç tutulan aydır. Bu ayda paylaşmak, sofra kurmak ve yardımlaşmak öne çıkar. Çocuklar oruç tutmak zorunda değildir.", quiz: { q: "Ramazan'da ne öne çıkar?", options: ["Paylaşmak", "Yarışmak"], answer: 0 } },
+    { id: "content-12", category: "Ramazan", icon: "🍲", title: "İftar sofrası", description: "İftar, oruçlunun akşam yemeğidir. Sofrada israf etmemek ve komşuyu unutmamak güzel bir alışkanlıktır.", quiz: { q: "İftarda neye dikkat edilir?", options: ["İsraf etmemeye", "Çok yemeğe"], answer: 0 } },
+    { id: "content-13", category: "Hac ve Umre", icon: "🕋", title: "Kâbe nerededir?", description: "Kâbe, Suudi Arabistan'ın Mekke şehrindedir. Müslümanlar namazda bu yöne döner. Hac, buraya yapılan bir yolculuktur.", quiz: { q: "Kâbe hangi şehirdedir?", options: ["Mekke", "İstanbul"], answer: 0 } },
+    { id: "content-14", category: "Hac ve Umre", icon: "🧳", title: "Hac yolculuğu", description: "Hac, imkânı olan kişilerin ömründe bir kez yaptığı bir yolculuktur. Umre ise yılın farklı zamanlarında yapılabilen daha kısa bir ziyarettir.", quiz: { q: "Hac ömürde kaç kez farzdır?", options: ["Bir kez", "Her yıl"], answer: 0 } },
+    { id: "content-15", category: "Paylaşmak ve Yardımlaşmak", icon: "🎁", title: "Paylaşmak çoğaltır", description: "Bir şeyi paylaşmak onu eksiltmez; sevinci büyütür. Kardeşinle veya arkadaşınla paylaşmak dostluğu güçlendirir.", quiz: { q: "Paylaşınca ne olur?", options: ["Sevinç büyür", "Her şey biter"], answer: 0 } },
+    { id: "content-16", category: "Paylaşmak ve Yardımlaşmak", icon: "🪙", title: "Sadaka nedir?", description: "Sadaka, ihtiyacı olana gönüllü olarak verilen yardımdır. Güler yüz göstermek de bir tür iyiliktir.", quiz: { q: "Sadaka nasıl verilir?", options: ["Gönüllü olarak", "Zorla"], answer: 0 } },
+    { id: "content-17", category: "Hayvanlara Merhamet", icon: "🐦", title: "Kuşlara su bırakmak", description: "Sıcak günlerde balkona veya bahçeye su koymak kuşlara yardım eder. Küçük bir kap bile büyük bir iyiliktir.", quiz: { q: "Sıcak günde kuşlara ne bırakırız?", options: ["Su", "Taş"], answer: 0 } },
+    { id: "content-18", category: "Hayvanlara Merhamet", icon: "🐕", title: "Hayvanları korkutmama", description: "Hayvanlara bağırmak veya taş atmak onları korkutur. Uzaktan sevgiyle bakmak ve rahat bırakmak daha güzeldir.", quiz: { q: "Sokak hayvanına ne yapılır?", options: ["Rahat bırakılır", "Kovalanır"], answer: 0 } },
+    { id: "content-19", category: "Çevreyi Korumak", icon: "🌳", title: "Ağaçlar ve biz", description: "Ağaçlar temiz hava verir, gölge yapar ve kuşlara ev olur. Bir fidan dikmek uzun süren bir iyiliktir.", quiz: { q: "Ağaçlar bize ne verir?", options: ["Temiz hava", "Gürültü"], answer: 0 } },
+    { id: "content-20", category: "Çevreyi Korumak", icon: "♻️", title: "Çöpü ayırmak", description: "Kâğıt, plastik ve camı ayrı kutulara atmak geri dönüşümü kolaylaştırır. Böylece doğaya daha az yük bindiririz.", quiz: { q: "Geri dönüşüm için ne yaparız?", options: ["Çöpü ayırırız", "Hepsini karıştırırız"], answer: 0 } },
+    { id: "content-21", category: "Güzel Ahlak", icon: "🔐", title: "Emanete sahip çıkmak", description: "Birinin sana verdiği eşyayı korumak ve zamanında geri vermek emanete sahip çıkmaktır. Bu, güvenilir olmanın işaretidir.", quiz: { q: "Emanet eşya ne yapılır?", options: ["Geri verilir", "Saklanır"], answer: 0 } },
+    { id: "content-22", category: "Güzel Ahlak", icon: "⏳", title: "Sabırlı olmak", description: "Sabır, beklemeyi ve zorlukta sakin kalmayı öğrenmektir. Sıranı beklemek de güzel bir sabır örneğidir.", quiz: { q: "Sıra beklemek hangi güzel davranıştır?", options: ["Sabır", "Acele"], answer: 0 } }
+  ].map(function (c) {
+    /* Her içerik nesnesinde doğrulama alanları bulunur. */
+    c.sourceLabel = "Kaynak eklenecek";
+    c.verified = false;
+    c.reviewedBy = null;
+    c.source = null;
+    return c;
+  });
+
+  const BADGES = [
+    { id: "b-ilk",       name: "İlk İyilik",          icon: "🌟", desc: "İlk görevini tamamla.",                 test: function (s) { return s.statistics.totalQuests >= 1; } },
+    { id: "b-soz",       name: "Güzel Söz Ustası",    icon: "💬", desc: "Güzel söz görevini 3 kez yap.",         test: function (s) { return countQuest(s, "q-guzelsoz") >= 3; } },
+    { id: "b-yardim",    name: "Yardımsever",         icon: "🤝", desc: "Aile görevlerini 5 kez tamamla.",       test: function (s) { return countCategory(s, "aile") >= 5; } },
+    { id: "b-temiz",     name: "Temizlik Kahramanı",  icon: "🧹", desc: "Temizlik görevlerini 5 kez tamamla.",   test: function (s) { return countCategory(s, "temizlik") >= 5; } },
+    { id: "b-paylas",    name: "Paylaşımcı",          icon: "🎁", desc: "Paylaşma görevlerini 4 kez tamamla.",   test: function (s) { return countCategory(s, "paylasma") >= 4; } },
+    { id: "b-hayvan",    name: "Hayvan Dostu",        icon: "🐈", desc: "Merhamet görevlerini 4 kez tamamla.",   test: function (s) { return countCategory(s, "merhamet") >= 4; } },
+    { id: "b-su",        name: "Su Koruyucusu",       icon: "💧", desc: "Çevre görevlerini 4 kez tamamla.",      test: function (s) { return countCategory(s, "cevre") >= 4; } },
+    { id: "b-dua",       name: "Dua Öğrencisi",       icon: "🤲", desc: "Dua eşleştirme oyununu bitir.",         test: function (s) { return (s.progress.miniGames["dua"] || 0) >= 1; } },
+    { id: "b-bilgi",     name: "Bilgi Kaşifi",        icon: "📚", desc: "10 bilgi kartı öğren.",                 test: function (s) { return s.progress.learnedCards.length >= 10; } },
+    { id: "b-abdest",    name: "Abdest Sıralayıcısı", icon: "🚰", desc: "Abdest sıralamasını doğru tamamla.",    test: function (s) { return (s.progress.miniGames["abdest"] || 0) >= 1; } },
+    { id: "b-hafiza",    name: "Hafıza Ustası",       icon: "🃏", desc: "Hafıza oyununu bitir.",                 test: function (s) { return (s.progress.miniGames["hafiza"] || 0) >= 1; } },
+    { id: "b-sabir",     name: "Sabırlı Oyuncu",      icon: "⏳", desc: "Toplam 20 görev tamamla.",              test: function (s) { return s.statistics.totalQuests >= 20; } },
+    { id: "b-yedi",      name: "Yedi Günlük İyilik",  icon: "🗓️", desc: "7 farklı günde görev tamamla.",         test: function (s) { return (s.statistics.activeDays || []).length >= 7; } },
+    { id: "b-bahce",     name: "Bahçe Kurucusu",      icon: "🌷", desc: "Adanı 2. gelişim aşamasına taşı.",      test: function (s) { return s.island.stage >= 2; } },
+    { id: "b-ada",       name: "Ada Geliştiricisi",   icon: "🏝️", desc: "Adanı 4. gelişim aşamasına taşı.",      test: function (s) { return s.island.stage >= 4; } },
+    { id: "b-besmele",   name: "Besmele Ustası",      icon: "✨", desc: "Besmele sıralama oyununu bitir.",       test: function (s) { return (s.progress.miniGames["besmele"] || 0) >= 1; } },
+    { id: "b-hikaye",    name: "Hikâye Dostu",        icon: "📖", desc: "3 hikâye bölümünü tamamla.",            test: function (s) { return s.story.completed.length >= 3; } }
+  ];
+
+  const SHOP_ITEMS = [
+    { id: "i-canta",   name: "Renkli Çanta",     icon: "🎒", price: 20,  type: "esya" },
+    { id: "i-sapka",   name: "Şapka",            icon: "🧢", price: 25,  type: "giyim" },
+    { id: "i-atki",    name: "Atkı",             icon: "🧣", price: 25,  type: "giyim" },
+    { id: "i-yagmur",  name: "Yağmurluk",        icon: "🧥", price: 40,  type: "giyim" },
+    { id: "i-kitap",   name: "Hikâye Kitabı",    icon: "📗", price: 30,  type: "esya" },
+    { id: "i-sulama",  name: "Sulama Kabı",      icon: "🪣", price: 30,  type: "ada" },
+    { id: "i-fener",   name: "Fener",            icon: "🏮", price: 45,  type: "ada" },
+    { id: "i-bisiklet",name: "Bisiklet",         icon: "🚲", price: 70,  type: "esya" },
+    { id: "i-ucurtma", name: "Uçurtma",          icon: "🪁", price: 50,  type: "esya" },
+    { id: "i-dost",    name: "Sevimli Kedi",     icon: "🐈", price: 90,  type: "dost" }
+  ];
+
+  const STORY_CHAPTERS = [
+    {
+      id: "s1", title: "Adaya İlk Adım", scene: "kiyi",
+      text: "Küçük bir tekneyle adaya çıktın. Kumsal sessiz, ağaçlar solgun. Uzakta eski bir tabela var: “Burada iyilikler filizlenir.”",
+      choices: [
+        { t: "Tabelayı temizlerim", fb: "Tabela parladı! Küçük bir dokunuş bile adayı canlandırıyor.", good: true },
+        { t: "Önce etrafı gezerim", fb: "Gezmek de güzel. Sonra tabelayı temizlemeyi unutma.", good: false }
+      ],
+      task: { t: "Adaya güzelce selam ver", icon: "👋" },
+      reward: { xp: 30, stars: 8, kindness: 12 }, decor: 1
+    },
+    {
+      id: "s2", title: "Susayan Çiçekler", scene: "bahce",
+      text: "Bahçedeki çiçekler susamış. Yanında küçük bir kova ve bir çeşme var. Çeşmeden su akıyor, kapatan olmamış.",
+      choices: [
+        { t: "Musluğu kapatıp kovayla sularım", fb: "Hem çiçekler sulandı hem su israf olmadı. Çok güzel bir çözüm.", good: true },
+        { t: "Musluğu açık bırakıp giderim", fb: "Bir daha düşünelim: su boşa akarsa hem çiçekler hem ada üzülür.", good: false },
+        { t: "Sadece bakıp geçerim", fb: "Görüp geçmek kolay. Küçük bir yardım büyük fark yaratır.", good: false }
+      ],
+      task: { t: "Bir çiçeği sula", icon: "🌷" },
+      reward: { xp: 35, stars: 10, kindness: 15 }, decor: 2
+    },
+    {
+      id: "s3", title: "Kayıp Kitap", scene: "kutuphane",
+      text: "Kütüphanenin önünde bir kitap düşmüş. İçinde “Zeynep” yazıyor. Zeynep adada bir arkadaşın.",
+      choices: [
+        { t: "Kitabı Zeynep'e götürürüm", fb: "Emanete sahip çıktın. Zeynep çok sevindi.", good: true },
+        { t: "Kendime alırım", fb: "Bir daha düşünelim: başkasının eşyası bize emanettir.", good: false },
+        { t: "Rafa koyar, haber veririm", fb: "Bu da güzel. Sahibine ulaşmasını sağladın.", good: true }
+      ],
+      task: { t: "Bir eşyayı sahibine ulaştır", icon: "📗" },
+      reward: { xp: 35, stars: 10, kindness: 16 }, decor: 2
+    },
+    {
+      id: "s4", title: "Yaralı Kuş", scene: "koru",
+      text: "Koruda kanadı yorulmuş küçük bir kuş var. Ürkek ürkek bakıyor. Yanında bir su kabı duruyor.",
+      choices: [
+        { t: "Su kabını yaklaştırıp uzaktan beklerim", fb: "Doğru davrandın. Hayvanları korkutmadan yardım etmek en güzeli.", good: true },
+        { t: "Hemen elime alırım", fb: "Bir daha düşünelim: aniden dokunmak kuşu korkutabilir. Önce sakinleşmesini bekleyelim.", good: false },
+        { t: "Bir büyüğe haber veririm", fb: "Çok güzel. Yardım isterken büyüklere danışmak akıllıca.", good: true }
+      ],
+      task: { t: "Bir hayvana su bırak", icon: "🐦" },
+      reward: { xp: 40, stars: 12, kindness: 20 }, decor: 3
+    },
+    {
+      id: "s5", title: "İyilik Şenliği", scene: "senlik",
+      text: "Ada canlandı! Herkes meydanda toplanıyor. Sofralar kuruluyor, fenerler asılıyor. Bir komşu, “Yardım eder misin?” diye soruyor.",
+      choices: [
+        { t: "Sofra kurmaya yardım ederim", fb: "Beraber çalışmak işi hem kolaylaştırdı hem neşelendirdi.", good: true },
+        { t: "Fenerleri asarım", fb: "Fenerler yandı, ada ışıl ışıl oldu.", good: true },
+        { t: "Sonra gelirim derim", fb: "Bir daha düşünelim: yardım istendiğinde elimizden geleni yapmak güzeldir.", good: false }
+      ],
+      task: { t: "Birine yardım et", icon: "🎉" },
+      reward: { xp: 50, stars: 15, kindness: 25 }, decor: 4
+    }
+  ];
+
+  const BEHAVIOR_SCENARIOS = [
+    { id: "d1", q: "Parkta yerde çöp gördün. Ne yaparsın?", opts: [
+      { t: "Görmezden gelirim", good: false, fb: "Bir daha düşünelim. Küçük bir hareket parkı güzelleştirir." },
+      { t: "Güvenliyse çöp kutusuna atarım", good: true, fb: "Çevreni temiz tutmak güzel bir davranış." },
+      { t: "Başkasını suçlarım", good: false, fb: "Suçlamak yerine çözüm aramak daha güzel." }] },
+    { id: "d2", q: "Kardeşin oyuncağını istiyor. Ne yaparsın?", opts: [
+      { t: "Sırayla oynarız", good: true, fb: "Paylaşmak sevinci büyütür." },
+      { t: "Vermem", good: false, fb: "Bir daha düşünelim. Paylaşmak dostluğu güçlendirir." }] },
+    { id: "d3", q: "Camı yanlışlıkla sen kırdın. Ne dersin?", opts: [
+      { t: "Doğruyu söylerim", good: true, fb: "Doğruluk cesaret ister ve güven kazandırır." },
+      { t: "Sessiz kalırım", good: false, fb: "Bir daha düşünelim. Doğruyu söylemek daha rahatlatıcıdır." },
+      { t: "Kediyi suçlarım", good: false, fb: "Suçu başkasına atmak doğru değil." }] },
+    { id: "d4", q: "Arkadaşın kalemini emanet verdi. Ne yaparsın?", opts: [
+      { t: "Dikkatli kullanıp geri veririm", good: true, fb: "Emanete sahip çıkmak güvenilir olmaktır." },
+      { t: "Bende kalsın", good: false, fb: "Bir daha düşünelim. Emanet sahibine geri verilir." }] },
+    { id: "d5", q: "Annen elinde poşetlerle geliyor. Ne yaparsın?", opts: [
+      { t: "Koşup yardım ederim", good: true, fb: "Aileye yardım etmek çok kıymetli." },
+      { t: "Oyunuma devam ederim", good: false, fb: "Bir daha düşünelim. Küçük bir yardım büyük mutluluk verir." }] },
+    { id: "d6", q: "Sokakta susamış bir kedi gördün.", opts: [
+      { t: "Uzaktan su bırakırım", good: true, fb: "Hayvanlara merhamet güzel bir davranış." },
+      { t: "Kovalarım", good: false, fb: "Bir daha düşünelim. Hayvanları korkutmak doğru değil." }] },
+    { id: "d7", q: "Tabağında yiyemeyeceğin kadar yemek var.", opts: [
+      { t: "Az alıp bitince tekrar alırım", good: true, fb: "İsraf etmemek güzel bir alışkanlık." },
+      { t: "Hepsini çöpe atarım", good: false, fb: "Bir daha düşünelim. Yemeği israf etmemeye çalışalım." }] },
+    { id: "d8", q: "Arkadaşın seni üzen bir söz söyledi.", opts: [
+      { t: "Sakin kalıp üzüldüğümü söylerim", good: true, fb: "Sakin konuşmak sorunları çözer." },
+      { t: "Ben de kırıcı bir şey söylerim", good: false, fb: "Bir daha düşünelim. Kırıcı söz kırgınlığı büyütür." }] },
+    { id: "d9", q: "Sınıfa yeni bir arkadaş geldi, kimseyi tanımıyor.", opts: [
+      { t: "Selam verip yanıma çağırırım", good: true, fb: "Yeni gelen birini karşılamak çok güzel." },
+      { t: "Görmezden gelirim", good: false, fb: "Bir daha düşünelim. Küçük bir selam yalnızlığı azaltır." }] },
+    { id: "d10", q: "Yanlışlıkla arkadaşının resmini yırttın.", opts: [
+      { t: "Özür diler, yardım ederim", good: true, fb: "Özür dilemek güzel bir olgunluktur." },
+      { t: "Hiçbir şey demem", good: false, fb: "Bir daha düşünelim. Özür dilemek ilişkiyi onarır." }] },
+    { id: "d11", q: "Musluğu açık bırakıp dişini fırçalıyorsun.", opts: [
+      { t: "Musluğu kapatırım", good: true, fb: "Su israf edilmemesi gereken bir nimettir." },
+      { t: "Açık kalsın", good: false, fb: "Bir daha düşünelim. Boşa akan su israf olur." }] },
+    { id: "d12", q: "Büyükannen sana bir şey anlatıyor.", opts: [
+      { t: "Dikkatle dinlerim", good: true, fb: "Büyükleri dinlemek saygının bir parçası." },
+      { t: "Telefonuma bakarım", good: false, fb: "Bir daha düşünelim. Dinlemek de bir hediyedir." }] },
+    { id: "d13", q: "Oyunda kaybettin ve canın sıkıldı.", opts: [
+      { t: "Tebrik eder, tekrar denerim", good: true, fb: "Sabır ve güzel davranış her zaman kazandırır." },
+      { t: "Oyunu bozarım", good: false, fb: "Bir daha düşünelim. Kaybetmek de oyunun bir parçası." }] },
+    { id: "d14", q: "Yerde para buldun, sahibi belli değil.", opts: [
+      { t: "Bir büyüğe haber veririm", good: true, fb: "Büyüklere danışmak en doğrusu." },
+      { t: "Kendime harcarım", good: false, fb: "Bir daha düşünelim. Bulunan şey sahibine ulaştırılmaya çalışılır." }] },
+    { id: "d15", q: "Komşunuz hasta, annen çorba götürüyor.", opts: [
+      { t: "Ben de eşlik ederim", good: true, fb: "Komşuya iyilik güzel bir davranış." },
+      { t: "İlgilenmem", good: false, fb: "Bir daha düşünelim. Komşuluk paylaşmakla güzelleşir." }] }
+  ];
+
+  /* Dualar: kısa ve yaşa uygun. Arapça metin yalnızca yaygın bilinen
+     kısa ifadelerde yer alır; diğerlerinde okunuş ve anlam verilir.
+     Not: dinî metinler içerik uzmanı tarafından doğrulanmalıdır. */
+  const DUA_DATA = [
+    { id: "du1", when: "Yemeğe başlarken", icon: "🍽️", name: "Besmele", arabic: "بِسْمِ اللَّهِ", read: "Bismillâh", meaning: "Allah'ın adıyla." },
+    { id: "du2", when: "Yemekten sonra",  icon: "🍚", name: "Hamd",     arabic: "الْحَمْدُ لِلَّهِ", read: "Elhamdülillâh", meaning: "Hamd Allah'a mahsustur." },
+    { id: "du3", when: "Eve girerken",    icon: "🏠", name: "Selam",    arabic: "", read: "Esselâmü aleyküm", meaning: "Selam olsun size." },
+    { id: "du4", when: "Evden çıkarken",  icon: "🚪", name: "Güvende olmak dileği", arabic: "", read: "Bismillâh, tevekkeltü alellâh", meaning: "Allah'ın adıyla, O'na güvendim." },
+    { id: "du5", when: "Uyumadan önce",   icon: "🌙", name: "Uyku duası", arabic: "", read: "Bismike Allâhümme emûtü ve ahyâ", meaning: "Allah'ım, senin adınla uyur ve uyanırım." },
+    { id: "du6", when: "Uyanınca",        icon: "🌤️", name: "Uyanış duası", arabic: "", read: "Elhamdülillâhillezî ahyânâ", meaning: "Bizi uyandıran Allah'a hamd olsun." }
+  ];
+
+  const MEMORY_PAIRS = [
+    { id: "m1", icon: "💧", label: "su vermek" },
+    { id: "m2", icon: "👋", label: "selam vermek" },
+    { id: "m3", icon: "🤝", label: "yardım etmek" },
+    { id: "m4", icon: "🎁", label: "paylaşmak" },
+    { id: "m5", icon: "🙏", label: "teşekkür etmek" },
+    { id: "m6", icon: "🧹", label: "temizlik" },
+    { id: "m7", icon: "📖", label: "kitap okumak" },
+    { id: "m8", icon: "🤲", label: "dua etmek" }
+  ];
+
+  const PRAYER_TIMES = [
+    { id: "sabah",  name: "Sabah",  hint: "Güneş henüz doğmadan, gökyüzü yeni aydınlanırken", sun: 8,  sky: ["#2B3B54", "#F3C969"] },
+    { id: "ogle",   name: "Öğle",   hint: "Güneş en tepedeyken",                              sun: 50, sky: ["#72AEE6", "#BFE6F4"] },
+    { id: "ikindi", name: "İkindi", hint: "Güneş batıya doğru inerken, gölgeler uzarken",     sun: 72, sky: ["#9AC8E8", "#F3C969"] },
+    { id: "aksam",  name: "Akşam",  hint: "Güneş batarken, gökyüzü turuncuya dönerken",       sun: 92, sky: ["#F29D85", "#F3C969"] },
+    { id: "yatsi",  name: "Yatsı",  hint: "Hava tamamen kararıp yıldızlar göründüğünde",      sun: -20, sky: ["#2B3B54", "#3D4E6B"] }
+  ];
+
+  /* Abdest adımları — sade sıralama. Mezhepler arasında ayrıntı farkları olabilir. */
+  const ABDEST_STEPS = [
+    { id: "a1", name: "Niyet",   icon: "💭" },
+    { id: "a2", name: "Eller",   icon: "🤲" },
+    { id: "a3", name: "Ağız",    icon: "👄" },
+    { id: "a4", name: "Burun",   icon: "👃" },
+    { id: "a5", name: "Yüz",     icon: "😊" },
+    { id: "a6", name: "Kollar",  icon: "💪" },
+    { id: "a7", name: "Baş mesh", icon: "🧠" },
+    { id: "a8", name: "Kulaklar", icon: "👂" },
+    { id: "a9", name: "Ayaklar", icon: "🦶" }
+  ];
+
+  const BESMELE = {
+    words: ["Bismillâhi", "er-Rahmâni", "er-Rahîm"],
+    syllables: ["Bis", "mil", "lâ", "hir", "rah", "mâ", "nir", "ra", "hîm"],
+    full: "Bismillâhirrahmânirrahîm",
+    meaning: "Rahmân ve Rahîm olan Allah'ın adıyla."
+  };
+
+  /* Ramazan mini görevi: 4 kişilik sofrada israfsız porsiyon */
+  const IFTAR_FOODS = [
+    { id: "f1", name: "Çorba", icon: "🍲" },
+    { id: "f2", name: "Ekmek", icon: "🍞" },
+    { id: "f3", name: "Hurma", icon: "🫒" },
+    { id: "f4", name: "Salata", icon: "🥗" }
+  ];
+
+  const MENU_ITEMS = [
+    { id: "map",      label: "Adaya Git",         icon: "🏝️", sub: "Haritayı gör",       act: "goto-map", accent: true },
+    { id: "quests",   label: "Günlük Görevler",   icon: "📋", sub: "Bugünün iyilikleri", act: "panel" },
+    { id: "minigames",label: "Mini Oyunlar",      icon: "🎮", sub: "7 oyun",             act: "panel" },
+    { id: "story",    label: "Hikâye",            icon: "📖", sub: "5 bölüm",            act: "panel" },
+    { id: "library",  label: "Bilgi Kütüphanesi", icon: "📚", sub: "Bilgi kartları",     act: "panel" },
+    { id: "badges",   label: "Rozetler",          icon: "🏅", sub: "Koleksiyonun",       act: "panel" },
+    { id: "avatar",   label: "Avatarım",          icon: "🧒", sub: "Ada Atölyesi",       act: "panel" },
+    { id: "parent",   label: "Ebeveyn Alanı",     icon: "👨‍👩‍👧", sub: "Kod ile girilir", act: "panel" },
+    { id: "settings", label: "Ayarlar",           icon: "⚙️", sub: "Ses, tema, süre",    act: "panel" }
+  ];
+
+  /* Ada süsleri: iyilik sayısı arttıkça sırayla açılır */
+  const DECORATIONS = [
+    { need: 1,  type: "flower", x: 300, y: 430, c: "#F29D85" },
+    { need: 2,  type: "flower", x: 360, y: 470, c: "#F3C969" },
+    { need: 3,  type: "tree",   x: 210, y: 380, c: "#5AAA78" },
+    { need: 4,  type: "flower", x: 660, y: 430, c: "#A58BD4" },
+    { need: 5,  type: "bird",   x: 430, y: 150 },
+    { need: 6,  type: "tree",   x: 740, y: 370, c: "#4E9E6B" },
+    { need: 7,  type: "flower", x: 520, y: 470, c: "#F29D85" },
+    { need: 8,  type: "bench",  x: 470, y: 425 },
+    { need: 10, type: "tree",   x: 170, y: 300, c: "#5AAA78" },
+    { need: 12, type: "bird",   x: 620, y: 140 },
+    { need: 14, type: "lamp",   x: 380, y: 400 },
+    { need: 16, type: "flower", x: 620, y: 470, c: "#F3C969" },
+    { need: 18, type: "lamp",   x: 690, y: 440 },
+    { need: 20, type: "tree",   x: 820, y: 330, c: "#4E9E6B" },
+    { need: 22, type: "bird",   x: 280, y: 180 },
+    { need: 24, type: "bench",  x: 560, y: 180 },
+    { need: 26, type: "flower", x: 270, y: 430, c: "#A58BD4" },
+    { need: 28, type: "lamp",   x: 500, y: 490 }
+  ];
+
+  /* ---------------------------------------------------------------
+     3) YARDIMCILAR
+     --------------------------------------------------------------- */
+  const $ = function (s, r) { return (r || document).querySelector(s); };
+  const $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  /** Kullanıcıdan gelen metni ekrana yazmadan önce güvenli hâle getirir. */
+  function esc(v) {
+    return String(v == null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  /** DOM oluşturucu — innerHTML kullanımını gereksiz kılar. */
+  function el(tag, attrs, kids) {
+    const n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      const v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === "class") n.className = v;
+      else if (k === "text") n.textContent = v;
+      else if (k.indexOf("-") > -1 || k === "role") n.setAttribute(k, v);
+      else if (k in n) n[k] = v;
+      else n.setAttribute(k, v);
+    });
+    const list = kids == null ? [] : (Array.isArray(kids) ? kids : [kids]);
+    list.forEach(function (c) {
+      if (c === null || c === undefined || c === false) return;
+      n.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    });
+    return n;
+  }
+  function svgEl(tag, attrs, kids) {
+    const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (attrs[k] === null || attrs[k] === undefined || attrs[k] === false) return;
+      n.setAttribute(k, attrs[k]);
+    });
+    const list = kids == null ? [] : (Array.isArray(kids) ? kids : [kids]);
+    list.forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function uid() { return "x" + Math.random().toString(36).slice(2, 9); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function todayKey(d) { const t = d ? new Date(d) : new Date(); return t.getFullYear() + "-" + (t.getMonth() + 1) + "-" + t.getDate(); }
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function countQuest(s, id) { return (s.statistics.questCounts && s.statistics.questCounts[id]) || 0; }
+  function countCategory(s, cat) { return (s.statistics.categoryCounts && s.statistics.categoryCounts[cat]) || 0; }
+  function minutes(sec) { return Math.floor((sec || 0) / 60); }
+
+  /* ---------------------------------------------------------------
+     4) SAKLAMA — localStorage + bellek yedeği
+        (Gelecek: sunucu tarafı şifreleme, ebeveyn onayı, KVKK uyumu,
+         çocuk verilerinin minimizasyonu, veri silme ve dışa aktarma.)
+     --------------------------------------------------------------- */
+  const StorageService = (function () {
+    let mem = {}, usable = true;
+    try { window.localStorage.setItem("__probe__", "1"); window.localStorage.removeItem("__probe__"); }
+    catch (e) { usable = false; }
+    return {
+      usable: function () { return usable; },
+      read: function (k) { try { return usable ? window.localStorage.getItem(k) : (mem[k] || null); } catch (e) { return mem[k] || null; } },
+      write: function (k, v) { try { if (usable) window.localStorage.setItem(k, v); else mem[k] = v; } catch (e) { mem[k] = v; } },
+      remove: function (k) { try { if (usable) window.localStorage.removeItem(k); } catch (e) {} delete mem[k]; }
+    };
+  })();
+
+  /* ---------------------------------------------------------------
+     5) OYUN DURUMU
+     --------------------------------------------------------------- */
+  function defaultState() {
+    return {
+      version: APP.version,
+      player: { name: "", avatar: 1, ageGroup: "7-9", color: "#368A70", created: null },
+      progress: { level: 1, xp: 0, learnedCards: [], miniGames: {}, cardAnswers: {} },
+      currency: { stars: 0, kindness: 0 },
+      quests: { date: "", offered: [], done: [], later: [], custom: [] },
+      badges: [],
+      island: { stage: 0, decor: 0 },
+      settings: {
+        sound: true, music: false, night: false, lowMotion: false, fontSize: "md",
+        timeLimit: APP.defaultTimeLimitMin, notifications: true, autoSave: true
+      },
+      statistics: {
+        totalQuests: 0, questCounts: {}, categoryCounts: {}, activeDays: [],
+        playSeconds: 0, miniPlays: {}, today: { date: todayKey(), seconds: 0, quests: 0 }
+      },
+      inventory: [],
+      story: { completed: [], choices: {} }
+    };
+  }
+
+  let gameState = defaultState();
+
+  const GameStateService = {
+    get: function () { return gameState; },
+    /** Kayıtlı veriyi yalnızca bilinen alanlarla birleştirir (bozuk veriye dayanıklı). */
+    merge: function (base, incoming) {
+      if (!incoming || typeof incoming !== "object") return base;
+      Object.keys(base).forEach(function (k) {
+        if (!(k in incoming)) return;
+        const b = base[k], i = incoming[k];
+        if (Array.isArray(b)) { if (Array.isArray(i)) base[k] = clone(i); }
+        else if (b && typeof b === "object") { GameStateService.merge(b, i); }
+        else if (typeof b === "number") { const n = Number(i); base[k] = isFinite(n) ? n : b; }
+        else if (typeof b === "boolean") base[k] = !!i;
+        else if (i != null) base[k] = String(i).slice(0, 60);
+      });
+      return base;
+    },
+    load: function () {
+      const raw = StorageService.read(APP.storageKey);
+      if (!raw) return false;
+      let parsed = null;
+      try { parsed = JSON.parse(raw); } catch (e) { return false; }
+      const data = parsed && parsed.data ? parsed.data : parsed;
+      gameState = GameStateService.merge(defaultState(), data);
+      return !!(gameState.player && gameState.player.created);
+    },
+    save: function () {
+      if (!gameState.settings.autoSave) return;
+      GameStateService.forceSave();
+    },
+    forceSave: function () {
+      try { StorageService.write(APP.storageKey, JSON.stringify({ app: APP.brand, version: APP.version, data: gameState })); }
+      catch (e) { /* saklama başarısızsa oyun sessizce devam eder */ }
+    },
+    reset: function () {
+      StorageService.remove(APP.storageKey);
+      gameState = defaultState();
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     6) SEVİYE
+     --------------------------------------------------------------- */
+  const LevelService = {
+    levelFor: function (xp) {
+      let lvl = 1;
+      for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) if (xp >= LEVEL_THRESHOLDS[i]) lvl = i + 1;
+      return lvl;
+    },
+    floor: function (lvl) { return LEVEL_THRESHOLDS[Math.min(lvl - 1, LEVEL_THRESHOLDS.length - 1)]; },
+    ceil: function (lvl) {
+      return lvl >= LEVEL_THRESHOLDS.length
+        ? LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1] + 800
+        : LEVEL_THRESHOLDS[lvl];
+    },
+    progress: function (s) {
+      const lvl = s.progress.level, lo = LevelService.floor(lvl), hi = LevelService.ceil(lvl);
+      return clamp((s.progress.xp - lo) / Math.max(1, hi - lo), 0, 1);
+    },
+    /** Yeni açılan bölgeleri döndürür. */
+    regionsAt: function (lvl) { return REGIONS.filter(function (r) { return r.level === lvl; }); }
+  };
+
+  /* ---------------------------------------------------------------
+     7) ROZETLER
+     --------------------------------------------------------------- */
+  const BadgeService = {
+    check: function () {
+      const earned = [];
+      BADGES.forEach(function (b) {
+        if (gameState.badges.indexOf(b.id) > -1) return;
+        let hit = false;
+        try { hit = !!b.test(gameState); } catch (e) { hit = false; }
+        if (hit) { gameState.badges.push(b.id); earned.push(b); }
+      });
+      return earned;
+    },
+    has: function (id) { return gameState.badges.indexOf(id) > -1; }
+  };
+
+  /* ---------------------------------------------------------------
+     8) ADA GELİŞİMİ
+     --------------------------------------------------------------- */
+  const IslandService = {
+    stageFor: function (decor) {
+      let st = 0;
+      ISLAND_STAGES.forEach(function (s, i) { if (decor >= s.need) st = i; });
+      return st;
+    },
+    addDecor: function (n) {
+      gameState.island.decor += (n || 1);
+      const next = IslandService.stageFor(gameState.island.decor);
+      const changed = next !== gameState.island.stage;
+      gameState.island.stage = next;
+      return changed;
+    },
+    stageName: function () { return ISLAND_STAGES[gameState.island.stage].name; }
+  };
+
+  /* ---------------------------------------------------------------
+     9) SES — SpeechSynthesis + hafif Web Audio tonları
+     --------------------------------------------------------------- */
+  const AudioService = (function () {
+    let ctx = null, musicTimer = null;
+    function context() {
+      if (ctx) return ctx;
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        ctx = new AC();
+      } catch (e) { ctx = null; }
+      return ctx;
+    }
+    function tone(freqs, dur, vol) {
+      if (!gameState.settings.sound) return;
+      const c = context();
+      if (!c) return;
+      try {
+        if (c.state === "suspended" && c.resume) c.resume();
+        freqs.forEach(function (f, i) {
+          const o = c.createOscillator(), g = c.createGain();
+          o.type = "sine"; o.frequency.value = f;
+          g.gain.value = 0;
+          o.connect(g); g.connect(c.destination);
+          const t0 = c.currentTime + i * 0.09;
+          g.gain.setValueAtTime(0, t0);
+          g.gain.linearRampToValueAtTime(vol == null ? 0.06 : vol, t0 + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + (dur || 0.25));
+          o.start(t0); o.stop(t0 + (dur || 0.25) + 0.05);
+        });
+      } catch (e) { /* ses desteklenmiyorsa sessizce devam */ }
+    }
+    return {
+      good: function () { tone([523, 659, 784], 0.22); },
+      soft: function () { tone([392, 440], 0.2, 0.045); },
+      levelUp: function () { tone([523, 659, 784, 1046], 0.3, 0.07); },
+      tap: function () { tone([440], 0.09, 0.035); },
+      /** Metni Türkçe seslendirir; destek yoksa sessizce yok sayılır. */
+      speak: function (text) {
+        if (!gameState.settings.sound || !text) return false;
+        try {
+          if (!("speechSynthesis" in window) || typeof window.SpeechSynthesisUtterance !== "function") return false;
+          window.speechSynthesis.cancel();
+          const u = new window.SpeechSynthesisUtterance(String(text).slice(0, 400));
+          u.lang = "tr-TR"; u.rate = 0.95; u.pitch = 1.05;
+          window.speechSynthesis.speak(u);
+          return true;
+        } catch (e) { return false; }
+      },
+      stopSpeak: function () { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} },
+      /** Müzik: aralıklı, çok hafif bir melodi (sürekli tekrar eden gürültü yok). */
+      music: function (on) {
+        if (musicTimer) { window.clearInterval(musicTimer); musicTimer = null; }
+        if (!on) return;
+        musicTimer = window.setInterval(function () {
+          if (!gameState.settings.music) return;
+          tone([392, 523, 587], 0.5, 0.025);
+        }, 26000);
+      }
+    };
+  })();
+
+  /* ---------------------------------------------------------------
+     10) ÖDÜLLER
+     --------------------------------------------------------------- */
+  const RewardService = {
+    /** XP, yıldız ve iyilik puanı verir; seviye ve rozet kontrolünü yapar. */
+    grant: function (reward, opts) {
+      const o = opts || {};
+      const r = reward || {};
+      const before = gameState.progress.level;
+      gameState.progress.xp += (r.xp || 0);
+      gameState.currency.stars += (r.stars || 0);
+      gameState.currency.kindness += (r.kindness || 0);
+      gameState.progress.level = LevelService.levelFor(gameState.progress.xp);
+
+      let stageChanged = false;
+      if (r.decor) stageChanged = IslandService.addDecor(r.decor);
+
+      const newBadges = BadgeService.check();
+      const leveled = gameState.progress.level > before;
+
+      GameStateService.save();
+      UI.refreshAll();
+      bumpCoins();
+
+      if (!o.silent) {
+        confetti(leveled ? 40 : 16);
+        AudioService.good();
+      }
+      if (o.message) toast(o.message, "good");
+      if (stageChanged && !leveled) {
+        toast("Adan gelişti: " + IslandService.stageName(), "info");
+      }
+      if (leveled) window.setTimeout(function () { showLevelUp(before, gameState.progress.level, newBadges); }, 420);
+      else if (newBadges.length) window.setTimeout(function () { showBadgeWon(newBadges); }, 420);
+      return { leveled: leveled, badges: newBadges, stageChanged: stageChanged };
+    },
+    spend: function (stars) {
+      if (gameState.currency.stars < stars) return false;
+      gameState.currency.stars -= stars;
+      GameStateService.save();
+      UI.refreshAll();
+      return true;
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     11) GÖREVLER
+     --------------------------------------------------------------- */
+  const QuestService = {
+    /** Güne özel görev listesini hazırlar (günde en fazla 5). */
+    ensureDaily: function () {
+      const key = todayKey();
+      if (gameState.quests.date === key && gameState.quests.offered.length) return;
+      const pool = shuffle(QUEST_LIBRARY.map(function (q) { return q.id; }));
+      gameState.quests.date = key;
+      gameState.quests.offered = pool.slice(0, APP.dailyQuestCount);
+      gameState.quests.done = [];
+      gameState.quests.later = [];
+      if (gameState.statistics.today.date !== key) {
+        gameState.statistics.today = { date: key, seconds: 0, quests: 0 };
+      }
+      GameStateService.save();
+    },
+    byId: function (id) {
+      const found = QUEST_LIBRARY.filter(function (q) { return q.id === id; })[0];
+      if (found) return found;
+      return gameState.quests.custom.filter(function (q) { return q.id === id; })[0] || null;
+    },
+    /** Bugün gösterilecek görevler (kütüphane + ebeveyn görevleri). */
+    todayList: function () {
+      const list = gameState.quests.offered.map(QuestService.byId).filter(Boolean);
+      gameState.quests.custom.forEach(function (q) { if (!q.archived) list.push(q); });
+      return list;
+    },
+    isDone: function (id) { return gameState.quests.done.indexOf(id) > -1; },
+    isLater: function (id) { return gameState.quests.later.indexOf(id) > -1; },
+    complete: function (id) {
+      if (QuestService.isDone(id)) return null;              // Çift tıklamaya karşı koruma
+      const q = QuestService.byId(id);
+      if (!q) return null;
+      gameState.quests.done.push(id);
+      const later = gameState.quests.later.indexOf(id);
+      if (later > -1) gameState.quests.later.splice(later, 1);
+
+      const st = gameState.statistics;
+      st.totalQuests += 1;
+      st.questCounts[id] = (st.questCounts[id] || 0) + 1;
+      if (q.category) st.categoryCounts[q.category] = (st.categoryCounts[q.category] || 0) + 1;
+      const key = todayKey();
+      if (st.today.date !== key) st.today = { date: key, seconds: st.today.seconds, quests: 0 };
+      st.today.quests += 1;
+      if (st.activeDays.indexOf(key) === -1) st.activeDays.push(key);
+
+      return RewardService.grant(
+        { xp: q.xp || 15, stars: q.stars || 4, kindness: q.kindness || 8, decor: 1 },
+        { message: pickPraise() }
+      );
+    },
+    later: function (id) {
+      if (gameState.quests.later.indexOf(id) === -1) gameState.quests.later.push(id);
+      GameStateService.save();
+      toast("Sorun değil. Hazır olduğunda yeniden deneyebilirsin.", "info");
+    },
+    addCustom: function (data) {
+      const q = {
+        id: "custom-" + uid(),
+        title: String(data.title || "Görev").slice(0, 60),
+        description: String(data.description || "").slice(0, 140),
+        category: "aile", icon: "✨",
+        xp: clamp(Number(data.xp) || 20, 0, 200),
+        stars: clamp(Number(data.stars) || 5, 0, 100),
+        kindness: 10,
+        due: data.due || "",
+        custom: true
+      };
+      gameState.quests.custom.push(q);
+      GameStateService.save();
+      return q;
+    },
+    removeCustom: function (id) {
+      gameState.quests.custom = gameState.quests.custom.filter(function (q) { return q.id !== id; });
+      GameStateService.save();
+    }
+  };
+
+  const PRAISE = [
+    "Güzel bir iyilik yaptın.", "İyilik Bahçen büyüyor.", "Harika bir davranış.",
+    "Bugün birini sevindirdin.", "Küçük iyilikler dünyayı güzelleştirir.",
+    "Adan biraz daha yeşerdi."
+  ];
+  function pickPraise() { return PRAISE[Math.floor(Math.random() * PRAISE.length)]; }
+
+  /* ---------------------------------------------------------------
+     12) HİKÂYE
+     --------------------------------------------------------------- */
+  const StoryService = {
+    isDone: function (id) { return gameState.story.completed.indexOf(id) > -1; },
+    isOpen: function (index) {
+      if (index === 0) return true;
+      return StoryService.isDone(STORY_CHAPTERS[index - 1].id);
+    },
+    complete: function (id, choiceIndex) {
+      const ch = STORY_CHAPTERS.filter(function (c) { return c.id === id; })[0];
+      if (!ch || StoryService.isDone(id)) return null;
+      gameState.story.completed.push(id);
+      gameState.story.choices[id] = choiceIndex;
+      return RewardService.grant(
+        { xp: ch.reward.xp, stars: ch.reward.stars, kindness: ch.reward.kindness, decor: ch.decor },
+        { message: "Hikâye bölümünü tamamladın." }
+      );
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     13) MİNİ OYUNLAR (kayıt katmanı)
+     --------------------------------------------------------------- */
+  const MiniGameService = {
+    list: [
+      { id: "besmele",  name: "Besmele Sıralama",   icon: "✨", desc: "Kelimeleri doğru sıraya diz." },
+      { id: "abdest",   name: "Abdest Sıralama",    icon: "🚰", desc: "Adımları sırayla seç." },
+      { id: "davranis", name: "Doğru Davranışı Seç",icon: "🤔", desc: "En güzel davranışı bul." },
+      { id: "dua",      name: "Dua Eşleştirme",     icon: "🤲", desc: "Durumu duasıyla eşleştir." },
+      { id: "hafiza",   name: "İyilik Hafıza",      icon: "🃏", desc: "Aynı kartları bul." },
+      { id: "vakit",    name: "Namaz Vakitlerini Tanı", icon: "🕌", desc: "Gökyüzüne bak, vakti seç." },
+      { id: "iftar",    name: "İftar Sofrası",      icon: "🍲", desc: "İsraf etmeden sofra kur." }
+    ],
+    record: function (id, reward) {
+      gameState.progress.miniGames[id] = (gameState.progress.miniGames[id] || 0) + 1;
+      gameState.statistics.miniPlays[id] = (gameState.statistics.miniPlays[id] || 0) + 1;
+      return RewardService.grant(reward || { xp: 25, stars: 6, kindness: 8, decor: 1 }, { message: "Mini oyunu bitirdin." });
+    },
+    play: function (id) {
+      gameState.statistics.miniPlays[id] = (gameState.statistics.miniPlays[id] || 0) + 1;
+      GameStateService.save();
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     14) EBEVEYN
+     --------------------------------------------------------------- */
+  const ParentService = {
+    verify: function (code) { return String(code).trim() === APP.parentCode; },
+    stats: function () {
+      const s = gameState;
+      const topGames = Object.keys(s.statistics.miniPlays).map(function (k) {
+        const g = MiniGameService.list.filter(function (m) { return m.id === k; })[0];
+        return { name: g ? g.name : k, n: s.statistics.miniPlays[k] };
+      }).sort(function (a, b) { return b.n - a.n; }).slice(0, 3);
+      return {
+        totalMinutes: minutes(s.statistics.playSeconds),
+        todayMinutes: minutes(s.statistics.today.seconds),
+        todayQuests: s.statistics.today.quests,
+        totalQuests: s.statistics.totalQuests,
+        learned: s.progress.learnedCards.length,
+        badges: s.badges.length,
+        level: s.progress.level,
+        topGames: topGames
+      };
+    },
+    loadDemo: function () {
+      const s = defaultState();
+      s.player = clone(gameState.player);
+      s.settings = clone(gameState.settings);
+      s.progress.xp = 850;
+      s.progress.level = LevelService.levelFor(850);
+      s.progress.learnedCards = LIBRARY_CARDS.slice(0, 6).map(function (c) { return c.id; });
+      s.progress.miniGames = { besmele: 1, abdest: 1, hafiza: 1 };
+      s.currency = { stars: 240, kindness: 460 };
+      s.island = { decor: 14, stage: 0 };
+      s.island.stage = IslandService.stageFor(14);
+      s.statistics.totalQuests = 12;
+      s.statistics.categoryCounts = { "guzel-ahlak": 4, aile: 3, temizlik: 2, paylasma: 2, cevre: 1 };
+      s.statistics.questCounts = { "q-selam": 3, "q-guzelsoz": 3, "q-yardim": 3, "q-duzen": 2, "q-cop": 1 };
+      s.statistics.playSeconds = 4200;
+      s.statistics.miniPlays = { besmele: 4, hafiza: 3, davranis: 2 };
+      s.statistics.activeDays = ["demo-1", "demo-2", "demo-3"];
+      s.story.completed = ["s1", "s2"];
+      s.inventory = ["i-canta", "i-sapka", "i-kitap", "i-sulama"];
+      s.quests = { date: "", offered: [], done: [], later: [], custom: clone(gameState.quests.custom) };
+      gameState = s;
+      BadgeService.check();
+      QuestService.ensureDaily();
+      GameStateService.forceSave();
+      UI.refreshAll();
+    },
+    exportJSON: function () {
+      const text = JSON.stringify({ app: APP.brand, version: APP.version, exportedAt: new Date().toISOString(), data: gameState }, null, 2);
+      try {
+        const blob = new Blob([text], { type: "application/json;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = el("a", { href: url, download: "iyilik-adasi-" + todayKey() + ".json" });
+        document.body.appendChild(a); a.click();
+        window.setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 400);
+        return true;
+      } catch (e) { return false; }
+    },
+    importJSON: function (raw) {
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch (e) { return { ok: false, error: "Dosya okunamadı. Geçerli bir yedek değil." }; }
+      const data = parsed && parsed.data ? parsed.data : parsed;
+      if (!data || typeof data !== "object" || !data.player) return { ok: false, error: "Bu dosyada oyun verisi bulunamadı." };
+      gameState = GameStateService.merge(defaultState(), data);
+      if (!gameState.player.created) gameState.player.created = new Date().toISOString();
+      GameStateService.forceSave();
+      return { ok: true };
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     15) ARAYÜZ — bildirim, konfeti, panel
+     --------------------------------------------------------------- */
+  function toast(msg, kind) {
+    const box = $("#toasts");
+    if (!box) return;
+    const t = el("div", { class: "toast " + (kind || "info"), text: msg });
+    box.appendChild(t);
+    window.setTimeout(function () {
+      t.classList.add("out");
+      window.setTimeout(function () { t.remove(); }, 320);
+    }, 2400);
+  }
+
+  function confetti(count) {
+    if (gameState.settings.lowMotion) return;
+    const host = $("#confetti");
+    if (!host) return;
+    const colors = ["#F3C969", "#F29D85", "#A58BD4", "#72AEE6", "#5AAA78"];
+    for (let i = 0; i < (count || 18); i++) {
+      const p = el("span", { class: "cf" });
+      p.style.left = Math.random() * 100 + "vw";
+      p.style.top = "-20px";
+      p.style.background = colors[i % colors.length];
+      p.style.animationDelay = (Math.random() * 0.35) + "s";
+      host.appendChild(p);
+      window.setTimeout(function () { p.remove(); }, 2100);
+    }
+  }
+
+  function bumpCoins() {
+    ["#coinStars", "#coinKind"].forEach(function (sel) {
+      const n = $(sel);
+      if (!n) return;
+      n.classList.remove("bump");
+      void n.offsetWidth;
+      n.classList.add("bump");
+    });
+  }
+
+  /** Ana panel katmanı. */
+  const Sheet = {
+    current: null, lastFocus: null,
+    open: function (opts) {
+      Sheet.lastFocus = document.activeElement;
+      Sheet.current = opts.id || null;
+      $("#sheetIcon").textContent = opts.icon || "✨";
+      $("#sheetTitle").textContent = opts.title || "";
+      const body = $("#sheetBody"), foot = $("#sheetFoot");
+      body.textContent = ""; foot.textContent = "";
+      (Array.isArray(opts.body) ? opts.body : [opts.body]).forEach(function (n) { if (n) body.appendChild(n); });
+      if (opts.foot && opts.foot.length) { opts.foot.forEach(function (n) { if (n) foot.appendChild(n); }); foot.hidden = false; }
+      else foot.hidden = true;
+      $("#sheetSpeak").hidden = !opts.speak;
+      Sheet.speakText = opts.speak || "";
+      $("#sheet").classList.add("open");
+      body.scrollTop = 0;
+      const f = $("#sheet").querySelector("button, input, select");
+      if (f && f.focus) f.focus();
+    },
+    setBody: function (nodes) {
+      const body = $("#sheetBody");
+      body.textContent = "";
+      (Array.isArray(nodes) ? nodes : [nodes]).forEach(function (n) { if (n) body.appendChild(n); });
+      body.scrollTop = 0;
+    },
+    close: function () {
+      $("#sheet").classList.remove("open");
+      Sheet.current = null;
+      AudioService.stopSpeak();
+      if (Sheet.lastFocus && Sheet.lastFocus.focus) Sheet.lastFocus.focus();
+    }
+  };
+
+  const Dialog = {
+    open: function (opts) {
+      $("#dialogIcon").textContent = opts.icon || "✨";
+      $("#dialogTitle").textContent = opts.title || "";
+      const body = $("#dialogBody"), foot = $("#dialogFoot");
+      body.textContent = ""; foot.textContent = "";
+      (Array.isArray(opts.body) ? opts.body : [opts.body]).forEach(function (n) { if (n) body.appendChild(n); });
+      (opts.foot || [el("button", { class: "btn btn-primary btn-block", type: "button", "data-act": "close-dialog" }, "Tamam")])
+        .forEach(function (n) { if (n) foot.appendChild(n); });
+      $("#dialog").classList.add("open");
+      const f = $("#dialog").querySelector("button");
+      if (f && f.focus) f.focus();
+    },
+    close: function () { $("#dialog").classList.remove("open"); }
+  };
+
+  /* ---------------------------------------------------------------
+     16) AVATAR ÇİZİMİ (inline SVG, harici görsel yok)
+     --------------------------------------------------------------- */
+  const SKIN = "#F2C9A0";
+  function avatarSVG(index, color, size) {
+    const c = color || "#368A70";
+    const kids = [
+      svgEl("circle", { cx: 50, cy: 50, r: 48, fill: "#EAF5F0" }),
+      svgEl("path", { d: "M22 96c0-16 12-26 28-26s28 10 28 26z", fill: c }),
+      svgEl("circle", { cx: 50, cy: 46, r: 22, fill: SKIN })
+    ];
+    if (index === 1) kids.push(svgEl("path", { d: "M28 42c0-14 10-22 22-22s22 8 22 22c-4-8-12-11-22-11s-18 3-22 11z", fill: "#5B4636" }));
+    if (index === 2) kids.push(svgEl("path", { d: "M26 40h48c0-14-10-22-24-22s-24 8-24 22z", fill: c }),
+                               svgEl("rect", { x: 24, y: 38, width: 52, height: 7, rx: 3.5, fill: "#2F5F52" }));
+    if (index === 3) kids.push(svgEl("path", { d: "M26 48c0-15 10-26 24-26s24 11 24 26v6c0 12-8 20-14 22h-20c-6-2-14-10-14-22z", fill: c }),
+                               svgEl("circle", { cx: 50, cy: 50, r: 17, fill: SKIN }));
+    if (index === 4) kids.push(svgEl("path", { d: "M30 40a20 20 0 0 1 40 0c0 4-3 6-6 4-3-6-9-9-14-9s-11 3-14 9c-3 2-6 0-6-4z", fill: "#3F3227" }),
+                               svgEl("circle", { cx: 30, cy: 38, r: 7, fill: "#3F3227" }),
+                               svgEl("circle", { cx: 70, cy: 38, r: 7, fill: "#3F3227" }));
+    kids.push(
+      svgEl("circle", { cx: 43, cy: 48, r: 2.6, fill: "#31423C" }),
+      svgEl("circle", { cx: 57, cy: 48, r: 2.6, fill: "#31423C" }),
+      svgEl("path", { d: "M44 56c2 2.6 10 2.6 12 0", stroke: "#31423C", "stroke-width": 2.4, fill: "none", "stroke-linecap": "round" })
+    );
+    return svgEl("svg", { viewBox: "0 0 100 100", width: size || null, height: size || null, "aria-hidden": "true" }, kids);
+  }
+
+  /* ---------------------------------------------------------------
+     17) ADA SAHNESİ
+     --------------------------------------------------------------- */
+  function decorNode(d, isNew) {
+    const g = svgEl("g", { transform: "translate(" + d.x + "," + d.y + ")", class: isNew ? "grow" : "" });
+    if (d.type === "flower") {
+      g.appendChild(svgEl("path", { d: "M0 0 L0 -18", stroke: "#4E9E6B", "stroke-width": 3, "stroke-linecap": "round" }));
+      const head = svgEl("g", { class: "sway" });
+      [[0, -24], [-7, -19], [7, -19], [-4, -30], [4, -30]].forEach(function (p) {
+        head.appendChild(svgEl("circle", { cx: p[0], cy: p[1], r: 5, fill: d.c || "#F29D85" }));
+      });
+      head.appendChild(svgEl("circle", { cx: 0, cy: -25, r: 3.2, fill: "#FFF8E8" }));
+      g.appendChild(head);
+    } else if (d.type === "tree") {
+      g.appendChild(svgEl("rect", { x: -5, y: -26, width: 10, height: 30, rx: 4, fill: "#8A6A4A" }));
+      const top = svgEl("g", { class: "sway" });
+      top.appendChild(svgEl("circle", { cx: 0, cy: -46, r: 24, fill: d.c || "#5AAA78" }));
+      top.appendChild(svgEl("circle", { cx: -18, cy: -34, r: 16, fill: d.c || "#5AAA78" }));
+      top.appendChild(svgEl("circle", { cx: 18, cy: -34, r: 16, fill: d.c || "#5AAA78" }));
+      g.appendChild(top);
+    } else if (d.type === "bird") {
+      const b = svgEl("g", { class: "bird" });
+      b.appendChild(svgEl("path", { d: "M-14 0q7-9 14 0q7-9 14 0", stroke: "#4A5D57", "stroke-width": 3.4, fill: "none", "stroke-linecap": "round" }));
+      g.appendChild(b);
+    } else if (d.type === "bench") {
+      g.appendChild(svgEl("rect", { x: -22, y: -10, width: 44, height: 7, rx: 3, fill: "#B98B5E" }));
+      g.appendChild(svgEl("rect", { x: -22, y: -22, width: 44, height: 6, rx: 3, fill: "#C99B6E" }));
+      g.appendChild(svgEl("rect", { x: -18, y: -4, width: 5, height: 12, rx: 2, fill: "#8A6A4A" }));
+      g.appendChild(svgEl("rect", { x: 13, y: -4, width: 5, height: 12, rx: 2, fill: "#8A6A4A" }));
+    } else if (d.type === "lamp") {
+      g.appendChild(svgEl("rect", { x: -3, y: -34, width: 6, height: 38, rx: 3, fill: "#6C7D76" }));
+      g.appendChild(svgEl("circle", { cx: 0, cy: -40, r: 11, fill: "#F3C969", opacity: "0.95" }));
+      g.appendChild(svgEl("circle", { cx: 0, cy: -40, r: 19, fill: "#F3C969", opacity: "0.18" }));
+    }
+    return g;
+  }
+
+  let lastDecorCount = -1;
+  function renderIsland() {
+    const host = $("#islandHost");
+    if (!host) return;
+    const kids = [];
+
+    /* Gökyüzü ve deniz */
+    kids.push(svgEl("rect", { x: 0, y: 0, width: 1000, height: 90, fill: "var(--sky)" }));
+    kids.push(svgEl("rect", { x: 0, y: 80, width: 1000, height: 520, fill: "var(--blue)" }));
+    kids.push(svgEl("circle", { cx: 900, cy: 46, r: 30, fill: "var(--gold)" }));
+    [[120, 130], [420, 110], [760, 150]].forEach(function (p, i) {
+      kids.push(svgEl("path", {
+        d: "M" + p[0] + " " + p[1] + " q22 -16 44 0 q22 -6 22 10 h-88 q0 -16 22 -10 z",
+        fill: "#FFFFFF", opacity: "0.55", class: "cloud" + (i === 1 ? " c2" : "")
+      }));
+    });
+    /* Dalga çizgileri */
+    [520, 560].forEach(function (y) {
+      kids.push(svgEl("path", { d: "M0 " + y + " q40 -10 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0", stroke: "#FFFFFF", opacity: "0.3", "stroke-width": 4, fill: "none" }));
+    });
+
+    /* Ada gövdesi */
+    kids.push(svgEl("path", { d: "M500 62C765 62 905 185 905 305c0 145-175 250-405 250S95 450 95 305C95 185 235 62 500 62z", fill: "#F0DFB8" }));
+    kids.push(svgEl("ellipse", { cx: 500, cy: 300, rx: 385, ry: 218, fill: "var(--grass)" }));
+    kids.push(svgEl("ellipse", { cx: 300, cy: 200, rx: 120, ry: 66, fill: "#8FC97C", opacity: "0.55" }));
+    kids.push(svgEl("ellipse", { cx: 690, cy: 250, rx: 140, ry: 74, fill: "#8FC97C", opacity: "0.45" }));
+    /* Yol */
+    kids.push(svgEl("path", {
+      d: "M250 400 Q 400 330 420 260 Q 450 180 520 150 Q 640 120 700 220 Q 740 300 820 280",
+      stroke: "#EBD9AE", "stroke-width": 26, fill: "none", "stroke-linecap": "round", opacity: "0.9"
+    }));
+    /* Gölet */
+    kids.push(svgEl("ellipse", { cx: 620, cy: 400, rx: 74, ry: 34, fill: "#8FD3EE" }));
+    kids.push(svgEl("ellipse", { cx: 620, cy: 396, rx: 56, ry: 22, fill: "#B6E6F6", opacity: "0.8" }));
+
+    /* Süsler */
+    const decor = gameState.island.decor;
+    DECORATIONS.forEach(function (d) {
+      if (decor >= d.need) kids.push(decorNode(d, lastDecorCount > -1 && d.need > lastDecorCount));
+    });
+    lastDecorCount = decor;
+
+    const svg = svgEl("svg", {
+      class: "island-svg", viewBox: "0 0 1000 600", role: "img",
+      "aria-label": "Ada haritası — " + IslandService.stageName()
+    }, kids);
+    host.textContent = "";
+    host.appendChild(svg);
+    const flag = $("#stageFlag");
+    if (flag) flag.textContent = IslandService.stageName() + " · " + decor + " iyilik";
+  }
+
+  function renderPins() {
+    const host = $("#pins");
+    if (!host) return;
+    host.textContent = "";
+    REGIONS.forEach(function (r) {
+      const open = gameState.progress.level >= r.level;
+      const btn = el("button", {
+        class: "pin" + (open ? "" : " locked") + (open && r.level === gameState.progress.level && r.level > 1 ? " new" : ""),
+        type: "button", "data-act": "region", "data-id": r.id,
+        "aria-label": r.name + (open ? "" : " — " + r.level + ". seviyede açılır")
+      }, [
+        el("span", { class: "bubble", "aria-hidden": "true", text: open ? r.icon : "🔒" }),
+        el("span", { class: "cap", text: r.name })
+      ]);
+      btn.style.left = r.x + "%";
+      btn.style.top = r.y + "%";
+      host.appendChild(btn);
+    });
+
+    /* Küçük ekranlarda haritaya alternatif: bölge şeridi */
+    const strip = $("#regionStrip");
+    if (!strip) return;
+    strip.textContent = "";
+    REGIONS.forEach(function (r) {
+      const open = gameState.progress.level >= r.level;
+      strip.appendChild(el("button", {
+        class: "rchip" + (open ? "" : " locked"), type: "button",
+        "data-act": "region", "data-id": r.id,
+        "aria-label": r.name + (open ? "" : " — " + r.level + ". seviyede açılır")
+      }, [
+        el("span", { class: "em", "aria-hidden": "true", text: open ? r.icon : "🔒" }),
+        el("span", { text: r.name }),
+        open ? null : el("span", { class: "lv", text: "Sv " + r.level })
+      ]));
+    });
+  }
+
+  function renderTopbar() {
+    const s = gameState;
+    $("#playerName").textContent = s.player.name || "Oyuncu";
+    $("#levelChip").textContent = "Sv " + s.progress.level;
+    const p = LevelService.progress(s);
+    $("#xpFill").style.width = (p * 100).toFixed(1) + "%";
+    const lo = LevelService.floor(s.progress.level), hi = LevelService.ceil(s.progress.level);
+    $("#xpText").textContent = (s.progress.xp - lo) + " / " + (hi - lo);
+    $("#xpBar").setAttribute("aria-valuenow", String(Math.round(p * 100)));
+    $("#starCount").textContent = String(s.currency.stars);
+    $("#kindCount").textContent = String(s.currency.kindness);
+    const slot = $("#avatarSlot");
+    slot.textContent = "";
+    slot.appendChild(avatarSVG(s.player.avatar, s.player.color));
+  }
+
+  function renderMenu() {
+    const host = $("#menuGrid");
+    if (!host) return;
+    host.textContent = "";
+    MENU_ITEMS.forEach(function (m) {
+      host.appendChild(el("button", {
+        class: "menu-btn" + (m.accent ? " accent" : ""), type: "button",
+        "data-act": m.act === "panel" ? "panel" : m.act, "data-panel": m.id
+      }, [
+        el("span", { class: "ic", "aria-hidden": "true", text: m.icon }),
+        el("span", { class: "lb", text: m.label }),
+        el("span", { class: "sub", text: m.sub })
+      ]));
+    });
+  }
+
+  /** Görev kartı bileşeni. */
+  function questCard(q) {
+    const done = QuestService.isDone(q.id);
+    const later = QuestService.isLater(q.id);
+    const card = el("div", { class: "quest" + (done ? " done" : ""), "data-quest": q.id }, [
+      el("div", { class: "qi", "aria-hidden": "true", text: q.icon || "✨" }),
+      el("div", {}, [
+        el("h4", { text: q.title }),
+        el("div", { class: "desc", text: q.description || "" }),
+        el("div", { class: "rewards" }, [
+          el("span", { class: "rw", text: "⭐ " + (q.stars || 0) }),
+          el("span", { class: "rw", text: "✨ " + (q.xp || 0) + " XP" }),
+          el("span", { class: "rw", text: "💚 " + (q.kindness || 0) }),
+          q.custom ? el("span", { class: "rw", text: "👨‍👩‍👧 Aile görevi" }) : null,
+          later && !done ? el("span", { class: "rw", text: "⏳ Sonra" }) : null
+        ]),
+        el("div", { class: "quest-actions" }, done ? [
+          el("span", { class: "pill", text: "✅ Tamamlandı" })
+        ] : [
+          el("button", { class: "btn btn-sm btn-primary", type: "button", "data-act": "quest-done", "data-id": q.id }, "Yaptım"),
+          el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "quest-later", "data-id": q.id }, "Daha sonra"),
+          el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "speak", "data-text": q.title + ". " + (q.description || ""), "aria-label": "Görevi sesli oku" }, "🔊")
+        ])
+      ])
+    ]);
+    return card;
+  }
+
+  function renderQuestPreview() {
+    const host = $("#questPreview");
+    if (!host) return;
+    host.textContent = "";
+    const list = QuestService.todayList();
+    const open = list.filter(function (q) { return !QuestService.isDone(q.id); });
+    const show = (open.length ? open : list).slice(0, 3);
+    if (!show.length) { host.appendChild(el("div", { class: "empty", text: "Bugün için görev yok. Yarın yeni iyilikler seni bekliyor." })); return; }
+    show.forEach(function (q) { host.appendChild(questCard(q)); });
+    if (open.length === 0) host.appendChild(el("div", { class: "empty", text: "Bugünkü tüm iyilikleri tamamladın. İyilik yolculuğun devam ediyor." }));
+  }
+
+  const UI = {
+    refreshAll: function () {
+      if ($("#app").hidden) return;
+      renderTopbar();
+      renderIsland();
+      renderPins();
+      renderQuestPreview();
+      if (Sheet.current && PANEL_REFRESH[Sheet.current]) PANEL_REFRESH[Sheet.current]();
+    }
+  };
+
+  /* Seviye atlama ve rozet modalları */
+  function showLevelUp(from, to, badges) {
+    AudioService.levelUp();
+    confetti(50);
+    const newRegions = [];
+    for (let l = from + 1; l <= to; l++) LevelService.regionsAt(l).forEach(function (r) { newRegions.push(r); });
+    const body = [
+      el("div", { class: "level-up" }, [
+        el("div", { class: "big", "aria-hidden": "true", text: "🎉" }),
+        el("h3", { text: "Yeni seviyeye ulaştın!" }),
+        el("p", { class: "muted", text: "Seviye " + from + " → Seviye " + to }),
+        el("div", { class: "reward-line" }, [el("span", { class: "pill", text: "Sv " + to })])
+      ])
+    ];
+    if (newRegions.length) {
+      body.push(el("div", { class: "card" }, [
+        el("div", { class: "small muted", text: "Açılan bölge" }),
+        el("div", {}, newRegions.map(function (r) { return el("span", { class: "pill", style: "margin:4px 4px 0 0", text: r.icon + " " + r.name }); }))
+      ]));
+    }
+    if (badges && badges.length) {
+      body.push(el("div", { class: "card" }, [
+        el("div", { class: "small muted", text: "Yeni rozet" }),
+        el("div", {}, badges.map(function (b) { return el("span", { class: "pill", style: "margin:4px 4px 0 0", text: b.icon + " " + b.name }); }))
+      ]));
+    }
+    const nextStory = STORY_CHAPTERS.filter(function (c) { return !StoryService.isDone(c.id); })[0];
+    if (nextStory) body.push(el("div", { class: "card" }, [
+      el("div", { class: "small muted", text: "Seni bekleyen hikâye" }),
+      el("div", { style: "font-weight:800", text: "📖 " + nextStory.title })
+    ]));
+    Dialog.open({ icon: "🎉", title: "Tebrikler", body: body });
+  }
+
+  function showBadgeWon(badges) {
+    AudioService.good();
+    Dialog.open({
+      icon: "🏅", title: "Yeni rozet kazandın",
+      body: badges.map(function (b) {
+        return el("div", { class: "badge earned" }, [
+          el("div", { class: "em", "aria-hidden": "true", text: b.icon }),
+          el("div", { class: "bn", text: b.name }),
+          el("div", { class: "bd", text: b.desc })
+        ]);
+      })
+    });
+  }
+
+  /* ---------------------------------------------------------------
+     18) PANELLER
+     --------------------------------------------------------------- */
+  const PANELS = {};
+  const PANEL_REFRESH = {};
+
+  /* --- Günlük görevler --- */
+  function buildQuests() {
+    const list = QuestService.todayList();
+    const doneCount = list.filter(function (q) { return QuestService.isDone(q.id); }).length;
+    const nodes = [
+      el("div", { class: "card" }, [
+        el("div", { class: "row-between" }, [
+          el("div", {}, [
+            el("div", { style: "font-weight:800", text: "Bugün " + doneCount + " / " + list.length + " iyilik" }),
+            el("div", { class: "small muted", text: "Her gün en fazla 5 görev gelir. Yapamadığın olursa sorun değil." })
+          ]),
+          el("span", { class: "pill", text: "💚 " + gameState.currency.kindness })
+        ])
+      ])
+    ];
+    list.forEach(function (q) { nodes.push(questCard(q)); });
+    nodes.push(el("p", { class: "small muted center", text: "Görevleri kendi beyanınla işaretlersin. Oyun seni yargılamaz." }));
+    return nodes;
+  }
+  PANELS.quests = function () {
+    Sheet.open({ id: "quests", icon: "📋", title: "Günlük Görevler", body: buildQuests(), speak: "Bugünün iyilik görevleri." });
+  };
+  PANEL_REFRESH.quests = function () { Sheet.setBody(buildQuests()); };
+
+  /* --- Bilgi kütüphanesi --- */
+  let libCat = "Hepsi";
+  function buildLibrary() {
+    const cats = ["Hepsi"];
+    LIBRARY_CARDS.forEach(function (c) { if (cats.indexOf(c.category) === -1) cats.push(c.category); });
+    const bar = el("div", { class: "lib-cats" }, cats.map(function (c) {
+      return el("button", { class: libCat === c ? "on" : "", type: "button", "data-act": "lib-cat", "data-cat": c }, c);
+    }));
+    const nodes = [bar];
+    const shown = LIBRARY_CARDS.filter(function (c) { return libCat === "Hepsi" || c.category === libCat; });
+    shown.forEach(function (c) {
+      const learned = gameState.progress.learnedCards.indexOf(c.id) > -1;
+      const answered = gameState.progress.cardAnswers[c.id];
+      nodes.push(el("div", { class: "lib-card" }, [
+        el("div", { class: "ttl" }, [el("span", { class: "em", "aria-hidden": "true", text: c.icon }), el("span", { text: c.title })]),
+        el("span", { class: "pill", style: "justify-self:start", text: c.category }),
+        el("p", { class: "small", text: c.description }),
+        el("div", { class: "card", style: "background:var(--cream);box-shadow:none" }, [
+          el("div", { style: "font-weight:800;font-size:.88rem", text: "Küçük soru: " + c.quiz.q }),
+          el("div", { class: "tiles", style: "margin-top:8px" }, c.quiz.options.map(function (o, i) {
+            return el("button", {
+              class: "tile" + (answered === i ? (i === c.quiz.answer ? " ok" : "") : ""),
+              type: "button", "data-act": "lib-quiz", "data-id": c.id, "data-i": String(i)
+            }, o);
+          }))
+        ]),
+        el("div", { class: "quest-actions" }, [
+          el("button", { class: "btn btn-sm " + (learned ? "btn-soft" : "btn-primary"), type: "button", "data-act": "lib-learn", "data-id": c.id, disabled: learned }, learned ? "✅ Öğrendim" : "Öğrendim"),
+          el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "speak", "data-text": c.title + ". " + c.description, "aria-label": "Kartı sesli oku" }, "🔊")
+        ]),
+        el("div", { class: "src-note", text: "Bilgi notu · " + c.sourceLabel + " · Bu kart genel ahlak ve eğitim bilgisi olarak hazırlanmıştır; dinî kaynak atfı içermez." })
+      ]));
+    });
+    return nodes;
+  }
+  PANELS.library = function () {
+    Sheet.open({ id: "library", icon: "📚", title: "Bilgi Kütüphanesi", body: buildLibrary(), speak: "Bilgi kütüphanesi. Kartları okuyup öğrenebilirsin." });
+  };
+  PANEL_REFRESH.library = function () { Sheet.setBody(buildLibrary()); };
+
+  /* --- Rozetler --- */
+  function buildBadges() {
+    const earned = BADGES.filter(function (b) { return BadgeService.has(b.id); });
+    const locked = BADGES.filter(function (b) { return !BadgeService.has(b.id); });
+    function grid(list, cls) {
+      return el("div", { class: "badge-grid" }, list.map(function (b) {
+        return el("div", { class: "badge " + cls }, [
+          el("div", { class: "em", "aria-hidden": "true", text: cls === "locked" ? "🔒" : b.icon }),
+          el("div", { class: "bn", text: b.name }),
+          el("div", { class: "bd", text: b.desc })
+        ]);
+      }));
+    }
+    const nodes = [el("div", { class: "card center" }, [
+      el("div", { style: "font-weight:800", text: earned.length + " / " + BADGES.length + " rozet" }),
+      el("div", { class: "small muted", text: "Rozetler iyilik yolculuğunun hatırasıdır." })
+    ])];
+    nodes.push(el("h3", { class: "section-title" }, [el("span", { text: "Kazanılanlar" }), el("span", { class: "line" })]));
+    nodes.push(earned.length ? grid(earned, "earned") : el("div", { class: "empty", text: "Henüz rozet yok. İlk görevini tamamlayınca başlıyor." }));
+    nodes.push(el("h3", { class: "section-title" }, [el("span", { text: "Kilitli" }), el("span", { class: "line" })]));
+    nodes.push(locked.length ? grid(locked, "locked") : el("div", { class: "empty", text: "Tüm rozetleri topladın." }));
+    return nodes;
+  }
+  PANELS.badges = function () { Sheet.open({ id: "badges", icon: "🏅", title: "Rozetler", body: buildBadges() }); };
+  PANEL_REFRESH.badges = function () { Sheet.setBody(buildBadges()); };
+
+  /* --- Avatarım / Ada Atölyesi --- */
+  const COLORS = ["#368A70", "#72AEE6", "#A58BD4", "#F29D85", "#F3C969", "#5AAA78"];
+  function buildAvatar() {
+    const s = gameState;
+    const preview = el("div", { class: "card center" }, [
+      el("div", { style: "width:120px;margin:0 auto" }, avatarSVG(s.player.avatar, s.player.color)),
+      el("div", { style: "font-weight:800;margin-top:6px", text: s.player.name || "Oyuncu" }),
+      el("div", { class: "small muted", text: "Seviye " + s.progress.level + " · " + IslandService.stageName() })
+    ]);
+    const avatars = el("div", { class: "avatars" }, [1, 2, 3, 4].map(function (i) {
+      return el("button", { class: "av-opt" + (s.player.avatar === i ? " on" : ""), type: "button", "data-act": "set-avatar", "data-i": String(i), "aria-label": "Çocuk " + i },
+        avatarSVG(i, s.player.color));
+    }));
+    const colors = el("div", { class: "swatches" }, COLORS.map(function (c) {
+      const b = el("button", { class: "sw" + (s.player.color === c ? " on" : ""), type: "button", "data-act": "set-color", "data-c": c, "aria-label": "Renk seç" });
+      b.style.background = c;
+      return b;
+    }));
+    const shop = el("div", { class: "shop-grid" }, SHOP_ITEMS.map(function (it) {
+      const owned = s.inventory.indexOf(it.id) > -1;
+      return el("div", { class: "shop-item" + (owned ? " owned" : "") }, [
+        el("div", { class: "em", "aria-hidden": "true", text: it.icon }),
+        el("div", { class: "nm", text: it.name }),
+        owned ? el("span", { class: "pill", text: "✅ Sende" })
+              : el("button", { class: "btn btn-sm btn-gold", type: "button", "data-act": "buy", "data-id": it.id }, "⭐ " + it.price)
+      ]);
+    }));
+    return [
+      preview,
+      el("h3", { class: "section-title" }, [el("span", { text: "Avatarını seç" }), el("span", { class: "line" })]),
+      avatars,
+      el("h3", { class: "section-title" }, [el("span", { text: "Renk" }), el("span", { class: "line" })]),
+      colors,
+      el("h3", { class: "section-title" }, [el("span", { text: "Ada Atölyesi" }), el("span", { class: "line" }), el("span", { class: "pill", text: "⭐ " + s.currency.stars })]),
+      el("p", { class: "small muted", text: "Burada yalnızca oyun içi süs eşyaları vardır. Ne aldığını önceden görürsün, sürpriz kutu yoktur." }),
+      shop
+    ];
+  }
+  PANELS.avatar = function () { Sheet.open({ id: "avatar", icon: "🧒", title: "Avatarım", body: buildAvatar() }); };
+  PANEL_REFRESH.avatar = function () { Sheet.setBody(buildAvatar()); };
+  PANELS.atolye = function () { PANELS.avatar(); };
+
+  /* --- Hikâye --- */
+  function storyScene(id) {
+    const map = {
+      kiyi: { bg: "#BFE6F4", em: "⛵" }, bahce: { bg: "#DFF3D8", em: "🌷" },
+      kutuphane: { bg: "#F3E7CF", em: "📚" }, koru: { bg: "#D7EFD0", em: "🐦" },
+      senlik: { bg: "#FDE7D6", em: "🎉" }
+    };
+    const m = map[id] || map.kiyi;
+    return el("div", { class: "story-scene" }, svgEl("svg", { viewBox: "0 0 400 140", "aria-hidden": "true" }, [
+      svgEl("rect", { x: 0, y: 0, width: 400, height: 140, fill: m.bg }),
+      svgEl("ellipse", { cx: 200, cy: 130, rx: 170, ry: 40, fill: "#9FD389" }),
+      svgEl("text", { x: 200, y: 92, "text-anchor": "middle", "font-size": "56" }, m.em)
+    ]));
+  }
+
+  function buildStoryList() {
+    const nodes = [el("p", { class: "small muted", text: "Ada solgun geldi. Sen iyilik yaptıkça hikâye ilerliyor." })];
+    nodes.push(el("div", { class: "chapter-list" }, STORY_CHAPTERS.map(function (c, i) {
+      const done = StoryService.isDone(c.id), open = StoryService.isOpen(i);
+      return el("button", {
+        class: "chapter" + (done ? " done" : "") + (open ? "" : " locked"),
+        type: "button", "data-act": open ? "story-open" : "story-locked", "data-id": c.id
+      }, [
+        el("span", { class: "n", text: done ? "✓" : String(i + 1) }),
+        el("span", {}, [
+          el("div", { style: "font-weight:800", text: c.title }),
+          el("div", { class: "small muted", text: done ? "Tamamlandı" : (open ? "Hazır" : "Önceki bölümü bitir") })
+        ])
+      ]);
+    })));
+    return nodes;
+  }
+  PANELS.story = function () { Sheet.open({ id: "story", icon: "📖", title: "Hikâye", body: buildStoryList() }); };
+  PANEL_REFRESH.story = function () { if (!storyOpenId) Sheet.setBody(buildStoryList()); };
+
+  let storyOpenId = null;
+  function openStory(id) {
+    const ch = STORY_CHAPTERS.filter(function (c) { return c.id === id; })[0];
+    if (!ch) return;
+    storyOpenId = id;
+    const done = StoryService.isDone(id);
+    const nodes = [
+      storyScene(ch.scene),
+      el("h3", { text: ch.title }),
+      el("div", { class: "story-text", text: ch.text }),
+      el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "speak", "data-text": ch.title + ". " + ch.text }, "🔊 Sesli dinle"),
+      el("h4", { style: "margin-top:6px", text: "Ne yaparsın?" }),
+      el("div", { style: "display:grid;gap:8px" }, ch.choices.map(function (c, i) {
+        return el("button", { class: "opt-btn", type: "button", "data-act": "story-choice", "data-id": id, "data-i": String(i) }, [
+          el("span", { class: "em", "aria-hidden": "true", text: "👉" }), el("span", { text: c.t })
+        ]);
+      })),
+      el("div", { id: "storyFeedback" }),
+      done ? el("p", { class: "small muted", text: "Bu bölümü daha önce tamamladın. İstersen tekrar okuyabilirsin." }) : null
+    ];
+    Sheet.open({
+      id: "story", icon: "📖", title: ch.title, body: nodes,
+      foot: [el("button", { class: "btn btn-soft", type: "button", "data-act": "story-back" }, "← Bölümler")]
+    });
+  }
+
+  function storyChoice(id, index) {
+    const ch = STORY_CHAPTERS.filter(function (c) { return c.id === id; })[0];
+    if (!ch) return;
+    const choice = ch.choices[index];
+    const host = $("#storyFeedback");
+    if (!host) return;
+    host.textContent = "";
+    host.appendChild(el("div", { class: "feedback " + (choice.good ? "good" : "think"), text: choice.fb }));
+    if (!StoryService.isDone(id)) {
+      host.appendChild(el("div", { class: "card mt" }, [
+        el("div", { style: "font-weight:800", text: choice.good ? "Küçük görev" : "Yine de bir iyilik yapalım" }),
+        el("div", { class: "small muted", text: ch.task.icon + " " + ch.task.t }),
+        el("button", { class: "btn btn-primary mt btn-block", type: "button", "data-act": "story-finish", "data-id": id, "data-i": String(index) }, "Yaptım, bölümü bitir")
+      ]));
+    }
+    AudioService.soft();
+  }
+
+  /* ---------------------------------------------------------------
+     19) MİNİ OYUNLAR
+     --------------------------------------------------------------- */
+  const MG = {
+    timer: null, data: {},
+    stop: function () { if (MG.timer) { window.clearInterval(MG.timer); MG.timer = null; } },
+
+    hub: function () {
+      const nodes = [el("p", { class: "small muted", text: "İstediğin oyunu seç. Yanlış cevapta ceza yok, birlikte düşünürüz." })];
+      nodes.push(el("div", { class: "menu-grid" }, MiniGameService.list.map(function (g) {
+        const played = gameState.progress.miniGames[g.id] || 0;
+        return el("button", { class: "menu-btn", type: "button", "data-act": "mg", "data-id": g.id }, [
+          el("span", { class: "ic", "aria-hidden": "true", text: g.icon }),
+          el("span", { class: "lb", text: g.name }),
+          el("span", { class: "sub", text: played ? "✅ " + played + " kez" : g.desc })
+        ]);
+      })));
+      Sheet.open({ id: "minigames", icon: "🎮", title: "Mini Oyunlar", body: nodes });
+    },
+
+    open: function (id) {
+      MG.stop();
+      MG.data = {};
+      const fn = MG["game_" + id];
+      if (!fn) { toast("Bu oyun bulunamadı.", "warn"); return; }
+      MiniGameService.play(id);
+      fn();
+    },
+
+    /** Ortak: sıralama oyunu (besmele, abdest) */
+    sortGame: function (cfg) {
+      MG.data = { cfg: cfg, next: 0, pool: shuffle(cfg.items.map(function (x, i) { return i; })) };
+      MG.renderSort();
+    },
+    renderSort: function () {
+      const d = MG.data, cfg = d.cfg;
+      const slots = el("div", { class: "slots", id: "sortSlots" }, cfg.items.slice(0, d.next).map(function (it, i) {
+        return el("span", { class: "slot", text: (i + 1) + ". " + (it.icon ? it.icon + " " : "") + it.label });
+      }));
+      if (!d.next) slots.appendChild(el("span", { class: "small muted", text: "Doğru sırayla dokun…" }));
+      const tiles = el("div", { class: "tiles", id: "sortTiles" }, d.pool.map(function (idx) {
+        const it = cfg.items[idx];
+        return el("button", { class: "tile", type: "button", "data-act": "sort-pick", "data-i": String(idx) },
+          (it.icon ? it.icon + " " : "") + it.label);
+      }));
+      const nodes = [];
+      if (cfg.pre) nodes.push(cfg.pre());
+      nodes.push(
+        el("div", { class: "mg-head" }, [
+          el("span", { class: "mg-stat", text: d.next + " / " + cfg.items.length }),
+          el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "speak", "data-text": cfg.speak || cfg.title }, "🔊 Dinle"),
+          el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "mg", "data-id": cfg.id }, "↺ Yeniden")
+        ]),
+        el("p", { class: "small muted", text: cfg.help }),
+        slots, tiles,
+        el("div", { id: "sortFeedback" }),
+        cfg.note ? el("div", { class: "src-note", text: cfg.note }) : null
+      );
+      Sheet.open({ id: "mg", icon: cfg.icon, title: cfg.title, body: nodes, foot: [
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "panel", "data-panel": "minigames" }, "← Oyunlar")
+      ] });
+    },
+    sortPick: function (idx) {
+      const d = MG.data, cfg = d.cfg;
+      if (!cfg) return;
+      if (idx === d.next) {
+        d.next += 1;
+        d.pool = d.pool.filter(function (i) { return i !== idx; });
+        AudioService.tap();
+        if (d.next >= cfg.items.length) {
+          MG.renderSort();
+          const fb = $("#sortFeedback");
+          if (fb) {
+            fb.appendChild(el("div", { class: "feedback good", text: cfg.success }));
+          }
+          AudioService.speak(cfg.speak || cfg.success);
+          MiniGameService.record(cfg.id, { xp: 30, stars: 8, kindness: 6, decor: 1 });
+          return;
+        }
+        MG.renderSort();
+      } else {
+        const btn = $('[data-act="sort-pick"][data-i="' + idx + '"]');
+        if (btn) { btn.classList.add("no"); window.setTimeout(function () { btn.classList.remove("no"); }, 420); }
+        const fb = $("#sortFeedback");
+        if (fb) { fb.textContent = ""; fb.appendChild(el("div", { class: "feedback think", text: "Bir daha düşünelim. Sıradaki adım hangisi olabilir?" })); }
+        AudioService.soft();
+      }
+    },
+
+    game_besmele: function () {
+      const mode = MG.mode === "hece" ? "hece" : "kelime";
+      const list = (mode === "hece" ? BESMELE.syllables : BESMELE.words).map(function (w) { return { label: w }; });
+      MG.sortGame({
+        id: "besmele", icon: "✨", title: "Besmele Sıralama",
+        items: list,
+        pre: function () {
+          return el("div", { class: "tiles" }, [
+            el("button", { class: "tile" + (mode === "kelime" ? " on" : ""), type: "button", "data-act": "besmele-mode", "data-m": "kelime" }, "Kelime (kolay)"),
+            el("button", { class: "tile" + (mode === "hece" ? " on" : ""), type: "button", "data-act": "besmele-mode", "data-m": "hece" }, "Hece (zor)")
+          ]);
+        },
+        help: mode === "hece" ? "Heceleri doğru sırayla seç." : "Kelimeleri doğru sırayla seç.",
+        success: BESMELE.full + " — " + BESMELE.meaning,
+        speak: BESMELE.full + ". " + BESMELE.meaning,
+        note: "Besmele, birçok işe başlarken söylenen güzel bir cümledir."
+      });
+    },
+
+    game_abdest: function () {
+      MG.sortGame({
+        id: "abdest", icon: "🚰", title: "Abdest Sıralama",
+        items: ABDEST_STEPS.map(function (s) { return { label: s.name, icon: s.icon }; }),
+        help: "Abdest adımlarını sırayla seç.",
+        success: "Sırayı tamamladın. Suyu ölçülü kullanmayı da unutma.",
+        speak: "Abdest adımlarını doğru sıraladın.",
+        note: "Bu sıralama sade bir öğrenme amaçlıdır. Mezhepler arasında ayrıntı farkları bulunabilir; ailenden veya güvendiğin bir din görevlisinden bilgi alabilirsin."
+      });
+    },
+
+    /* --- Doğru davranışı seç --- */
+    game_davranis: function () {
+      MG.data = { list: shuffle(BEHAVIOR_SCENARIOS).slice(0, 5), i: 0, good: 0 };
+      MG.renderDavranis();
+    },
+    renderDavranis: function () {
+      const d = MG.data, sc = d.list[d.i];
+      const nodes = [
+        el("div", { class: "mg-head" }, [
+          el("span", { class: "mg-stat", text: "Soru " + (d.i + 1) + " / " + d.list.length }),
+          el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "speak", "data-text": sc.q }, "🔊 Dinle")
+        ]),
+        el("div", { class: "story-text", text: sc.q }),
+        el("div", { style: "display:grid;gap:8px" }, sc.opts.map(function (o, i) {
+          return el("button", { class: "opt-btn", type: "button", "data-act": "dav-pick", "data-i": String(i) }, [
+            el("span", { class: "em", "aria-hidden": "true", text: "•" }), el("span", { text: o.t })
+          ]);
+        })),
+        el("div", { id: "davFeedback" })
+      ];
+      Sheet.open({ id: "mg", icon: "🤔", title: "Doğru Davranışı Seç", body: nodes, foot: [
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "panel", "data-panel": "minigames" }, "← Oyunlar")
+      ] });
+    },
+    davPick: function (i) {
+      const d = MG.data, sc = d.list[d.i], opt = sc.opts[i];
+      if (!opt || d.answered) return;
+      d.answered = true;
+      if (opt.good) d.good += 1;
+      $$('[data-act="dav-pick"]').forEach(function (b, idx) {
+        if (sc.opts[idx].good) b.classList.add("good");
+        else if (idx === i) b.classList.add("soft");
+        b.disabled = true;
+      });
+      const fb = $("#davFeedback");
+      fb.textContent = "";
+      fb.appendChild(el("div", { class: "feedback " + (opt.good ? "good" : "think"), text: opt.fb }));
+      fb.appendChild(el("button", {
+        class: "btn btn-primary btn-block mt", type: "button", "data-act": "dav-next"
+      }, d.i + 1 >= d.list.length ? "Bitir" : "Sonraki soru"));
+      opt.good ? AudioService.good() : AudioService.soft();
+      AudioService.speak(opt.fb);
+    },
+    davNext: function () {
+      const d = MG.data;
+      d.answered = false;
+      d.i += 1;
+      if (d.i >= d.list.length) {
+        Sheet.setBody([
+          el("div", { class: "card center" }, [
+            el("div", { style: "font-size:2.4rem", text: "🌟" }),
+            el("h3", { text: d.good + " / " + d.list.length + " güzel davranış" }),
+            el("p", { class: "small muted", text: "Düşünerek seçmek en güzeli. İstersen tekrar oynayabilirsin." }),
+            el("button", { class: "btn btn-primary mt", type: "button", "data-act": "mg", "data-id": "davranis" }, "Tekrar oyna")
+          ])
+        ]);
+        MiniGameService.record("davranis", { xp: 25 + d.good * 3, stars: 6, kindness: 10, decor: 1 });
+        return;
+      }
+      MG.renderDavranis();
+    },
+
+    /* --- Dua eşleştirme --- */
+    game_dua: function () {
+      MG.data = { left: shuffle(DUA_DATA), right: shuffle(DUA_DATA), sel: null, matched: [] };
+      MG.renderDua();
+    },
+    renderDua: function () {
+      const d = MG.data;
+      function col(items, side) {
+        return el("div", { style: "display:grid;gap:8px" }, items.map(function (it) {
+          const done = d.matched.indexOf(it.id) > -1;
+          return el("button", {
+            class: "opt-btn" + (done ? " good" : (d.sel === it.id && side === "l" ? " soft" : "")),
+            type: "button", "data-act": "dua-pick", "data-side": side, "data-id": it.id, disabled: done
+          }, [
+            el("span", { class: "em", "aria-hidden": "true", text: side === "l" ? it.icon : "🤲" }),
+            el("span", { text: side === "l" ? it.when : it.name })
+          ]);
+        }));
+      }
+      const nodes = [
+        el("p", { class: "small muted", text: "Soldaki durumu, sağdaki dua ile eşleştir." }),
+        el("div", { class: "mg-head" }, [el("span", { class: "mg-stat", text: d.matched.length + " / " + DUA_DATA.length })]),
+        el("div", { class: "match-cols" }, [col(d.left, "l"), col(d.right, "r")]),
+        el("div", { id: "duaFeedback" })
+      ];
+      Sheet.open({ id: "mg", icon: "🤲", title: "Dua Eşleştirme", body: nodes, foot: [
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "panel", "data-panel": "minigames" }, "← Oyunlar")
+      ] });
+    },
+    duaPick: function (side, id) {
+      const d = MG.data;
+      if (side === "l") { d.sel = id; MG.renderDua(); AudioService.tap(); return; }
+      if (!d.sel) { toast("Önce soldan bir durum seç.", "info"); return; }
+      if (d.sel === id) {
+        d.matched.push(id);
+        const dua = DUA_DATA.filter(function (x) { return x.id === id; })[0];
+        d.sel = null;
+        MG.renderDua();
+        const fb = $("#duaFeedback");
+        if (fb) fb.appendChild(el("div", { class: "feedback good" }, [
+          el("div", { text: dua.read + (dua.arabic ? "  " + dua.arabic : "") }),
+          el("div", { class: "small muted", text: dua.meaning })
+        ]));
+        AudioService.speak(dua.read + ". " + dua.meaning);
+        AudioService.good();
+        if (d.matched.length === DUA_DATA.length) {
+          MiniGameService.record("dua", { xp: 30, stars: 8, kindness: 10, decor: 1 });
+        }
+      } else {
+        d.sel = null;
+        MG.renderDua();
+        const fb = $("#duaFeedback");
+        if (fb) fb.appendChild(el("div", { class: "feedback think", text: "Bir daha deneyelim. Hangi durumda hangi dua söylenir?" }));
+        AudioService.soft();
+      }
+    },
+
+    /* --- Hafıza --- */
+    game_hafiza: function () {
+      const deck = shuffle(MEMORY_PAIRS.concat(MEMORY_PAIRS).map(function (p, i) {
+        return { key: p.id + "-" + i, id: p.id, icon: p.icon, label: p.label };
+      }));
+      MG.data = { deck: deck, open: [], matched: [], moves: 0, seconds: 0, lock: false };
+      MG.renderHafiza();
+      MG.timer = window.setInterval(function () {
+        MG.data.seconds += 1;
+        const n = $("#memTime");
+        if (n) n.textContent = MG.data.seconds + " sn";
+      }, 1000);
+    },
+    renderHafiza: function () {
+      const d = MG.data;
+      const grid = el("div", { class: "mem-grid" }, d.deck.map(function (c, i) {
+        const isOpen = d.open.indexOf(i) > -1, isM = d.matched.indexOf(c.id) > -1;
+        return el("button", {
+          class: "mem" + (isOpen || isM ? " up" : "") + (isM ? " matched" : ""),
+          type: "button", "data-act": "mem-pick", "data-i": String(i),
+          "aria-label": isOpen || isM ? c.label : "Kapalı kart"
+        }, isOpen || isM ? c.icon : "❔");
+      }));
+      const nodes = [
+        el("div", { class: "mg-head" }, [
+          el("span", { class: "mg-stat", text: "Hamle: " + d.moves }),
+          el("span", { class: "mg-stat", id: "memTime", text: d.seconds + " sn" }),
+          el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "mg", "data-id": "hafiza" }, "↺ Yeniden")
+        ]),
+        el("p", { class: "small muted", text: "Aynı iyilik kartlarını bul." }),
+        grid,
+        el("div", { id: "memFeedback" })
+      ];
+      Sheet.open({ id: "mg", icon: "🃏", title: "İyilik Hafıza", body: nodes, foot: [
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "panel", "data-panel": "minigames" }, "← Oyunlar")
+      ] });
+    },
+    memPick: function (i) {
+      const d = MG.data;
+      if (d.lock || d.open.indexOf(i) > -1) return;
+      const card = d.deck[i];
+      if (d.matched.indexOf(card.id) > -1) return;
+      d.open.push(i);
+      AudioService.tap();
+      if (d.open.length === 2) {
+        d.moves += 1;
+        const a = d.deck[d.open[0]], b = d.deck[d.open[1]];
+        if (a.id === b.id) {
+          d.matched.push(a.id);
+          d.open = [];
+          MG.renderHafiza();
+          AudioService.good();
+          const fb = $("#memFeedback");
+          if (fb) fb.appendChild(el("div", { class: "feedback good", text: a.icon + " " + a.label }));
+          if (d.matched.length === MEMORY_PAIRS.length) {
+            MG.stop();
+            MiniGameService.record("hafiza", { xp: 35, stars: 10, kindness: 8, decor: 1 });
+            const fb2 = $("#memFeedback");
+            if (fb2) fb2.appendChild(el("div", { class: "feedback good", text: "Tüm kartları buldun! " + d.moves + " hamle, " + d.seconds + " saniye." }));
+          }
+          return;
+        }
+        d.lock = true;
+        MG.renderHafiza();
+        window.setTimeout(function () { d.open = []; d.lock = false; MG.renderHafiza(); }, 800);
+        return;
+      }
+      MG.renderHafiza();
+    },
+
+    /* --- Namaz vakitlerini tanı --- */
+    game_vakit: function () {
+      MG.data = { order: shuffle(PRAYER_TIMES).slice(0, 5), i: 0, good: 0, answered: false };
+      MG.renderVakit();
+    },
+    skyScene: function (t) {
+      const sunY = t.sun < 0 ? 200 : 150 - (t.sun * 1.1);
+      return svgEl("svg", { viewBox: "0 0 400 170", "aria-hidden": "true", style: "width:100%;height:auto;display:block;border-radius:18px" }, [
+        svgEl("defs", {}, svgEl("linearGradient", { id: "skyG", x1: "0", y1: "0", x2: "0", y2: "1" }, [
+          svgEl("stop", { offset: "0%", "stop-color": t.sky[0] }),
+          svgEl("stop", { offset: "100%", "stop-color": t.sky[1] })
+        ])),
+        svgEl("rect", { x: 0, y: 0, width: 400, height: 170, fill: "url(#skyG)" }),
+        t.id === "yatsi" ? svgEl("g", {}, [
+          svgEl("circle", { cx: 320, cy: 44, r: 18, fill: "#F6EFD8" }),
+          svgEl("circle", { cx: 310, cy: 40, r: 16, fill: t.sky[0] }),
+          svgEl("circle", { cx: 90, cy: 40, r: 2.4, fill: "#FFF" }),
+          svgEl("circle", { cx: 150, cy: 66, r: 2, fill: "#FFF" }),
+          svgEl("circle", { cx: 220, cy: 32, r: 2.2, fill: "#FFF" })
+        ]) : svgEl("circle", { cx: 60 + t.sun * 2.9, cy: sunY, r: 24, fill: "#F8D46B" }),
+        svgEl("ellipse", { cx: 200, cy: 178, rx: 230, ry: 46, fill: "#9FD389" }),
+        svgEl("rect", { x: 168, y: 106, width: 64, height: 40, rx: 6, fill: "#FFF8E8" }),
+        svgEl("path", { d: "M168 106q32 -30 64 0z", fill: "#368A70" }),
+        svgEl("rect", { x: 238, y: 92, width: 10, height: 54, rx: 5, fill: "#FFF8E8" })
+      ]);
+    },
+    renderVakit: function () {
+      const d = MG.data, t = d.order[d.i];
+      const nodes = [
+        el("div", { class: "mg-head" }, [
+          el("span", { class: "mg-stat", text: "Soru " + (d.i + 1) + " / " + d.order.length }),
+          el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "speak", "data-text": t.hint + ". Hangi vakit?" }, "🔊 Dinle")
+        ]),
+        el("div", { class: "story-scene" }, MG.skyScene(t)),
+        el("div", { class: "story-text", text: t.hint + ". Bu hangi namaz vaktidir?" }),
+        el("div", { class: "tiles" }, PRAYER_TIMES.map(function (p) {
+          return el("button", { class: "tile", type: "button", "data-act": "vakit-pick", "data-id": p.id }, p.name);
+        })),
+        el("div", { id: "vakitFeedback" }),
+        el("div", { class: "src-note", text: "Bu bölüm vakit isimlerini tanıtmak içindir; gerçek namaz vakitlerini göstermez." })
+      ];
+      Sheet.open({ id: "mg", icon: "🕌", title: "Namaz Vakitlerini Tanı", body: nodes, foot: [
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "panel", "data-panel": "minigames" }, "← Oyunlar")
+      ] });
+    },
+    vakitPick: function (id) {
+      const d = MG.data, t = d.order[d.i];
+      if (d.answered) return;
+      d.answered = true;
+      const right = id === t.id;
+      if (right) d.good += 1;
+      const fb = $("#vakitFeedback");
+      fb.textContent = "";
+      fb.appendChild(el("div", { class: "feedback " + (right ? "good" : "think"),
+        text: right ? "Doğru! Bu " + t.name + " vaktidir." : "Bir daha düşünelim: bu görünüm " + t.name + " vaktine benziyor." }));
+      fb.appendChild(el("button", { class: "btn btn-primary btn-block mt", type: "button", "data-act": "vakit-next" },
+        d.i + 1 >= d.order.length ? "Bitir" : "Sonraki"));
+      right ? AudioService.good() : AudioService.soft();
+      AudioService.speak(right ? "Doğru. Bu " + t.name + " vaktidir." : "Bu " + t.name + " vaktidir.");
+    },
+    vakitNext: function () {
+      const d = MG.data;
+      d.answered = false;
+      d.i += 1;
+      if (d.i >= d.order.length) {
+        Sheet.setBody([el("div", { class: "card center" }, [
+          el("div", { style: "font-size:2.4rem", text: "🕌" }),
+          el("h3", { text: d.good + " / " + d.order.length + " doğru" }),
+          el("p", { class: "small muted", text: "Vakit isimleri: sabah, öğle, ikindi, akşam, yatsı." }),
+          el("button", { class: "btn btn-primary mt", type: "button", "data-act": "mg", "data-id": "vakit" }, "Tekrar oyna")
+        ])]);
+        MiniGameService.record("vakit", { xp: 25 + d.good * 3, stars: 7, kindness: 6, decor: 1 });
+        return;
+      }
+      MG.renderVakit();
+    },
+
+    /* --- İftar sofrası (Ramazan mini görevi) --- */
+    game_iftar: function () {
+      MG.data = { guests: 4, plates: { f1: 0, f2: 0, f3: 0, f4: 0 } };
+      MG.renderIftar();
+    },
+    renderIftar: function () {
+      const d = MG.data;
+      const rows = IFTAR_FOODS.map(function (f) {
+        return el("div", { class: "set-row" }, [
+          el("div", {}, [
+            el("div", { class: "t", text: f.icon + " " + f.name }),
+            el("div", { class: "d", text: "Kişi başı 1 porsiyon" })
+          ]),
+          el("div", { style: "display:flex;align-items:center;gap:8px" }, [
+            el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "iftar-minus", "data-id": f.id, "aria-label": f.name + " azalt" }, "−"),
+            el("span", { style: "font-weight:800;min-width:24px;text-align:center", text: String(d.plates[f.id]) }),
+            el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "iftar-plus", "data-id": f.id, "aria-label": f.name + " artır" }, "+")
+          ])
+        ]);
+      });
+      const nodes = [
+        el("div", { class: "card" }, [
+          el("div", { style: "font-weight:800", text: "🌙 Sofrada " + d.guests + " kişi var" }),
+          el("div", { class: "small muted", text: "Herkese yetecek kadar koy; artıp israf olmasın." })
+        ])
+      ].concat(rows);
+      nodes.push(el("button", { class: "btn btn-primary btn-block", type: "button", "data-act": "iftar-check" }, "Sofrayı hazırla"));
+      nodes.push(el("div", { id: "iftarFeedback" }));
+      Sheet.open({ id: "mg", icon: "🍲", title: "İftar Sofrası", body: nodes, foot: [
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "panel", "data-panel": "minigames" }, "← Oyunlar")
+      ] });
+    },
+    iftarStep: function (id, delta) {
+      const d = MG.data;
+      d.plates[id] = clamp((d.plates[id] || 0) + delta, 0, 8);
+      MG.renderIftar();
+      AudioService.tap();
+    },
+    iftarCheck: function () {
+      const d = MG.data;
+      const values = IFTAR_FOODS.map(function (f) { return d.plates[f.id]; });
+      const few = values.filter(function (v) { return v < d.guests; }).length;
+      const many = values.filter(function (v) { return v > d.guests; }).length;
+      const fb = $("#iftarFeedback");
+      fb.textContent = "";
+      if (few === 0 && many === 0) {
+        fb.appendChild(el("div", { class: "feedback good", text: "Sofra tam oldu! Herkese yetti, hiçbir şey israf olmadı." }));
+        AudioService.speak("Sofra tam oldu. Herkese yetti, israf olmadı.");
+        MiniGameService.record("iftar", { xp: 30, stars: 8, kindness: 12, decor: 1 });
+      } else if (many > 0) {
+        fb.appendChild(el("div", { class: "feedback think", text: "Bazı tabaklarda fazla var. Artan yemek israf olabilir; biraz azaltalım." }));
+        AudioService.soft();
+      } else {
+        fb.appendChild(el("div", { class: "feedback think", text: "Bazı tabaklar yetmeyecek. Herkese birer porsiyon düşmeli." }));
+        AudioService.soft();
+      }
+    }
+  };
+
+  PANELS.minigames = function () { MG.hub(); };
+
+  /* --- Ramazan Sokağı --- */
+  PANELS.ramazan = function () {
+    const soon = ["Ramazan takvimi", "İftar sofrası hazırlama", "İsraf etmeme görevleri", "Paylaşma görevleri",
+                  "Sadaka kutusu", "Ramazan bilgi kartları", "Bayram hazırlığı", "Aile etkinlikleri"];
+    Sheet.open({
+      id: "ramazan", icon: "🌙", title: "Ramazan Sokağı",
+      body: [
+        el("div", { class: "card" }, [
+          el("div", { style: "font-weight:800", text: "🌙 Ramazan'a hazırlık" }),
+          el("p", { class: "small muted", text: "Ramazan'da paylaşmak, komşuyu unutmamak ve israf etmemek öne çıkar. Çocuklar oruç tutmak zorunda değildir." })
+        ]),
+        el("button", { class: "btn btn-primary btn-block", type: "button", "data-act": "mg", "data-id": "iftar" }, "🍲 İftar Sofrası görevini oyna"),
+        el("h3", { class: "section-title" }, [el("span", { text: "Yakında eklenecek" }), el("span", { class: "line" })]),
+        el("div", { class: "tiles" }, soon.map(function (s) { return el("span", { class: "pill", text: s }); })),
+        el("div", { class: "src-note", text: "Bu bölüm tanıtım amaçlıdır. Ramazan uygulamaları ailelere göre farklılık gösterebilir." })
+      ]
+    });
+  };
+
+  /* --- Hac ve Umre Köşesi --- */
+  PANELS.hac = function () {
+    const cards = LIBRARY_CARDS.filter(function (c) { return c.category === "Hac ve Umre"; });
+    Sheet.open({
+      id: "hac", icon: "🕋", title: "Hac ve Umre Köşesi",
+      body: [
+        el("div", { class: "story-scene" }, svgEl("svg", { viewBox: "0 0 400 150", "aria-hidden": "true" }, [
+          svgEl("rect", { x: 0, y: 0, width: 400, height: 150, fill: "#F3E7CF" }),
+          svgEl("rect", { x: 160, y: 50, width: 80, height: 80, rx: 6, fill: "#31423C" }),
+          svgEl("rect", { x: 160, y: 78, width: 80, height: 10, fill: "#F3C969" }),
+          svgEl("circle", { cx: 200, cy: 118, r: 60, fill: "#FFFFFF", opacity: "0.25" })
+        ])),
+        el("p", { class: "small muted", text: "Hac, imkânı olanların yaptığı bir yolculuktur. Umre ise daha kısa bir ziyarettir." })
+      ].concat(cards.map(function (c) {
+        return el("div", { class: "lib-card" }, [
+          el("div", { class: "ttl" }, [el("span", { class: "em", "aria-hidden": "true", text: c.icon }), el("span", { text: c.title })]),
+          el("p", { class: "small", text: c.description }),
+          el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "speak", "data-text": c.title + ". " + c.description }, "🔊 Dinle")
+        ]);
+      }))
+    });
+  };
+
+  /* --- Ayarlar --- */
+  function switchRow(title, desc, key) {
+    const on = !!gameState.settings[key];
+    return el("div", { class: "set-row" }, [
+      el("div", {}, [el("div", { class: "t", text: title }), el("div", { class: "d", text: desc })]),
+      el("button", { class: "switch", type: "button", role: "switch", "aria-checked": on ? "true" : "false",
+        "aria-label": title, "data-act": "toggle", "data-key": key })
+    ]);
+  }
+  function buildSettings() {
+    const s = gameState.settings;
+    return [
+      switchRow("Ses", "Görev ve kart okumaları, küçük sesler", "sound"),
+      switchRow("Hafif melodi", "Arada bir çalan çok kısa melodi", "music"),
+      switchRow("Gece modu", "Göz yormayan koyu görünüm", "night"),
+      switchRow("Düşük hareket", "Animasyonları azaltır", "lowMotion"),
+      switchRow("Bildirimler", "Oyun içi hatırlatma balonları", "notifications"),
+      switchRow("Otomatik kayıt", "İlerleme kendiliğinden kaydedilir", "autoSave"),
+      el("div", { class: "set-row" }, [
+        el("div", {}, [el("div", { class: "t", text: "Yazı boyutu" }), el("div", { class: "d", text: "Okuması kolay olsun" })]),
+        el("div", { class: "tiles" }, [["sm", "Küçük"], ["md", "Orta"], ["lg", "Büyük"]].map(function (o) {
+          return el("button", { class: "tile" + (s.fontSize === o[0] ? " on" : ""), type: "button", "data-act": "fontsize", "data-v": o[0] }, o[1]);
+        }))
+      ]),
+      el("div", { class: "set-row" }, [
+        el("div", {}, [el("div", { class: "t", text: "Günlük oyun süresi" }), el("div", { class: "d", text: "Ebeveyn alanından da değiştirilebilir" })]),
+        el("div", { class: "tiles" }, [15, 30, 45, 60].map(function (m) {
+          return el("button", { class: "tile" + (s.timeLimit === m ? " on" : ""), type: "button", "data-act": "timelimit", "data-v": String(m) }, m + " dk");
+        }))
+      ]),
+      el("div", { class: "tiles" }, [
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "fullscreen" }, "⛶ Tam ekran"),
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "export" }, "⬇ Verileri dışa aktar"),
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "import" }, "⬆ Verileri içe aktar")
+      ]),
+      el("button", { class: "btn btn-danger btn-block", type: "button", "data-act": "reset-ask" }, "Yeni oyun başlat (verileri sil)"),
+      el("div", { class: "src-note", text: "Veriler yalnızca bu cihazda saklanır. Reklam, hesap ve konum kullanılmaz." })
+    ];
+  }
+  PANELS.settings = function () { Sheet.open({ id: "settings", icon: "⚙️", title: "Ayarlar", body: buildSettings() }); };
+  PANEL_REFRESH.settings = function () { Sheet.setBody(buildSettings()); };
+
+  /* --- Ebeveyn alanı --- */
+  let parentUnlocked = false;
+  function buildParentGate() {
+    return [
+      el("div", { class: "card" }, [
+        el("div", { style: "font-weight:800", text: "👨‍👩‍👧 Ebeveyn alanı" }),
+        el("p", { class: "small muted", text: "Bu bölüm yetişkinler içindir. Prototipte demo kod kullanılır: 1234" })
+      ]),
+      el("div", { class: "field" }, [
+        el("label", { for: "parentCode", text: "Dört haneli kod" }),
+        el("input", { class: "inp", id: "parentCode", type: "password", inputmode: "numeric", maxlength: 4, autocomplete: "off", placeholder: "••••" })
+      ]),
+      el("button", { class: "btn btn-primary btn-block", type: "button", "data-act": "parent-enter" }, "Gir"),
+      el("div", { id: "parentError" })
+    ];
+  }
+  function buildParent() {
+    const st = ParentService.stats();
+    const stat = function (v, k) { return el("div", { class: "stat" }, [el("div", { class: "v", text: String(v) }), el("div", { class: "k", text: k })]); };
+    const nodes = [
+      el("div", { class: "stat-grid" }, [
+        stat(st.todayMinutes + " dk", "Bugünkü süre"),
+        stat(st.totalMinutes + " dk", "Toplam süre"),
+        stat(st.todayQuests, "Bugünkü görev"),
+        stat(st.totalQuests, "Toplam görev"),
+        stat(st.learned, "Öğrenilen kart"),
+        stat(st.badges, "Rozet")
+      ]),
+      el("div", { class: "card" }, [
+        el("div", { style: "font-weight:800", text: "En çok oynanan oyunlar" }),
+        st.topGames.length
+          ? el("div", { class: "tiles", style: "margin-top:6px" }, st.topGames.map(function (g) { return el("span", { class: "pill", text: g.name + " · " + g.n }); }))
+          : el("div", { class: "small muted", text: "Henüz oyun oynanmadı." })
+      ]),
+      el("div", { class: "set-row" }, [
+        el("div", {}, [el("div", { class: "t", text: "Günlük oyun süresi" }), el("div", { class: "d", text: "Süre dolunca oyun kapanmaz, nazik bir mesaj gösterilir." })]),
+        el("div", { class: "tiles" }, [15, 30, 45, 60].map(function (m) {
+          return el("button", { class: "tile" + (gameState.settings.timeLimit === m ? " on" : ""), type: "button", "data-act": "timelimit", "data-v": String(m) }, m + " dk");
+        }))
+      ]),
+      switchRow("Ses", "Sesli okuma ve efektler", "sound"),
+      switchRow("Bildirimler", "Oyun içi hatırlatma balonları", "notifications"),
+      el("h3", { class: "section-title" }, [el("span", { text: "Çocuğa özel görev ekle" }), el("span", { class: "line" })]),
+      el("div", { class: "card", style: "display:grid;gap:8px" }, [
+        el("div", { class: "field" }, [el("label", { for: "cqTitle", text: "Görev adı" }), el("input", { class: "inp", id: "cqTitle", maxlength: 60, placeholder: "Örn. Kitaplığını düzenle" })]),
+        el("div", { class: "field" }, [el("label", { for: "cqDesc", text: "Açıklama" }), el("input", { class: "inp", id: "cqDesc", maxlength: 140, placeholder: "Kısa bir açıklama" })]),
+        el("div", { class: "grid-2" }, [
+          el("div", { class: "field" }, [el("label", { for: "cqXp", text: "Ödül XP" }), el("input", { class: "inp", id: "cqXp", type: "number", min: "0", max: "200", value: "20" })]),
+          el("div", { class: "field" }, [el("label", { for: "cqStar", text: "Ödül yıldız" }), el("input", { class: "inp", id: "cqStar", type: "number", min: "0", max: "100", value: "5" })])
+        ]),
+        el("div", { class: "field" }, [el("label", { for: "cqDue", text: "Son tarih (isteğe bağlı)" }), el("input", { class: "inp", id: "cqDue", type: "date" })]),
+        el("button", { class: "btn btn-primary", type: "button", "data-act": "cq-add" }, "Görevi ekle")
+      ])
+    ];
+    if (gameState.quests.custom.length) {
+      nodes.push(el("div", { class: "card" }, [
+        el("div", { style: "font-weight:800", text: "Eklenen görevler" }),
+        el("div", { style: "display:grid;gap:8px;margin-top:8px" }, gameState.quests.custom.map(function (q) {
+          return el("div", { class: "row-between" }, [
+            el("span", {}, [el("b", { text: q.title }), q.due ? el("span", { class: "small muted", text: " · " + q.due }) : null]),
+            el("button", { class: "btn btn-sm btn-soft", type: "button", "data-act": "cq-del", "data-id": q.id }, "Sil")
+          ]);
+        }))
+      ]));
+    }
+    nodes.push(el("h3", { class: "section-title" }, [el("span", { text: "Veri" }), el("span", { class: "line" })]));
+    nodes.push(el("div", { class: "tiles" }, [
+      el("button", { class: "btn btn-soft", type: "button", "data-act": "export" }, "⬇ JSON dışa aktar"),
+      el("button", { class: "btn btn-soft", type: "button", "data-act": "import" }, "⬆ JSON içe aktar"),
+      el("button", { class: "btn btn-gold", type: "button", "data-act": "demo" }, "Demo ilerlemesini yükle"),
+      el("button", { class: "btn btn-danger", type: "button", "data-act": "reset-ask" }, "Verileri sıfırla")
+    ]));
+    nodes.push(el("div", { class: "src-note", text: "Gizlilik: Bu oyun çocuktan soyadı, telefon, e-posta, adres, okul, konum, fotoğraf veya doğum tarihi istemez. Sohbet, liderlik tablosu, reklam ve satın alma bulunmaz. Veriler yalnızca cihazda tutulur." }));
+    return nodes;
+  }
+  PANELS.parent = function () {
+    Sheet.open({ id: "parent", icon: "👨‍👩‍👧", title: "Ebeveyn Alanı", body: parentUnlocked ? buildParent() : buildParentGate() });
+  };
+  PANEL_REFRESH.parent = function () { if (parentUnlocked) Sheet.setBody(buildParent()); };
+
+  /* --- Oyun süresi takibi --- */
+  let limitShown = false, clockStarted = false;
+  function startPlayClock() {
+    if (clockStarted) return;
+    clockStarted = true;
+    window.setInterval(function () {
+      if (document.hidden || $("#app").hidden) return;
+      const key = todayKey();
+      const st = gameState.statistics;
+      if (st.today.date !== key) st.today = { date: key, seconds: 0, quests: 0 };
+      st.playSeconds += 5;
+      st.today.seconds += 5;
+      if (st.today.seconds % 60 === 0) GameStateService.save();
+      const limit = (gameState.settings.timeLimit || APP.defaultTimeLimitMin) * 60;
+      if (!limitShown && st.today.seconds >= limit) {
+        limitShown = true;
+        showTimeLimit();
+      }
+    }, 5000);
+  }
+  function showTimeLimit() {
+    Dialog.open({
+      icon: "⏰", title: "Bugünlük bu kadar",
+      body: [el("p", { text: "Bugünkü oyun süren tamamlandı. Biraz dinlenebilir, ailene yardım edebilir veya dışarıda oynayabilirsin." }),
+             el("p", { class: "small muted", text: "İyilik yolculuğun devam ediyor. Yarın seni yeni görevler bekliyor." })],
+      foot: [
+        el("button", { class: "btn btn-primary", type: "button", "data-act": "save-exit" }, "Oyunu kaydet ve çık"),
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "close-dialog" }, "Bir görevi tamamlayıp çık"),
+        el("button", { class: "btn btn-soft", type: "button", "data-act": "ask-parent" }, "Ebeveyne sor")
+      ]
+    });
+  }
+
+  /* ---------------------------------------------------------------
+     20) BAŞLANGIÇ EKRANI (profil oluşturma)
+     --------------------------------------------------------------- */
+  const setup = { name: "", avatar: 1, ageGroup: "7-9", color: "#368A70" };
+  const AGE_GROUPS = [["5-6", "5–6 yaş"], ["7-9", "7–9 yaş"], ["10-12", "10–12 yaş"]];
+
+  function buildSetup() {
+    return el("div", { class: "setup" }, [
+      el("h2", { text: "Hoş geldin!" }),
+      el("p", { class: "small muted", text: "Gerçek adını yazmak zorunda değilsin. Kendine bir oyun adı seçebilirsin." }),
+      el("div", { class: "field" }, [
+        el("label", { for: "pname", text: "Oyun adın" }),
+        el("input", { class: "inp", id: "pname", maxlength: 16, autocomplete: "off", placeholder: "Örn. Ada Dostu", value: setup.name })
+      ]),
+      el("div", { class: "field" }, [
+        el("label", { text: "Avatarını seç" }),
+        el("div", { class: "avatars" }, [1, 2, 3, 4].map(function (i) {
+          return el("button", { class: "av-opt" + (setup.avatar === i ? " on" : ""), type: "button", "data-act": "setup-avatar", "data-i": String(i), "aria-label": "Çocuk " + i }, avatarSVG(i, setup.color));
+        }))
+      ]),
+      el("div", { class: "field" }, [
+        el("label", { text: "Yaş grubun" }),
+        el("div", { class: "pick" }, AGE_GROUPS.map(function (g) {
+          return el("button", { class: setup.ageGroup === g[0] ? "on" : "", type: "button", "data-act": "setup-age", "data-v": g[0] }, g[1]);
+        }))
+      ]),
+      el("div", { class: "field" }, [
+        el("label", { text: "Sevdiğin renk" }),
+        el("div", { class: "swatches" }, COLORS.map(function (c) {
+          const b = el("button", { class: "sw" + (setup.color === c ? " on" : ""), type: "button", "data-act": "setup-color", "data-c": c, "aria-label": "Renk" });
+          b.style.background = c;
+          return b;
+        }))
+      ]),
+      el("div", { id: "setupError" }),
+      el("button", { class: "btn btn-primary btn-block", type: "button", "data-act": "setup-start" }, "Adaya çık 🏝️"),
+      el("p", { class: "small muted center", text: "Reklam yok · Hesap yok · Veriler cihazında kalır" })
+    ]);
+  }
+
+  function refreshSetup() {
+    const host = $("#setupHost");
+    const input = $("#pname");
+    if (input) setup.name = input.value;
+    host.textContent = "";
+    host.appendChild(buildSetup());
+    const again = $("#pname");
+    if (again) again.value = setup.name;
+  }
+
+  function startGame() {
+    const input = $("#pname");
+    const raw = input ? String(input.value || "").trim() : "";
+    const name = raw.slice(0, 16);
+    if (!name) {
+      const err = $("#setupError");
+      if (err) { err.textContent = ""; err.appendChild(el("div", { class: "feedback think", text: "Küçük bir oyun adı yazalım. Örneğin: Ada Dostu" })); }
+      if (input && input.focus) input.focus();
+      return;
+    }
+    gameState.player = { name: name, avatar: setup.avatar, ageGroup: setup.ageGroup, color: setup.color, created: new Date().toISOString() };
+    /* İlk gün ilk görev: selam vermek */
+    QuestService.ensureDaily();
+    const offered = gameState.quests.offered;
+    if (offered.indexOf("q-selam") === -1) { offered.pop(); offered.unshift("q-selam"); }
+    else { offered.splice(offered.indexOf("q-selam"), 1); offered.unshift("q-selam"); }
+    GameStateService.forceSave();
+    enterApp();
+    window.setTimeout(function () {
+      Dialog.open({
+        icon: "🏝️", title: "Adaya İlk Adım",
+        body: [
+          el("p", { text: "Ada biraz solgun görünüyor. Sen iyilik yaptıkça çiçekler açacak, kuşlar gelecek ve ada canlanacak." }),
+          el("p", { class: "small muted", text: "İlk görevin hazır: birine güzelce selam ver." })
+        ],
+        foot: [
+          el("button", { class: "btn btn-primary", type: "button", "data-act": "panel", "data-panel": "quests" }, "İlk görevi gör"),
+          el("button", { class: "btn btn-soft", type: "button", "data-act": "close-dialog" }, "Adaya bak")
+        ]
+      });
+    }, 600);
+  }
+
+  function enterApp() {
+    $("#boot").classList.add("hide");
+    $("#app").hidden = false;
+    applyPrefs();
+    QuestService.ensureDaily();
+    renderMenu();
+    UI.refreshAll();
+    startPlayClock();
+  }
+
+  /* ---------------------------------------------------------------
+     21) TERCİHLER
+     --------------------------------------------------------------- */
+  function applyPrefs() {
+    const s = gameState.settings;
+    document.documentElement.setAttribute("data-theme", s.night ? "night" : "day");
+    document.documentElement.setAttribute("data-fs", s.fontSize || "md");
+    document.documentElement.setAttribute("data-motion", s.lowMotion ? "low" : "normal");
+    AudioService.music(s.music);
+  }
+
+  /* ---------------------------------------------------------------
+     22) OLAYLAR (delegasyon — satır içi onclick yok)
+     --------------------------------------------------------------- */
+  function openRegion(id) {
+    MG.stop();
+    const r = REGIONS.filter(function (x) { return x.id === id; })[0];
+    if (!r) return;
+    if (gameState.progress.level < r.level) {
+      Dialog.open({
+        icon: "🔒", title: r.name,
+        body: [el("p", { text: "Bu bölge " + r.level + ". seviyede açılacak." }),
+               el("p", { class: "small muted", text: "İyilik yaptıkça seviyen yükselir ve yeni bölgeler açılır." })]
+      });
+      return;
+    }
+    if (r.opens.indexOf("mg:") === 0) { MG.open(r.opens.slice(3)); return; }
+    if (PANELS[r.opens]) { PANELS[r.opens](); return; }
+    toast(r.name + " yakında açılacak.", "info");
+  }
+
+  const ACTIONS = {
+    panel: function (b) {
+      const id = b.getAttribute("data-panel");
+      Dialog.close();
+      MG.stop();
+      if (id === "map") { ACTIONS["goto-map"](); return; }
+      if (PANELS[id]) PANELS[id]();
+    },
+    "goto-map": function () {
+      Sheet.close(); Dialog.close();
+      const t = $("#main");
+      if (t && t.scrollIntoView) t.scrollIntoView({ behavior: "smooth", block: "start" });
+      else window.scrollTo(0, 0);
+    },
+    region: function (b) { openRegion(b.getAttribute("data-id")); },
+    "close-sheet": function () { MG.stop(); Sheet.close(); },
+    "close-dialog": function () { Dialog.close(); },
+    speak: function (b) {
+      const ok = AudioService.speak(b.getAttribute("data-text"));
+      if (!ok && !gameState.settings.sound) toast("Ses kapalı. Ayarlardan açabilirsin.", "info");
+    },
+    "speak-panel": function () { AudioService.speak(Sheet.speakText || $("#sheetTitle").textContent); },
+
+    "quest-done": function (b) {
+      const id = b.getAttribute("data-id");
+      b.disabled = true;                                  // çift tıklama koruması
+      const res = QuestService.complete(id);
+      if (!res) { b.disabled = false; return; }
+      const card = document.querySelector('[data-quest="' + id + '"]');
+      if (card) card.classList.add("pop");
+      if (Sheet.current === "quests") PANEL_REFRESH.quests();
+    },
+    "quest-later": function (b) { QuestService.later(b.getAttribute("data-id")); if (Sheet.current === "quests") PANEL_REFRESH.quests(); },
+
+    "lib-cat": function (b) { libCat = b.getAttribute("data-cat"); PANEL_REFRESH.library(); },
+    "lib-learn": function (b) {
+      const id = b.getAttribute("data-id");
+      if (gameState.progress.learnedCards.indexOf(id) > -1) return;
+      gameState.progress.learnedCards.push(id);
+      RewardService.grant({ xp: 12, stars: 3, kindness: 4 }, { message: "Yeni bir bilgi öğrendin." });
+      PANEL_REFRESH.library();
+    },
+    "lib-quiz": function (b) {
+      const id = b.getAttribute("data-id"), i = parseInt(b.getAttribute("data-i"), 10);
+      const card = LIBRARY_CARDS.filter(function (c) { return c.id === id; })[0];
+      if (!card) return;
+      const first = gameState.progress.cardAnswers[id] === undefined;
+      gameState.progress.cardAnswers[id] = i;
+      if (i === card.quiz.answer) {
+        AudioService.good();
+        toast("Doğru: " + card.quiz.options[i], "good");
+        if (first) RewardService.grant({ xp: 6, stars: 2 }, { silent: true });
+      } else {
+        AudioService.soft();
+        toast("Bir daha düşünelim.", "warn");
+      }
+      GameStateService.save();
+      PANEL_REFRESH.library();
+    },
+
+    "set-avatar": function (b) { gameState.player.avatar = parseInt(b.getAttribute("data-i"), 10); GameStateService.save(); UI.refreshAll(); PANEL_REFRESH.avatar(); },
+    "set-color": function (b) { gameState.player.color = b.getAttribute("data-c"); GameStateService.save(); UI.refreshAll(); PANEL_REFRESH.avatar(); },
+    buy: function (b) {
+      const item = SHOP_ITEMS.filter(function (i) { return i.id === b.getAttribute("data-id"); })[0];
+      if (!item) return;
+      if (gameState.inventory.indexOf(item.id) > -1) return;
+      if (!RewardService.spend(item.price)) { toast("Yeterli yıldızın yok. İyilik yaptıkça artacak.", "warn"); return; }
+      gameState.inventory.push(item.id);
+      GameStateService.save();
+      AudioService.good();
+      toast(item.name + " sandığına eklendi.", "good");
+      PANEL_REFRESH.avatar();
+    },
+
+    "story-open": function (b) { openStory(b.getAttribute("data-id")); },
+    "story-locked": function () { toast("Önce bir önceki bölümü tamamla.", "info"); },
+    "story-choice": function (b) { storyChoice(b.getAttribute("data-id"), parseInt(b.getAttribute("data-i"), 10)); },
+    "story-finish": function (b) {
+      const id = b.getAttribute("data-id");
+      b.disabled = true;
+      StoryService.complete(id, parseInt(b.getAttribute("data-i"), 10));
+      storyOpenId = null;
+      PANELS.story();
+    },
+    "story-back": function () { storyOpenId = null; PANELS.story(); },
+
+    mg: function (b) { MG.open(b.getAttribute("data-id")); },
+    "besmele-mode": function (b) { MG.mode = b.getAttribute("data-m"); MG.open("besmele"); },
+    "sort-pick": function (b) { MG.sortPick(parseInt(b.getAttribute("data-i"), 10)); },
+    "dav-pick": function (b) { MG.davPick(parseInt(b.getAttribute("data-i"), 10)); },
+    "dav-next": function () { MG.davNext(); },
+    "dua-pick": function (b) { MG.duaPick(b.getAttribute("data-side"), b.getAttribute("data-id")); },
+    "mem-pick": function (b) { MG.memPick(parseInt(b.getAttribute("data-i"), 10)); },
+    "vakit-pick": function (b) { MG.vakitPick(b.getAttribute("data-id")); },
+    "vakit-next": function () { MG.vakitNext(); },
+    "iftar-plus": function (b) { MG.iftarStep(b.getAttribute("data-id"), 1); },
+    "iftar-minus": function (b) { MG.iftarStep(b.getAttribute("data-id"), -1); },
+    "iftar-check": function () { MG.iftarCheck(); },
+
+    toggle: function (b) {
+      const key = b.getAttribute("data-key");
+      gameState.settings[key] = !gameState.settings[key];
+      b.setAttribute("aria-checked", gameState.settings[key] ? "true" : "false");
+      applyPrefs();
+      GameStateService.save();
+      if (key === "sound" && !gameState.settings.sound) AudioService.stopSpeak();
+      if (Sheet.current && PANEL_REFRESH[Sheet.current]) PANEL_REFRESH[Sheet.current]();
+    },
+    fontsize: function (b) { gameState.settings.fontSize = b.getAttribute("data-v"); applyPrefs(); GameStateService.save(); PANEL_REFRESH.settings(); },
+    timelimit: function (b) {
+      gameState.settings.timeLimit = parseInt(b.getAttribute("data-v"), 10);
+      limitShown = false;
+      GameStateService.save();
+      if (Sheet.current && PANEL_REFRESH[Sheet.current]) PANEL_REFRESH[Sheet.current]();
+      toast("Günlük süre " + gameState.settings.timeLimit + " dakika olarak ayarlandı.", "info");
+    },
+    fullscreen: function () {
+      try {
+        const d = document, e = d.documentElement;
+        if (!d.fullscreenElement && e.requestFullscreen) e.requestFullscreen();
+        else if (d.exitFullscreen && d.fullscreenElement) d.exitFullscreen();
+        else toast("Bu cihazda tam ekran desteklenmiyor.", "warn");
+      } catch (err) { toast("Tam ekran açılamadı.", "warn"); }
+    },
+    export: function () {
+      const ok = ParentService.exportJSON();
+      toast(ok ? "Yedek dosyası indirildi." : "Dosya oluşturulamadı.", ok ? "good" : "warn");
+    },
+    import: function () { const f = $("#importFile"); if (f) { f.value = ""; f.click(); } },
+    "reset-ask": function () {
+      Dialog.open({
+        icon: "⚠️", title: "Emin misin?",
+        body: [el("p", { text: "Tüm ilerleme, rozetler ve ada gelişimi silinecek." }),
+               el("p", { class: "small muted", text: "İstersen önce verileri dışa aktarabilirsin." })],
+        foot: [
+          el("button", { class: "btn btn-danger", type: "button", "data-act": "reset-confirm" }, "Evet, sil"),
+          el("button", { class: "btn btn-soft", type: "button", "data-act": "close-dialog" }, "Vazgeç")
+        ]
+      });
+    },
+    "reset-confirm": function () {
+      GameStateService.reset();
+      parentUnlocked = false;
+      Dialog.close(); Sheet.close();
+      applyPrefs();
+      $("#app").hidden = true;
+      $("#boot").classList.remove("hide");
+      refreshSetup();
+      toast("Yeni oyun hazır.", "info");
+    },
+    demo: function () {
+      ParentService.loadDemo();
+      toast("Demo ilerlemesi yüklendi.", "good");
+      PANEL_REFRESH.parent();
+    },
+    "parent-enter": function () {
+      const input = $("#parentCode");
+      const err = $("#parentError");
+      if (!input) return;
+      if (ParentService.verify(input.value)) {
+        parentUnlocked = true;
+        Sheet.setBody(buildParent());
+      } else {
+        err.textContent = "";
+        err.appendChild(el("div", { class: "feedback think", text: "Kod doğru değil. Demo kod: 1234" }));
+        input.value = "";
+        if (input.focus) input.focus();
+      }
+    },
+    "cq-add": function () {
+      const t = $("#cqTitle"), d = $("#cqDesc"), x = $("#cqXp"), s = $("#cqStar"), due = $("#cqDue");
+      if (!t || !String(t.value).trim()) { toast("Görev adı gerekli.", "warn"); return; }
+      QuestService.addCustom({ title: t.value, description: d ? d.value : "", xp: x ? x.value : 20, stars: s ? s.value : 5, due: due ? due.value : "" });
+      toast("Görev eklendi.", "good");
+      PANEL_REFRESH.parent();
+      UI.refreshAll();
+    },
+    "cq-del": function (b) { QuestService.removeCustom(b.getAttribute("data-id")); PANEL_REFRESH.parent(); UI.refreshAll(); },
+
+    "setup-avatar": function (b) { setup.avatar = parseInt(b.getAttribute("data-i"), 10); refreshSetup(); },
+    "setup-age": function (b) { setup.ageGroup = b.getAttribute("data-v"); refreshSetup(); },
+    "setup-color": function (b) { setup.color = b.getAttribute("data-c"); refreshSetup(); },
+    "setup-start": function () { startGame(); },
+
+    "save-exit": function () { GameStateService.forceSave(); Dialog.close(); Sheet.close(); toast("Oyunun kaydedildi. Görüşmek üzere!", "good"); },
+    "ask-parent": function () { Dialog.close(); PANELS.parent(); }
+  };
+
+  document.addEventListener("click", function (e) {
+    const b = e.target && e.target.closest ? e.target.closest("[data-act]") : null;
+    if (!b) return;
+    const act = b.getAttribute("data-act");
+    if (!ACTIONS[act]) return;
+    e.preventDefault();
+    try { ACTIONS[act](b, e); }
+    catch (err) { toast("Bir şeyler ters gitti, tekrar dene.", "warn"); }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if ($("#dialog").classList.contains("open")) Dialog.close();
+    else if ($("#sheet").classList.contains("open")) { MG.stop(); Sheet.close(); }
+  });
+
+  /* Panel arka planına tıklayınca kapat */
+  ["sheet", "dialog"].forEach(function (id) {
+    const node = $("#" + id);
+    node.addEventListener("click", function (e) {
+      if (e.target !== node) return;
+      if (id === "sheet") { MG.stop(); Sheet.close(); } else Dialog.close();
+    });
+  });
+
+  /* JSON içe aktarma */
+  const importInput = $("#importFile");
+  if (importInput) {
+    importInput.addEventListener("change", function () {
+      const file = importInput.files && importInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function () {
+        const res = ParentService.importJSON(String(reader.result || ""));
+        if (!res.ok) { toast(res.error, "warn"); return; }
+        applyPrefs();
+        QuestService.ensureDaily();
+        $("#boot").classList.add("hide");
+        $("#app").hidden = false;
+        UI.refreshAll();
+        Sheet.close();
+        toast("Yedek yüklendi.", "good");
+      };
+      reader.onerror = function () { toast("Dosya okunamadı.", "warn"); };
+      reader.readAsText(file);
+    });
+  }
+
+  window.addEventListener("beforeunload", function () { GameStateService.forceSave(); });
+
+  /* ---------------------------------------------------------------
+     23) BAŞLATMA
+     --------------------------------------------------------------- */
+  function init() {
+    $$("[data-brand]").forEach(function (n) { n.textContent = APP.brand; });
+    $$("[data-tagline]").forEach(function (n) { n.textContent = APP.tagline; });
+    document.title = APP.brand + " — " + APP.tagline;
+
+    const hasSave = GameStateService.load();
+    applyPrefs();
+
+    if (hasSave) {
+      setup.avatar = gameState.player.avatar;
+      setup.color = gameState.player.color;
+      window.setTimeout(enterApp, 700);
+    } else {
+      window.setTimeout(function () {
+        refreshSetup();
+      }, 900);
+    }
+    if (!StorageService.usable()) {
+      window.setTimeout(function () { toast("Kayıt yapılamıyor; ilerleme yalnızca bu oturumda tutulur.", "warn"); }, 1600);
+    }
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+
+  /* Test ve hata ayıklama için sınırlı arayüz (hassas veri yazdırılmaz) */
+  window.IyilikAdasi = {
+    APP: APP,
+    get state() { return gameState; },
+    set state(v) { gameState = v; },
+    QUEST_LIBRARY: QUEST_LIBRARY, LIBRARY_CARDS: LIBRARY_CARDS, BADGES: BADGES,
+    SHOP_ITEMS: SHOP_ITEMS, STORY_CHAPTERS: STORY_CHAPTERS, REGIONS: REGIONS,
+    BEHAVIOR_SCENARIOS: BEHAVIOR_SCENARIOS, DUA_DATA: DUA_DATA, MEMORY_PAIRS: MEMORY_PAIRS,
+    PRAYER_TIMES: PRAYER_TIMES, ABDEST_STEPS: ABDEST_STEPS, MINI_GAMES: MiniGameService.list,
+    LEVEL_THRESHOLDS: LEVEL_THRESHOLDS, ISLAND_STAGES: ISLAND_STAGES,
+    GameStateService: GameStateService, QuestService: QuestService, RewardService: RewardService,
+    LevelService: LevelService, BadgeService: BadgeService, ParentService: ParentService,
+    StoryService: StoryService, MiniGameService: MiniGameService, IslandService: IslandService,
+    StorageService: StorageService, AudioService: AudioService,
+    defaultState: defaultState, enterApp: enterApp, UI: UI, MG: MG, PANELS: PANELS, Sheet: Sheet, Dialog: Dialog
+  };
+})();
+</script>
+</body>
+</html>
