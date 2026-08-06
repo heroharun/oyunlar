@@ -1870,4 +1870,50 @@ requestAnimationFrame(loop);
 </script>
 </body>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
+
+<!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
+<style>
+#mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
+  width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
+  background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
+  font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}
+#mpNasilBtn.mpGizli{opacity:0;pointer-events:none}
+#mpNasilKap{position:fixed;inset:0;z-index:2147483001;display:none;align-items:center;justify-content:center;
+  background:rgba(10,12,26,.82);padding:20px}
+#mpNasilKap.mpAcik{display:flex}
+#mpNasilKart{background:#fff;color:#26283a;border-radius:20px;max-width:420px;width:100%;
+  padding:22px 20px;font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
+  box-shadow:0 18px 50px rgba(0,0,0,.4);max-height:82vh;overflow-y:auto}
+#mpNasilKart h2{font-size:20px;font-weight:900;margin:0 0 12px;color:#1a1c30}
+#mpNasilKart p{font-size:14.5px;line-height:1.75;white-space:pre-line;margin:0 0 16px}
+#mpNasilKart button{font:inherit;font-weight:800;font-size:15px;width:100%;padding:13px;
+  border:none;border-radius:999px;background:#1a1c30;color:#ffc94d;cursor:pointer}
+</style>
+<button id="mpNasilBtn" aria-label="Nasıl oynanır">?</button>
+<div id="mpNasilKap" role="dialog" aria-modal="true">
+  <div id="mpNasilKart">
+    <h2>❓ NASIL OYNANIR — TOPAÇ SUMO</h2>
+    <p></p>
+    <button id="mpNasilTamam">Anladım, Oynayalım!</button>
+  </div>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('mpNasilBtn'),
+      kap=document.getElementById('mpNasilKap');
+  document.querySelector('#mpNasilKart p').textContent='1️⃣ Parmağını sürükleyerek topacına yön ver.\n2️⃣ Rakibe çarparak onu ringden dışarı it!\n3️⃣ Güç ikonlarını kap: kılıç, kalkan, mıknatıs…\n4️⃣ Bota karşı, aynı klavyede veya oda koduyla online oyna.\n💡 Kenardaki rakibe hız alarak çarp.';
+  function ac(e){ if(e){e.preventDefault();e.stopPropagation();} kap.classList.add('mpAcik'); }
+  function kapat(e){ if(e){e.preventDefault();e.stopPropagation();} kap.classList.remove('mpAcik'); }
+  btn.addEventListener('click',ac); btn.addEventListener('touchend',ac);
+  document.getElementById('mpNasilTamam').addEventListener('click',kapat);
+  document.getElementById('mpNasilTamam').addEventListener('touchend',kapat);
+  kap.addEventListener('click',function(e){ if(e.target===kap) kapat(e); });
+  /* oyun başlayınca düğme kaybolsun: butona/modala olmayan 2. dokunuştan sonra */
+  var sayac=0;
+  document.addEventListener('pointerdown',function(e){
+    if(e.target.closest('#mpNasilBtn,#mpNasilKap')) return;
+    if(++sayac>=2) setTimeout(function(){ btn.classList.add('mpGizli'); },400);
+  },true);
+})();
+</script>
 </html>
