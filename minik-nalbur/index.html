@@ -884,7 +884,8 @@ function sesCal(tip) {
   if (!S.ses) return;
   try {
     if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
-    if (AC.state === "suspended") AC.resume();
+    /* iOS: resume asenkron — bağlam uyanmadan nota planlanırsa hiç çalmaz */
+    if (AC.state === "suspended") { AC.resume().then(() => { if (S.ses) sesCal(tip); }).catch(() => {}); return; }
     const notalar = {
       tik:    [[520, 0.06]],
       dogru:  [[523, 0.10], [659, 0.10], [784, 0.16]],
@@ -1576,5 +1577,12 @@ function baslat() {
 baslat();
 </script>
 </body>
-<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'>/* ilk dokunuşta ses bağlamını uyandır (iOS/Android otomatik oynatma kilidi) */
+document.addEventListener("pointerdown", function ilkSesKilidi() {
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === "suspended") AC.resume();
+  } catch (e) {}
+}, { once: true });
+</script><!-- End Cloudflare Web Analytics -->
 </html>
