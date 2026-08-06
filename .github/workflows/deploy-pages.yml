@@ -9,6 +9,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write   # rerun'da eski artifact'leri silebilmek için
 
 concurrency:
   group: pages
@@ -21,10 +22,23 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/checkout@v7
+
+      # Rerun güvenliği: aynı koşuda birikmiş "github-pages" artifact'leri
+      # deploy-pages'i "Multiple artifacts found" hatasıyla düşürüyor — önce temizle.
+      - name: Eski artifact'leri temizle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for id in $(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" \
+                        --jq '.artifacts[] | select(.name=="github-pages") | .id' 2>/dev/null); do
+            echo "eski artifact siliniyor: $id"
+            gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id" || true
+          done
+
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: '.'
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
