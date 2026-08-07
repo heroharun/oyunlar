@@ -1,44 +1,44 @@
 <!doctype html>
 <html lang="tr">
 <meta charset="utf-8">
-<title>ORMANCI — Sür, Biç, Sat… ve Mutlaka Dik!</title>
+<title>ORMANCI 3D — Sür, Biç, Sat… ve Mutlaka Dik!</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
   :root{ --ink:#f0f7ea; --dim:#9fbf94; --altin:#ffc94d; --yesil:#5fae52; }
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;overflow:hidden;background:#2d5228;color:var(--ink);
+  html,body{height:100%;overflow:hidden;background:#79b34a;color:var(--ink);
     font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
   canvas{display:block}
-  /* ── HUD ── */
   #hud{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;display:flex;
     justify-content:space-between;align-items:flex-start;padding:0 12px;pointer-events:none;z-index:5;gap:8px}
-  .rozet{background:rgba(15,26,12,.78);border:1.5px solid rgba(255,255,255,.18);border-radius:14px;
+  .rozet{background:rgba(15,26,12,.8);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;
     padding:7px 12px;font-size:13px;font-weight:900;font-variant-numeric:tabular-nums;
-    display:flex;align-items:center;gap:5px;white-space:nowrap}
+    display:flex;align-items:center;gap:5px;white-space:nowrap;
+    box-shadow:0 3px 10px rgba(0,0,0,.3)}
   #paraEl{color:var(--altin)}
   #dengeEl.iyi{color:var(--yesil)} #dengeEl.kotu{color:#ff8a7a}
   #sagBtnlar{position:fixed;right:12px;top:calc(max(10px,env(safe-area-inset-top)) + 52px);
     display:flex;flex-direction:column;gap:10px;z-index:5}
-  .yuvarlakBtn{width:54px;height:54px;border-radius:18px;border:2px solid rgba(255,255,255,.3);
-    background:rgba(15,26,12,.82);font-size:24px;cursor:pointer;color:var(--ink);
+  .yuvarlakBtn{width:54px;height:54px;border-radius:18px;border:2px solid rgba(255,255,255,.35);
+    background:rgba(15,26,12,.84);font-size:24px;cursor:pointer;color:var(--ink);
     display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.35)}
   .yuvarlakBtn:active{transform:scale(.92)}
-  /* ── kapasite çubuğu ── */
   #kapKutu{position:fixed;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
     width:min(70vw,260px);z-index:5;pointer-events:none}
-  #kapBar{height:14px;background:rgba(15,26,12,.75);border:1.5px solid rgba(255,255,255,.25);
+  #kapBar{height:14px;background:rgba(15,26,12,.78);border:1.5px solid rgba(255,255,255,.3);
     border-radius:99px;overflow:hidden}
   #kapDolu{height:100%;background:linear-gradient(90deg,#c98d4e,#ffc94d);border-radius:99px;transition:width .2s}
-  #kapYazi{text-align:center;font-size:11px;font-weight:800;color:var(--ink);
-    text-shadow:0 1px 4px rgba(0,0,0,.8);margin-top:3px;letter-spacing:.08em}
+  #kapYazi{text-align:center;font-size:11px;font-weight:800;color:#fff;
+    text-shadow:0 1px 4px rgba(0,0,0,.9);margin-top:3px;letter-spacing:.08em}
+  .dEtiket{position:fixed;left:0;top:0;pointer-events:none;z-index:4;font-weight:900;
+    text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.55);transform:translate(-50%,-50%);white-space:nowrap}
   #toast{position:fixed;top:19%;left:50%;transform:translateX(-50%);font-size:21px;font-weight:900;
     color:var(--altin);opacity:0;pointer-events:none;white-space:nowrap;z-index:8;
     text-shadow:0 2px 12px rgba(0,0,0,.8)}
   #toast.pop{animation:tp .95s ease-out}
   @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.6)}
     15%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{opacity:1}100%{opacity:0}}
-  /* ── MARKET ── */
   #market{position:fixed;inset:0;background:rgba(10,18,8,.88);z-index:20;display:flex;
     align-items:flex-end;justify-content:center;transition:opacity .25s}
   #market.gizli{opacity:0;pointer-events:none;visibility:hidden}
@@ -53,7 +53,6 @@
   .up .fiyat{color:var(--altin);white-space:nowrap;font-variant-numeric:tabular-nums}
   .up:disabled{opacity:.4}
   .up:active{filter:brightness(1.3)}
-  /* ── KARTLAR ── */
   .kart{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
     justify-content:center;gap:14px;text-align:center;background:rgba(18,34,15,.97);
     transition:opacity .3s;padding:24px;z-index:30;overflow-y:auto}
@@ -73,7 +72,6 @@
     border-radius:999px;padding:11px 26px;cursor:pointer}
   .hint{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
 </style>
-<canvas id="c"></canvas>
 <div id="hud">
   <div class="rozet" id="paraEl">💰 0</div>
   <div class="rozet" id="alanEl">🌍 1</div>
@@ -87,6 +85,9 @@
   <div id="kapBar"><div id="kapDolu"></div></div>
   <div id="kapYazi">🪵 0/10</div>
 </div>
+<div class="dEtiket" id="etSat" style="color:#ffe08a;font-size:22px">💰 SAT</div>
+<div class="dEtiket" id="etFidan" style="color:#b8f0a0;font-size:18px">🌱 FİDANLIK</div>
+<div class="dEtiket" id="etKapi" style="color:#b8f0a0;font-size:18px;display:none"></div>
 <div id="toast"></div>
 
 <div id="market" class="gizli">
@@ -104,7 +105,7 @@
 
 <div class="kart" id="giris">
   <h1>ORMANCI</h1>
-  <p><b style="color:var(--yesil)">Parmağınla sür:</b> testereli aracın ağaçları biçer, kütükler yere saçılır, üstünden geçince toplarsın. Dolunca <b style="color:var(--altin)">SAT pedine</b> götür, parayı kap, aracını canavara çevir! Ama unutma: <b style="color:var(--yesil)">kestiğin kadar dikmeden</b> yeni bölgeye geçemezsin. 🌱</p>
+  <p><b style="color:var(--yesil)">Parmağınla sür:</b> testereli aracın ağaçları devirir, kütükler yere saçılır, üstünden geçince toplarsın. Dolunca <b style="color:var(--altin)">SAT pedine</b> götür, parayı kap, aracını canavara çevir! Ama unutma: <b style="color:var(--yesil)">kestiğin kadar dikmeden</b> yeni bölgeye geçemezsin. 🌱</p>
   <button class="btn" id="baslaBtn">Kontağı Çevir!</button>
   <button class="btn2" id="nasilBtnG">❓ Nasıl Oynanır</button>
   <span class="hint" id="kayitHint"></span>
@@ -112,7 +113,7 @@
 
 <div class="kart gizli" id="nasil">
   <h1 style="font-size:26px">NASIL OYNANIR</h1>
-  <p style="text-align:left;white-space:pre-line">1️⃣ Ekranda parmağını bastığın yöne araç gider — bırakınca durur.
+  <p style="text-align:left;white-space:pre-line">1️⃣ Parmağını bastığın yere araç sürer — bırakınca durur.
 
 2️⃣ Öndeki testere ağaçlara değince onları devirir; kütükler yere saçılır.
 
@@ -124,7 +125,7 @@
 
 6️⃣ 🛒 Market: testereyi büyüt, hızlan, kapasite ve mıknatıs al; BOT hasatçılar senin yerine çalışsın (eller serbest!).
 
-7️⃣ Tüm ağaçlar bitince ve denge 🌱 tamamsa yeni bölgeye kapı açılır — sonbahar ormanı, bambu, karlı çam… sonsuza kadar!</p>
+7️⃣ Tüm ağaçlar bitince ve denge 🌱 tamamsa yeni bölge kapısı açılır — sonbahar, bambu, karlı çam… sonsuza kadar!</p>
   <button class="btn" id="nasilKapatBtn">Anladım</button>
 </div>
 
@@ -135,8 +136,8 @@
   <button class="btn" id="abDevam">Yeni Bölgeye!</button>
 </div>
 
-<script>
-'use strict';
+<script type="module">
+import * as THREE from './three.module.js';
 /* ══════════ KAYIT ══════════ */
 const VARS={para:0, alan:1, ses:true,
   sev:{bicak:1,hiz:1,kap:1,mik:1,bot:0,fidanci:0}, toplamPara:0, toplamFidan:0};
@@ -162,388 +163,433 @@ const buzz=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
 
-/* ══════════ DÜNYA ══════════ */
-const cv=document.getElementById('c'), ctx=cv.getContext('2d');
-let W=0,H=0,DPR=1;
-function resize(){ DPR=Math.min(devicePixelRatio||1,2.5); W=innerWidth; H=innerHeight;
-  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
-  ctx.setTransform(DPR,0,0,DPR,0,0); }
-resize(); addEventListener('resize',resize);
-
-const DW=1300, DH=1700;                       /* dünya boyutu */
+/* ══════════ 3B SAHNE ══════════ */
+const DW=130, DH=170;
 const BIYOM=[
-  {ad:'Yeşil Orman', zemin:'#2d5228', zemin2:'#356030', govde:'#5a3a1a', yaprak:['#2e8f3e','#3aa84c','#27803a'], kutuk:'#c98d4e'},
-  {ad:'Sonbahar',    zemin:'#4a4420', zemin2:'#565026', govde:'#5a3a1a', yaprak:['#d1852f','#c9622f','#b8942e'], kutuk:'#c98d4e'},
-  {ad:'Bambu Vadisi',zemin:'#33531c', zemin2:'#3d6122', govde:'#7fae4e', yaprak:['#8fd37c','#6fbf5e','#a5d98a'], kutuk:'#b5cf7e'},
-  {ad:'Karlı Çamlar',zemin:'#5a6b70', zemin2:'#66787e', govde:'#4a3220', yaprak:['#3d7a52','#e8f2f5','#356a48'], kutuk:'#a88c68'}
+  {ad:'Yeşil Orman', zemin:0x79b34a, sis:0xa8d489, govde:0x7a4a22, yaprak:[0x3f9d42,0x2e8a35,0x55b04e], kutuk:0xc98d4e},
+  {ad:'Sonbahar',    zemin:0xb08c3e, sis:0xd4b878, govde:0x6e4218, yaprak:[0xd1852f,0xc9622f,0xb8942e], kutuk:0xc98d4e},
+  {ad:'Bambu Vadisi',zemin:0x6da84f, sis:0x9fd489, govde:0x9fc45e, yaprak:[0x8fd37c,0x6fbf5e,0xa5d98a], kutuk:0xb5cf7e},
+  {ad:'Karlı Çamlar',zemin:0xcfdde2, sis:0xe8f2f5, govde:0x5a3a20, yaprak:[0x3d7a52,0x2e6a45,0x4a8a5e], kutuk:0xa88c68}
 ];
 const biyom=()=>BIYOM[(S.alan-1)%BIYOM.length];
-const AGAC_SAYI=()=>Math.min(220,90+(S.alan-1)*18);
+const AGAC_SAYI=()=>Math.min(190,80+(S.alan-1)*16);
 const KUTUK_DEGER=()=>Math.round(2*Math.pow(1.4,S.alan-1));
+const SAT={x:0,z:DH*0.36,r:11};
+const FIDAN={x:-DW*0.32,z:DH*0.34,r:9};
+const KAPI={x:0,z:-DH*0.44};
 
-/* pedler */
-const SAT={x:DW*0.5,y:DH*0.88,r:110};
-const FIDAN={x:DW*0.17,y:DH*0.86,r:95};
+const sahne=new THREE.Scene();
+const kamera=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,1,400);
+const cizici=new THREE.WebGLRenderer({antialias:true});
+cizici.setPixelRatio(Math.min(devicePixelRatio,2));
+cizici.setSize(innerWidth,innerHeight);
+cizici.shadowMap.enabled=true;
+cizici.shadowMap.type=THREE.PCFSoftShadowMap;
+document.body.prepend(cizici.domElement);
+addEventListener('resize',()=>{ kamera.aspect=innerWidth/innerHeight;
+  kamera.updateProjectionMatrix(); cizici.setSize(innerWidth,innerHeight); });
 
-let agaclar=[], kutukler=[], parcalar=[], popuplar=[], botlar=[];
+sahne.add(new THREE.HemisphereLight(0xffffff,0x556b3a,0.95));
+const gunes=new THREE.DirectionalLight(0xfff2d8,1.35);
+gunes.position.set(-30,60,20);
+gunes.castShadow=true;
+gunes.shadow.mapSize.set(2048,2048);
+gunes.shadow.camera.left=-60; gunes.shadow.camera.right=60;
+gunes.shadow.camera.top=60; gunes.shadow.camera.bottom=-60;
+gunes.shadow.camera.far=160;
+sahne.add(gunes); sahne.add(gunes.target);
+
+const MAT={};
+const mat=renk=>{ if(!MAT[renk])MAT[renk]=new THREE.MeshLambertMaterial({color:renk}); return MAT[renk]; };
+
+let zemin=null, dekorlar=[];
+function zeminKur(){
+  if(zemin)sahne.remove(zemin);
+  dekorlar.forEach(d=>sahne.remove(d)); dekorlar=[];
+  const B=biyom();
+  sahne.background=new THREE.Color(B.sis);
+  sahne.fog=new THREE.Fog(B.sis,90,220);
+  zemin=new THREE.Mesh(new THREE.PlaneGeometry(DW*2.4,DH*2.4),mat(B.zemin));
+  zemin.rotation.x=-Math.PI/2; zemin.receiveShadow=true;
+  sahne.add(zemin);
+  const koyu=new THREE.MeshLambertMaterial({color:new THREE.Color(B.zemin).multiplyScalar(0.86),
+    transparent:true,opacity:0.6});
+  for(let i=0;i<26;i++){
+    const l=new THREE.Mesh(new THREE.CircleGeometry(3+Math.random()*6,10),koyu);
+    l.rotation.x=-Math.PI/2; l.position.set((Math.random()-0.5)*DW*1.6,0.02,(Math.random()-0.5)*DH*1.6);
+    sahne.add(l); dekorlar.push(l);
+  }
+  const ped=(px,pz,pr,renk)=>{
+    const halka=new THREE.Mesh(new THREE.RingGeometry(pr-1.1,pr,40),
+      new THREE.MeshBasicMaterial({color:renk,transparent:true,opacity:0.9}));
+    halka.rotation.x=-Math.PI/2; halka.position.set(px,0.05,pz); sahne.add(halka); dekorlar.push(halka);
+    const ic=new THREE.Mesh(new THREE.CircleGeometry(pr-1.1,40),
+      new THREE.MeshBasicMaterial({color:renk,transparent:true,opacity:0.15}));
+    ic.rotation.x=-Math.PI/2; ic.position.set(px,0.04,pz); sahne.add(ic); dekorlar.push(ic);
+  };
+  ped(SAT.x,SAT.z,SAT.r,0xffc94d);
+  ped(FIDAN.x,FIDAN.z,FIDAN.r,0x8fd37c);
+}
+
+/* ── ağaçlar ── */
+let agaclar=[], kutukler=[], fidanlar=[], parcalar=[];
 let kesilen=0, dikilen=0, dikimSayaci=0;
-
+function agacYap(x,z){
+  const B=biyom();
+  const g=new THREE.Group();
+  const gv=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.8,3.2,7),mat(B.govde));
+  gv.position.y=1.6; gv.castShadow=true; g.add(gv);
+  const renk=B.yaprak[Math.floor(Math.random()*3)];
+  const boy=1+Math.random()*0.5;
+  if((S.alan-1)%BIYOM.length===3||Math.random()<0.3){
+    for(let i=0;i<3;i++){
+      const k=new THREE.Mesh(new THREE.ConeGeometry(2.6-i*0.65,2.4,8),mat(renk));
+      k.position.y=3.2+i*1.5; k.castShadow=true; g.add(k);
+    }
+  } else {
+    const t1=new THREE.Mesh(new THREE.IcosahedronGeometry(2.1*boy,0),mat(renk));
+    t1.position.y=4.4; t1.castShadow=true; g.add(t1);
+    const t2=new THREE.Mesh(new THREE.IcosahedronGeometry(1.4*boy,0),mat(renk));
+    t2.position.set(1.2,3.6,0.4); t2.castShadow=true; g.add(t2);
+    const t3=new THREE.Mesh(new THREE.IcosahedronGeometry(1.2*boy,0),mat(renk));
+    t3.position.set(-1.1,3.7,-0.4); t3.castShadow=true; g.add(t3);
+  }
+  g.position.set(x,0,z);
+  g.rotation.y=Math.random()*6.28;
+  sahne.add(g);
+  return {x,z,mesh:g,canli:true,dusA:0,dusYon:Math.random()*6.28,stump:null,
+    yaprakMat:mat(renk)};
+}
 function alanKur(){
-  agaclar=[]; kutukler=[]; parcalar=[]; kesilen=0; dikilen=0;
+  agaclar.forEach(a=>{ sahne.remove(a.mesh); if(a.stump)sahne.remove(a.stump); });
+  kutukler.forEach(k=>sahne.remove(k.mesh));
+  fidanlar.forEach(f=>sahne.remove(f));
+  agaclar=[]; kutukler=[]; fidanlar=[]; kesilen=0; dikilen=0;
+  zeminKur();
   const n=AGAC_SAYI();
-  let deneme=0;
-  while(agaclar.length<n&&deneme<n*40){
-    deneme++;
-    const x=60+Math.random()*(DW-120), y=90+Math.random()*(DH*0.72);
-    if(Math.hypot(x-oyuncu.x,y-oyuncu.y)<160)continue;
-    if(agaclar.some(a=>Math.hypot(a.x-x,a.y-y)<52))continue;
-    agaclar.push({x,y,r:20+Math.random()*9,hp:1,canli:true,sal:Math.random()*6.28,
-      renk:biyom().yaprak[Math.floor(Math.random()*3)],dus:0});
+  let dene=0;
+  while(agaclar.length<n&&dene<n*40){
+    dene++;
+    const x=(Math.random()-0.5)*DW*0.92, z=-DH*0.46+Math.random()*DH*0.68;
+    if(Math.hypot(x-oyuncu.x,z-oyuncu.z)<15)continue;
+    if(Math.hypot(x-SAT.x,z-SAT.z)<SAT.r+4)continue;
+    if(Math.hypot(x-FIDAN.x,z-FIDAN.z)<FIDAN.r+4)continue;
+    if(agaclar.some(a=>Math.hypot(a.x-x,a.z-z)<5.2))continue;
+    agaclar.push(agacYap(x,z));
   }
   botKur();
 }
-function botKur(){
-  botlar=[];
-  for(let i=0;i<S.sev.bot;i++)
-    botlar.push({x:DW*0.3+i*80,y:DH*0.8,a:0,yuk:0,hedef:null,mod:'agac'});
+
+/* ── araç ── */
+function aracYap(renk){
+  const g=new THREE.Group();
+  const govde=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.6,4.6),mat(renk));
+  govde.position.y=1.5; govde.castShadow=true; g.add(govde);
+  const kaput=new THREE.Mesh(new THREE.BoxGeometry(2.8,0.7,1.6),mat(renk));
+  kaput.position.set(0,2.35,-1.2); kaput.castShadow=true; g.add(kaput);
+  const kabin=new THREE.Mesh(new THREE.BoxGeometry(2.6,1.9,2),mat(0x22303f));
+  kabin.position.set(0,3,0.7); kabin.castShadow=true; g.add(kabin);
+  const cam=new THREE.Mesh(new THREE.BoxGeometry(2.2,1.2,1.7),
+    new THREE.MeshLambertMaterial({color:0x9fd0ef,transparent:true,opacity:0.85}));
+  cam.position.set(0,3.15,0.7); g.add(cam);
+  for(const sx of [-1.95,1.95]){
+    const palet=new THREE.Mesh(new THREE.BoxGeometry(0.9,1.1,5),mat(0x2b2620));
+    palet.position.set(sx,0.6,0); palet.castShadow=true; g.add(palet);
+    for(let i=-2;i<=2;i++){
+      const dis=new THREE.Mesh(new THREE.BoxGeometry(1,0.35,0.55),mat(0x4a4238));
+      dis.position.set(sx,0.15,i*1.05); g.add(dis);
+    }
+  }
+  const baca=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,1.2,6),mat(0x3a3f47));
+  baca.position.set(-1.1,3,-1.4); g.add(baca);
+  /* yatay dönen biçme diski — üstten bakışta kocaman görünür */
+  const testere=new THREE.Group();
+  const disk=new THREE.Mesh(new THREE.CylinderGeometry(2,2,0.3,20),mat(0xc9ced6));
+  disk.castShadow=true; testere.add(disk);
+  for(let i=0;i<12;i++){
+    const dis=new THREE.Mesh(new THREE.ConeGeometry(0.36,0.9,4),mat(0x8a919c));
+    const aa=i/12*6.283;
+    dis.position.set(Math.cos(aa)*2.35,0,Math.sin(aa)*2.35);
+    dis.rotation.z=Math.PI/2; dis.rotation.y=-aa;
+    dis.castShadow=true;
+    testere.add(dis);
+  }
+  const gobek=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.7,0.5,10),mat(0xd1382f));
+  gobek.position.y=0.15; testere.add(gobek);
+  const kol=new THREE.Mesh(new THREE.BoxGeometry(0.6,0.5,1.6),mat(0x5a616c));
+  kol.position.set(0,0.45,1.2); testere.add(kol);
+  testere.position.set(0,0.85,-3.6);
+  g.add(testere);
+  const istif=new THREE.Group();
+  istif.position.set(0,2.5,1.9);
+  g.add(istif);
+  g.userData={testere,istif};
+  sahne.add(g);
+  return g;
+}
+function istifGuncelle(mesh,yuk){
+  const istif=mesh.userData.istif;
+  const hedef=Math.min(12,Math.ceil(yuk/2));
+  while(istif.children.length<hedef){
+    const i=istif.children.length;
+    const k=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,2.6,7),mat(0xc98d4e));
+    k.rotation.z=Math.PI/2;
+    k.position.set(((i%3)-1)*0.72, Math.floor(i/3)*0.66, 0);
+    k.castShadow=true;
+    istif.add(k);
+  }
+  while(istif.children.length>hedef) istif.remove(istif.children[istif.children.length-1]);
 }
 
-/* ══════════ OYUNCU ══════════ */
-const oyuncu={x:DW*0.5,y:DH*0.78,a:-Math.PI/2,yuk:0,bicakDon:0};
-const HIZ=()=>150+S.sev.hiz*28;
-const BICAK_R=()=>24+S.sev.bicak*5;
+/* ── kütükler ── */
+function kutukSac(x,z){
+  const B=biyom();
+  const kac=3+Math.floor(Math.random()*2);
+  for(let i=0;i<kac;i++){
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,2.2,7),mat(B.kutuk));
+    m.rotation.set(Math.PI/2,0,Math.random()*6.28);
+    m.castShadow=true;
+    m.position.set(x,0.45,z);
+    sahne.add(m);
+    const ac=Math.random()*6.283, h=5+Math.random()*9;
+    kutukler.push({mesh:m,x,z,vx:Math.cos(ac)*h,vz:Math.sin(ac)*h,vy:5+Math.random()*4,y:1,ucus:null});
+  }
+}
+function agacDevir(a,kimin){
+  if(!a.canli)return;
+  a.canli=false;
+  kesilen++;
+  kutukSac(a.x,a.z);
+  catirti(); if(kimin==='oyuncu')buzz(12);
+  for(let i=0;i<6;i++){
+    const p=new THREE.Mesh(new THREE.IcosahedronGeometry(0.25,0),a.yaprakMat);
+    p.position.set(a.x,4,a.z);
+    sahne.add(p);
+    parcalar.push({mesh:p,vx:(Math.random()-.5)*8,vy:3+Math.random()*4,vz:(Math.random()-.5)*8,omur:0.9});
+  }
+}
+
+/* ── botlar ── */
+let botlar=[];
+function botKur(){
+  botlar.forEach(b=>sahne.remove(b.mesh));
+  botlar=[];
+  for(let i=0;i<S.sev.bot;i++){
+    const m=aracYap(0x3d8bfd);
+    m.position.set(-10+i*6,0,DH*0.3);
+    m.scale.setScalar(0.85);
+    botlar.push({mesh:m,x:m.position.x,z:m.position.z,a:0,yuk:0,hedef:null});
+  }
+}
+
+/* ══════════ OYUNCU & KONTROL ══════════ */
+const oyuncuMesh=aracYap(0xd1382f);
+const oyuncu={x:0,z:DH*0.28,a:Math.PI,yuk:0};
+const HIZ=()=>13+S.sev.hiz*2.4;
+const BICAK_R=()=>2.2+S.sev.bicak*0.5;
 const KAP=()=>8+S.sev.kap*6;
-const MIK_R=()=>60+S.sev.mik*22;
-let parmak=null;
-cv.addEventListener('pointerdown',e=>{ audio(); parmak={x:e.clientX,y:e.clientY}; });
-cv.addEventListener('pointermove',e=>{ if(parmak){ parmak.x=e.clientX; parmak.y=e.clientY; } });
-addEventListener('pointerup',()=>parmak=null);
-addEventListener('pointercancel',()=>parmak=null);
-/* klavye */
+const MIK_R=()=>5+S.sev.mik*1.8;
+
+const isaret=new THREE.Raycaster();
+const zeminDuz=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+let hedefNokta=null;
+function parmakDunya(ex,ey){
+  const v=new THREE.Vector2((ex/innerWidth)*2-1,-(ey/innerHeight)*2+1);
+  isaret.setFromCamera(v,kamera);
+  const p=new THREE.Vector3();
+  isaret.ray.intersectPlane(zeminDuz,p);
+  return p;
+}
+cizici.domElement.addEventListener('pointerdown',e=>{ audio(); hedefNokta=parmakDunya(e.clientX,e.clientY); });
+cizici.domElement.addEventListener('pointermove',e=>{ if(hedefNokta)hedefNokta=parmakDunya(e.clientX,e.clientY); });
+addEventListener('pointerup',()=>hedefNokta=null);
+addEventListener('pointercancel',()=>hedefNokta=null);
 const tus={};
 addEventListener('keydown',e=>tus[e.key]=true);
 addEventListener('keyup',e=>tus[e.key]=false);
 
-/* kamera */
-let kamX=0,kamY=0;
-
 /* ══════════ MEKANİK ══════════ */
-function agacDevir(a,kimin){
-  a.canli=false; a.dus=0.01;
-  kesilen++;
-  const kac=3+Math.floor(Math.random()*2);
-  for(let i=0;i<kac;i++){
-    const ac=Math.random()*6.28, h=60+Math.random()*130;
-    kutukler.push({x:a.x,y:a.y,vx:Math.cos(ac)*h,vy:Math.sin(ac)*h,
-      don:Math.random()*6.28,ds:(Math.random()-0.5)*6,z:1,ucus:null});
-  }
-  for(let i=0;i<7;i++) parcalar.push({x:a.x,y:a.y,vx:(Math.random()-.5)*140,vy:(Math.random()-.5)*140,
-    omur:0.5+Math.random()*0.3,renk:a.renk});
-  catirti(); if(kimin==='oyuncu')buzz(12);
-}
-function sat(taban,yuk){
-  if(yuk<=0)return 0;
+function sat3(yuk){
+  if(yuk<=0)return;
   const kazanc=yuk*KUTUK_DEGER();
   S.para+=kazanc; S.toplamPara+=kazanc;
-  popuplar.push({x:taban.x,y:taban.y-40,metin:'+💰'+kazanc,omur:1.2,renk:'#ffc94d'});
   blip(880,0.09,0.12); blip(1175,0.12,0.1); buzz([10,20,10]);
-  return kazanc;
+  toast('+💰'+kazanc);
 }
-
+let gecisKilidi=false;
 function guncelle(dt){
-  /* — oyuncu hareket — */
-  let hx=0,hy=0;
-  if(parmak){
-    const ex=oyuncu.x-kamX, ey=oyuncu.y-kamY;
-    const dx=parmak.x-ex, dy=parmak.y-ey, L=Math.hypot(dx,dy);
-    if(L>26){ hx=dx/L; hy=dy/L; }
+  let hx=0,hz=0;
+  if(hedefNokta){
+    const dx=hedefNokta.x-oyuncu.x, dz=hedefNokta.z-oyuncu.z;
+    const L=Math.hypot(dx,dz);
+    if(L>2){ hx=dx/L; hz=dz/L; }
   }
-  if(tus.ArrowUp||tus.w)hy=-1; if(tus.ArrowDown||tus.s)hy=1;
+  if(tus.ArrowUp||tus.w)hz=-1; if(tus.ArrowDown||tus.s)hz=1;
   if(tus.ArrowLeft||tus.a)hx=-1; if(tus.ArrowRight||tus.d)hx=1;
-  const hl=Math.hypot(hx,hy);
+  const hl=Math.hypot(hx,hz);
+  let hareket=false;
   if(hl>0){
-    hx/=hl; hy/=hl;
-    const hedefA=Math.atan2(hy,hx);
+    hareket=true;
+    hx/=hl; hz/=hl;
+    const hedefA=Math.atan2(hx,hz);
     let fark=hedefA-oyuncu.a;
     while(fark>Math.PI)fark-=6.283; while(fark<-Math.PI)fark+=6.283;
-    oyuncu.a+=fark*Math.min(1,dt*8);
-    oyuncu.x+=Math.cos(oyuncu.a)*HIZ()*dt;
-    oyuncu.y+=Math.sin(oyuncu.a)*HIZ()*dt;
-    oyuncu.x=Math.max(30,Math.min(DW-30,oyuncu.x));
-    oyuncu.y=Math.max(30,Math.min(DH-30,oyuncu.y));
-    oyuncu.bicakDon+=dt*(14+S.sev.bicak*2);
-  } else oyuncu.bicakDon+=dt*3;
+    oyuncu.a+=fark*Math.min(1,dt*7);
+    oyuncu.x+=Math.sin(oyuncu.a)*HIZ()*dt;
+    oyuncu.z+=Math.cos(oyuncu.a)*HIZ()*dt;
+    oyuncu.x=Math.max(-DW*0.48,Math.min(DW*0.48,oyuncu.x));
+    oyuncu.z=Math.max(-DH*0.48,Math.min(DH*0.48,oyuncu.z));
+  }
+  const olcek=1+Math.min(0.5,(S.sev.bicak+S.sev.hiz)*0.03);
+  oyuncuMesh.position.set(oyuncu.x,0,oyuncu.z);
+  oyuncuMesh.rotation.y=oyuncu.a+Math.PI;
+  oyuncuMesh.scale.setScalar(olcek);
+  oyuncuMesh.userData.testere.rotation.y+=dt*(hareket?16:5)+S.sev.bicak*dt*2;
+  oyuncuMesh.userData.testere.scale.setScalar(Math.max(1,BICAK_R()/2.7));
+  istifGuncelle(oyuncuMesh,oyuncu.yuk);
 
-  /* — bıçak vs ağaçlar — */
-  const bx=oyuncu.x+Math.cos(oyuncu.a)*46, by=oyuncu.y+Math.sin(oyuncu.a)*46;
+  const bx=oyuncu.x+Math.sin(oyuncu.a)*4.2*olcek, bz=oyuncu.z+Math.cos(oyuncu.a)*4.2*olcek;
   for(const a of agaclar){
     if(!a.canli)continue;
-    if(Math.hypot(a.x-bx,a.y-by)<BICAK_R()+a.r*0.6) agacDevir(a,'oyuncu');
+    if(Math.hypot(a.x-bx,a.z-bz)<BICAK_R()+1.6) agacDevir(a,'oyuncu');
   }
-  /* — kütük fizik + mıknatıs — */
+  for(const a of agaclar){
+    if(a.canli||a.dusA>=1)continue;
+    a.dusA=Math.min(1,a.dusA+dt*1.6);
+    a.mesh.rotation.x=a.dusA*Math.PI/2*Math.cos(a.dusYon);
+    a.mesh.rotation.z=a.dusA*Math.PI/2*Math.sin(a.dusYon);
+    a.mesh.position.y=-a.dusA*0.6;
+    if(a.dusA>=1){
+      sahne.remove(a.mesh);
+      a.stump=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.85,0.7,8),mat(biyom().govde));
+      a.stump.position.set(a.x,0.35,a.z); a.stump.castShadow=true;
+      sahne.add(a.stump);
+    }
+  }
   for(const k of kutukler){
-    if(k.ucus){ /* araca uçuyor */
-      const h=k.ucus;
-      k.x+=(h.x-k.x)*Math.min(1,dt*10); k.y+=(h.y-k.y)*Math.min(1,dt*10);
-      if(Math.hypot(h.x-k.x,h.y-k.y)<24){ k.al=true; blip(500+h.yuk*14,0.05,0.07); }
+    if(k.ucus){
+      const hm=k.ucus===oyuncu?oyuncuMesh:k.ucus.mesh;
+      k.x+=(hm.position.x-k.x)*Math.min(1,dt*9);
+      k.z+=(hm.position.z-k.z)*Math.min(1,dt*9);
+      k.y+=((hm.position.y+2.5)-k.y)*Math.min(1,dt*9);
+      k.mesh.position.set(k.x,k.y,k.z);
+      if(Math.hypot(hm.position.x-k.x,hm.position.z-k.z)<1.6){ k.al=true; sahne.remove(k.mesh);
+        blip(560,0.05,0.07); }
       continue;
     }
-    k.x+=k.vx*dt; k.y+=k.vy*dt;
-    k.vx*=Math.pow(0.04,dt); k.vy*=Math.pow(0.04,dt);
-    k.don+=k.ds*dt; k.ds*=Math.pow(0.1,dt);
-    /* oyuncu mıknatısı */
-    if(oyuncu.yuk<KAP()&&Math.hypot(k.x-oyuncu.x,k.y-oyuncu.y)<MIK_R()){
-      k.ucus=oyuncu; oyuncu.yuk++;   /* kapasite mıknatıs anında ayrılır */
+    k.x+=k.vx*dt; k.z+=k.vz*dt;
+    k.y+=k.vy*dt; k.vy-=28*dt;
+    if(k.y<0.45){ k.y=0.45; k.vy*=-0.25; k.vx*=0.7; k.vz*=0.7; }
+    k.vx*=Math.pow(0.25,dt); k.vz*=Math.pow(0.25,dt);
+    k.mesh.position.set(k.x,k.y,k.z);
+    if(oyuncu.yuk<KAP()&&Math.hypot(k.x-oyuncu.x,k.z-oyuncu.z)<MIK_R()){
+      k.ucus=oyuncu; oyuncu.yuk++;
     }
   }
   kutukler=kutukler.filter(k=>!k.al);
-  /* düzeltme: yuk sayacı ucusta arttı; toplandığında tekrar artmasın */
-  /* — satış pedi — */
-  if(Math.hypot(oyuncu.x-SAT.x,oyuncu.y-SAT.y)<SAT.r&&oyuncu.yuk>0){
+  if(Math.hypot(oyuncu.x-SAT.x,oyuncu.z-SAT.z)<SAT.r&&oyuncu.yuk>0){
     const at=Math.max(1,Math.floor(oyuncu.yuk*dt*3));
-    const gercek=Math.min(oyuncu.yuk,at);
-    oyuncu.yuk-=gercek;
-    sat(SAT,gercek);
+    const g=Math.min(oyuncu.yuk,at);
+    oyuncu.yuk-=g; sat3(g);
   }
-  /* — fidan pedi — */
-  if(Math.hypot(oyuncu.x-FIDAN.x,oyuncu.y-FIDAN.y)<FIDAN.r&&dikilen<kesilen){
-    dikimSayaci+=dt*3;
-    while(dikimSayaci>=1&&dikilen<kesilen){
-      dikimSayaci-=1; dikilen++; S.toplamFidan++;
-      popuplar.push({x:FIDAN.x+(Math.random()-.5)*90,y:FIDAN.y-20,metin:'🌱',omur:1,renk:'#8fd37c'});
-      blip(700,0.06,0.08);
+  const fidanEk=n=>{
+    for(let i=0;i<n;i++){
+      dikilen++; S.toplamFidan++;
+      if(fidanlar.length<60){
+        const f=new THREE.Group();
+        const sap=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.08,0.7,5),mat(0x7a5a30));
+        sap.position.y=0.35; f.add(sap);
+        const yap=new THREE.Mesh(new THREE.IcosahedronGeometry(0.4,0),mat(0x8fd37c));
+        yap.position.y=0.85; f.add(yap);
+        const aci=Math.random()*6.283, rr=Math.random()*(FIDAN.r-2);
+        f.position.set(FIDAN.x+Math.cos(aci)*rr,0,FIDAN.z+Math.sin(aci)*rr);
+        sahne.add(f); fidanlar.push(f);
+      }
     }
+  };
+  if(Math.hypot(oyuncu.x-FIDAN.x,oyuncu.z-FIDAN.z)<FIDAN.r&&dikilen<kesilen){
+    dikimSayaci+=dt*4;
+    const n=Math.floor(dikimSayaci);
+    if(n>0){ dikimSayaci-=n; fidanEk(Math.min(n,kesilen-dikilen)); blip(700,0.05,0.07); }
   }
-  /* fidancı işçiler (otomatik dikim) */
   if(S.sev.fidanci>0&&dikilen<kesilen){
     dikimSayaci+=dt*S.sev.fidanci*0.4;
-    while(dikimSayaci>=1&&dikilen<kesilen){ dikimSayaci-=1; dikilen++; S.toplamFidan++; }
+    const n=Math.floor(dikimSayaci);
+    if(n>0){ dikimSayaci-=n; fidanEk(Math.min(n,kesilen-dikilen)); }
   }
-  /* — botlar — */
   for(const b of botlar){
     let hedef=null;
     if(b.yuk>=KAP()*0.8) hedef=SAT;
     else{
       if(!b.hedef||!b.hedef.canli){
-        let enYakin=null,enD=1e9;
+        let enY=null,enD=1e9;
         for(const a of agaclar){ if(!a.canli)continue;
-          const d=Math.hypot(a.x-b.x,a.y-b.y);
-          if(d<enD){enD=d;enYakin=a;} }
-        b.hedef=enYakin;
+          const d=Math.hypot(a.x-b.x,a.z-b.z); if(d<enD){enD=d;enY=a;} }
+        b.hedef=enY;
       }
       hedef=b.hedef||SAT;
     }
     if(hedef){
-      const dx=hedef.x-b.x, dy=hedef.y-b.y, L=Math.hypot(dx,dy)||1;
-      b.a=Math.atan2(dy,dx);
+      const dx=hedef.x-b.x, dz=hedef.z-b.z;
+      const L=Math.hypot(dx,dz)||1;
+      b.a=Math.atan2(dx,dz);
       const bh=HIZ()*0.55;
-      b.x+=dx/L*bh*dt; b.y+=dy/L*bh*dt;
-      if(hedef!==SAT&&L<40&&hedef.canli){ agacDevir(hedef,'bot'); b.hedef=null; }
-      if(hedef===SAT&&L<SAT.r){ const g=b.yuk; b.yuk=0; if(g>0)sat(SAT,g); }
+      b.x+=dx/L*bh*dt; b.z+=dz/L*bh*dt;
+      b.mesh.position.set(b.x,0,b.z);
+      b.mesh.rotation.y=b.a+Math.PI;
+      b.mesh.userData.testere.rotation.y+=dt*14;
+      istifGuncelle(b.mesh,b.yuk);
+      if(hedef!==SAT&&L<4&&hedef.canli){ agacDevir(hedef,'bot'); b.hedef=null; }
+      if(hedef===SAT&&L<SAT.r){ const g=b.yuk; b.yuk=0; if(g>0)sat3(g); }
     }
-    /* bot mıknatısı */
     for(const k of kutukler){
-      if(!k.ucus&&b.yuk<KAP()&&Math.hypot(k.x-b.x,k.y-b.y)<70){ k.ucus=b; b.yuk++; }
+      if(!k.ucus&&b.yuk<KAP()&&Math.hypot(k.x-b.x,k.z-b.z)<6){ k.ucus=b; b.yuk++; }
     }
   }
-  /* — parçacık & popup — */
-  for(const p of parcalar){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.omur-=dt; }
+  for(const p of parcalar){
+    p.mesh.position.x+=p.vx*dt; p.mesh.position.z+=p.vz*dt;
+    p.mesh.position.y+=p.vy*dt; p.vy-=18*dt; p.omur-=dt;
+    if(p.omur<=0)sahne.remove(p.mesh);
+  }
   parcalar=parcalar.filter(p=>p.omur>0);
-  for(const p of popuplar){ p.y-=40*dt; p.omur-=dt; }
-  popuplar=popuplar.filter(p=>p.omur>0);
-  /* ağaç düşme animasyonu */
-  for(const a of agaclar){ if(!a.canli&&a.dus<1)a.dus=Math.min(1,a.dus+dt*2.2); }
-  /* kamera takip */
-  kamX+=(oyuncu.x-W/2-kamX)*Math.min(1,dt*5);
-  kamY+=(oyuncu.y-H*0.45-kamY)*Math.min(1,dt*5);
-  kamX=Math.max(0,Math.min(DW-W,kamX)); kamY=Math.max(0,Math.min(DH-H,kamY));
-}
-
-/* ══════════ ÇİZİM ══════════ */
-function ciz(){
-  const B=biyom();
-  /* zemin */
-  ctx.fillStyle=B.zemin; ctx.fillRect(0,0,W,H);
-  ctx.save(); ctx.translate(-kamX,-kamY);
-  /* zemin dokusu */
-  ctx.fillStyle=B.zemin2;
-  for(let gx=0;gx<DW;gx+=140)for(let gy=0;gy<DH;gy+=140){
-    if(((gx*7+gy*13)%5)<2){ ctx.beginPath(); ctx.ellipse(gx+70,gy+70,46,30,0.4,0,6.28); ctx.fill(); }
-  }
-  /* pedler */
-  const nab=1+Math.sin(performance.now()/300)*0.03;
-  /* SAT */
-  ctx.fillStyle='rgba(255,201,77,.2)';
-  ctx.beginPath(); ctx.arc(SAT.x,SAT.y,SAT.r*nab,0,6.28); ctx.fill();
-  ctx.strokeStyle='#ffc94d'; ctx.lineWidth=5; ctx.setLineDash([16,12]);
-  ctx.beginPath(); ctx.arc(SAT.x,SAT.y,SAT.r,0,6.28); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle='#ffc94d'; ctx.font='900 30px "Avenir Next",system-ui'; ctx.textAlign='center';
-  ctx.fillText('💰 SAT',SAT.x,SAT.y+10);
-  /* FİDAN */
-  ctx.fillStyle='rgba(95,174,82,.22)';
-  ctx.beginPath(); ctx.arc(FIDAN.x,FIDAN.y,FIDAN.r*nab,0,6.28); ctx.fill();
-  ctx.strokeStyle='#8fd37c'; ctx.lineWidth=5; ctx.setLineDash([16,12]);
-  ctx.beginPath(); ctx.arc(FIDAN.x,FIDAN.y,FIDAN.r,0,6.28); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle='#8fd37c'; ctx.font='900 24px "Avenir Next",system-ui';
-  ctx.fillText('🌱 FİDANLIK',FIDAN.x,FIDAN.y+8);
-  /* dikilen fidanlar (görsel) */
-  const fidanGoster=Math.min(40,dikilen);
-  for(let i=0;i<fidanGoster;i++){
-    const fx=FIDAN.x-70+(i%8)*20, fy=FIDAN.y+30+Math.floor(i/8)*18;
-    ctx.font='14px system-ui'; ctx.fillText('🌱',fx,fy);
-  }
-  /* kütükler */
-  for(const k of kutukler){
-    ctx.save(); ctx.translate(k.x,k.y); ctx.rotate(k.don);
-    ctx.fillStyle='rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(2,4,15,6,0,0,6.28); ctx.fill();
-    ctx.fillStyle=B.kutuk;
-    ctx.beginPath(); ctx.roundRect(-14,-5,28,10,5); ctx.fill();
-    ctx.fillStyle='rgba(90,58,26,.7)';
-    ctx.beginPath(); ctx.arc(-14,0,5,0,6.28); ctx.fill();
-    ctx.fillStyle='#e8cf9e';
-    ctx.beginPath(); ctx.arc(-14,0,3.4,0,6.28); ctx.fill();
-    ctx.strokeStyle='rgba(90,58,26,.4)'; ctx.lineWidth=1.4;
-    ctx.beginPath(); ctx.moveTo(-6,-5); ctx.lineTo(-6,5); ctx.moveTo(3,-5); ctx.lineTo(3,5); ctx.stroke();
-    ctx.restore();
-  }
-  /* kesilmiş ağaç kütükleri (stump) + canlı ağaçlar (y sırasına göre) */
-  const sirali=[...agaclar].sort((a,b2)=>a.y-b2.y);
-  for(const a of sirali){
-    if(!a.canli){
-      /* kütük tabanı */
-      ctx.fillStyle='rgba(0,0,0,.18)';
-      ctx.beginPath(); ctx.ellipse(a.x+2,a.y+4,11,5,0,0,6.28); ctx.fill();
-      ctx.fillStyle=B.govde;
-      ctx.beginPath(); ctx.arc(a.x,a.y,8,0,6.28); ctx.fill();
-      ctx.fillStyle='#e8cf9e';
-      ctx.beginPath(); ctx.arc(a.x,a.y,5.6,0,6.28); ctx.fill();
-      continue;
-    }
-    const sal=Math.sin(performance.now()/900+a.sal)*0.04;
-    ctx.save(); ctx.translate(a.x,a.y); ctx.rotate(sal);
-    ctx.fillStyle='rgba(0,0,0,.22)';
-    ctx.beginPath(); ctx.ellipse(3,6,a.r*0.9,a.r*0.4,0,0,6.28); ctx.fill();
-    ctx.fillStyle=B.govde;
-    ctx.fillRect(-3.5,-4,7,12);
-    /* gür, katmanlı taç: koyu taban + 3 yaprak topağı + parlak tepe */
-    const r=a.r;
-    ctx.fillStyle='rgba(0,0,0,.25)';
-    ctx.beginPath(); ctx.arc(0,-r*0.5,r*1.04,0,6.28); ctx.fill();
-    ctx.fillStyle=a.renk;
-    ctx.beginPath();
-    ctx.arc(-r*0.45,-r*0.35,r*0.62,0,6.28);
-    ctx.arc(r*0.45,-r*0.4,r*0.58,0,6.28);
-    ctx.arc(0,-r*0.85,r*0.68,0,6.28);
-    ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.22)';
-    ctx.beginPath(); ctx.arc(-r*0.28,-r*1.0,r*0.34,0,6.28); ctx.fill();
-    ctx.fillStyle='rgba(0,0,0,.14)';
-    ctx.beginPath(); ctx.arc(r*0.4,-r*0.25,r*0.3,0,6.28); ctx.fill();
-    ctx.restore();
-  }
-  /* botlar */
-  for(const b of botlar) aracCiz(b.x,b.y,b.a,b.yuk,'#3d8bfd',0.85);
-  /* oyuncu */
-  aracCiz(oyuncu.x,oyuncu.y,oyuncu.a,oyuncu.yuk,'#d1382f',1);
-  /* parçacıklar */
-  for(const p of parcalar){ ctx.globalAlpha=Math.min(1,p.omur*2.4);
-    ctx.fillStyle=p.renk; ctx.beginPath(); ctx.arc(p.x,p.y,4,0,6.28); ctx.fill(); }
-  ctx.globalAlpha=1;
-  /* popuplar */
-  for(const p of popuplar){ ctx.globalAlpha=Math.min(1,p.omur*1.6);
-    ctx.fillStyle=p.renk; ctx.font='900 22px "Avenir Next",system-ui'; ctx.textAlign='center';
-    ctx.fillText(p.metin,p.x,p.y); }
-  ctx.globalAlpha=1;
-  /* yeni bölge kapısı */
   const kalan=agaclar.filter(a=>a.canli).length;
+  const etK=document.getElementById('etKapi');
   if(kalan===0){
     const hazir=dikilen>=kesilen;
-    ctx.fillStyle=hazir?'rgba(143,211,124,.25)':'rgba(255,255,255,.08)';
-    ctx.beginPath(); ctx.roundRect(DW*0.5-130,20,260,90,20); ctx.fill();
-    ctx.strokeStyle=hazir?'#8fd37c':'#888'; ctx.lineWidth=4;
-    ctx.beginPath(); ctx.roundRect(DW*0.5-130,20,260,90,20); ctx.stroke();
-    ctx.fillStyle=hazir?'#8fd37c':'#aaa';
-    ctx.font='900 22px "Avenir Next",system-ui'; ctx.textAlign='center';
-    ctx.fillText(hazir?'🌍 YENİ BÖLGE →':'🌱 ÖNCE FİDAN DİK!',DW*0.5,60);
-    ctx.font='700 15px "Avenir Next",system-ui';
-    ctx.fillText(hazir?'buraya sür!':(kesilen-dikilen)+' fidan eksik',DW*0.5,88);
-    if(hazir&&oyuncu.y<130&&Math.abs(oyuncu.x-DW*0.5)<130) bolgeTamam();
-  }
-  ctx.restore();
-  /* parmak göstergesi */
-  if(parmak){
-    ctx.strokeStyle='rgba(255,255,255,.4)'; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.arc(parmak.x,parmak.y,24,0,6.28); ctx.stroke();
-  }
-}
-function aracCiz(x,y,a,yuk,renk,olcek){
-  ctx.save(); ctx.translate(x,y); ctx.rotate(a); ctx.scale(olcek,olcek);
-  /* gölge */
-  ctx.fillStyle='rgba(0,0,0,.28)';
-  ctx.beginPath(); ctx.ellipse(0,8,40,21,0,0,6.28); ctx.fill();
-  /* paletler */
-  ctx.fillStyle='#26201a';
-  ctx.beginPath(); ctx.roundRect(-30,-27,54,13,6); ctx.fill();
-  ctx.beginPath(); ctx.roundRect(-30,14,54,13,6); ctx.fill();
-  ctx.fillStyle='#4a4238';
-  for(let i=-25;i<22;i+=10){ ctx.fillRect(i,-26,4,11); ctx.fillRect(i,15,4,11); }
-  /* gövde */
-  ctx.fillStyle=renk;
-  ctx.beginPath(); ctx.roundRect(-27,-18,50,36,10); ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.22)';
-  ctx.beginPath(); ctx.roundRect(-24,-15,44,10,6); ctx.fill();
-  ctx.fillStyle='rgba(0,0,0,.18)';
-  ctx.beginPath(); ctx.roundRect(-24,8,44,8,5); ctx.fill();
-  /* egzoz borusu */
-  ctx.fillStyle='#3a3f47';
-  ctx.beginPath(); ctx.roundRect(-24,-24,7,10,3); ctx.fill();
-  /* kabin */
-  ctx.fillStyle='#1a2434';
-  ctx.beginPath(); ctx.roundRect(-19,-11,22,22,6); ctx.fill();
-  ctx.fillStyle='rgba(140,190,240,.9)';
-  ctx.beginPath(); ctx.roundRect(-15,-7,15,14,4); ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.4)';
-  ctx.beginPath(); ctx.roundRect(-15,-7,15,5,3); ctx.fill();
-  /* yük (kütük istifi — arkada büyüyen) */
-  const kat=Math.min(5,Math.ceil(yuk/5));
-  for(let i=0;i<kat;i++){
-    ctx.fillStyle=i%2?'#b57e42':'#c98d4e';
-    ctx.beginPath(); ctx.roundRect(-36,-11+i*1.5,13,22-i*3,5); ctx.fill();
-    ctx.strokeStyle='rgba(90,58,26,.5)'; ctx.lineWidth=1.4; ctx.stroke();
-  }
-  /* testere */
-  const br=BICAK_R()*(olcek===1?1:0.8);
-  ctx.save(); ctx.translate(46,0); ctx.rotate(oyuncu.bicakDon);
-  ctx.fillStyle='#c9ced6';
-  ctx.beginPath();
-  for(let i=0;i<12;i++){ const aa=i*Math.PI/6, rr=i%2?br:br*0.82;
-    ctx[i?'lineTo':'moveTo'](Math.cos(aa)*rr,Math.sin(aa)*rr); }
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle='#8a919c'; ctx.beginPath(); ctx.arc(0,0,br*0.4,0,6.28); ctx.fill();
-  ctx.fillStyle='#5a616c'; ctx.beginPath(); ctx.arc(0,0,br*0.16,0,6.28); ctx.fill();
-  ctx.restore();
-  ctx.restore();
+    etK.style.display='block';
+    etK.style.color=hazir?'#b8f0a0':'#ffb3a0';
+    etK.style.fontSize='20px';
+    etK.textContent=hazir?'🌍 YENİ BÖLGE → buraya sür!':'🌱 '+(kesilen-dikilen)+' fidan eksik!';
+    if(hazir&&Math.hypot(oyuncu.x-KAPI.x,oyuncu.z-KAPI.z)<12&&!gecisKilidi){
+      gecisKilidi=true;
+      document.getElementById('abOzet').textContent='Bölge '+S.alan+' → '+(S.alan+1)+' · '+BIYOM[S.alan%BIYOM.length].ad;
+      document.getElementById('abMesaj').textContent='Kestiğin '+kesilen+' ağacın hepsinin yerine fidan diktin — helal olsun! "Kıyamet kopuyor olsa bile elindeki fidanı dik." 🌱';
+      document.getElementById('alanBitti').classList.remove('gizli');
+      blip(523,0.2,0.13); blip(659,0.25,0.12); blip(784,0.35,0.13); buzz([30,40,60]);
+      kaydet();
+    }
+  } else etK.style.display='none';
+  const kx=oyuncu.x, kz=oyuncu.z;
+  kamera.position.x+=(kx-kamera.position.x)*Math.min(1,dt*4);
+  kamera.position.y+=(34-kamera.position.y)*Math.min(1,dt*4);
+  kamera.position.z+=(kz+24-kamera.position.z)*Math.min(1,dt*4);
+  kamera.lookAt(kx,0,kz-4);
+  gunes.position.set(kx-30,60,kz+20);
+  gunes.target.position.set(kx,0,kz);
 }
 
-/* ══════════ BÖLGE GEÇİŞİ ══════════ */
-let gecisKilidi=false;
-function bolgeTamam(){
-  if(gecisKilidi)return;
-  gecisKilidi=true;
-  document.getElementById('abOzet').textContent='Bölge '+S.alan+' → '+(S.alan+1)+' · '+BIYOM[S.alan%BIYOM.length].ad;
-  document.getElementById('abMesaj').textContent='Kestiğin '+kesilen+' ağacın hepsinin yerine fidan diktin — helal olsun! Yeni bölgede kereste daha değerli. "Kıyamet kopuyor olsa bile elindeki fidanı dik." 🌱';
-  document.getElementById('alanBitti').classList.remove('gizli');
-  blip(523,0.2,0.13); blip(659,0.25,0.12); blip(784,0.35,0.13); buzz([30,40,60]);
-  kaydet();
+function etiketle(){
+  const koy=(id,x,z)=>{
+    const el=document.getElementById(id);
+    const v=new THREE.Vector3(x,0.5,z).project(kamera);
+    if(v.z>1){ el.style.visibility='hidden'; return; }
+    el.style.visibility='visible';
+    el.style.transform='translate(-50%,-50%) translate('+((v.x+1)/2*innerWidth)+'px,'+((-v.y+1)/2*innerHeight)+'px)';
+  };
+  koy('etSat',SAT.x,SAT.z);
+  koy('etFidan',FIDAN.x,FIDAN.z);
+  if(document.getElementById('etKapi').style.display!=='none') koy('etKapi',KAPI.x,KAPI.z);
 }
-document.getElementById('abDevam').addEventListener('click',()=>{
-  S.alan++; oyuncu.x=DW*0.5; oyuncu.y=DH*0.78; oyuncu.yuk=0;
-  alanKur(); gecisKilidi=false;
-  document.getElementById('alanBitti').classList.add('gizli');
-  document.body.style.background=biyom().zemin;
-  toast('🌍 '+biyom().ad+' — kereste 💰'+KUTUK_DEGER());
-  kaydet();
-});
 
 /* ══════════ MARKET ══════════ */
 const FIYAT={
@@ -562,7 +608,7 @@ function marketYaz(){
     b.innerHTML='<span>'+ad+'<small>'+alt+'</small></span><span class="fiyat">💰'+f+'</span>';
     b.disabled=S.para<f;
   };
-  yaz('upBicak','🪚 Dev Testere Sv.'+(S.sev.bicak+1),'daha geniş biçme alanı','bicak');
+  yaz('upBicak','🪚 Dev Testere Sv.'+(S.sev.bicak+1),'daha geniş biçme alanı + büyüyen araç','bicak');
   yaz('upHiz','⚡ Motor Sv.'+(S.sev.hiz+1),'daha hızlı sürüş','hiz');
   yaz('upKap','📦 Kasa Sv.'+(S.sev.kap+1),'kapasite +6 kütük','kap');
   yaz('upMik','🧲 Mıknatıs Sv.'+(S.sev.mik+1),'kütükleri uzaktan çeker','mik');
@@ -599,6 +645,13 @@ document.getElementById('nasilBtnG').addEventListener('click',()=>
   document.getElementById('nasil').classList.remove('gizli'));
 document.getElementById('nasilKapatBtn').addEventListener('click',()=>
   document.getElementById('nasil').classList.add('gizli'));
+document.getElementById('abDevam').addEventListener('click',()=>{
+  S.alan++; oyuncu.x=0; oyuncu.z=DH*0.28; oyuncu.yuk=0;
+  alanKur(); gecisKilidi=false;
+  document.getElementById('alanBitti').classList.add('gizli');
+  toast('🌍 '+biyom().ad+' — kereste 💰'+KUTUK_DEGER());
+  kaydet();
+});
 
 /* ══════════ HUD ══════════ */
 function hud(){
@@ -619,18 +672,24 @@ function dongu(ts){
     &&document.getElementById('market').classList.contains('gizli')
     &&document.getElementById('alanBitti').classList.contains('gizli');
   if(oynuyor)guncelle(dt);
-  ciz(); hud();
+  cizici.render(sahne,kamera);
+  etiketle(); hud();
   if((kayitS+=dt)>5){ kayitS=0; kaydet(); }
   requestAnimationFrame(dongu);
 }
 document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
 document.getElementById('kayitHint').textContent=S.toplamPara>0
-  ?'Kayıtlı aracın hazır — Bölge '+S.alan+'!':'parmakla sür · reklamsız · sonsuz';
+  ?'Kayıtlı aracın hazır — Bölge '+S.alan+'!':'parmakla sür · 3B · reklamsız · sonsuz';
 if(S.toplamPara>0)document.getElementById('baslaBtn').textContent='Devam Et';
-document.body.style.background=biyom().zemin;
+kamera.position.set(0,34,DH*0.28+24);
 alanKur();
 requestAnimationFrame(dongu);
 addEventListener('visibilitychange',()=>{ if(document.hidden)kaydet(); });
+/* test kancası */
+window.__O={get S(){return S},get oyuncu(){return oyuncu},get agaclar(){return agaclar},
+  get kutukler(){return kutukler},get kesilen(){return kesilen},get dikilen(){return dikilen},
+  get botlar(){return botlar},agacDevir,SAT,FIDAN,KAPI,
+  set kesilenVer(v){kesilen=v},set dikilenVer(v){dikilen=v}};
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
 </html>
