@@ -385,9 +385,11 @@ function insanYap(kiyafet,sacRenk,onluk){
   const ten=TENLER[Math.floor(Math.random()*TENLER.length)];
   const kafa=new THREE.Mesh(new THREE.SphereGeometry(0.62,12,10),mat(ten));
   kafa.position.y=2.7; kafa.castShadow=true; g.add(kafa);
-  /* saç: kesimden önce kabarık */
-  const sac=new THREE.Mesh(new THREE.SphereGeometry(0.72,10,8),mat(sacRenk));
-  sac.position.y=2.95; sac.scale.set(1,0.75,1); sac.castShadow=true; g.add(sac);
+  /* saç: kafayı saran dolgun kep + ön perçem */
+  const sac=new THREE.Mesh(new THREE.SphereGeometry(0.68,12,10),mat(sacRenk));
+  sac.position.y=2.86; sac.scale.set(1.14,0.95,1.14); sac.castShadow=true; g.add(sac);
+  const percem=new THREE.Mesh(new THREE.SphereGeometry(0.3,8,6),mat(sacRenk));
+  percem.position.set(0,2.62,0.5); percem.scale.set(1.5,0.55,0.7); g.add(percem);
   /* gözler */
   for(const gx of[-0.22,0.22]){
     const goz=new THREE.Mesh(new THREE.SphereGeometry(0.09,6,6),mat(0x1c1712));
@@ -544,7 +546,9 @@ function guncelle(dt){
     if(isl.t>=KESIM_SURE()){
       const m=isl.musteri;
       /* saç değişimi! */
-      m.mesh.userData.sac.scale.set(0.85,0.45,0.85);
+      /* kesim sonrası: kel değil — derli toplu yeni saç + yeni renk */
+      m.mesh.userData.sac.scale.set(0.98,0.72,0.98);
+      m.mesh.userData.sac.position.y=2.8;
       m.mesh.userData.sac.material=mat(SACLAR[Math.floor(Math.random()*SACLAR.length)]);
       sesFon(); sesMutlu();
       koltukDolu[i]=null; m.koltuk=-1;
@@ -671,6 +675,8 @@ let sonEtkilesim=performance.now();
 function ipucuGoster(x,y,yazi){
   const el=document.getElementById('ipucu');
   el.style.display='flex';
+  x=Math.max(innerWidth*0.32,Math.min(innerWidth*0.68,x));
+  y=Math.max(innerHeight*0.14,Math.min(innerHeight*0.9,y));
   el.style.transform='translate(-50%,-100%) translate('+x+'px,'+y+'px)';
   document.getElementById('ipucuYazi').textContent=yazi;
 }
