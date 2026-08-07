@@ -33,6 +33,13 @@
     text-shadow:0 1px 4px rgba(0,0,0,.9);margin-top:3px;letter-spacing:.08em}
   .dEtiket{position:fixed;left:0;top:0;pointer-events:none;z-index:4;font-weight:900;
     text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.55);transform:translate(-50%,-50%);white-space:nowrap}
+  .yonOk{position:fixed;left:0;top:0;pointer-events:none;z-index:6;display:none;
+    flex-direction:column;align-items:center;gap:2px;animation:okNabiz 1.1s ease-in-out infinite}
+  .okIsaret{font-size:22px;line-height:1;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);display:block}
+  .okGovde{background:rgba(15,26,12,.85);border:2px solid rgba(255,255,255,.4);border-radius:999px;
+    padding:5px 10px;font-size:14px;font-weight:900;white-space:nowrap;
+    box-shadow:0 3px 10px rgba(0,0,0,.4)}
+  @keyframes okNabiz{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.12)}}
   #toast{position:fixed;top:19%;left:50%;transform:translateX(-50%);font-size:21px;font-weight:900;
     color:var(--altin);opacity:0;pointer-events:none;white-space:nowrap;z-index:8;
     text-shadow:0 2px 12px rgba(0,0,0,.8)}
@@ -88,6 +95,9 @@
 <div class="dEtiket" id="etSat" style="color:#ffe08a;font-size:22px">💰 SAT</div>
 <div class="dEtiket" id="etFidan" style="color:#b8f0a0;font-size:18px">🌱 FİDANLIK</div>
 <div class="dEtiket" id="etKapi" style="color:#b8f0a0;font-size:18px;display:none"></div>
+<div class="yonOk" id="okSat"><span class="okIsaret">➤</span><span class="okGovde" style="color:#ffc94d">💰 SAT <span class="okM"></span></span></div>
+<div class="yonOk" id="okFidan"><span class="okIsaret">➤</span><span class="okGovde" style="color:#b8f0a0">🌱 DİK <span class="okM"></span></span></div>
+<div class="yonOk" id="okKapi"><span class="okIsaret">➤</span><span class="okGovde" style="color:#b8f0a0">🌍 YENİ BÖLGE <span class="okM"></span></span></div>
 <div id="toast"></div>
 
 <div id="market" class="gizli">
@@ -553,6 +563,7 @@ function guncelle(dt){
   }
   parcalar=parcalar.filter(p=>p.omur>0);
   const kalan=agaclar.filter(a=>a.canli).length;
+  sonKalan=kalan;
   const etK=document.getElementById('etKapi');
   if(kalan===0){
     const hazir=dikilen>=kesilen;
@@ -578,7 +589,30 @@ function guncelle(dt){
   gunes.target.position.set(kx,0,kz);
 }
 
+let sonKalan=1;
+function yonOku(id,tx,tz,goster){
+  const el=document.getElementById(id);
+  if(!goster){ el.style.display='none'; return; }
+  const v=new THREE.Vector3(tx,0.5,tz).project(kamera);
+  const sx=(v.x+1)/2*innerWidth, sy=(-v.y+1)/2*innerHeight;
+  if(v.z<1&&sx>40&&sx<innerWidth-40&&sy>90&&sy<innerHeight-90){
+    el.style.display='none'; return;              /* hedef zaten ekranda */
+  }
+  const dx=tx-oyuncu.x, dz=tz-oyuncu.z;
+  const a=Math.atan2(dx,-dz);                     /* 0 = ekranda yukarı */
+  const cx=innerWidth/2, cy=innerHeight/2, MX=64, MY=110;
+  const sA=Math.sin(a), cA=Math.cos(a);
+  const t=Math.min((cx-MX)/Math.max(0.001,Math.abs(sA)),(cy-MY)/Math.max(0.001,Math.abs(cA)));
+  el.style.display='flex';
+  el.style.left=(cx+sA*t)+'px';
+  el.style.top=(cy-cA*t)+'px';
+  el.querySelector('.okIsaret').style.transform='rotate('+(a*180/Math.PI-90)+'deg)';
+  el.querySelector('.okM').textContent=Math.round(Math.hypot(dx,dz))+'m';
+}
 function etiketle(){
+  yonOku('okSat',SAT.x,SAT.z,oyuncu.yuk>0);
+  yonOku('okFidan',FIDAN.x,FIDAN.z,sonKalan===0&&dikilen<kesilen);
+  yonOku('okKapi',KAPI.x,KAPI.z,sonKalan===0&&kesilen>0&&dikilen>=kesilen);
   const koy=(id,x,z)=>{
     const el=document.getElementById(id);
     const v=new THREE.Vector3(x,0.5,z).project(kamera);
