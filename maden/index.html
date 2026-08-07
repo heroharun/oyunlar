@@ -43,7 +43,7 @@
     padding:8px 13px;font-size:13.5px;font-weight:800;white-space:nowrap;color:var(--altin)}
   @keyframes elSalla{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(13px) rotate(6deg)}}
   #toast{position:fixed;top:22%;left:50%;transform:translateX(-50%);font-size:20px;font-weight:900;
-    color:var(--altin);opacity:0;pointer-events:none;white-space:nowrap;z-index:8;
+    color:var(--altin);opacity:0;pointer-events:none;white-space:nowrap;z-index:56;
     text-shadow:0 2px 12px rgba(0,0,0,.9)}
   #toast.pop{animation:tp .95s ease-out}
   @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.6)}15%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{opacity:1}100%{opacity:0}}
@@ -293,11 +293,47 @@ const ROZETLER=[
   {id:'aktarim', ikon:'💸', ad:'Bankacı',          bilgi:'Madenler arası para aktar',        k:null},
   {id:'uyku',    ikon:'😴', ad:'Gece Vardiyası',   bilgi:'Çevrimdışı kazanç topla',          k:null}
 ];
+/* konfeti katmanı — panellerin de üstünde, oyun duraklasa bile oynar */
+const konfetiCv=document.createElement('canvas');
+konfetiCv.style.cssText='position:fixed;inset:0;z-index:55;pointer-events:none;display:none';
+document.body.appendChild(konfetiCv);
+let konfetiler=[], konfetiCalisiyor=false, konfetiSon=0;
+function konfetiBaslat(){
+  const renkler=['#ffce54','#e08d4e','#7ad0e0','#5fd08a','#e05a6e','#b07ae0','#cdd3dc','#fff6d0'];
+  for(let i=0;i<90;i++)konfetiler.push({
+    x:Math.random()*innerWidth, y:-20-Math.random()*innerHeight*0.35,
+    vx:(Math.random()-.5)*70, vy:130+Math.random()*170,
+    w:5+Math.random()*6, h:8+Math.random()*7,
+    a:Math.random()*6.3, va:(Math.random()-.5)*10, sal:Math.random()*6.3,
+    renk:renkler[i%renkler.length]});
+  const d=Math.min(devicePixelRatio||1,2);
+  konfetiCv.width=innerWidth*d; konfetiCv.height=innerHeight*d;
+  konfetiCv.style.display='block';
+  if(!konfetiCalisiyor){ konfetiCalisiyor=true; konfetiSon=performance.now();
+    requestAnimationFrame(konfetiAdim); }
+}
+function konfetiAdim(ts){
+  const dt=Math.min(0.05,(ts-konfetiSon)/1000); konfetiSon=ts;
+  const d=Math.min(devicePixelRatio||1,2), g=konfetiCv.getContext('2d');
+  g.setTransform(d,0,0,d,0,0); g.clearRect(0,0,innerWidth,innerHeight);
+  for(const k of konfetiler){
+    k.sal+=dt*5; k.vy+=50*dt;
+    k.x+=k.vx*dt+Math.sin(k.sal)*45*dt; k.y+=k.vy*dt; k.a+=k.va*dt;
+    g.save(); g.translate(k.x,k.y); g.rotate(k.a);
+    g.fillStyle=k.renk;
+    g.fillRect(-k.w/2,-k.h/2,k.w,Math.max(1.6,k.h*Math.abs(Math.cos(k.sal))));
+    g.restore();
+  }
+  konfetiler=konfetiler.filter(k=>k.y<innerHeight+30);
+  if(konfetiler.length)requestAnimationFrame(konfetiAdim);
+  else{ konfetiCalisiyor=false; konfetiCv.style.display='none'; }
+}
 function rozetVer(id){
   if(S.rozetler[id])return;
   const r=ROZETLER.find(x=>x.id===id); if(!r)return;
   S.rozetler[id]=Date.now();
   toast('🏅 Rozet: '+r.ikon+' '+r.ad+'!');
+  konfetiBaslat();
   sesUsta(); buzz([15,25,15]);
 }
 function rozetKontrol(){ for(const r of ROZETLER)if(r.k&&!S.rozetler[r.id]&&r.k())rozetVer(r.id); }
