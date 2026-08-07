@@ -123,7 +123,7 @@
 
 <div class="kart gizli" id="nasil">
   <h1 style="font-size:26px">NASIL OYNANIR</h1>
-  <p style="text-align:left;white-space:pre-line">1️⃣ Makineye DOKUN 👆 → yumurta üretir, konveyör bant kasaya taşır → PARA! 💰
+  <p style="text-align:left;white-space:pre-line">1️⃣ Makineye DOKUN 👆 (bilgisayarda SPACE tuşu) → yumurta üretir, konveyör bant kasaya taşır → PARA! 💰
 
 2️⃣ 🐣 KULUÇKA düğmesi: para karşılığı bir yumurta kuluçkaya girer, çatlar… CİVCİV! Civciv büyür, TAVUK olur.
 
@@ -896,6 +896,22 @@ c.addEventListener('pointerdown',e=>{
       sesYukselt(); buzz(8); kaydet();
     }
   }
+});
+
+/* bilgisayarda SPACE = makineye bas */
+addEventListener('keydown',e=>{
+  if(e.code!=='Space'||e.repeat)return;
+  const oynuyor=document.getElementById('giris').classList.contains('gizli')
+    &&document.getElementById('market').classList.contains('gizli')
+    &&document.getElementById('offlineKart').classList.contains('gizli')
+    &&document.getElementById('ciftlikKart').classList.contains('gizli')
+    &&document.getElementById('ciftliklerKart').classList.contains('gizli')
+    &&document.getElementById('nasil').classList.contains('gizli');
+  if(!oynuyor)return;
+  e.preventDefault();
+  audio(); sonEtkilesim=performance.now();
+  yumurtaUret(TIK_BASI()); sesUret();
+  if(S.yardim===0)S.yardim=1;
 });
 
 /* ══════════ MARKET ══════════ */
