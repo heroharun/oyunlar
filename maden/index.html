@@ -28,6 +28,9 @@
   #profilBtn{position:fixed;left:12px;bottom:max(14px,env(safe-area-inset-bottom));z-index:6;
     width:50px;height:50px;border-radius:16px;border:2px solid rgba(255,255,255,.3);
     background:rgba(24,16,9,.85);font-size:22px;cursor:pointer;color:var(--ink)}
+  #rozetBtn{position:fixed;left:12px;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 58px);z-index:6;
+    width:50px;height:50px;border-radius:16px;border:2px solid rgba(255,255,255,.3);
+    background:rgba(24,16,9,.85);font-size:22px;cursor:pointer;color:var(--ink)}
   @keyframes nabiz{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
   #madenlerBtn{display:none;font:inherit;font-weight:900;font-size:11.5px;color:#241a12;
     background:linear-gradient(180deg,#ffd97a,#ffce54);border:none;border-radius:12px;
@@ -80,6 +83,7 @@
 <button id="madenBtn">🌋 YENİ MADEN!</button>
 <button id="sesBtn">🔊</button>
 <button id="profilBtn">👤</button>
+<button id="rozetBtn">🏅</button>
 <div id="ipucu"><span id="ipucuEl">👆</span><span id="ipucuYazi"></span></div>
 <div id="toast"></div>
 <div id="dondur"><span class="tel">📱</span><p>Telefonu dik tut!</p><small>Maden Ocağı dikey ekranda oynanır 🙂</small></div>
@@ -122,6 +126,13 @@
   <button class="btn" id="offlineAl">Parayı Al!</button>
 </div>
 
+<div class="kart gizli" id="rozetKart">
+  <h1 style="font-size:26px">🏅 ROZETLER</h1>
+  <p id="rozetSayi"></p>
+  <div id="rozetListe" style="display:grid;grid-template-columns:1fr 1fr;gap:9px;width:min(92vw,430px)"></div>
+  <button class="btn2" id="rozetKapat">Kapat</button>
+</div>
+
 <div class="kart gizli" id="madenlerKart">
   <h1 style="font-size:26px">⛏️ MADENLERİM</h1>
   <p>Hiçbir maden kapanmaz — istediğin an geri dön! 💸 düğmesi o madendeki parayı bulunduğun madene aktarır (kur: her yeni maden 5 kat değerli).</p>
@@ -141,7 +152,7 @@
 'use strict';
 /* ══════════ KAYIT ══════════ */
 const bosMaden=()=>({para:0,katlar:[{sev:1,oto:false}],asansor:{sev:1,oto:false},vagon:{sev:1,oto:false}});
-const VARS={para:0, maden:1, madenler:null, ad:'',
+const VARS={para:0, maden:1, madenler:null, ad:'', rozetler:{},
   katlar:[{sev:1,oto:false}], asansor:{sev:1,oto:false}, vagon:{sev:1,oto:false},
   toplamKazanc:0, ses:true, sonZaman:0, yardim:0};
 const PROFIL_MAX=5;
@@ -158,6 +169,7 @@ function yukleProfil(n){
   if(!Array.isArray(S.katlar)||!S.katlar.length)S.katlar=[{sev:1,oto:false}];
   S.asansor=Object.assign({sev:1,oto:false},S.asansor||{});
   S.vagon=Object.assign({sev:1,oto:false},S.vagon||{});
+  if(!S.rozetler||typeof S.rozetler!=='object')S.rozetler={};
   /* eski kayıtlar: her maden için ayrı durum listesi kur */
   if(!Array.isArray(S.madenler)||S.madenler.length<S.maden){
     S.madenler=[];
@@ -175,7 +187,7 @@ function madenYukle(n){
   S.katlar=m.katlar; S.asansor=m.asansor; S.vagon=m.vagon;
   simKur(); kamY=0; kaydet();
 }
-function kaydet(){ aktifKaydet(); S.sonZaman=Date.now();
+function kaydet(){ aktifKaydet(); rozetKontrol(); S.sonZaman=Date.now();
   try{ localStorage.setItem('maden_p'+PROFIL,JSON.stringify(S)); }catch(e){} }
 
 /* ══════════ SES (zengin WebAudio) ══════════ */
@@ -262,6 +274,33 @@ function uretimHiziM(m){
   return Math.min(kat,asansor,vagon);
 }
 function uretimHizi(){ return uretimHiziM(S); }
+
+/* ══════════ OYUN ROZETLERİ ══════════ */
+const enCokKat=()=>Math.max(S.katlar.length,...S.madenler.map(m=>m&&m.katlar?m.katlar.length:1));
+const ROZETLER=[
+  {id:'ilkPara', ikon:'🪙', ad:'İlk Kazanç',       bilgi:'İlk cevherini sat',                k:()=>S.toplamKazanc>0},
+  {id:'ilkUsta', ikon:'🧑‍💼', ad:'İlk Usta',         bilgi:'Bir usta tut',                     k:()=>S.vagon.oto||S.asansor.oto||S.katlar.some(x=>x.oto)},
+  {id:'tamOto',  ikon:'🤖', ad:'Tam Otomatik',     bilgi:'3+ katlı madende her şey otomatik', k:()=>S.vagon.oto&&S.asansor.oto&&S.katlar.length>=3&&S.katlar.every(x=>x.oto)},
+  {id:'kat10',   ikon:'⛏️', ad:'Derin Kazıcı',     bilgi:'10 kata ulaş',                     k:()=>enCokKat()>=10},
+  {id:'kat30',   ikon:'🕳️', ad:'Dibe Vurdun',      bilgi:'Madeni 30 kata doldur',            k:()=>enCokKat()>=30},
+  {id:'zengin',  ikon:'💰', ad:'Zengin',           bilgi:'Toplam 100K kazan',                k:()=>S.toplamKazanc>=1e5},
+  {id:'milyoner',ikon:'🤑', ad:'Milyoner',         bilgi:'Toplam 1M kazan',                  k:()=>S.toplamKazanc>=1e6},
+  {id:'milyar',  ikon:'💵', ad:'Para Babası',      bilgi:'Toplam 1B kazan',                  k:()=>S.toplamKazanc>=1e9},
+  {id:'maden2',  ikon:'🥈', ad:'Gümüş Çağı',       bilgi:'Gümüş madenini aç',                k:()=>S.madenler.length>=2},
+  {id:'maden3',  ikon:'🥇', ad:'Altın Çağı',       bilgi:'Altın madenini aç',                k:()=>S.madenler.length>=3},
+  {id:'maden4',  ikon:'💎', ad:'Elmas Avcısı',     bilgi:'Elmas madenini aç',                k:()=>S.madenler.length>=4},
+  {id:'maden7',  ikon:'👑', ad:'Maden İmparatoru', bilgi:'7 maden aç',                       k:()=>S.madenler.length>=7},
+  {id:'aktarim', ikon:'💸', ad:'Bankacı',          bilgi:'Madenler arası para aktar',        k:null},
+  {id:'uyku',    ikon:'😴', ad:'Gece Vardiyası',   bilgi:'Çevrimdışı kazanç topla',          k:null}
+];
+function rozetVer(id){
+  if(S.rozetler[id])return;
+  const r=ROZETLER.find(x=>x.id===id); if(!r)return;
+  S.rozetler[id]=Date.now();
+  toast('🏅 Rozet: '+r.ikon+' '+r.ad+'!');
+  sesUsta(); buzz([15,25,15]);
+}
+function rozetKontrol(){ for(const r of ROZETLER)if(r.k&&!S.rozetler[r.id]&&r.k())rozetVer(r.id); }
 
 /* ══════════ SİM ══════════ */
 let madenciler=[], katStok=[], yuzeyStok=0;
@@ -772,7 +811,7 @@ function madenPanelAc(){
         alBtn.addEventListener('click',()=>{
           m.para=0; S.para+=cev; sesPara(); buzz([8,16,8]);
           toast('💸 '+birimAdN(n)+' → +'+kisa(cev)+' aktarıldı!');
-          kaydet(); madenPanelAc();
+          rozetVer('aktarim'); kaydet(); madenPanelAc();
         });
         satir.append(alBtn);
       }
@@ -797,6 +836,33 @@ document.getElementById('madenlerBtn').addEventListener('click',()=>{
 document.getElementById('madenlerKapat').addEventListener('click',()=>
   document.getElementById('madenlerKart').classList.add('gizli'));
 
+/* ══════════ ROZET PANOSU ══════════ */
+function rozetPanelAc(){
+  rozetKontrol();
+  const kap=document.getElementById('rozetListe'); kap.innerHTML='';
+  let kazanilan=0;
+  for(const r of ROZETLER){
+    const var_=!!S.rozetler[r.id]; if(var_)kazanilan++;
+    const kutu=document.createElement('div');
+    kutu.style.cssText='display:flex;align-items:center;gap:8px;text-align:left;border-radius:12px;padding:8px 10px;'
+      +(var_?'background:rgba(255,206,84,.14);border:1.5px solid var(--altin)'
+            :'background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.14);opacity:.55');
+    kutu.innerHTML='<span style="font-size:24px'+(var_?'':';filter:grayscale(1)')+'">'+r.ikon+'</span>'
+      +'<span style="min-width:0"><span style="display:block;font-weight:900;font-size:12.5px;color:'
+      +(var_?'var(--altin)':'var(--ink)')+'">'+r.ad+'</span>'
+      +'<span style="display:block;font-size:11px;color:var(--dim)">'+r.bilgi+'</span></span>';
+    kap.append(kutu);
+  }
+  document.getElementById('rozetSayi').textContent=
+    (S.ad?'👷 '+S.ad+' · ':'')+kazanilan+' / '+ROZETLER.length+' rozet kazandın!';
+}
+document.getElementById('rozetBtn').addEventListener('click',()=>{
+  audio(); rozetPanelAc();
+  document.getElementById('rozetKart').classList.remove('gizli');
+});
+document.getElementById('rozetKapat').addEventListener('click',()=>
+  document.getElementById('rozetKart').classList.add('gizli'));
+
 /* ══════════ ÇEVRİMDIŞI — tüm madenlerdeki ustalar çalışır ══════════ */
 function cevrimdisiKontrol(){
   if(!S.sonZaman||S.toplamKazanc<=0)return;
@@ -819,7 +885,7 @@ function cevrimdisiKontrol(){
 }
 cevrimdisiKontrol();
 document.getElementById('offlineAl').addEventListener('click',()=>{
-  audio(); sesPara();
+  audio(); sesPara(); rozetVer('uyku');
   document.getElementById('offlineKart').classList.add('gizli'); kaydet();
 });
 
@@ -897,7 +963,8 @@ function dongu(ts){
   const oynuyor=document.getElementById('giris').classList.contains('gizli')
     &&document.getElementById('offlineKart').classList.contains('gizli')
     &&document.getElementById('prestijKart').classList.contains('gizli')
-    &&document.getElementById('madenlerKart').classList.contains('gizli');
+    &&document.getElementById('madenlerKart').classList.contains('gizli')
+    &&document.getElementById('rozetKart').classList.contains('gizli');
   if(oynuyor)guncelle(dt);
   ciz(); hud();
   if(oynuyor)ipucuKontrol(); else document.getElementById('ipucu').style.display='none';
@@ -911,6 +978,7 @@ window.__M={get S(){return S},get katStok(){return katStok},get yuzeyStok(){retu
   get asansor(){return asansor},get vagon(){return vagon},get madenciler(){return madenciler},
   get madenler(){return S.madenler},madenYukle,madenPanelAc,
   get PROFIL(){return PROFIL},yukleProfil,cevrimdisiKontrol,uretimHiziM,girisGuncelle,
+  ROZETLER,rozetVer,rozetKontrol,rozetPanelAc,
   tetikKat,tetikAsansor,tetikVagon,uretimHizi,kisa,CARPAN,BIRIM,BIRIM_AD,PRESTIJ_ESIK,MAX_KAT,
   set paraVer(v){S.para=v},set kazancVer(v){S.toplamKazanc=v},
   set katlarVer(v){S.katlar=v;simKur();}};
