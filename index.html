@@ -369,6 +369,9 @@
     <h3>💾 Kayıt Yedeği</h3>
     <p>Oyun ilerlemeleri bu cihazda saklanır; site verileri silinirse ya da telefon değişirse kaybolur.
        Arada bir <b>yedek kodu</b> al, Notlar'a veya WhatsApp'a kaydet — gerekince geri yükle.</p>
+    <p id="iosUyari" hidden style="color:var(--yildiz)"><b>iPhone/iPad notu:</b> Ana ekrana eklenen uygulama,
+       Safari/Chrome ile kayıt paylaşmaz. Eklemeden önce burada <b>💾 Yedek Al</b>,
+       uygulamayı ilk açışta <b>📥 Geri Yükle</b> yap — ilerlemen ve rozetlerin aynen taşınır.</p>
     <a href="#" id="yedekAl">💾 Yedek Al</a>
     <a href="#" id="yedekYukle" style="margin-left:8px">📥 Geri Yükle</a>
   </section>
@@ -404,6 +407,30 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
       alert('✅ Yedek kodu panoya kopyalandı!\nNotlar\'a veya WhatsApp\'a yapıştırıp sakla.'); }
     catch(err){ prompt('Bu kodu kopyalayıp sakla:',kod); }
   });
+  /* iOS: tarayıcı ⇄ ana ekran uygulaması kayıt paylaşmaz — taşıma yardımı */
+  const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)
+    ||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const KURULU=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  const ilerlemeVar=(()=>{ for(let i=0;i<localStorage.length;i++)
+    if(!localStorage.key(i).startsWith('mp_'))return true; return false; })();
+  if(IOS&&!KURULU&&ilerlemeVar)document.getElementById('iosUyari').hidden=false;
+  if(KURULU&&!ilerlemeVar&&!localStorage.getItem('mp_tasimaSoruldu')){
+    try{ localStorage.setItem('mp_tasimaSoruldu','1'); }catch(err){}
+    const b=document.createElement('div');
+    b.id='tasimaBar';
+    b.style.cssText='position:fixed;left:12px;right:12px;bottom:14px;z-index:40;background:#241f44;'
+      +'border:1.5px solid rgba(255,201,77,.5);border-radius:16px;padding:13px 14px;'
+      +'font-size:13px;line-height:1.55;box-shadow:0 8px 30px rgba(0,0,0,.5)';
+    b.innerHTML='👋 Daha önce Safari/Chrome\'da oynadın mı? Uygulama tarayıcıyla kayıt paylaşmaz — '
+      +'tarayıcıda portaldan <b>💾 Yedek Al</b> yapıp kodu buraya getir.'
+      +'<div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button id="tasimaYukle" style="font:inherit;font-weight:800;background:linear-gradient(180deg,#ffd97a,#ff9d5c);color:#33210a;border:none;border-radius:999px;padding:9px 16px;cursor:pointer">📥 Kodum Var</button>'
+      +'<button id="tasimaKapat" style="font:inherit;font-weight:700;background:rgba(255,255,255,.1);color:#cfc9ea;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:9px 16px;cursor:pointer">Yeni Başlıyorum</button></div>';
+    document.body.appendChild(b);
+    document.getElementById('tasimaKapat').addEventListener('click',()=>b.remove());
+    document.getElementById('tasimaYukle').addEventListener('click',()=>{
+      b.remove(); document.getElementById('yedekYukle').click(); });
+  }
   document.getElementById('yedekYukle').addEventListener('click',e=>{
     e.preventDefault();
     const kod=prompt('Yedek kodunu yapıştır:')||'';
