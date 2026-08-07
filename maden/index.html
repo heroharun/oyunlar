@@ -256,7 +256,7 @@ const VAGON_KAP_M=v=>Math.round(25*Math.pow(1.5,v.sev-1));
 const VAGON_KAP=()=>VAGON_KAP_M(S.vagon);
 const vagonFiyat=()=>Math.round(35*Math.pow(1.7,S.vagon.sev-1));
 const vagonUstaFiyat=()=>130;
-const PRESTIJ_ESIK=()=>40000*Math.pow(35,S.maden-1);
+const PRESTIJ_ESIK=()=>40000*S.maden;
 function kisa(n){
   if(n<1000)return Math.floor(n)+'';
   const B=['K','M','B','T','q','Q','s','S','o','N'];
@@ -423,7 +423,8 @@ function guncelle(dt){
   if(vagon.faz==='git'){
     vagon.x+=vHiz*dt;
     if(vagon.x>=1){
-      const kazanc=vagon.yuk*CARPAN();
+      /* satış 1:1 — cevher zaten bu madenin para birimi cinsinden; değer farkı madenler arası kurda */
+      const kazanc=vagon.yuk;
       S.para+=kazanc; S.toplamKazanc+=kazanc;
       sesKasa(); sesPara(); buzz([8,16,8]);
       parca(78*olcek,dEy(YUZEY_H-6),8,'#ffce54',40);
@@ -807,7 +808,7 @@ document.getElementById('madenBtn').addEventListener('click',()=>{
   document.getElementById('prestijYazi').textContent=
     BIRIM_AD()+' madeni tükendi sayılır! Yeni madene sıfırdan başlarsın ama bu maden KAPANMAZ: ⛏️ Madenlerim\'den istediğin an geri döner, paranı madenler arasında aktarırsın. Yeni cevher çok daha değerli:';
   document.getElementById('prestijCarpan').textContent=
-    BIRIM().ad+' → '+yeni.ad+' (x'+kisa(Math.pow(5,S.maden))+' değer!)';
+    BIRIM().ad+' → '+yeni.ad+' · Kur: 1 '+yeni.ad+' = 5 '+BIRIM().ad;
   document.getElementById('prestijKart').classList.remove('gizli');
 });
 document.getElementById('prestijEvet').addEventListener('click',()=>{
@@ -908,7 +909,7 @@ function cevrimdisiKontrol(){
   const satirlar=[];
   for(let n=1;n<=S.madenler.length;n++){
     const m=S.madenler[n-1]; if(!m)continue;
-    const kazanc=Math.floor(uretimHiziM(m)*carpanN(n)*gecen*0.5);
+    const kazanc=Math.floor(uretimHiziM(m)*gecen*0.5);
     if(kazanc<1)continue;
     if(n===S.maden)S.para+=kazanc; else m.para=(m.para||0)+kazanc;
     S.toplamKazanc+=kazanc;
