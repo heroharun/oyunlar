@@ -361,6 +361,14 @@
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSclueEPs_2WAzwIwvlzK6xhkJrSmBswJy2PkaoJBq3tgpowEQ/viewform" target="_blank" rel="noopener">Görüş Bildir</a>
   </section>
 
+  <section class="geri" style="margin-top:14px">
+    <h3>💾 Kayıt Yedeği</h3>
+    <p>Oyun ilerlemeleri bu cihazda saklanır; site verileri silinirse ya da telefon değişirse kaybolur.
+       Arada bir <b>yedek kodu</b> al, Notlar'a veya WhatsApp'a kaydet — gerekince geri yükle.</p>
+    <a href="#" id="yedekAl">💾 Yedek Al</a>
+    <a href="#" id="yedekYukle" style="margin-left:8px">📥 Geri Yükle</a>
+  </section>
+
   <footer>
     <b>Ana ekranına ekle:</b> tarayıcı menüsünden "Ana ekrana ekle" de — uygulama gibi açılır, çevrimdışı da çalışır!<br>
     Hedef: 100 oyun · Reklamsız, ücretsiz<br>
@@ -371,6 +379,45 @@
 'use strict';
 if('serviceWorker' in navigator)
   navigator.serviceWorker.register('sw.js').catch(()=>{});
+/* kalıcı depolama: sistem yer açarken oyun kayıtlarını silmesin (tüm origin'i kapsar) */
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+
+/* ── Kayıt Yedeği: tüm oyunların localStorage kaydını tek koda döker / geri yükler ── */
+(function(){
+  function kodla(){
+    const d={};
+    for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); d[k]=localStorage.getItem(k); }
+    return 'MASALPARK1.'+btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+  }
+  document.getElementById('yedekAl').addEventListener('click',async e=>{
+    e.preventDefault();
+    if(!localStorage.length){ alert('Bu cihazda henüz kayıtlı ilerleme yok.'); return; }
+    const kod=kodla();
+    const metin='MasalPark kayıt yedeği ('+new Date().toLocaleDateString('tr-TR')+') — bu kodu sakla, portaldaki "Geri Yükle" ile kullanılır:\n\n'+kod;
+    try{ if(navigator.share){ await navigator.share({text:metin}); return; } }
+    catch(err){ if(err&&err.name==='AbortError')return; }
+    try{ await navigator.clipboard.writeText(kod);
+      alert('✅ Yedek kodu panoya kopyalandı!\nNotlar\'a veya WhatsApp\'a yapıştırıp sakla.'); }
+    catch(err){ prompt('Bu kodu kopyalayıp sakla:',kod); }
+  });
+  document.getElementById('yedekYukle').addEventListener('click',e=>{
+    e.preventDefault();
+    const kod=prompt('Yedek kodunu yapıştır:')||'';
+    if(!kod.trim())return;
+    try{
+      let ham=kod.replace(/\s+/g,'');
+      const i=ham.indexOf('MASALPARK1.'); if(i>=0)ham=ham.slice(i+11);
+      const d=JSON.parse(decodeURIComponent(escape(atob(ham))));
+      if(!d||typeof d!=='object')throw new Error('bicim');
+      const n=Object.keys(d).length;
+      if(!confirm(n+' kayıt geri yüklenecek ve bu cihazdaki aynı kayıtların üzerine yazılacak. Devam?'))return;
+      for(const k of Object.keys(d))try{ localStorage.setItem(k,d[k]); }catch(err){}
+      alert('✅ '+n+' kayıt geri yüklendi! Oyunlara girince ilerlemeler yerinde olacak.');
+    }catch(err){
+      alert('❌ Kod çözülemedi. Kodun tamamını (MASALPARK1. ile başlayan bölümü) yapıştırdığından emin ol.');
+    }
+  });
+})();
 
 /* ── Uygulamayı Yükle (beforeinstallprompt) ── */
 (function(){
