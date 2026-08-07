@@ -473,7 +473,7 @@ function kamyonKur(){
   kamyonlar.forEach(k=>sahne.remove(k.mesh)); kamyonlar=[];
   for(let i=0;i<S.sev.kamyon;i++){
     kamyonlar.push({mesh:kamyonYap(),bay:i,x:-DW*0.75-i*18,z:SB,
-      durum:'gelis',yuk:0,gelen:0,gosterilen:-1});
+      durum:'gelis',yuk:0,gelen:0,gosterilen:-1,bekleSure:0});
   }
 }
 function kamyonYukGoster(K){
@@ -824,7 +824,7 @@ function guncelle(dt){
           if(K.durum!=='bekle')continue;
           if(Math.hypot(F.x-bayX(K.bay),F.z-SY)<7){
             const n=Math.min(F.tasinan,KKAP()-K.yuk-K.gelen);
-            if(n>0){ K.yuk+=n; F.tasinan-=n; blip(660,0.06,0.07); buzz(8); }
+            if(n>0){ K.yuk+=n; F.tasinan-=n; K.bekleSure=0; blip(660,0.06,0.07); buzz(8); }
           }
         }
       }
@@ -850,6 +850,7 @@ function guncelle(dt){
         tx=bayX(F.kamyon.bay); tz=SY-6;
         if(Math.hypot(tx-F.x,tz-F.z)<2){
           F.kamyon.yuk+=F.tasinan; F.kamyon.gelen-=F.tasinan; F.tasinan=0;
+          F.kamyon.bekleSure=0;
           blip(660,0.06,0.07); F.durum='don';
         }
       }
@@ -878,10 +879,11 @@ function guncelle(dt){
       K.x+=(bayX(K.bay)-K.x)*Math.min(1,dt*3);
       K.z+=(SY-K.z)*Math.min(1,dt*3);
       if(Math.abs(K.x-bayX(K.bay))<0.5&&Math.abs(K.z-SY)<0.5){
-        K.x=bayX(K.bay); K.z=SY; K.durum='bekle';
+        K.x=bayX(K.bay); K.z=SY; K.durum='bekle'; K.bekleSure=0;
       }
     } else if(K.durum==='bekle'){
-      if(K.yuk>=KKAP()){ K.durum='cik'; blip(300,0.2,0.1,'sawtooth'); }
+      K.bekleSure+=dt;
+      if(K.yuk>=KKAP()||(K.yuk>0&&K.bekleSure>8)){ K.durum='cik'; blip(300,0.2,0.1,'sawtooth'); }
     } else if(K.durum==='cik'){
       K.z+=(SB-K.z)*Math.min(1,dt*3);
       K.x+=dt*7;
@@ -1069,6 +1071,19 @@ document.getElementById('nasilBtnG').addEventListener('click',()=>
 document.getElementById('nasilKapatBtn').addEventListener('click',()=>
   document.getElementById('nasil').classList.add('gizli'));
 document.getElementById('abDevam').addEventListener('click',()=>{
+  /* yarıda kalan kereste kurtarma: kamyondakiler eski fiyattan satılır,
+     araçlardakiler ve yerdekiler depoya aktarılır */
+  let satilan=0;
+  kamyonlar.forEach(K=>{ satilan+=K.yuk; K.yuk=0; });
+  forkliftler.forEach(F=>{ if(F.tasinan>0){ S.depo+=F.tasinan; F.tasinan=0; } });
+  toplayicilar.forEach(T=>{ if(T.yuk>0){ S.depo+=T.yuk; T.yuk=0; } });
+  if(oyuncu.yuk>0){ S.depo+=oyuncu.yuk; }
+  S.depo+=kutukler.filter(k=>!k.al).length;   /* yerde kalanlar da ambara */
+  if(satilan>0){
+    const kaz=satilan*KUTUK_DEGER();
+    S.para+=kaz; S.toplamPara+=kaz;
+    toast('🚚 kalan yük satıldı +💰'+kaz);
+  }
   S.alan++; oyuncu.x=0; oyuncu.z=DH*0.24; oyuncu.yuk=0;
   alanKur(); gecisKilidi=false; tanitim=6;
   document.getElementById('alanBitti').classList.add('gizli');
