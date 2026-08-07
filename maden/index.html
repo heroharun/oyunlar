@@ -179,21 +179,18 @@ const BIRIM_TUR=()=>Math.floor((S.maden-1)/BIRIMLER.length);
 const BIRIM_AD=()=>BIRIM().ad+(BIRIM_TUR()>0?' '+(BIRIM_TUR()+1):'');
 const CARPAN=()=>Math.pow(5,S.maden-1);
 const MAX_KAT=30;
-const _tabanCache=[1];
-function katTaban(i){ while(_tabanCache.length<=i)
-  _tabanCache.push(Math.ceil(_tabanCache[_tabanCache.length-1]*1.3));
-  return _tabanCache[i]; }
+const katTaban=i=>Math.pow(2.6,i);
 const katUretim=i=>S.katlar[i].sev*katTaban(i);
-const katYukseltFiyat=i=>Math.round(10*katTaban(i)*Math.pow(1.34,S.katlar[i].sev-1));
-const katUstaFiyat=i=>Math.round(80*Math.pow(1.4,i));
-const yeniKatFiyat=()=>Math.round(60*Math.pow(1.6,S.katlar.length-1));
+const katYukseltFiyat=i=>Math.round(10*Math.pow(2.6,i)*Math.pow(1.34,S.katlar[i].sev-1));
+const katUstaFiyat=i=>Math.round(110*Math.pow(2.6,i));
+const yeniKatFiyat=()=>Math.round(70*Math.pow(3.9,S.katlar.length-1));
 const ASANSOR_KAP=()=>Math.round(30*Math.pow(1.5,S.asansor.sev-1));
 const asansorFiyat=()=>Math.round(45*Math.pow(1.7,S.asansor.sev-1));
 const asansorUstaFiyat=()=>170;
 const VAGON_KAP=()=>Math.round(25*Math.pow(1.5,S.vagon.sev-1));
 const vagonFiyat=()=>Math.round(35*Math.pow(1.7,S.vagon.sev-1));
 const vagonUstaFiyat=()=>130;
-const PRESTIJ_ESIK=()=>30000*Math.pow(12,S.maden-1);
+const PRESTIJ_ESIK=()=>40000*Math.pow(35,S.maden-1);
 function kisa(n){
   if(n<1000)return Math.floor(n)+'';
   const B=['K','M','B','T','q','Q','s','S','o','N'];
