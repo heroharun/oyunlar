@@ -26,6 +26,10 @@
     width:50px;height:50px;border-radius:16px;border:2px solid rgba(255,255,255,.3);
     background:rgba(24,16,9,.85);font-size:22px;cursor:pointer;color:var(--ink)}
   @keyframes nabiz{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  #madenlerBtn{position:fixed;right:12px;top:calc(max(10px,env(safe-area-inset-top)) + 104px);
+    z-index:6;display:none;font:inherit;font-weight:900;font-size:12px;color:var(--ink);
+    background:rgba(24,16,9,.88);border:1.5px solid rgba(255,255,255,.3);border-radius:14px;
+    padding:10px 13px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.4)}
   #ipucu{position:fixed;left:0;top:0;z-index:9;pointer-events:none;display:none;
     flex-direction:column;align-items:center;gap:4px;transform:translate(-50%,-100%)}
   #ipucuEl{font-size:40px;animation:elSalla 1s ease-in-out infinite;filter:drop-shadow(0 3px 6px rgba(0,0,0,.7))}
@@ -68,6 +72,7 @@
   <div class="rozet" id="carpanEl">⛏️ 1</div>
 </div>
 <button id="madenBtn">🌋 YENİ MADEN!</button>
+<button id="madenlerBtn">⛏️ MADENLERİM</button>
 <button id="sesBtn">🔊</button>
 <div id="ipucu"><span id="ipucuEl">👆</span><span id="ipucuYazi"></span></div>
 <div id="toast"></div>
@@ -93,7 +98,7 @@
 
 5️⃣ ⬆ Yükselt: üretim, kapasite ve hız artar. Yeni katlar aç — her kat daha değerli damar!
 
-6️⃣ Maden 30 katta DOLAR. Sonra 🌋 YENİ MADEN: bakırdan gümüşe, altına, elmasa… her yeni madenin cevheri 5 kat değerli!
+6️⃣ Maden 30 katta DOLAR. Sonra 🌋 YENİ MADEN: bakırdan gümüşe, altına, elmasa… her yeni madenin cevheri 5 kat değerli! Eski madenler KAPANMAZ — ⛏️ MADENLERİM'den geri dönebilir, 💸 ile para aktarabilirsin.
 
 7️⃣ Usta tuttuğun birimler sen yokken de çalışır — dönünce biriken parayı al 😴💰</p>
   <button class="btn" id="nasilKapatBtn">Anladım</button>
@@ -104,6 +109,13 @@
   <p>Ustaların çalışmaya devam etti! Biriken kazancın:</p>
   <div class="buyuk" id="offlineMiktar"></div>
   <button class="btn" id="offlineAl">Parayı Al!</button>
+</div>
+
+<div class="kart gizli" id="madenlerKart">
+  <h1 style="font-size:26px">⛏️ MADENLERİM</h1>
+  <p>Hiçbir maden kapanmaz — istediğin an geri dön! 💸 düğmesi o madendeki parayı bulunduğun madene aktarır (kur: her yeni maden 5 kat değerli).</p>
+  <div id="madenListe" style="display:flex;flex-direction:column;gap:10px;width:min(92vw,420px)"></div>
+  <button class="btn2" id="madenlerKapat">Kapat</button>
 </div>
 
 <div class="kart gizli" id="prestijKart">
@@ -117,7 +129,8 @@
 <script>
 'use strict';
 /* ══════════ KAYIT ══════════ */
-const VARS={para:0, maden:1,
+const bosMaden=()=>({para:0,katlar:[{sev:1,oto:false}],asansor:{sev:1,oto:false},vagon:{sev:1,oto:false}});
+const VARS={para:0, maden:1, madenler:null,
   katlar:[{sev:1,oto:false}], asansor:{sev:1,oto:false}, vagon:{sev:1,oto:false},
   toplamKazanc:0, ses:true, sonZaman:0, yardim:0};
 let S;
@@ -126,7 +139,22 @@ try{ S=Object.assign({},VARS,JSON.parse(localStorage.getItem('maden_v2')||'{}'))
   S.asansor=Object.assign({sev:1,oto:false},S.asansor||{});
   S.vagon=Object.assign({sev:1,oto:false},S.vagon||{});
 }catch(e){ S=JSON.parse(JSON.stringify(VARS)); }
-function kaydet(){ S.sonZaman=Date.now();
+/* eski kayıtlar: her maden için ayrı durum listesi kur */
+if(!Array.isArray(S.madenler)||S.madenler.length<S.maden){
+  S.madenler=[];
+  for(let i=0;i<S.maden-1;i++)S.madenler.push(bosMaden());
+  S.madenler.push(null);
+}
+function aktifKaydet(){ S.madenler[S.maden-1]={para:S.para,katlar:S.katlar,asansor:S.asansor,vagon:S.vagon}; }
+function madenYukle(n){
+  aktifKaydet();
+  if(!S.madenler[n-1])S.madenler[n-1]=bosMaden();
+  const m=S.madenler[n-1];
+  S.maden=n; S.para=m.para||0;
+  S.katlar=m.katlar; S.asansor=m.asansor; S.vagon=m.vagon;
+  simKur(); kamY=0; kaydet();
+}
+function kaydet(){ aktifKaydet(); S.sonZaman=Date.now();
   try{ localStorage.setItem('maden_v2',JSON.stringify(S)); }catch(e){} }
 
 /* ══════════ SES (zengin WebAudio) ══════════ */
@@ -178,6 +206,9 @@ const BIRIM=()=>BIRIMLER[(S.maden-1)%BIRIMLER.length];
 const BIRIM_TUR=()=>Math.floor((S.maden-1)/BIRIMLER.length);
 const BIRIM_AD=()=>BIRIM().ad+(BIRIM_TUR()>0?' '+(BIRIM_TUR()+1):'');
 const CARPAN=()=>Math.pow(5,S.maden-1);
+const carpanN=n=>Math.pow(5,n-1);
+const birimN=n=>BIRIMLER[(n-1)%BIRIMLER.length];
+const birimAdN=n=>birimN(n).ad+(Math.floor((n-1)/BIRIMLER.length)>0?' '+(Math.floor((n-1)/BIRIMLER.length)+1):'');
 const MAX_KAT=30;
 const katTaban=i=>Math.pow(2.6,i);
 const katUretim=i=>S.katlar[i].sev*katTaban(i);
@@ -675,21 +706,72 @@ document.getElementById('madenBtn').addEventListener('click',()=>{
   audio();
   const yeni=BIRIMLER[S.maden%BIRIMLER.length];
   document.getElementById('prestijYazi').textContent=
-    BIRIM_AD()+' madeni tükendi sayılır! Yeni madene geçersen katlar ve paran sıfırlanır ama yeni cevher çok daha değerli:';
+    BIRIM_AD()+' madeni tükendi sayılır! Yeni madene sıfırdan başlarsın ama bu maden KAPANMAZ: ⛏️ Madenlerim\'den istediğin an geri döner, paranı madenler arasında aktarırsın. Yeni cevher çok daha değerli:';
   document.getElementById('prestijCarpan').textContent=
     BIRIM().ad+' → '+yeni.ad+' (x'+kisa(Math.pow(5,S.maden))+' değer!)';
   document.getElementById('prestijKart').classList.remove('gizli');
 });
 document.getElementById('prestijEvet').addEventListener('click',()=>{
-  S.maden++; S.para=0;
-  S.katlar=[{sev:1,oto:false}]; S.asansor={sev:1,oto:false}; S.vagon={sev:1,oto:false};
-  simKur(); kamY=0;
+  S.madenler.push(null);
+  madenYukle(S.madenler.length);
   document.getElementById('prestijKart').classList.add('gizli');
   toast('🌋 '+BIRIM_AD()+' madeni açıldı!');
-  sesUsta(); buzz([30,40,60]); kaydet();
+  sesUsta(); buzz([30,40,60]);
 });
 document.getElementById('prestijHayir').addEventListener('click',()=>
   document.getElementById('prestijKart').classList.add('gizli'));
+
+/* ══════════ MADENLERİM PANELİ ══════════ */
+function madenPanelAc(){
+  aktifKaydet();
+  const kap=document.getElementById('madenListe'); kap.innerHTML='';
+  for(let n=S.madenler.length;n>=1;n--){
+    const m=S.madenler[n-1]||bosMaden();
+    const b=birimN(n), aktif=(n===S.maden);
+    const satir=document.createElement('div');
+    satir.style.cssText='display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.07);border:1.5px solid '
+      +(aktif?b.renk:'rgba(255,255,255,.18)')+';border-radius:14px;padding:10px 12px;text-align:left';
+    const nokta=document.createElement('span');
+    nokta.className='birimNokta'; nokta.style.background=b.renk;
+    const bilgi=document.createElement('div');
+    bilgi.style.cssText='flex:1;min-width:0';
+    bilgi.innerHTML='<div style="font-weight:900;font-size:14px">'+birimAdN(n)+' Madeni</div>'
+      +'<div style="font-size:12px;color:var(--dim)">💰 '+kisa(m.para||0)+' · '
+      +(m.katlar?m.katlar.length:1)+' kat'+(aktif?' · 📍 buradasın':'')+'</div>';
+    satir.append(nokta,bilgi);
+    if(!aktif){
+      const cev=Math.floor((m.para||0)*carpanN(n)/carpanN(S.maden));
+      if((m.para||0)>=1&&cev>=1){
+        const alBtn=document.createElement('button');
+        alBtn.className='btn2'; alBtn.style.cssText='padding:8px 12px;font-size:12px;flex:none';
+        alBtn.textContent='💸 +'+kisa(cev);
+        alBtn.addEventListener('click',()=>{
+          m.para=0; S.para+=cev; sesPara(); buzz([8,16,8]);
+          toast('💸 '+birimAdN(n)+' → +'+kisa(cev)+' aktarıldı!');
+          kaydet(); madenPanelAc();
+        });
+        satir.append(alBtn);
+      }
+      const gecBtn=document.createElement('button');
+      gecBtn.className='btn';
+      gecBtn.style.cssText='padding:9px 16px;font-size:12px;flex:none;letter-spacing:0;box-shadow:0 3px 0 #b8862e';
+      gecBtn.textContent='Geç';
+      gecBtn.addEventListener('click',()=>{
+        madenYukle(n); sesYukselt(); buzz([12,20,12]);
+        document.getElementById('madenlerKart').classList.add('gizli');
+        toast('⛏️ '+birimAdN(n)+' madenine geçtin!');
+      });
+      satir.append(gecBtn);
+    }
+    kap.append(satir);
+  }
+}
+document.getElementById('madenlerBtn').addEventListener('click',()=>{
+  audio(); madenPanelAc();
+  document.getElementById('madenlerKart').classList.remove('gizli');
+});
+document.getElementById('madenlerKapat').addEventListener('click',()=>
+  document.getElementById('madenlerKart').classList.add('gizli'));
 
 /* ══════════ ÇEVRİMDIŞI ══════════ */
 (function(){
@@ -713,7 +795,8 @@ function hud(){
   document.getElementById('birimNokta').style.background=BIRIM().renk;
   document.getElementById('carpanEl').textContent='⛏️ '+BIRIM_AD()+' · M'+S.maden;
   document.getElementById('madenBtn').style.display=
-    (S.toplamKazanc>=PRESTIJ_ESIK()||S.katlar.length>=MAX_KAT)?'block':'none';
+    (S.maden===S.madenler.length&&(S.toplamKazanc>=PRESTIJ_ESIK()||S.katlar.length>=MAX_KAT))?'block':'none';
+  document.getElementById('madenlerBtn').style.display=S.madenler.length>1?'block':'none';
 }
 document.getElementById('sesBtn').addEventListener('click',()=>{
   S.ses=!S.ses; document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇'; kaydet();
@@ -736,7 +819,8 @@ function dongu(ts){
   const dt=Math.min(0.05,(ts-sonTs)/1000); sonTs=ts;
   const oynuyor=document.getElementById('giris').classList.contains('gizli')
     &&document.getElementById('offlineKart').classList.contains('gizli')
-    &&document.getElementById('prestijKart').classList.contains('gizli');
+    &&document.getElementById('prestijKart').classList.contains('gizli')
+    &&document.getElementById('madenlerKart').classList.contains('gizli');
   if(oynuyor)guncelle(dt);
   ciz(); hud();
   if(oynuyor)ipucuKontrol(); else document.getElementById('ipucu').style.display='none';
@@ -748,6 +832,7 @@ addEventListener('visibilitychange',()=>{ if(document.hidden)kaydet(); });
 /* test kancası */
 window.__M={get S(){return S},get katStok(){return katStok},get yuzeyStok(){return yuzeyStok},
   get asansor(){return asansor},get vagon(){return vagon},get madenciler(){return madenciler},
+  get madenler(){return S.madenler},madenYukle,madenPanelAc,
   tetikKat,tetikAsansor,tetikVagon,uretimHizi,kisa,CARPAN,BIRIM,BIRIM_AD,PRESTIJ_ESIK,MAX_KAT,
   set paraVer(v){S.para=v},set kazancVer(v){S.toplamKazanc=v},
   set katlarVer(v){S.katlar=v;simKur();}};
