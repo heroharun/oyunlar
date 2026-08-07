@@ -812,6 +812,7 @@ document.getElementById('madenBtn').addEventListener('click',()=>{
   document.getElementById('prestijKart').classList.remove('gizli');
 });
 document.getElementById('prestijEvet').addEventListener('click',()=>{
+  if(S.maden!==S.madenler.length)return;   /* yeni maden yalnızca en yeniden açılır */
   S.madenler.push(null);
   madenYukle(S.madenler.length);
   document.getElementById('prestijKart').classList.add('gizli');

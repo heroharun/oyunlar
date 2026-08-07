@@ -135,7 +135,7 @@
 
 6️⃣ Tavukların ve piston sen yokken de çalışır — dönünce biriken parayı al 😴💰
 
-7️⃣ Zenginleşince 🚜 YENİ ÇİFTLİK: makine ve tavuklar sıfırdan başlar ama PARAN CEBİNDE KALIR ve yumurta fiyatı 4 katına çıkar. Eski çiftlikler kapanmaz — 🚜 ÇİFTLİKLER düğmesinden istediğin an geri dönersin; sen yokken hepsi birden çalışır! Köyden uzaya, sonsuza kadar!</p>
+7️⃣ Zenginleşince 🚜 YENİ ÇİFTLİK: makine ve tavuklar sıfırdan başlar ama PARAN CEBİNDE KALIR ve yumurta fiyatı 4 katına çıkar. Eski çiftlikler kapanmaz — 🚜 ÇİFTLİKLER düğmesinden istediğin an geri dönersin; sen yokken hepsi birden çalışır! Yumurtadan süte, kesimden tarıma — sonsuza kadar!</p>
   <button class="btn" id="nasilKapatBtn">Anladım</button>
 </div>
 
@@ -221,7 +221,7 @@ function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
 
 /* ══════════ EKONOMİ ══════════ */
-const CIFTLIKLER=['Köy Çiftliği','Kasaba Çiftliği','Organik Çiftlik','Dağ Çiftliği','Deniz Kenarı','Uzay Çiftliği'];
+const CIFTLIKLER=['Yumurta Çiftliği','Koyun Sütü','İnek Sütü','Tavuk Kesim','Koyun Kesim','Mezbaha','Tarım Çiftliği'];
 const ciftlikAdN=n=>CIFTLIKLER[(n-1)%CIFTLIKLER.length]+(n>CIFTLIKLER.length?' '+Math.ceil(n/CIFTLIKLER.length):'');
 const CIFTLIK_AD=()=>ciftlikAdN(S.ciftlik);
 const carpanN=n=>Math.pow(4,n-1);
@@ -991,6 +991,7 @@ document.getElementById('ciftlikBtn').addEventListener('click',()=>{
   document.getElementById('ciftlikKart').classList.remove('gizli');
 });
 document.getElementById('ciftlikEvet').addEventListener('click',()=>{
+  if(S.ciftlik!==S.ciftlikler.length)return;   /* yeni çiftlik yalnızca en yeniden açılır */
   S.ciftlikler.push(null);
   ciftlikYukle(S.ciftlikler.length);
   document.getElementById('ciftlikKart').classList.add('gizli');
