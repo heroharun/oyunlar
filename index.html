@@ -372,6 +372,19 @@
        uygulamayı ilk açışta <b>📥 Geri Yükle</b> yap — ilerlemen ve rozetlerin aynen taşınır.</p>
     <a href="#" id="yedekAl">💾 Yedek Al</a>
     <a href="#" id="yedekYukle" style="margin-left:8px">📥 Geri Yükle</a>
+    <p style="margin-top:16px"><b style="color:var(--ink)">☁️ Bulut Kaydı (Aile Kodu):</b>
+       ilerlemeyi ve rozetleri buluta yedekler — cihaz silinse, telefon değişse bile
+       aile kodunla her yerden geri alırsın.</p>
+    <p id="bulutDurum" style="color:var(--yesil);font-weight:800;margin-top:-6px"></p>
+    <span id="bulutYok">
+      <a href="#" id="bulutOlustur">☁️ Aile Kodu Oluştur</a>
+      <a href="#" id="bulutBaglan" style="margin-left:8px">🔗 Koduma Bağlan</a>
+    </span>
+    <span id="bulutVar" style="display:none">
+      <a href="#" id="bulutYedekle">☁️ Şimdi Yedekle</a>
+      <a href="#" id="bulutGeri" style="margin-left:8px">📥 Buluttan Al</a>
+      <a href="#" id="bulutKes" style="margin-left:8px;filter:saturate(.3)">✕ Ayrıl</a>
+    </span>
   </section>
 
   <footer>
@@ -429,23 +442,104 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
     document.getElementById('tasimaYukle').addEventListener('click',()=>{
       b.remove(); document.getElementById('yedekYukle').click(); });
   }
+  /* yedek kodunu çözüp localStorage'a yazar; kayıt sayısını döndürür, bozuksa fırlatır */
+  function veriUygula(kod){
+    let ham=String(kod).replace(/\s+/g,'');
+    const i=ham.indexOf('MASALPARK1.'); if(i>=0)ham=ham.slice(i+11);
+    const d=JSON.parse(decodeURIComponent(escape(atob(ham))));
+    if(!d||typeof d!=='object')throw new Error('bicim');
+    for(const k of Object.keys(d))try{ localStorage.setItem(k,d[k]); }catch(err){}
+    return Object.keys(d).length;
+  }
   document.getElementById('yedekYukle').addEventListener('click',e=>{
     e.preventDefault();
     const kod=prompt('Yedek kodunu yapıştır:')||'';
     if(!kod.trim())return;
+    if(!confirm('Yedekteki kayıtlar bu cihazdaki aynı kayıtların üzerine yazılacak. Devam?'))return;
     try{
-      let ham=kod.replace(/\s+/g,'');
-      const i=ham.indexOf('MASALPARK1.'); if(i>=0)ham=ham.slice(i+11);
-      const d=JSON.parse(decodeURIComponent(escape(atob(ham))));
-      if(!d||typeof d!=='object')throw new Error('bicim');
-      const n=Object.keys(d).length;
-      if(!confirm(n+' kayıt geri yüklenecek ve bu cihazdaki aynı kayıtların üzerine yazılacak. Devam?'))return;
-      for(const k of Object.keys(d))try{ localStorage.setItem(k,d[k]); }catch(err){}
+      const n=veriUygula(kod);
       alert('✅ '+n+' kayıt geri yüklendi! Oyunlara girince ilerlemeler yerinde olacak.');
     }catch(err){
       alert('❌ Kod çözülemedi. Kodun tamamını (MASALPARK1. ile başlayan bölümü) yapıştırdığından emin ol.');
     }
   });
+
+  /* ── ☁️ Bulut Kaydı (Aile Kodu) ── */
+  const BULUT_API=localStorage.getItem('mp_bulutApi')
+    ||'https://masalpark-kayit.heroharun.workers.dev/api/kayit/';
+  const aileKodu=()=>localStorage.getItem('mp_aileKodu')||'';
+  function bulutCiz(){
+    const k=aileKodu();
+    document.getElementById('bulutVar').style.display=k?'':'none';
+    document.getElementById('bulutYok').style.display=k?'none':'';
+    document.getElementById('bulutDurum').textContent=k?'Aile kodun: '+k:'';
+  }
+  async function bulutYedekleSimdi(sessiz){
+    const k=aileKodu(); if(!k)return false;
+    try{
+      const r=await fetch(BULUT_API+k,{method:'PUT',body:kodla()});
+      if(!r.ok)throw new Error('sunucu');
+      try{ localStorage.setItem('mp_sonBulut',''+Date.now()); }catch(err){}
+      if(!sessiz)alert('☁️ İlerleme buluta yedeklendi!\nAile kodun: '+k+'\nBu kodu bir kenara yaz — geri almak için tek anahtar bu.');
+      return true;
+    }catch(err){
+      if(!sessiz)alert('❌ Bulut sunucusuna ulaşılamadı. İnterneti kontrol edip tekrar dene.');
+      return false;
+    }
+  }
+  async function bulutIndir(k){
+    try{
+      const r=await fetch(BULUT_API+k);
+      if(!r.ok)throw new Error('sunucu');
+      const j=await r.json();
+      if(j.yok){ alert('Bu aile koduna ait bulut kaydı bulunamadı. Kodu kontrol et.'); return false; }
+      const n=veriUygula(j.veri);
+      try{ localStorage.setItem('mp_aileKodu',k); localStorage.setItem('mp_sonBulut',''+Date.now()); }catch(err){}
+      bulutCiz();
+      alert('✅ '+n+' kayıt buluttan geri yüklendi! Oyunlara girince her şey yerinde olacak.');
+      return true;
+    }catch(err){ alert('❌ Bulut kaydı alınamadı. İnterneti ve kodu kontrol et.'); return false; }
+  }
+  const HARFLER='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  function kodUret(){
+    const r=crypto.getRandomValues(new Uint8Array(8)); let s='AILE-';
+    for(let i=0;i<8;i++){ s+=HARFLER[r[i]%HARFLER.length]; if(i===3)s+='-'; }
+    return s;
+  }
+  document.getElementById('bulutOlustur').addEventListener('click',async e=>{
+    e.preventDefault();
+    if(!localStorage.length){ alert('Önce biraz oyna — yedeklenecek ilerleme oluşsun 🙂'); return; }
+    const k=kodUret();
+    try{ localStorage.setItem('mp_aileKodu',k); }catch(err){}
+    bulutCiz();
+    if(!await bulutYedekleSimdi(false)){
+      alert('Kod oluşturuldu ('+k+') ama ilk yedek gönderilemedi — internet gelince "☁️ Şimdi Yedekle"ye bas.');
+    }
+  });
+  document.getElementById('bulutBaglan').addEventListener('click',e=>{
+    e.preventDefault();
+    let k=(prompt('Aile kodunu gir (AILE-XXXX-XXXX):')||'').trim().toUpperCase().replace(/\s+/g,'');
+    if(!k)return;
+    if(!/^AILE-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(k)){ alert('Kod AILE-XXXX-XXXX biçiminde olmalı.'); return; }
+    if(localStorage.length>2&&!confirm('Buluttaki kayıtlar bu cihazdaki aynı kayıtların üzerine yazılacak. Devam?'))return;
+    bulutIndir(k);
+  });
+  document.getElementById('bulutYedekle').addEventListener('click',e=>{ e.preventDefault(); bulutYedekleSimdi(false); });
+  document.getElementById('bulutGeri').addEventListener('click',e=>{
+    e.preventDefault();
+    if(!confirm('Buluttaki son yedek, bu cihazdaki aynı kayıtların üzerine yazılacak. Devam?'))return;
+    bulutIndir(aileKodu());
+  });
+  document.getElementById('bulutKes').addEventListener('click',e=>{
+    e.preventDefault();
+    if(!confirm('Bu cihaz aile kodundan ayrılsın mı? (Buluttaki yedek silinmez, kodla tekrar bağlanabilirsin.)'))return;
+    try{ localStorage.removeItem('mp_aileKodu'); }catch(err){}
+    bulutCiz();
+  });
+  /* aile kodu bağlıysa: saatte bir sessiz otomatik yedek */
+  if(aileKodu()&&Date.now()-(parseInt(localStorage.getItem('mp_sonBulut'))||0)>3600000)
+    bulutYedekleSimdi(true);
+  bulutCiz();
 })();
 
 /* ── Uygulamayı Yükle (beforeinstallprompt) ── */
