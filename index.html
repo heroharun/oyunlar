@@ -94,8 +94,24 @@
   .cip:hover{border-color:rgba(255,201,77,.5)}
   .cip:focus-visible{outline:3px solid rgba(255,201,77,.35);outline-offset:2px}
 
+
+  /* ── FAVORİ + YENİ ── */
+  a.game{position:relative}
+  .favBtn{position:absolute;top:8px;right:8px;width:34px;height:34px;border:none;border-radius:50%;
+    background:rgba(18,16,42,.55);color:var(--dim);font-size:17px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;z-index:2;transition:color .15s,transform .15s}
+  .favBtn:hover{transform:scale(1.12)}
+  .favBtn.aktif{color:var(--yildiz)}
+  .favBtn:focus-visible{outline:2px solid var(--yildiz);outline-offset:2px}
+  .yeniRozet{position:absolute;top:10px;left:-7px;background:linear-gradient(90deg,#ff6b9d,#ff8a4c);
+    color:#fff;font-size:9px;font-weight:900;letter-spacing:.12em;padding:4px 9px 4px 11px;
+    border-radius:0 8px 8px 0;box-shadow:0 2px 8px rgba(255,107,157,.4);z-index:2}
+  .yeniRozet::before{content:"";position:absolute;left:0;top:-6px;border:3.5px solid transparent;
+    border-bottom-color:#a8365f;border-right-color:#a8365f}
+  #favBolum h2{color:var(--yildiz)} #yeniBolum h2{color:var(--pembe)}
   /* ── BÖLÜMLER ── */
   section.kategori{display:flex;flex-direction:column;gap:14px;scroll-margin-top:64px}
+  section.kategori[hidden]{display:none}
   h2{font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
     font-size:19px;font-weight:800;letter-spacing:.02em;color:var(--yildiz);
     display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
@@ -177,6 +193,16 @@
     <a class="cip" href="#arcade">🕹️ Arcade</a>
     <a class="cip" href="#ikikisi">👥 2 Kişilik</a>
   </nav>
+
+  <section class="kategori" id="favBolum" hidden>
+  <h2>⭐ FAVORİLERİM <span class="adet" id="favAdet"></span></h2>
+  <div class="grid" id="favGrid"></div>
+  </section>
+
+  <section class="kategori" id="yeniBolum" hidden>
+  <h2 class="pembe">🆕 YENİ GELENLER <span class="adet">son 7 gün</span></h2>
+  <div class="grid" id="yeniGrid"></div>
+  </section>
 
   <section class="kategori" id="egitici">
   <h2>İSLAMİ &amp; EĞİTİCİ <span class="adet">16 oyun</span></h2>
@@ -355,6 +381,70 @@ if('serviceWorker' in navigator)
     btn.classList.remove('acik');
   });
   window.addEventListener('appinstalled',()=>btn.classList.remove('acik'));
+})();
+
+
+/* ── Yeni Gelenler + Favoriler ── */
+(function(){
+  const EKLENME={
+    'bereket':'2026-08-07','kim-alim':'2026-08-06','renk-tuzagi':'2026-08-04','isikli-hafiza':'2026-08-04',
+    'yorunge':'2026-08-03','tava-tabak':'2026-08-03','iyilik-adasi':'2026-08-03','hafizlik-ajandasi':'2026-08-03',
+    'duble-yol':'2026-08-03','denge-ustasi':'2026-08-03','ayna-araba':'2026-08-03','kuafor-salonum':'2026-08-02',
+    'kelime-yorungesi':'2026-08-01','boltbloom':'2026-08-01','aklin-ters-kosesi':'2026-08-01',
+    'postane':'2026-07-31','arkeolog':'2026-07-31','minik-nalbur':'2026-07-30','minik-cicekci':'2026-07-30',
+    'topac-sumo':'2026-07-28'
+  };
+  const YENI_GUN=7, MS=864e5;
+  const klasor=a=>(a.getAttribute('href')||'').replace(/\/.*$/,'').replace(/\/$/,'');
+  const kartlar=[...document.querySelectorAll('section.kategori a.game')]
+    .filter(a=>!a.closest('#favBolum,#yeniBolum'));
+
+  /* — yeni gelenler — */
+  const simdi=Date.now();
+  const yeniler=kartlar.filter(a=>{
+    const d=EKLENME[klasor(a)];
+    return d&&(simdi-new Date(d+'T00:00:00').getTime())<YENI_GUN*MS;
+  }).sort((a,b)=>EKLENME[klasor(b)].localeCompare(EKLENME[klasor(a)]));
+  if(yeniler.length){
+    const grid=document.getElementById('yeniGrid');
+    for(const a of yeniler){
+      a.insertAdjacentHTML('afterbegin','<span class="yeniRozet">YENİ</span>');
+      grid.appendChild(a.cloneNode(true));
+    }
+    document.getElementById('yeniBolum').hidden=false;
+  }
+
+  /* — favoriler — */
+  const OKU=()=>{ try{ return JSON.parse(localStorage.getItem('mp_favoriler')||'[]'); }catch(e){ return []; } };
+  const YAZ=f=>{ try{ localStorage.setItem('mp_favoriler',JSON.stringify(f)); }catch(e){} };
+  function favYenile(){
+    const fav=OKU();
+    const grid=document.getElementById('favGrid');
+    grid.innerHTML='';
+    for(const a of kartlar){
+      if(fav.includes(klasor(a))) grid.appendChild(a.cloneNode(true));
+    }
+    document.getElementById('favBolum').hidden=fav.length===0;
+    document.getElementById('favAdet').textContent=fav.length+' oyun';
+    /* tüm kopyalar dahil düğme durumlarını eşitle + kopyalara da düğme davranışı bağla */
+    document.querySelectorAll('a.game').forEach(a=>{
+      let b=a.querySelector('.favBtn');
+      if(!b){
+        b=document.createElement('button');
+        b.className='favBtn'; b.setAttribute('aria-label','Favorilere ekle/çıkar');
+        a.appendChild(b);
+        b.addEventListener('click',e=>{
+          e.preventDefault(); e.stopPropagation();
+          const k=klasor(a), f=OKU(), i=f.indexOf(k);
+          if(i>=0)f.splice(i,1); else f.push(k);
+          YAZ(f); favYenile();
+        });
+      }
+      b.textContent=OKU().includes(klasor(a))?'★':'☆';
+      b.classList.toggle('aktif',OKU().includes(klasor(a)));
+    });
+  }
+  favYenile();
 })();
 
 /* ── Oyun arama ── */
