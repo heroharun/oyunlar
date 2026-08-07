@@ -428,6 +428,7 @@ function sat3(yuk){
 }
 let gecisKilidi=false;
 function guncelle(dt){
+  if(tanitim>0)tanitim-=dt;
   let hx=0,hz=0;
   if(hedefNokta){
     const dx=hedefNokta.x-oyuncu.x, dz=hedefNokta.z-oyuncu.z;
@@ -589,7 +590,7 @@ function guncelle(dt){
   gunes.target.position.set(kx,0,kz);
 }
 
-let sonKalan=1;
+let sonKalan=1, tanitim=0;
 function yonOku(id,tx,tz,goster){
   const el=document.getElementById(id);
   if(!goster){ el.style.display='none'; return; }
@@ -610,8 +611,8 @@ function yonOku(id,tx,tz,goster){
   el.querySelector('.okM').textContent=Math.round(Math.hypot(dx,dz))+'m';
 }
 function etiketle(){
-  yonOku('okSat',SAT.x,SAT.z,oyuncu.yuk>0);
-  yonOku('okFidan',FIDAN.x,FIDAN.z,sonKalan===0&&dikilen<kesilen);
+  yonOku('okSat',SAT.x,SAT.z,oyuncu.yuk>0||tanitim>0);
+  yonOku('okFidan',FIDAN.x,FIDAN.z,(sonKalan===0&&dikilen<kesilen)||tanitim>0);
   yonOku('okKapi',KAPI.x,KAPI.z,sonKalan===0&&kesilen>0&&dikilen>=kesilen);
   const koy=(id,x,z)=>{
     const el=document.getElementById(id);
@@ -673,7 +674,7 @@ document.getElementById('sesBtn').addEventListener('click',()=>{
   S.ses=!S.ses; document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇'; kaydet();
 });
 document.getElementById('baslaBtn').addEventListener('click',()=>{
-  audio(); document.getElementById('giris').classList.add('gizli');
+  audio(); document.getElementById('giris').classList.add('gizli'); tanitim=6;
 });
 document.getElementById('nasilBtnG').addEventListener('click',()=>
   document.getElementById('nasil').classList.remove('gizli'));
@@ -681,7 +682,7 @@ document.getElementById('nasilKapatBtn').addEventListener('click',()=>
   document.getElementById('nasil').classList.add('gizli'));
 document.getElementById('abDevam').addEventListener('click',()=>{
   S.alan++; oyuncu.x=0; oyuncu.z=DH*0.28; oyuncu.yuk=0;
-  alanKur(); gecisKilidi=false;
+  alanKur(); gecisKilidi=false; tanitim=6;
   document.getElementById('alanBitti').classList.add('gizli');
   toast('🌍 '+biyom().ad+' — kereste 💰'+KUTUK_DEGER());
   kaydet();
