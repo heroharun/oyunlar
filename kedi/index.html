@@ -200,6 +200,10 @@ function boyut(){
 boyut(); addEventListener('resize',boyut);
 addEventListener('orientationchange',()=>setTimeout(boyut,250));
 const rnd=i=>((i*9301+49297)%233280)/233280;
+/* dünya ölçü birimi: dar ekranda genişlik, geniş ekranda yükseklik esas —
+   masaüstünde uzak çekim sağlar, telefonda değişmez */
+const BIRIM=()=>Math.min(W,H*0.62);
+const MOLC=()=>BIRIM()/390;
 
 /* ══════════ KOŞU DURUMU ══════════ */
 let kedi, dusmanlar, mermiler, baliklar, parcalar, yazilar;
@@ -299,8 +303,8 @@ function guncelle(dt){
   const hl=Math.hypot(hx,hy);
   if(hl>0){
     hx/=hl; hy/=hl;
-    kedi.x+=hx*W*0.32*kedi.hiz*dt;
-    kedi.y+=hy*W*0.32*kedi.hiz*dt;
+    kedi.x+=hx*BIRIM()*0.32*kedi.hiz*dt;
+    kedi.y+=hy*BIRIM()*0.32*kedi.hiz*dt;
     if(Math.abs(hx)>0.15)kedi.yon=hx>0?1:-1;
     kedi.kosuyor=true;
   } else kedi.kosuyor=false;
@@ -322,7 +326,7 @@ function guncelle(dt){
   if(atisS<=0&&dusmanlar.length>0){
     let hedefler=[...dusmanlar]
       .map(d=>({d,mesafe:Math.hypot(d.x-kedi.x,d.y-kedi.y)}))
-      .filter(o=>o.mesafe<W*kedi.menzil*2.4)
+      .filter(o=>o.mesafe<BIRIM()*kedi.menzil*2.4)
       .sort((a,b)=>a.mesafe-b.mesafe)
       .slice(0,kedi.adet);
     if(hedefler.length>0){
@@ -330,7 +334,7 @@ function guncelle(dt){
       for(let i=0;i<kedi.adet;i++){
         const h=hedefler[i%hedefler.length].d;
         const a=Math.atan2(h.y-kedi.y,h.x-kedi.x)+(i>=hedefler.length?(Math.random()-0.5)*0.5:0);
-        mermiler.push({x:kedi.x,y:kedi.y,vx:Math.cos(a)*W*0.75,vy:Math.sin(a)*W*0.75,
+        mermiler.push({x:kedi.x,y:kedi.y,vx:Math.cos(a)*BIRIM()*0.75,vy:Math.sin(a)*BIRIM()*0.75,
           omur:1.1,don:Math.random()*6.28});
       }
       sesAtis();
@@ -340,7 +344,7 @@ function guncelle(dt){
   for(const m of mermiler){
     m.x+=m.vx*dt; m.y+=m.vy*dt; m.omur-=dt; m.don+=dt*12;
     for(const d of dusmanlar){
-      if(Math.hypot(d.x-m.x,d.y-m.y)<W*d.r+W*0.016*kedi.yumakBoy){
+      if(Math.hypot(d.x-m.x,d.y-m.y)<BIRIM()*d.r+BIRIM()*0.016*kedi.yumakBoy){
         m.omur=0;
         d.hp-=kedi.hasar; d.flas=0.1;
         parca(m.x,m.y,4,'#ffb0c8');
@@ -365,9 +369,9 @@ function guncelle(dt){
     d.faz+=dt*7;
     if(d.flas>0)d.flas-=dt;
     const dx=kedi.x-d.x, dy=kedi.y-d.y, L=Math.hypot(dx,dy)||1;
-    d.x+=dx/L*W*d.hiz*dt;
-    d.y+=dy/L*W*d.hiz*dt;
-    if(L<W*(d.r+0.03)&&kedi.invuln<=0){
+    d.x+=dx/L*BIRIM()*d.hiz*dt;
+    d.y+=dy/L*BIRIM()*d.hiz*dt;
+    if(L<BIRIM()*(d.r+0.03)&&kedi.invuln<=0){
       kedi.hp-=d.hasar; kedi.invuln=1.2;
       sesCan(); buzz([30,50,30]);
       parca(kedi.x,kedi.y,8,'#e0514e');
@@ -377,10 +381,10 @@ function guncelle(dt){
   /* balıklar */
   for(const b of baliklar){
     const dx=kedi.x-b.x, dy=kedi.y-b.y, L=Math.hypot(dx,dy);
-    if(L<kedi.mik)b.cek=true;
+    if(L<kedi.mik*MOLC())b.cek=true;
     if(b.cek){
-      b.x+=dx/L*W*0.75*dt; b.y+=dy/L*W*0.75*dt;
-      if(L<W*0.03){
+      b.x+=dx/L*BIRIM()*0.75*dt; b.y+=dy/L*BIRIM()*0.75*dt;
+      if(L<BIRIM()*0.03){
         b.olu=true; xp++; sesBalik();
         if(xp>=xpEsik){
           xp=0; xpEsik=Math.round(xpEsik*1.35+2); seviye++;
@@ -414,7 +418,7 @@ function runBitir(){
 
 /* ══════════ ÇİZİM ══════════ */
 function kediCiz(){
-  const b=W*0.05, zip=kedi.kosuyor?Math.abs(Math.sin(performance.now()/90))*4:0;
+  const b=BIRIM()*0.05, zip=kedi.kosuyor?Math.abs(Math.sin(performance.now()/90))*4:0;
   ctx.save();
   ctx.translate(W/2,H/2-zip);
   ctx.scale(kedi.yon,1);
@@ -497,7 +501,7 @@ function kediCiz(){
 function dusmanCiz(d){
   const ex=W/2+(d.x-kedi.x), ey=H/2+(d.y-kedi.y);
   if(ex<-80||ex>W+80||ey<-80||ey>H+80)return;
-  const b=W*d.r*1.6, zip=Math.abs(Math.sin(d.faz))*3;
+  const b=BIRIM()*d.r*1.6, zip=Math.abs(Math.sin(d.faz))*3;
   ctx.save();
   ctx.translate(ex,ey-zip);
   ctx.beginPath(); ctx.ellipse(0,b*0.5+zip,b*0.62,b*0.16,0,0,7);
@@ -622,7 +626,7 @@ function ciz(){
   /* mermiler (yumaklar) */
   for(const m of mermiler){
     const ex=W/2+(m.x-kedi.x), ey=H/2+(m.y-kedi.y);
-    const r2=W*0.016*kedi.yumakBoy;
+    const r2=BIRIM()*0.016*kedi.yumakBoy;
     ctx.save(); ctx.translate(ex,ey); ctx.rotate(m.don);
     ctx.fillStyle='#ffb0c8';
     ctx.beginPath(); ctx.arc(0,0,r2,0,7); ctx.fill();
