@@ -426,7 +426,12 @@ if('serviceWorker' in navigator)
     const grid=document.getElementById('favGrid');
     grid.innerHTML='';
     for(const a of kartlar){
-      if(fav.includes(klasor(a))) grid.appendChild(a.cloneNode(true));
+      if(fav.includes(klasor(a))){
+        const kopya=a.cloneNode(true);
+        /* kopyadaki dinleyicisiz eski yıldızı at — aşağıda tazesi takılır */
+        kopya.querySelectorAll('.favBtn').forEach(b=>b.remove());
+        grid.appendChild(kopya);
+      }
     }
     document.getElementById('favBolum').hidden=fav.length===0;
     document.getElementById('favAdet').textContent=fav.length+' oyun';
