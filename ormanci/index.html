@@ -86,6 +86,7 @@
 </div>
 <div id="sagBtnlar">
   <button class="yuvarlakBtn" id="marketBtn" aria-label="Market">🛒</button>
+  <button class="yuvarlakBtn" id="modBtn" aria-label="Mod değiştir">🪚</button>
   <button class="yuvarlakBtn" id="sesBtn" aria-label="Ses">🔊</button>
 </div>
 <div id="kapKutu">
@@ -137,7 +138,9 @@
 
 6️⃣ 🛒 Market: testere, hız, kapasite, mıknatıs… ayrıca BOT hasatçı (keser + yerdeki kütükleri toplar), ek FORKLIFT ve ek KAMYON al — tam otomatik fabrika kur!
 
-7️⃣ Tüm ağaçlar bitince ve denge 🌱 tamamsa yeni bölge kapısı açılır — sonbahar, bambu, karlı çam… sonsuza kadar!</p>
+7️⃣ Sağdaki mod düğmesi: 🪚 kesiciyi sür → 🚜 forklifte geç (depodan al, kamyona yükle; kesici otomatik çalışır) → 👁️ eller serbest: hiçbir şey yapma, fabrikanı izle!
+
+8️⃣ Tüm ağaçlar bitince ve denge 🌱 tamamsa yeni bölge kapısı açılır — sonbahar, bambu, karlı çam… sonsuza kadar!</p>
   <button class="btn" id="nasilKapatBtn">Anladım</button>
 </div>
 
@@ -151,7 +154,7 @@
 <script type="module">
 import * as THREE from './three.module.js';
 /* ══════════ KAYIT ══════════ */
-const VARS={para:0, alan:1, ses:true, depo:0,
+const VARS={para:0, alan:1, ses:true, depo:0, mod:'kesici',
   sev:{bicak:1,hiz:1,kap:1,mik:1,bot:0,fidanci:0,fork:1,kamyon:1}, toplamPara:0, toplamFidan:0};
 let S;
 try{ S=Object.assign({},VARS,JSON.parse(localStorage.getItem('ormanci_v2')||'{}'));
@@ -560,17 +563,41 @@ function agacDevir(a,kimin){
     parcalar.push({mesh:p,vx:(Math.random()-.5)*8,vy:3+Math.random()*4,vz:(Math.random()-.5)*8,omur:0.9});
   }
 }
+let otoAgac=null;
+function otoHedef(){
+  if(oyuncu.yuk>=KAP()) return DEPO;
+  let enK=null,dK=1e9;
+  for(const k of kutukler){ if(k.ucus)continue;
+    const d=Math.hypot(k.x-oyuncu.x,k.z-oyuncu.z); if(d<dK){dK=d;enK=k;} }
+  if(!otoAgac||!otoAgac.canli){ let enY=null,enD=1e9;
+    for(const a of agaclar){ if(!a.canli)continue;
+      const d=Math.hypot(a.x-oyuncu.x,a.z-oyuncu.z); if(d<enD){enD=d;enY=a;} }
+    otoAgac=enY; }
+  const dT=otoAgac?Math.hypot(otoAgac.x-oyuncu.x,otoAgac.z-oyuncu.z):1e9;
+  if(enK&&oyuncu.yuk<KAP()&&dK<dT)return enK;
+  if(otoAgac)return otoAgac;
+  if(oyuncu.yuk>0)return DEPO;
+  if(dikilen<kesilen)return FIDAN;
+  return null;
+}
 let gecisKilidi=false;
 function guncelle(dt){
   if(tanitim>0)tanitim-=dt;
   let hx=0,hz=0;
-  if(hedefNokta){
-    const dx=hedefNokta.x-oyuncu.x, dz=hedefNokta.z-oyuncu.z;
-    const L=Math.hypot(dx,dz);
-    if(L>2){ hx=dx/L; hz=dz/L; }
+  if(S.mod==='kesici'){
+    if(hedefNokta){
+      const dx=hedefNokta.x-oyuncu.x, dz=hedefNokta.z-oyuncu.z;
+      const L=Math.hypot(dx,dz);
+      if(L>2){ hx=dx/L; hz=dz/L; }
+    }
+    if(tus.ArrowUp||tus.w)hz=-1; if(tus.ArrowDown||tus.s)hz=1;
+    if(tus.ArrowLeft||tus.a)hx=-1; if(tus.ArrowRight||tus.d)hx=1;
+  } else {
+    /* otopilot: eller serbest / forklift modunda kesici kendi çalışır */
+    const t=otoHedef();
+    if(t){ const dx=t.x-oyuncu.x, dz=t.z-oyuncu.z, L=Math.hypot(dx,dz);
+      if(L>3){ hx=dx/L; hz=dz/L; } }
   }
-  if(tus.ArrowUp||tus.w)hz=-1; if(tus.ArrowDown||tus.s)hz=1;
-  if(tus.ArrowLeft||tus.a)hx=-1; if(tus.ArrowRight||tus.d)hx=1;
   const hl=Math.hypot(hx,hz);
   let hareket=false;
   if(hl>0){
@@ -709,6 +736,33 @@ function guncelle(dt){
   }
   /* forkliftler: depo → kamyon */
   for(const F of forkliftler){
+    if(S.mod==='forklift'&&F===forkliftler[0]){
+      /* forklift sende: parmakla sür, depo/kamyonda otomatik al-boşalt */
+      if(hedefNokta){
+        const dx=hedefNokta.x-F.x, dz=hedefNokta.z-F.z, L=Math.hypot(dx,dz);
+        if(L>1.5){ F.a=Math.atan2(dx,dz); F.x+=dx/L*13*dt; F.z+=dz/L*13*dt; }
+      }
+      F.x=Math.max(-DW*0.48,Math.min(DW*0.48,F.x));
+      F.z=Math.max(-DH*0.48,Math.min(DH*0.48,F.z));
+      if(F.tasinan<4&&S.depo>0&&Math.hypot(F.x-DEPO.x,F.z-DEPO.z)<DEPO.r+2){
+        F.alS=(F.alS||0)+dt*5;
+        const n=Math.min(Math.floor(F.alS),4-F.tasinan,S.depo);
+        if(n>0){ F.alS-=n; S.depo-=n; F.tasinan+=n; blip(540,0.04,0.06); }
+      }
+      if(F.tasinan>0){
+        for(const K of kamyonlar){
+          if(K.durum!=='bekle')continue;
+          if(Math.hypot(F.x-bayX(K.bay),F.z-YOL_Z)<7){
+            const n=Math.min(F.tasinan,KAMYON_KAP-K.yuk-K.gelen);
+            if(n>0){ K.yuk+=n; F.tasinan-=n; blip(660,0.06,0.07); buzz(8); }
+          }
+        }
+      }
+      F.mesh.position.set(F.x,0,F.z);
+      F.mesh.rotation.y=F.a+Math.PI;
+      forkYukGoster(F);
+      continue;
+    }
     let tx=null,tz=null;
     if(F.durum==='bekle'){
       const kam=kamyonlar.find(K=>K.durum==='bekle'&&K.yuk+K.gelen<KAMYON_KAP);
@@ -794,7 +848,8 @@ function guncelle(dt){
     }
   } else etK.style.display='none';
   /* kamera takip */
-  const kx=oyuncu.x, kz=oyuncu.z;
+  let kx=oyuncu.x, kz=oyuncu.z;
+  if(S.mod==='forklift'&&forkliftler[0]){ kx=forkliftler[0].x; kz=forkliftler[0].z; }
   kamera.position.x+=(kx-kamera.position.x)*Math.min(1,dt*4);
   kamera.position.y+=(34-kamera.position.y)*Math.min(1,dt*4);
   kamera.position.z+=(kz+24-kamera.position.z)*Math.min(1,dt*4);
@@ -896,8 +951,23 @@ document.getElementById('marketKapat').addEventListener('click',()=>
 document.getElementById('market').addEventListener('click',e=>{
   if(e.target.id==='market')document.getElementById('market').classList.add('gizli');
 });
+const MODLAR=['kesici','forklift','izle'];
+const MOD_EMOJI={kesici:'🪚',forklift:'🚜',izle:'👁️'};
+const MOD_MSG={kesici:'🪚 Kesici sende!',forklift:'🚜 Forklift sende — depodan al, kamyona yükle!',izle:'👁️ Eller serbest: arkana yaslan, fabrika çalışıyor'};
+function modUygula(){ document.getElementById('modBtn').textContent=MOD_EMOJI[S.mod]||'🪚'; }
+document.getElementById('modBtn').addEventListener('click',()=>{
+  audio();
+  /* forklift modundan çıkarken eldeki yükü depoya iade et */
+  if(S.mod==='forklift'&&forkliftler[0]&&forkliftler[0].tasinan>0){
+    S.depo+=forkliftler[0].tasinan; forkliftler[0].tasinan=0; forkliftler[0].durum='don';
+  }
+  S.mod=MODLAR[(MODLAR.indexOf(S.mod)+1)%MODLAR.length];
+  modUygula(); toast(MOD_MSG[S.mod]); blip(760,0.08,0.1); buzz(10); kaydet();
+});
 document.getElementById('sesBtn').addEventListener('click',()=>{
-  S.ses=!S.ses; document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇'; kaydet();
+  S.ses=!S.ses; if(!S.mod||!['kesici','forklift','izle'].includes(S.mod))S.mod='kesici';
+modUygula();
+document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇'; kaydet();
 });
 document.getElementById('baslaBtn').addEventListener('click',()=>{
   audio(); document.getElementById('giris').classList.add('gizli'); tanitim=6;
@@ -921,8 +991,13 @@ function hud(){
   const d=document.getElementById('dengeEl');
   d.textContent='🌱 '+dikilen+'/'+kesilen;
   d.className='rozet '+(dikilen>=kesilen?'iyi':'kotu');
-  document.getElementById('kapDolu').style.width=(oyuncu.yuk/KAP()*100)+'%';
-  document.getElementById('kapYazi').textContent='🪵 '+oyuncu.yuk+'/'+KAP()+' · 🏭 '+S.depo;
+  if(S.mod==='forklift'&&forkliftler[0]){
+    document.getElementById('kapDolu').style.width=(forkliftler[0].tasinan/4*100)+'%';
+    document.getElementById('kapYazi').textContent='🚜 '+forkliftler[0].tasinan+'/4 · 🏭 '+S.depo;
+  } else {
+    document.getElementById('kapDolu').style.width=(oyuncu.yuk/KAP()*100)+'%';
+    document.getElementById('kapYazi').textContent='🪵 '+oyuncu.yuk+'/'+KAP()+' · 🏭 '+S.depo;
+  }
 }
 
 /* ══════════ DÖNGÜ ══════════ */
@@ -938,6 +1013,8 @@ function dongu(ts){
   if((kayitS+=dt)>5){ kayitS=0; kaydet(); }
   requestAnimationFrame(dongu);
 }
+if(!S.mod||!['kesici','forklift','izle'].includes(S.mod))S.mod='kesici';
+modUygula();
 document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
 document.getElementById('kayitHint').textContent=S.toplamPara>0
   ?'Kayıtlı fabrikan hazır — Bölge '+S.alan+'!':'parmakla sür · 3B · reklamsız · sonsuz';
