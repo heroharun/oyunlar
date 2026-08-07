@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>BÜYÜK OTELİM — 3D Otel İşlet, Yıldızları Topla!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --ink:#f5f2ec; --dim:#b8ad9c; --altin:#ffce54; --mavi:#4aa8e0; --yesil:#5fae52; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#1a2030;color:var(--ink);
+    font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  canvas{display:block}
+  #hud{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;display:flex;
+    justify-content:space-between;align-items:center;padding:0 12px;pointer-events:none;z-index:5;gap:8px}
+  .rozet{background:rgba(14,18,30,.88);border:1.5px solid rgba(255,255,255,.22);border-radius:14px;
+    padding:8px 13px;font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;
+    display:flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+  #paraEl{color:var(--altin);font-size:16px}
+  #yildizEl{color:var(--mavi)}
+  #sagBtnlar{position:fixed;right:12px;top:calc(max(10px,env(safe-area-inset-top)) + 54px);
+    display:flex;flex-direction:column;gap:10px;z-index:6}
+  .yuvarlakBtn{width:52px;height:52px;border-radius:17px;border:2px solid rgba(255,255,255,.32);
+    background:rgba(14,18,30,.86);font-size:23px;cursor:pointer;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+  .yuvarlakBtn:active{transform:scale(.92)}
+  #otelBtn{position:fixed;left:12px;top:calc(max(10px,env(safe-area-inset-top)) + 54px);
+    z-index:6;display:none;font:inherit;font-weight:900;font-size:13px;color:#1a2030;
+    background:linear-gradient(180deg,#ffd97a,#ffce54);border:none;border-radius:14px;
+    padding:11px 14px;cursor:pointer;box-shadow:0 4px 0 #b8862e;animation:nabiz 1.2s infinite}
+  @keyframes nabiz{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  #ipucu{position:fixed;left:0;top:0;z-index:9;pointer-events:none;display:none;
+    flex-direction:column;align-items:center;gap:4px;transform:translate(-50%,-100%)}
+  #ipucuEl{font-size:40px;animation:elSalla 1s ease-in-out infinite;filter:drop-shadow(0 3px 6px rgba(0,0,0,.7))}
+  #ipucuYazi{background:rgba(14,18,30,.94);border:2px solid var(--altin);border-radius:12px;
+    padding:8px 13px;font-size:13.5px;font-weight:800;white-space:nowrap;color:var(--altin)}
+  @keyframes elSalla{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(13px) rotate(6deg)}}
+  #toast{position:fixed;top:20%;left:50%;transform:translateX(-50%);font-size:20px;font-weight:900;
+    color:var(--altin);opacity:0;pointer-events:none;white-space:nowrap;z-index:8;
+    text-shadow:0 2px 12px rgba(0,0,0,.9)}
+  #toast.pop{animation:tp .95s ease-out}
+  @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.6)}15%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{opacity:1}100%{opacity:0}}
+  #dondur{position:fixed;inset:0;z-index:60;background:#1a2030;display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
+  #dondur .tel{font-size:74px;animation:dondurAn 1.6s ease-in-out infinite}
+  @keyframes dondurAn{0%,25%{transform:rotate(90deg)}60%,100%{transform:rotate(0)}}
+  #dondur p{font-size:18px;font-weight:900;color:var(--altin)}
+  #dondur small{color:var(--dim);font-size:13px}
+  #market{position:fixed;inset:0;background:rgba(8,12,22,.9);z-index:20;display:flex;
+    align-items:flex-end;justify-content:center;transition:opacity .25s}
+  #market.gizli{opacity:0;pointer-events:none;visibility:hidden}
+  #marketKutu{background:#242e44;border:2px solid #3c4a68;border-radius:24px 24px 0 0;
+    width:min(100%,560px);max-height:78vh;overflow-y:auto;padding:18px 16px max(20px,env(safe-area-inset-bottom))}
+  #marketKutu h2{font-size:17px;font-weight:900;margin-bottom:12px;display:flex;justify-content:space-between}
+  .up{font:inherit;display:flex;justify-content:space-between;align-items:center;gap:8px;
+    font-size:14px;font-weight:800;color:var(--ink);width:100%;margin-bottom:9px;
+    background:rgba(255,206,84,.1);border:1.5px solid rgba(255,206,84,.35);
+    border-radius:14px;padding:13px;cursor:pointer;min-height:52px;text-align:left}
+  .up small{display:block;font-weight:600;color:var(--dim);font-size:11px;margin-top:2px}
+  .up .fiyat{color:var(--altin);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .up:disabled{opacity:.4}
+  .up:active{filter:brightness(1.3)}
+  .kart{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(10,14,24,.97);
+    transition:opacity .3s;padding:24px;z-index:30;overflow-y:auto}
+  .kart.gizli{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .kart.gizli .btn{pointer-events:none}
+  .kart h1{font-size:clamp(30px,8vw,52px);font-weight:900;line-height:1.05;transform:rotate(-2deg);
+    background:linear-gradient(180deg,#ffd97a,#ffce54 55%,#4aa8e0);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .kart p{max-width:42ch;color:var(--dim);font-size:14.5px;line-height:1.65}
+  .kart .buyuk{font-size:28px;font-weight:900;color:var(--altin)}
+  .btn{font:inherit;font-weight:900;font-size:16px;letter-spacing:.05em;text-transform:uppercase;
+    color:#1a2030;background:linear-gradient(180deg,#ffd97a,#ffce54);border:none;border-radius:999px;
+    padding:15px 42px;cursor:pointer;box-shadow:0 5px 0 #b8862e}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b8862e}
+  .btn2{font:inherit;font-weight:800;font-size:13px;color:var(--ink);
+    background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.25);
+    border-radius:999px;padding:11px 26px;cursor:pointer}
+  .hint{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+</style>
+<div id="hud">
+  <div class="rozet" id="paraEl">💰 0</div>
+  <div class="rozet" id="yildizEl">🏨 Pansiyon</div>
+</div>
+<div id="sagBtnlar">
+  <button class="yuvarlakBtn" id="marketBtn" aria-label="Yönetim">🛒</button>
+  <button class="yuvarlakBtn" id="sesBtn" aria-label="Ses">🔊</button>
+</div>
+<button id="otelBtn">🌟 YENİ OTEL!</button>
+<div id="ipucu"><span id="ipucuEl">👆</span><span id="ipucuYazi"></span></div>
+<div id="toast"></div>
+<div id="dondur"><span class="tel">📱</span><p>Telefonu dik tut!</p><small>Büyük Otelim dikey ekranda oynanır 🙂</small></div>
+
+<div id="market" class="gizli">
+  <div id="marketKutu">
+    <h2>🛒 OTEL YÖNETİMİ <span id="mPara" style="color:var(--altin)">💰0</span></h2>
+    <button class="up" id="upOda"></button>
+    <button class="up" id="upKonfor"></button>
+    <button class="up" id="upDekor"></button>
+    <button class="up" id="upResepsiyon"></button>
+    <button class="up" id="upTemizlikci"></button>
+    <button class="btn" id="marketKapat" style="width:100%;margin-top:6px">Devam</button>
+  </div>
+</div>
+
+<div class="kart" id="giris">
+  <h1>BÜYÜK OTELİM</h1>
+  <p>Küçük pansiyonun ilk misafiri kapıda! 🛎️ <b style="color:var(--mavi)">Resepsiyona dokun</b> — misafiri odasına gönder. Uyusun, sabah ödesin; sonra <b style="color:var(--altin)">kirli odaya dokun</b>, tertemiz yap. Kazandıkça kat çık, resepsiyonist ve temizlikçi tut: otel sensiz de dönsün! Pansiyondan gökdelene, <b>sonsuza kadar!</b></p>
+  <button class="btn" id="baslaBtn">Oteli Aç!</button>
+  <button class="btn2" id="nasilBtnG">❓ Nasıl Oynanır</button>
+  <span class="hint" id="kayitHint"></span>
+</div>
+
+<div class="kart gizli" id="nasil">
+  <h1 style="font-size:26px">NASIL OYNANIR</h1>
+  <p style="text-align:left;white-space:pre-line">1️⃣ Misafir kapıdan girer, resepsiyonda bekler 🛎️ → RESEPSİYONA DOKUN: temiz bir odaya yerleşir.
+
+2️⃣ Misafir uyur 😴 → uyanınca öder 💰 (dekor güzelse bahşiş de bırakır!) ve gider.
+
+3️⃣ Boşalan oda KİRLENİR 🧹 → ODAYA DOKUN: temizlenir, yeni misafire hazır!
+
+4️⃣ 🛒 Yönetim: yeni odalar (kat kat yüksel!), konfor (fiyat), lobi dekoru (bahşiş), RESEPSİYONİST (otomatik check-in) ve TEMİZLİKÇİ (otomatik temizlik).
+
+5️⃣ Personelin sen yokken de çalışır — dönünce biriken parayı al 😴💰
+
+6️⃣ Ünlenince 🌟 YENİ OTEL: Pansiyon → Butik → Grand → Resort → Gökdelen… her otel 4 kat pahalı tarife. Sonsuza kadar!</p>
+  <button class="btn" id="nasilKapatBtn">Anladım</button>
+</div>
+
+<div class="kart gizli" id="offlineKart">
+  <h1 style="font-size:28px">😴 SEN YOKKEN…</h1>
+  <p>Personelin oteli açık tuttu! Biriken kazancın:</p>
+  <div class="buyuk" id="offlineMiktar"></div>
+  <button class="btn" id="offlineAl">Parayı Al!</button>
+</div>
+
+<div class="kart gizli" id="otelKart">
+  <h1 style="font-size:28px">🌟 YENİ OTEL!</h1>
+  <p id="otelYazi"></p>
+  <div class="buyuk" id="otelCarpan"></div>
+  <button class="btn" id="otelEvet">Taşın!</button>
+  <button class="btn2" id="otelHayir">Biraz Daha İşleteyim</button>
+</div>
+
+<script type="module">
+import * as THREE from './three.module.js';
+/* ══════════ KAYIT ══════════ */
+const VARS={para:0, otel:1,
+  sev:{oda:1,konfor:1,dekor:1,resepsiyon:0,temizlikci:0},
+  toplamKazanc:0, ses:true, sonZaman:0, yardim:0};
+let S;
+try{ S=Object.assign({},VARS,JSON.parse(localStorage.getItem('otel_v1')||'{}'));
+  S.sev=Object.assign({},VARS.sev,S.sev||{});
+}catch(e){ S=JSON.parse(JSON.stringify(VARS)); }
+function kaydet(){ S.sonZaman=Date.now();
+  try{ localStorage.setItem('otel_v1',JSON.stringify(S)); }catch(e){} }
+
+/* ══════════ SES ══════════ */
+let AC=null;
+const audio=()=>{ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function ton(f,t0,d,v,tip,kay){ const a=audio(),o=a.createOscillator(),g=a.createGain();
+  o.type=tip||'triangle'; o.frequency.setValueAtTime(f,a.currentTime+t0);
+  if(kay)o.frequency.exponentialRampToValueAtTime(kay,a.currentTime+t0+d);
+  g.gain.setValueAtTime(0.0001,a.currentTime+t0);
+  g.gain.linearRampToValueAtTime(v,a.currentTime+t0+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+t0+d);
+  o.connect(g).connect(a.destination); o.start(a.currentTime+t0); o.stop(a.currentTime+t0+d+0.03); }
+function gurultu(t0,d,v,frek,q){ const a=audio(),n=a.createBufferSource(),
+  buf=a.createBuffer(1,a.sampleRate*d,a.sampleRate),dd=buf.getChannelData(0);
+  for(let i=0;i<dd.length;i++)dd[i]=(Math.random()*2-1)*Math.pow(1-i/dd.length,1.4);
+  n.buffer=buf; const g=a.createGain(); g.gain.value=v;
+  const f=a.createBiquadFilter(); f.type='bandpass'; f.frequency.value=frek||3000; f.Q.value=q||1;
+  n.connect(f).connect(g).connect(a.destination); n.start(a.currentTime+t0); }
+const sesZil=()=>{ if(S.ses)try{ ton(1568,0,0.3,0.08,'sine'); ton(1976,0.02,0.28,0.05,'sine'); }catch(e){} };
+const sesPara=()=>{ if(S.ses)try{ gurultu(0,0.05,0.08,5000,1);
+  ton(988,0.02,0.08,0.08); ton(1319,0.08,0.09,0.08); ton(1568,0.14,0.14,0.07); }catch(e){} };
+const sesSupurge=()=>{ if(S.ses)try{ gurultu(0,0.14,0.07,1400,0.8); gurultu(0.14,0.14,0.06,1700,0.8); }catch(e){} };
+const sesKapi=()=>{ if(S.ses)try{ ton(392,0,0.09,0.05); ton(523,0.08,0.11,0.05); }catch(e){} };
+const sesYukselt=()=>{ if(S.ses)try{ ton(523,0,0.09,0.09); ton(659,0.07,0.09,0.09); ton(784,0.14,0.14,0.1); }catch(e){} };
+const sesFanfar=()=>{ if(S.ses)try{ ton(523,0,0.1,0.1); ton(659,0.08,0.1,0.1); ton(784,0.16,0.1,0.1); ton(1047,0.24,0.24,0.11); }catch(e){} };
+const buzz=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+/* ══════════ EKONOMİ ══════════ */
+const OTELLER=['Pansiyon','Butik Otel','Grand Otel','Deniz Resort','Dağ Oteli','Gökdelen Otel'];
+const OTEL_AD=()=>OTELLER[(S.otel-1)%OTELLER.length]+(S.otel>OTELLER.length?' '+Math.ceil(S.otel/OTELLER.length):'');
+const CARPAN=()=>Math.pow(4,S.otel-1);
+const ODA_MAX=8;
+const ODA_SAYI=()=>Math.min(ODA_MAX,S.sev.oda);
+const ODA_FIYAT=()=>Math.round(14*Math.pow(1.35,S.sev.konfor-1))*CARPAN();
+const DEKOR_TIP=()=>S.sev.dekor*0.2;
+const UYKU_SURE=()=>7;
+const F={
+  oda:()=>Math.round(80*Math.pow(2.6,S.sev.oda-1)),
+  konfor:()=>Math.round(25*Math.pow(1.6,S.sev.konfor-1)),
+  dekor:()=>Math.round(30*Math.pow(1.7,S.sev.dekor-1)),
+  resepsiyon:()=>250,
+  temizlikci:()=>200
+};
+const OTEL_ESIK=()=>6000*Math.pow(14,S.otel-1);
+function kisa(n){
+  if(n<1000)return Math.floor(n)+'';
+  const B=['K','M','B','T','q','Q'];
+  let e=Math.floor(Math.log10(n)/3);
+  if(e>B.length)return n.toExponential(2);
+  return (n/Math.pow(1000,e)).toFixed(n/Math.pow(1000,e)<100?1:0)+B[e-1];
+}
+function uretimHizi(){
+  if(!S.sev.resepsiyon||!S.sev.temizlikci)return 0;
+  const dongu=UYKU_SURE()+8;
+  return ODA_SAYI()*ODA_FIYAT()*(1+DEKOR_TIP()*0.5)/dongu*0.8;
+}
+
+/* ══════════ 3B SAHNE ══════════ */
+const sahne=new THREE.Scene();
+sahne.background=new THREE.Color(0x1a2030);
+sahne.fog=new THREE.Fog(0x1a2030,40,90);
+const kamera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,1,200);
+const cizici=new THREE.WebGLRenderer({antialias:true});
+cizici.setPixelRatio(Math.min(devicePixelRatio,2));
+cizici.setSize(innerWidth,innerHeight);
+cizici.shadowMap.enabled=true;
+cizici.shadowMap.type=THREE.PCFSoftShadowMap;
+document.body.prepend(cizici.domElement);
+addEventListener('resize',()=>{ kamera.aspect=innerWidth/innerHeight;
+  kamera.updateProjectionMatrix(); cizici.setSize(innerWidth,innerHeight);
+  document.getElementById('dondur').style.display=(innerWidth>innerHeight&&innerHeight<560)?'flex':'none'; });
+if(innerWidth>innerHeight&&innerHeight<560)document.getElementById('dondur').style.display='flex';
+
+sahne.add(new THREE.HemisphereLight(0xfff4e0,0x2a3248,0.95));
+const isik=new THREE.DirectionalLight(0xffeed0,1.1);
+isik.position.set(-14,26,18); isik.castShadow=true;
+isik.shadow.mapSize.set(1024,1024);
+isik.shadow.camera.left=-24; isik.shadow.camera.right=24;
+isik.shadow.camera.top=30; isik.shadow.camera.bottom=-8;
+sahne.add(isik);
+
+const MAT={};
+const mat=r=>{ if(!MAT[r])MAT[r]=new THREE.MeshLambertMaterial({color:r}); return MAT[r]; };
+
+/* zemin + kaldırım + yol */
+const zemin=new THREE.Mesh(new THREE.PlaneGeometry(80,50),mat(0x3a4258));
+zemin.rotation.x=-Math.PI/2; zemin.position.z=6; zemin.receiveShadow=true; sahne.add(zemin);
+const kaldirim=new THREE.Mesh(new THREE.BoxGeometry(30,0.3,8),mat(0x5c6478));
+kaldirim.position.set(0,0.15,8); kaldirim.receiveShadow=true; sahne.add(kaldirim);
+/* ay + yıldız gökyüzü hissi: emissive küre */
+const ay=new THREE.Mesh(new THREE.SphereGeometry(1.6,12,10),
+  new THREE.MeshBasicMaterial({color:0xfff0b8}));
+ay.position.set(12,24,-20); sahne.add(ay);
+
+/* ── BİNA ── */
+const KAT_H=4.2, ODA_W=6.4, LOBI_H=4.6;
+const odaPoz=i=>{ const kat=Math.floor(i/2), sag=i%2;
+  return {x:sag?ODA_W/2+0.4:-ODA_W/2-0.4, y:LOBI_H+kat*KAT_H, kat}; };
+let binaGrubu=null, odaMeshler=[];
+function binaKur(){
+  if(binaGrubu)sahne.remove(binaGrubu);
+  binaGrubu=new THREE.Group(); odaMeshler=[];
+  const katSayi=Math.ceil(ODA_SAYI()/2);
+  const binaW=ODA_W*2+2, binaH=LOBI_H+katSayi*KAT_H;
+  /* arka duvar */
+  const arka=new THREE.Mesh(new THREE.BoxGeometry(binaW,binaH,0.5),mat(0x8a94ac));
+  arka.position.set(0,binaH/2,-3); binaGrubu.add(arka);
+  /* yan duvarlar */
+  for(const sx of[-1,1]){
+    const yan=new THREE.Mesh(new THREE.BoxGeometry(0.6,binaH,6),mat(0x6e788e));
+    yan.position.set(sx*(binaW/2),binaH/2,0); yan.castShadow=true; binaGrubu.add(yan);
+  }
+  /* çatı */
+  const cati=new THREE.Mesh(new THREE.BoxGeometry(binaW+1.4,0.7,7),mat(0xd14e6e));
+  cati.position.set(0,binaH+0.35,0); cati.castShadow=true; binaGrubu.add(cati);
+  /* çatı tabelası */
+  const tabela=new THREE.Mesh(new THREE.BoxGeometry(binaW*0.6,1.6,0.3),mat(0x242e44));
+  tabela.position.set(0,binaH+1.6,0); binaGrubu.add(tabela);
+  /* LOBİ */
+  const lobiTaban=new THREE.Mesh(new THREE.BoxGeometry(binaW,0.4,6),mat(0x9c6a3a));
+  lobiTaban.position.set(0,0.2,0); lobiTaban.receiveShadow=true; binaGrubu.add(lobiTaban);
+  /* resepsiyon bankosu */
+  const banko=new THREE.Mesh(new THREE.BoxGeometry(4.4,1.5,1.4),mat(0x8a5a72));
+  banko.position.set(-3,1.15,0.6); banko.castShadow=true; binaGrubu.add(banko);
+  const bankoUst=new THREE.Mesh(new THREE.BoxGeometry(4.8,0.24,1.8),mat(0xffce54));
+  bankoUst.position.set(-3,1.98,0.6); binaGrubu.add(bankoUst);
+  /* zil */
+  const zil=new THREE.Mesh(new THREE.SphereGeometry(0.3,10,8),mat(0xffce54));
+  zil.position.set(-2,2.3,0.6); binaGrubu.add(zil);
+  /* kapı */
+  const kapi=new THREE.Mesh(new THREE.BoxGeometry(2.6,3.4,0.3),mat(0x4aa8e0));
+  kapi.position.set(4.4,1.7,2.9); binaGrubu.add(kapi);
+  /* lobi dekoru: saksılar dekor seviyesiyle */
+  for(let i=0;i<Math.min(4,S.sev.dekor);i++){
+    const saksi=new THREE.Group();
+    const pot=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.3,0.7,8),mat(0xc9694e));
+    pot.position.y=0.75; saksi.add(pot);
+    const yesil=new THREE.Mesh(new THREE.IcosahedronGeometry(0.6,0),mat(0x5fae52));
+    yesil.position.y=1.5; yesil.castShadow=true; saksi.add(yesil);
+    saksi.position.set(0.8+i*1.6,0,-1.6);
+    binaGrubu.add(saksi);
+  }
+  /* ODALAR */
+  for(let i=0;i<ODA_SAYI();i++){
+    const p=odaPoz(i);
+    const og=new THREE.Group();
+    /* kat tabanı */
+    const taban=new THREE.Mesh(new THREE.BoxGeometry(ODA_W-0.3,0.35,5.6),mat(0xb8a284));
+    taban.position.set(0,0.17,0); taban.receiveShadow=true; og.add(taban);
+    /* orta bölme duvarı */
+    if(i%2===0){
+      const bolme=new THREE.Mesh(new THREE.BoxGeometry(0.4,KAT_H-0.5,5.4),mat(0x6e788e));
+      bolme.position.set(ODA_W/2-0.1,KAT_H/2-0.2,0);
+      og.add(bolme);
+    }
+    /* yatak */
+    const yatakAlt=new THREE.Mesh(new THREE.BoxGeometry(2.6,0.7,1.7),mat(0x8a5a2e));
+    yatakAlt.position.set(-1.2,0.7,-1.2); yatakAlt.castShadow=true; og.add(yatakAlt);
+    const yorgan=new THREE.Mesh(new THREE.BoxGeometry(2.5,0.4,1.6),mat([0x4aa8e0,0x5fae52,0xb07ae0,0xe0714e][i%4]));
+    yorgan.position.set(-1.2,1.22,-1.2); og.add(yorgan);
+    const yastik=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.3,1.2),mat(0xf5f2ec));
+    yastik.position.set(-2.1,1.45,-1.2); og.add(yastik);
+    /* komodin + lamba */
+    const komodin=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.8,0.8),mat(0x9c6a3a));
+    komodin.position.set(0.6,0.75,-1.6); og.add(komodin);
+    const lamba=new THREE.Mesh(new THREE.ConeGeometry(0.3,0.4,8),mat(0xffce54));
+    lamba.position.set(0.6,1.4,-1.6); og.add(lamba);
+    /* kirli çarşaf yığını (görünürlüğü durumla) */
+    const kirli=new THREE.Group();
+    for(let k2=0;k2<3;k2++){
+      const cm=new THREE.Mesh(new THREE.IcosahedronGeometry(0.32,0),mat(0xc9c2b0));
+      cm.position.set(1.4+k2*0.3-0.3,0.5+k2*0.22,0.5); kirli.add(cm);
+    }
+    kirli.visible=false; og.add(kirli);
+    og.position.set(p.x,p.y,0);
+    og.userData={kirli};
+    binaGrubu.add(og);
+    odaMeshler.push(og);
+  }
+  sahne.add(binaGrubu);
+  /* kamera: bina yüksekliğine göre */
+  const bH=LOBI_H+katSayi*KAT_H;
+  kamera.position.set(0,bH*0.52+2.5,30+katSayi*3.2);
+  kamera.lookAt(0,bH*0.46,0);
+}
+
+/* insanlar */
+const TENLER=[0xe8b88a,0xd9a06e,0xc98d5c,0xf0c9a0];
+const KIYAFETLER=[0x3d8bfd,0x5fae52,0xe08d4e,0xb07ae0,0x4a9c9c,0xd14e6e];
+function insanYap(kiyafet){
+  const g=new THREE.Group();
+  const gov=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.5,1.3,10),mat(kiyafet));
+  gov.position.y=0.95; gov.castShadow=true; g.add(gov);
+  const kafa=new THREE.Mesh(new THREE.SphereGeometry(0.44,12,10),
+    mat(TENLER[Math.floor(Math.random()*TENLER.length)]));
+  kafa.position.y=2; kafa.castShadow=true; g.add(kafa);
+  const sac=new THREE.Mesh(new THREE.SphereGeometry(0.48,10,8),
+    mat([0x3a2a1a,0x1c1712,0x8a5a2e,0xc9694e][Math.floor(Math.random()*4)]));
+  sac.position.y=2.16; sac.scale.set(1,0.7,1); g.add(sac);
+  /* bavul */
+  const bavul=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.7,0.24),mat(0x8a5a2e));
+  bavul.position.set(0.62,0.5,0); g.add(bavul);
+  g.userData={bavul};
+  sahne.add(g);
+  return g;
+}
+function balonYap(){
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;left:0;top:0;pointer-events:none;z-index:4;'+
+    'font-size:19px;font-weight:900;text-shadow:0 2px 6px rgba(0,0,0,.6);'+
+    'transform:translate(-50%,-100%);display:none;white-space:nowrap';
+  document.body.appendChild(el);
+  return el;
+}
+function balonKoy(el,x,y,z,metin){
+  const v=new THREE.Vector3(x,y,z).project(kamera);
+  if(v.z>1){ el.style.display='none'; return; }
+  el.style.display='block';
+  el.textContent=metin;
+  el.style.transform='translate(-50%,-100%) translate('+((v.x+1)/2*innerWidth)+'px,'+((-v.y+1)/2*innerHeight)+'px)';
+}
+
+/* ══════════ OYUN DURUMU ══════════ */
+/* oda durumları: 'temiz' | 'dolu' | 'kirli' | 'temizleniyor' */
+let odalar=[], misafirler=[], spawnS=2, resepS=0, temizS=0;
+function odalariKur(){
+  odalar=Array.from({length:ODA_SAYI()},()=>({durum:'temiz',t:0}));
+}
+odalariKur(); binaKur();
+const KAPI_POS={x:4.4,z:3.2}, RESEP={x:-3,z:2.2};
+function misafirYap(){
+  const m=insanYap(KIYAFETLER[Math.floor(Math.random()*KIYAFETLER.length)]);
+  m.position.set(12,0.4,8);
+  const mus={mesh:m,durum:'gelis',x:12,y:0.4,z:8,hx:KAPI_POS.x,hy:0.4,hz:KAPI_POS.z,
+    oda:-1,balon:balonYap(),bekleS:0};
+  misafirler.push(mus);
+  return mus;
+}
+function yuru3(o,dt,hiz){
+  const dx=o.hx-o.x, dy=o.hy-o.y, dz=o.hz-o.z;
+  const L=Math.hypot(dx,dy,dz);
+  if(L<0.2)return true;
+  o.x+=dx/L*Math.min(hiz*dt,L); o.y+=dy/L*Math.min(hiz*dt,L); o.z+=dz/L*Math.min(hiz*dt,L);
+  return false;
+}
+function checkIn(){
+  const bekleyen=misafirler.find(m=>m.durum==='resepsiyonda');
+  if(!bekleyen)return false;
+  const bos=odalar.findIndex(o=>o.durum==='temiz');
+  if(bos<0)return false;
+  odalar[bos].durum='dolu'; odalar[bos].t=0;
+  bekleyen.oda=bos; bekleyen.durum='odayaGit';
+  const p=odaPoz(bos);
+  bekleyen.hx=p.x+1; bekleyen.hy=p.y+0.4; bekleyen.hz=1.2;
+  sesZil(); buzz(6);
+  if(S.yardim===0){ S.yardim=1; }
+  return true;
+}
+function temizle(i){
+  if(odalar[i].durum!=='kirli')return false;
+  odalar[i].durum='temizleniyor'; odalar[i].t=0;
+  sesSupurge(); buzz(6);
+  if(S.yardim===1){ S.yardim=2; kaydet(); }
+  return true;
+}
+function guncelle(dt){
+  /* misafir doğuşu */
+  spawnS-=dt;
+  const beklemede=misafirler.filter(m=>['gelis','resepsiyonda'].includes(m.durum)).length;
+  if(spawnS<=0&&beklemede<3){
+    misafirYap(); sesKapi();
+    spawnS=5+Math.random()*4-Math.min(3,ODA_SAYI()*0.3);
+  }
+  /* misafirler */
+  for(const m of misafirler){
+    if(m.durum==='gelis'){
+      if(yuru3(m,dt,4)){
+        if(Math.abs(m.hx-KAPI_POS.x)<0.5&&Math.abs(m.hz-KAPI_POS.z)<0.5){
+          m.hx=RESEP.x+2.2; m.hz=RESEP.z;
+        } else { m.durum='resepsiyonda'; m.bekleS=0; }
+      }
+    }
+    else if(m.durum==='resepsiyonda'){
+      m.bekleS+=dt;
+      if(m.bekleS>30){ m.durum='gider'; m.hx=12; m.hz=8; }   /* çok bekledi, gitti */
+    }
+    else if(m.durum==='odayaGit'){
+      /* önce kapıya yürü, sonra "asansörle" oda katına */
+      if(yuru3(m,dt,4.2)){
+        m.durum='uyuyor';
+        const p=odaPoz(m.oda);
+        m.x=p.x-1.2; m.y=p.y+1.1; m.z=-1.2;
+        m.mesh.rotation.z=Math.PI/2;   /* yatay uzan */
+      }
+    }
+    else if(m.durum==='uyuyor'){ /* oda döngüsü sayar */ }
+    else if(m.durum==='oder'){
+      if(yuru3(m,dt,4.2)){
+        const kazanc=Math.round(ODA_FIYAT()*(1+Math.random()*DEKOR_TIP()));
+        S.para+=kazanc; S.toplamKazanc+=kazanc;
+        sesPara(); buzz([8,14,8]);
+        toast('+💰'+kisa(kazanc));
+        m.durum='gider'; m.hx=12; m.hz=8;
+      }
+    }
+    else if(m.durum==='gider'){
+      if(yuru3(m,dt,4.5)){ sahne.remove(m.mesh); m.balon.remove(); m.olu=true; }
+    }
+    m.mesh.position.set(m.x,m.y,m.z);
+    if(m.durum!=='uyuyor'){
+      m.mesh.rotation.z=0;
+      const dx=m.hx-m.x, dz=m.hz-m.z;
+      if(Math.hypot(dx,dz)>0.3)m.mesh.rotation.y=Math.atan2(dx,dz);
+      if(['gelis','odayaGit','oder','gider'].includes(m.durum))
+        m.mesh.position.y=m.y+Math.abs(Math.sin(performance.now()/110))*0.1;
+    }
+    /* balon */
+    if(m.durum==='resepsiyonda')balonKoy(m.balon,m.x,3.4,m.z,'🛎️');
+    else if(m.durum==='uyuyor')balonKoy(m.balon,m.x,odaPoz(m.oda).y+3,m.z,'😴');
+    else if(m.durum==='oder')balonKoy(m.balon,m.x,3.4,m.z,'🤩');
+    else m.balon.style.display='none';
+  }
+  misafirler=misafirler.filter(m=>!m.olu);
+  /* odalar */
+  for(let i=0;i<odalar.length;i++){
+    const o=odalar[i];
+    if(o.durum==='dolu'){
+      o.t+=dt;
+      if(o.t>=UYKU_SURE()){
+        const m=misafirler.find(m2=>m2.oda===i&&m2.durum==='uyuyor');
+        if(m){
+          m.durum='oder'; m.mesh.rotation.z=0;
+          m.hx=RESEP.x+2.2; m.hy=0.4; m.hz=RESEP.z;
+          m.y=0.4;
+        }
+        o.durum='kirli'; o.t=0;
+      }
+    } else if(o.durum==='temizleniyor'){
+      o.t+=dt;
+      if(o.t>=1.6){ o.durum='temiz'; o.t=0; }
+    }
+    if(odaMeshler[i])odaMeshler[i].userData.kirli.visible=(o.durum==='kirli'||o.durum==='temizleniyor');
+  }
+  /* otomatik personel */
+  if(S.sev.resepsiyon>0){
+    resepS-=dt;
+    if(resepS<=0){ resepS=2.2; checkIn(); }
+  }
+  if(S.sev.temizlikci>0){
+    temizS-=dt;
+    if(temizS<=0){
+      temizS=2.8;
+      const kirliIdx=odalar.findIndex(o=>o.durum==='kirli');
+      if(kirliIdx>=0)temizle(kirliIdx);
+    }
+  }
+}
+
+/* ══════════ DOKUNMA ══════════ */
+const isaret=new THREE.Raycaster();
+cizici.domElement.addEventListener('pointerdown',e=>{
+  audio(); sonEtkilesim=performance.now();
+  const v=new THREE.Vector2((e.clientX/innerWidth)*2-1,-(e.clientY/innerHeight)*2+1);
+  isaret.setFromCamera(v,kamera);
+  /* resepsiyon bölgesi mi? dünya x<0, y<4 düzlem kesişimi yaklaşık: ekran alt-sol */
+  /* pratik: odalara ve resepsiyona ekran-uzayı yakınlığıyla karar ver */
+  const nokta=(x,y,z)=>{
+    const p=new THREE.Vector3(x,y,z).project(kamera);
+    return {x:(p.x+1)/2*innerWidth, y:(-p.y+1)/2*innerHeight};
+  };
+  /* önce odalar */
+  for(let i=0;i<odalar.length;i++){
+    const p=odaPoz(i), e2=nokta(p.x,p.y+1.6,0);
+    if(Math.hypot(e.clientX-e2.x,e.clientY-e2.y)<innerWidth*0.11){
+      if(odalar[i].durum==='kirli')temizle(i);
+      return;
+    }
+  }
+  /* resepsiyon */
+  const r=nokta(RESEP.x,1.8,RESEP.z);
+  if(Math.hypot(e.clientX-r.x,e.clientY-r.y)<innerWidth*0.16){
+    checkIn();
+  }
+});
+
+/* ══════════ YÖNETİM ══════════ */
+function marketYaz(){
+  document.getElementById('mPara').textContent='💰'+kisa(S.para);
+  const yaz=(id,ad,alt,f,maks)=>{
+    const b=document.getElementById(id);
+    if(maks){ b.innerHTML='<span>'+ad+'<small>'+alt+'</small></span><span class="fiyat">MAKS ✅</span>';
+      b.disabled=true; return; }
+    b.innerHTML='<span>'+ad+'<small>'+alt+'</small></span><span class="fiyat">💰'+kisa(f)+'</span>';
+    b.disabled=S.para<f;
+  };
+  yaz('upOda','🚪 Yeni Oda ('+ODA_SAYI()+'/'+ODA_MAX+')','kat kat yüksel — daha çok misafir',F.oda(),ODA_SAYI()>=ODA_MAX);
+  yaz('upKonfor','🛏️ Konfor Sv'+S.sev.konfor,'gecelik ücret 💰'+kisa(ODA_FIYAT()),F.konfor(),false);
+  yaz('upDekor','🪴 Lobi Dekoru Sv'+S.sev.dekor,'bahşiş şansı artar',F.dekor(),false);
+  yaz('upResepsiyon','🛎️ Resepsiyonist','check-in otomatikleşir',F.resepsiyon(),S.sev.resepsiyon>0);
+  yaz('upTemizlikci','🧹 Temizlikçi','odalar otomatik temizlenir',F.temizlikci(),S.sev.temizlikci>0);
+}
+function al(t){
+  const f=F[t]();
+  if(t==='oda'&&ODA_SAYI()>=ODA_MAX)return;
+  if((t==='resepsiyon'||t==='temizlikci')&&S.sev[t]>0)return;
+  if(S.para<f)return;
+  S.para-=f; S.sev[t]++;
+  if(t==='oda'){ odalar.push({durum:'temiz',t:0}); binaKur(); }
+  if(t==='dekor')binaKur();
+  if(t==='resepsiyon')toast('🛎️ Resepsiyonist işe başladı!');
+  if(t==='temizlikci')toast('🧹 Temizlikçi işe başladı!');
+  sesYukselt(); buzz(10);
+  if(S.yardim===2&&(t==='resepsiyon'||t==='temizlikci')){ S.yardim=3; }
+  marketYaz(); kaydet();
+}
+[['upOda','oda'],['upKonfor','konfor'],['upDekor','dekor'],
+ ['upResepsiyon','resepsiyon'],['upTemizlikci','temizlikci']].forEach(([id,t])=>{
+  document.getElementById(id).addEventListener('click',()=>al(t));
+});
+document.getElementById('marketBtn').addEventListener('click',()=>{
+  audio(); marketYaz(); document.getElementById('market').classList.remove('gizli');
+});
+document.getElementById('marketKapat').addEventListener('click',()=>
+  document.getElementById('market').classList.add('gizli'));
+document.getElementById('market').addEventListener('click',e=>{
+  if(e.target.id==='market')document.getElementById('market').classList.add('gizli');
+});
+
+/* ══════════ AKILLI DEMO ══════════ */
+let sonEtkilesim=performance.now();
+function ipucuGoster(x,y,yazi){
+  const el=document.getElementById('ipucu');
+  el.style.display='flex';
+  el.style.transform='translate(-50%,-100%) translate('+x+'px,'+y+'px)';
+  document.getElementById('ipucuYazi').textContent=yazi;
+}
+function nokta2(x,y,z){
+  const p=new THREE.Vector3(x,y,z).project(kamera);
+  return {x:(p.x+1)/2*innerWidth, y:(-p.y+1)/2*innerHeight};
+}
+function ipucuKontrol(){
+  const el=document.getElementById('ipucu');
+  if(S.yardim>=3){ el.style.display='none'; return; }
+  if((performance.now()-sonEtkilesim)/1000<3.5){ el.style.display='none'; return; }
+  if(S.yardim===0&&misafirler.some(m=>m.durum==='resepsiyonda')){
+    const r=nokta2(RESEP.x,2.2,RESEP.z);
+    ipucuGoster(r.x,r.y,'🛎️ Resepsiyona dokun — misafiri yerleştir!'); return;
+  }
+  if(S.yardim===1){
+    const i=odalar.findIndex(o=>o.durum==='kirli');
+    if(i>=0){ const p=odaPoz(i), e2=nokta2(p.x,p.y+1.4,0);
+      ipucuGoster(e2.x,e2.y,'🧹 Kirli odaya dokun — temizle!'); return; }
+  }
+  if(S.yardim===2&&S.para>=200){
+    const r=document.getElementById('marketBtn').getBoundingClientRect();
+    ipucuGoster(r.left+r.width/2,r.bottom+46,'🛒 Personel tut — otomatikleşsin!'); return;
+  }
+  el.style.display='none';
+}
+
+/* ══════════ YENİ OTEL ══════════ */
+document.getElementById('otelBtn').addEventListener('click',()=>{
+  audio();
+  document.getElementById('otelYazi').textContent=
+    OTEL_AD()+' doldu taştı! Taşınırsan odalar ve personel sıfırlanır ama tarifeler kalıcı katlanır:';
+  document.getElementById('otelCarpan').textContent=
+    OTELLER[S.otel%OTELLER.length]+' · x'+kisa(Math.pow(4,S.otel))+' tarife!';
+  document.getElementById('otelKart').classList.remove('gizli');
+});
+document.getElementById('otelEvet').addEventListener('click',()=>{
+  S.otel++; S.para=0;
+  S.sev={oda:1,konfor:1,dekor:1,resepsiyon:0,temizlikci:0};
+  misafirler.forEach(m=>{ sahne.remove(m.mesh); m.balon.remove(); });
+  misafirler=[]; odalariKur(); binaKur();
+  document.getElementById('otelKart').classList.add('gizli');
+  toast('🌟 '+OTEL_AD()+' açıldı!');
+  sesFanfar(); buzz([30,40,60]); kaydet();
+});
+document.getElementById('otelHayir').addEventListener('click',()=>
+  document.getElementById('otelKart').classList.add('gizli'));
+
+/* ══════════ ÇEVRİMDIŞI ══════════ */
+(function(){
+  if(!S.sonZaman||S.toplamKazanc<=0)return;
+  const gecen=Math.min((Date.now()-S.sonZaman)/1000,4*3600);
+  if(gecen<90)return;
+  const kazanc=Math.floor(uretimHizi()*gecen*0.5);
+  if(kazanc<1)return;
+  S.para+=kazanc; S.toplamKazanc+=kazanc;
+  document.getElementById('offlineMiktar').textContent='+💰'+kisa(kazanc);
+  document.getElementById('offlineKart').classList.remove('gizli');
+})();
+document.getElementById('offlineAl').addEventListener('click',()=>{
+  audio(); sesPara();
+  document.getElementById('offlineKart').classList.add('gizli'); kaydet();
+});
+
+/* ══════════ HUD & DÖNGÜ ══════════ */
+function hud(){
+  document.getElementById('paraEl').textContent='💰 '+kisa(S.para);
+  document.getElementById('yildizEl').textContent='🏨 '+OTEL_AD()+' · '+ODA_SAYI()+' oda';
+  document.getElementById('otelBtn').style.display=
+    S.toplamKazanc>=OTEL_ESIK()?'block':'none';
+}
+document.getElementById('sesBtn').addEventListener('click',()=>{
+  S.ses=!S.ses; document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇'; kaydet();
+});
+document.getElementById('baslaBtn').addEventListener('click',()=>{
+  audio(); document.getElementById('giris').classList.add('gizli');
+  sonEtkilesim=performance.now()-2500;
+});
+document.getElementById('nasilBtnG').addEventListener('click',()=>
+  document.getElementById('nasil').classList.remove('gizli'));
+document.getElementById('nasilKapatBtn').addEventListener('click',()=>
+  document.getElementById('nasil').classList.add('gizli'));
+document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
+document.getElementById('kayitHint').textContent=S.toplamKazanc>0
+  ?'Kayıtlı otelin hazır — '+OTEL_AD()+'!':'3B otel · check-in · temizlik · sonsuz';
+if(S.toplamKazanc>0)document.getElementById('baslaBtn').textContent='Devam Et';
+
+let sonTs=performance.now(), kayitS=0;
+function dongu(ts){
+  const dt=Math.min(0.05,(ts-sonTs)/1000); sonTs=ts;
+  const oynuyor=document.getElementById('giris').classList.contains('gizli')
+    &&document.getElementById('market').classList.contains('gizli')
+    &&document.getElementById('offlineKart').classList.contains('gizli')
+    &&document.getElementById('otelKart').classList.contains('gizli');
+  if(oynuyor)guncelle(dt);
+  cizici.render(sahne,kamera);
+  hud();
+  if(oynuyor)ipucuKontrol(); else document.getElementById('ipucu').style.display='none';
+  if((kayitS+=dt)>5){ kayitS=0; kaydet(); }
+  requestAnimationFrame(dongu);
+}
+requestAnimationFrame(dongu);
+addEventListener('visibilitychange',()=>{ if(document.hidden)kaydet(); });
+/* test kancası */
+window.__O2={get S(){return S},get odalar(){return odalar},get misafirler(){return misafirler},
+  checkIn,temizle,ODA_SAYI,ODA_FIYAT,OTEL_AD,OTEL_ESIK,uretimHizi,kisa,
+  set paraVer(v){S.para=v},set kazancVer(v){S.toplamKazanc=v},
+  set uykuHizli(i){ if(odalar[i])odalar[i].t=999; }};
+</script>
+<script>/* MasalPark: oyun sirasinda ekran uykuya gecmesin */
+(function(){var wl=null;function al(){try{if(navigator.wakeLock&&document.visibilityState==='visible')
+navigator.wakeLock.request('screen').then(function(l){wl=l;}).catch(function(){});}catch(e){}}
+document.addEventListener('visibilitychange',function(){if(!document.hidden)al();});
+document.addEventListener('pointerdown',al,{once:true});al();})();</script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
+</html>
