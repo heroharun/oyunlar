@@ -1,13 +1,14 @@
 /* Oyun Salonu SW — kurulumda TÜM oyunları indirir (internetsiz oynanır),
    internet varken her açılışta sunucudan taze sürüm çeker (güncel kalır) */
-const CACHE = 'oyunlar-v3';
+const CACHE = 'oyunlar-v4';
 
 /* çevrimdışı paket: portal + tüm oyunlar (SW konumuna göre göreli çözülür) */
 const PAKET = ['./', 'manifest.json',
   'ikon/icon-192.png', 'ikon/icon-512.png', 'ikon/apple-touch-icon.png',
   '2048/', '2248/', 'aklin-ters-kosesi/', 'anka/', 'arkeolog/', 'ates-su/',
   'ayna-araba/', 'bereket/', 'blok-yagmuru/', 'boltbloom/', 'boyama/',
-  'buz-kule/', 'cop-basket/', 'denge-ustasi/', 'duble-yol/', 'fatihin-toplari/',
+  'buz-kule/', 'cop-basket/', 'denge-ustasi/', 'dondurmaci/', 'donerci/',
+  'duble-yol/', 'fatihin-toplari/',
   'gokyuzu-kartali/', 'hafizlik-ajandasi/', 'hal/', 'hikmet-yolculari/',
   'hokey/', 'isikli-hafiza/', 'iyilik-adasi/', 'kelime/', 'kelime-bahcesi/',
   'kelime-yorungesi/', 'kim-alim/', 'kos-zipla/', 'kuafor/', 'kuafor-salonum/',
