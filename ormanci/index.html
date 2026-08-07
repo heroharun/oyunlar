@@ -564,6 +564,7 @@ const BICAK_R=()=>2.2+S.sev.bicak*0.5;
 const KAP=()=>8+S.sev.kap*6;
 const MIK_R=()=>5+S.sev.mik*1.8;
 
+let izleKam={x:0,z:0}, izleSurukle=null;
 const isaret=new THREE.Raycaster();
 const zeminDuz=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 let hedefNokta=null;
@@ -574,10 +575,22 @@ function parmakDunya(ex,ey){
   isaret.ray.intersectPlane(zeminDuz,p);
   return p;
 }
-cizici.domElement.addEventListener('pointerdown',e=>{ audio(); hedefNokta=parmakDunya(e.clientX,e.clientY); });
-cizici.domElement.addEventListener('pointermove',e=>{ if(hedefNokta)hedefNokta=parmakDunya(e.clientX,e.clientY); });
-addEventListener('pointerup',()=>hedefNokta=null);
-addEventListener('pointercancel',()=>hedefNokta=null);
+cizici.domElement.addEventListener('pointerdown',e=>{
+  audio();
+  if(S.mod==='izle'){ izleSurukle={sx:e.clientX,sy:e.clientY,ox:izleKam.x,oz:izleKam.z}; return; }
+  hedefNokta=parmakDunya(e.clientX,e.clientY);
+});
+cizici.domElement.addEventListener('pointermove',e=>{
+  if(izleSurukle){
+    const wpp=100/innerHeight;   /* 118m yükseklikte piksel→metre */
+    izleKam.x=Math.max(-DW*0.55,Math.min(DW*0.55,izleSurukle.ox-(e.clientX-izleSurukle.sx)*wpp));
+    izleKam.z=Math.max(-DH*0.55,Math.min(DH*0.55,izleSurukle.oz-(e.clientY-izleSurukle.sy)*wpp));
+    return;
+  }
+  if(hedefNokta)hedefNokta=parmakDunya(e.clientX,e.clientY);
+});
+addEventListener('pointerup',()=>{hedefNokta=null;izleSurukle=null;});
+addEventListener('pointercancel',()=>{hedefNokta=null;izleSurukle=null;});
 const tus={};
 addEventListener('keydown',e=>tus[e.key]=true);
 addEventListener('keyup',e=>tus[e.key]=false);
@@ -624,6 +637,7 @@ function otoHedef(){
   if(otoAgac)return otoAgac;
   if(oyuncu.yuk>0)return DEPO;
   if(dikilen<kesilen)return FIDAN;
+  if(S.mod==='izle'&&kesilen>0&&dikilen>=kesilen)return KAPI;
   return null;
 }
 let gecisKilidi=false;
@@ -789,10 +803,15 @@ function guncelle(dt){
   /* forkliftler: depo → kamyon */
   for(const F of forkliftler){
     if(S.mod==='forklift'&&F===forkliftler[0]){
+      let mx=0,mz=0;
       if(hedefNokta){
         const dx=hedefNokta.x-F.x, dz=hedefNokta.z-F.z, L=Math.hypot(dx,dz);
-        if(L>1.5){ F.a=Math.atan2(dx,dz); F.x+=dx/L*13*dt; F.z+=dz/L*13*dt; }
+        if(L>1.5){ mx=dx/L; mz=dz/L; }
       }
+      if(tus.ArrowUp||tus.w)mz=-1; if(tus.ArrowDown||tus.s)mz=1;
+      if(tus.ArrowLeft||tus.a)mx=-1; if(tus.ArrowRight||tus.d)mx=1;
+      const ml=Math.hypot(mx,mz);
+      if(ml>0){ mx/=ml; mz/=ml; F.a=Math.atan2(mx,mz); F.x+=mx*13*dt; F.z+=mz*13*dt; }
       F.x=Math.max(-DW*0.48,Math.min(DW*0.48,F.x));
       F.z=Math.max(-DH*0.48,Math.min(DH*0.48,F.z));
       if(F.tasinan<FKAP()&&S.depo>0&&Math.hypot(F.x-DEPO.x,F.z-DEPO.z)<DEPO.r+2){
@@ -907,12 +926,16 @@ function guncelle(dt){
       document.getElementById('alanBitti').classList.remove('gizli');
       blip(523,0.2,0.13); blip(659,0.25,0.12); blip(784,0.35,0.13); buzz([30,40,60]);
       kaydet();
+      if(S.mod==='izle'){   /* eller serbest: kendiliğinden yeni bölgeye */
+        setTimeout(()=>{ if(!document.getElementById('alanBitti').classList.contains('gizli'))
+          document.getElementById('abDevam').click(); },5000);
+      }
     }
   } else etK.style.display='none';
   /* kamera: normalde takip, izle modunda tepeden 2B kuşbakışı */
   let kx=oyuncu.x, kz=oyuncu.z, ky=34, koff=24, bakOff=-4;
   if(S.mod==='forklift'&&forkliftler[0]){ kx=forkliftler[0].x; kz=forkliftler[0].z; }
-  if(S.mod==='izle'){ ky=118; koff=0.5; bakOff=0; }
+  if(S.mod==='izle'){ ky=118; koff=0.5; bakOff=0; kx=izleKam.x; kz=izleKam.z; }
   kamera.position.x+=(kx-kamera.position.x)*Math.min(1,dt*4);
   kamera.position.y+=(ky-kamera.position.y)*Math.min(1,dt*4);
   kamera.position.z+=(kz+koff-kamera.position.z)*Math.min(1,dt*4);
@@ -1024,7 +1047,7 @@ document.getElementById('market').addEventListener('click',e=>{
 });
 const MODLAR=['kesici','forklift','izle'];
 const MOD_EMOJI={kesici:'🪚',forklift:'🚜',izle:'👁️'};
-const MOD_MSG={kesici:'🪚 Kesici sende!',forklift:'🚜 Forklift sende — depodan al, kamyona yükle!',izle:'👁️ Eller serbest: kuşbakışı izle, fabrika çalışıyor'};
+const MOD_MSG={kesici:'🪚 Kesici sende!',forklift:'🚜 Forklift sende — depodan al, kamyona yükle!',izle:'👁️ Eller serbest: parmakla gez, fabrika kendi çalışır'};
 function modUygula(){ document.getElementById('modBtn').textContent=MOD_EMOJI[S.mod]||'🪚'; }
 document.getElementById('modBtn').addEventListener('click',()=>{
   audio();
@@ -1032,6 +1055,7 @@ document.getElementById('modBtn').addEventListener('click',()=>{
     S.depo+=forkliftler[0].tasinan; forkliftler[0].tasinan=0; forkliftler[0].durum='don';
   }
   S.mod=MODLAR[(MODLAR.indexOf(S.mod)+1)%MODLAR.length];
+  if(S.mod==='izle'){ izleKam.x=oyuncu.x; izleKam.z=oyuncu.z; }
   modUygula(); toast(MOD_MSG[S.mod]); blip(760,0.08,0.1); buzz(10); kaydet();
 });
 document.getElementById('sesBtn').addEventListener('click',()=>{
