@@ -108,9 +108,12 @@
     <button class="up" id="upHiz"></button>
     <button class="up" id="upKap"></button>
     <button class="up" id="upMik"></button>
-    <button class="up" id="upBot"></button>
+    <button class="up" id="upKesiciB"></button>
+    <button class="up" id="upToplayici"></button>
     <button class="up" id="upFork"></button>
+    <button class="up" id="upForkKap"></button>
     <button class="up" id="upKamyon"></button>
+    <button class="up" id="upKamyonKap"></button>
     <button class="up" id="upFidanci"></button>
     <button class="btn" id="marketKapat" style="width:100%;margin-top:6px">Devam</button>
   </div>
@@ -118,7 +121,7 @@
 
 <div class="kart" id="giris">
   <h1>ORMANCI</h1>
-  <p><b style="color:var(--yesil)">Parmağınla sür:</b> testereli aracın ağaçları devirir, kütükleri topla, <b style="color:var(--altin)">DEPOYA</b> boşalt. Forklift depodan kamyona taşır, <b style="color:var(--altin)">dolu kamyon yola çıkınca para gelir!</b> 🚚 Filonu büyüt: bot hasatçı, forklift, kamyon… Ama unutma: <b style="color:var(--yesil)">kestiğin kadar dikmeden</b> yeni bölgeye geçemezsin. 🌱</p>
+  <p><b style="color:var(--yesil)">Parmağınla sür:</b> testereli aracın ağaçları devirir, kütükleri topla, <b style="color:var(--altin)">DEPOYA</b> boşalt. Forklift depodan kamyona taşır, <b style="color:var(--altin)">dolu kamyon yola çıkınca para gelir!</b> 🚚 Filonu büyüt: kesici, toplayıcı, forklift, kamyon… Ama unutma: <b style="color:var(--yesil)">kestiğin kadar dikmeden</b> yeni bölgeye geçemezsin. 🌱</p>
   <button class="btn" id="baslaBtn">Kontağı Çevir!</button>
   <button class="btn2" id="nasilBtnG">❓ Nasıl Oynanır</button>
   <span class="hint" id="kayitHint"></span>
@@ -132,13 +135,13 @@
 
 3️⃣ Dolunca sarı 🏭 DEPO alanına sür: kütükler ambara istiflenir.
 
-4️⃣ 🚜 Forklift depodan kütükleri alır, yoldaki kamyona yükler. Kamyon dolunca yola çıkar — para o an gelir! 🚚💰
+4️⃣ 🚜 Forklift depodan kütükleri alır, yoldaki kamyona yükler. Kamyon dolunca boş şeride geçip yola çıkar — para o an gelir! 🚚💰
 
 5️⃣ Yeşil 🌱 FİDANLIK pedinde dur: kestiğin ağaçların yerine fidan dikilir.
 
-6️⃣ 🛒 Market: testere, hız, kapasite, mıknatıs… ayrıca BOT hasatçı (keser + yerdeki kütükleri toplar), ek FORKLIFT ve ek KAMYON al — tam otomatik fabrika kur!
+6️⃣ 🛒 Market: testere, hız, kapasite, mıknatıs… 🌲 KESİCİ botlar ağaç devirir, 🚛 TOPLAYICI botlar kütükleri depoya taşır (4'er tane). Forklift çatalı ve kamyon kasası sonsuza kadar büyür!
 
-7️⃣ Sağdaki mod düğmesi: 🪚 kesiciyi sür → 🚜 forklifte geç (depodan al, kamyona yükle; kesici otomatik çalışır) → 👁️ eller serbest: hiçbir şey yapma, fabrikanı izle!
+7️⃣ Sağdaki mod düğmesi: 🪚 kesiciyi sür → 🚜 forklifte geç (depodan al, kamyona yükle; kesici otomatik çalışır) → 👁️ eller serbest: tepeden kuşbakışı izle, fabrika kendi çalışır!
 
 8️⃣ Tüm ağaçlar bitince ve denge 🌱 tamamsa yeni bölge kapısı açılır — sonbahar, bambu, karlı çam… sonsuza kadar!</p>
   <button class="btn" id="nasilKapatBtn">Anladım</button>
@@ -155,10 +158,17 @@
 import * as THREE from './three.module.js';
 /* ══════════ KAYIT ══════════ */
 const VARS={para:0, alan:1, ses:true, depo:0, mod:'kesici',
-  sev:{bicak:1,hiz:1,kap:1,mik:1,bot:0,fidanci:0,fork:1,kamyon:1}, toplamPara:0, toplamFidan:0};
+  sev:{bicak:1,hiz:1,kap:1,mik:1,kesiciB:0,toplayici:0,fidanci:0,fork:1,kamyon:1,forkKap:1,kamyonKap:1},
+  toplamPara:0, toplamFidan:0};
 let S;
 try{ S=Object.assign({},VARS,JSON.parse(localStorage.getItem('ormanci_v2')||'{}'));
   S.sev=Object.assign({},VARS.sev,S.sev||{}); }catch(e){ S=JSON.parse(JSON.stringify(VARS)); }
+/* eski kayıtlardaki 'bot' → kesici + toplayıcı */
+if(S.sev.bot!==undefined){
+  S.sev.kesiciB=Math.max(S.sev.kesiciB||0,Math.min(4,S.sev.bot));
+  S.sev.toplayici=Math.max(S.sev.toplayici||0,Math.min(4,Math.max(0,S.sev.bot-4)));
+  delete S.sev.bot;
+}
 function kaydet(){ try{ localStorage.setItem('ormanci_v2',JSON.stringify(S)); }catch(e){} }
 
 /* ══════════ SES ══════════ */
@@ -193,9 +203,12 @@ const DEPO={x:0,z:DH*0.33,r:10};
 const FIDAN={x:-DW*0.32,z:DH*0.3,r:9};
 const KAPI={x:0,z:-DH*0.44};
 const YOL_Z=DH*0.45;
-const KAMYON_KAP=24;
+const SY=YOL_Z-3;     /* yükleme şeridi (kuzey) */
+const SB=YOL_Z+3.4;   /* boş/çıkış şeridi (güney) */
+const KKAP=()=>24+12*(S.sev.kamyonKap-1);   /* kamyon kasası — sonsuz büyür */
+const FKAP=()=>4+2*(S.sev.forkKap-1);       /* forklift çatalı — sonsuz büyür */
 const bayX=i=>-22+i*22;
-const MAKS={fork:4,kamyon:3,bot:6};
+const MAKS={fork:4,kamyon:3,kesiciB:4,toplayici:4};
 
 const sahne=new THREE.Scene();
 const kamera=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,1,400);
@@ -224,19 +237,19 @@ const mat=renk=>{ if(!MAT[renk])MAT[renk]=new THREE.MeshLambertMaterial({color:r
 let zemin=null, dekorlar=[], yolDekor=[];
 function yolKur(){
   yolDekor.forEach(d=>sahne.remove(d)); yolDekor=[];
-  const yol=new THREE.Mesh(new THREE.PlaneGeometry(DW*2.4,11),mat(0x6b6257));
-  yol.rotation.x=-Math.PI/2; yol.position.set(0,0.03,YOL_Z);
+  const yol=new THREE.Mesh(new THREE.PlaneGeometry(DW*2.4,16),mat(0x6b6257));
+  yol.rotation.x=-Math.PI/2; yol.position.set(0,0.03,YOL_Z+0.2);
   yol.receiveShadow=true; sahne.add(yol); yolDekor.push(yol);
-  for(let i=0;i<9;i++){
+  for(let i=0;i<14;i++){
     const cz=new THREE.Mesh(new THREE.PlaneGeometry(4,0.5),
       new THREE.MeshBasicMaterial({color:0xd9d2c5,transparent:true,opacity:0.7}));
-    cz.rotation.x=-Math.PI/2; cz.position.set(-DW+i*DW*0.28,0.04,YOL_Z);
+    cz.rotation.x=-Math.PI/2; cz.position.set(-DW*1.1+i*DW*0.17,0.04,YOL_Z+0.2);
     sahne.add(cz); yolDekor.push(cz);
   }
   for(let i=0;i<S.sev.kamyon;i++){
-    const bay=new THREE.Mesh(new THREE.PlaneGeometry(10,8),
+    const bay=new THREE.Mesh(new THREE.PlaneGeometry(11,7),
       new THREE.MeshBasicMaterial({color:0xffe08a,transparent:true,opacity:0.28}));
-    bay.rotation.x=-Math.PI/2; bay.position.set(bayX(i),0.05,YOL_Z);
+    bay.rotation.x=-Math.PI/2; bay.position.set(bayX(i),0.05,SY);
     sahne.add(bay); yolDekor.push(bay);
   }
 }
@@ -267,7 +280,6 @@ function zeminKur(){
   };
   ped(DEPO.x,DEPO.z,DEPO.r,0xffc94d);
   ped(FIDAN.x,FIDAN.z,FIDAN.r,0x8fd37c);
-  /* depo ambarı: U şeklinde duvarlar + istif */
   const duvarM=mat(0x5f4a33);
   const duvarlar=[[DEPO.x-5.4,DEPO.z-1,0.8,1.6,7],[DEPO.x+5.4,DEPO.z-1,0.8,1.6,7],[DEPO.x,DEPO.z-4.4,11.6,1.6,0.8]];
   for(const [dx,dz,w,h,d] of duvarlar){
@@ -336,14 +348,14 @@ function alanKur(){
     if(Math.hypot(x-oyuncu.x,z-oyuncu.z)<15)continue;
     if(Math.hypot(x-DEPO.x,z-DEPO.z)<DEPO.r+5)continue;
     if(Math.hypot(x-FIDAN.x,z-FIDAN.z)<FIDAN.r+4)continue;
-    if(z>YOL_Z-9)continue;
+    if(z>SY-9)continue;
     if(agaclar.some(a=>Math.hypot(a.x-x,a.z-z)<5.2))continue;
     agaclar.push(agacYap(x,z));
   }
-  botKur(); kamyonKur(); forkliftKur();
+  botlarKur(); kamyonKur(); forkliftKur();
 }
 
-/* ── araç (oyuncu/bot) ── */
+/* ── kesici araç (oyuncu + kesici botlar) ── */
 function aracYap(renk){
   const g=new THREE.Group();
   const govde=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.6,4.6),mat(renk));
@@ -365,7 +377,6 @@ function aracYap(renk){
   }
   const baca=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,1.2,6),mat(0x3a3f47));
   baca.position.set(-1.1,3,-1.4); g.add(baca);
-  /* yatay dönen biçme diski */
   const testere=new THREE.Group();
   const disk=new THREE.Mesh(new THREE.CylinderGeometry(2,2,0.3,20),mat(0xc9ced6));
   disk.castShadow=true; testere.add(disk);
@@ -377,7 +388,7 @@ function aracYap(renk){
     dis.castShadow=true;
     testere.add(dis);
   }
-  const gobek=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.7,0.5,10),mat(0xd1382f));
+  const gobek=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.7,0.5,10),mat(renk));
   gobek.position.y=0.15; testere.add(gobek);
   const kol=new THREE.Mesh(new THREE.BoxGeometry(0.6,0.5,1.6),mat(0x5a616c));
   kol.position.set(0,0.45,1.2); testere.add(kol);
@@ -404,6 +415,34 @@ function istifGuncelle(mesh,yuk){
   while(istif.children.length>hedef) istif.remove(istif.children[istif.children.length-1]);
 }
 
+/* ── toplayıcı (orman forwarderi: tekerlekli, vinçli kasa, testeresiz) ── */
+function toplayiciYap(){
+  const g=new THREE.Group();
+  const sasi=new THREE.Mesh(new THREE.BoxGeometry(2.6,0.6,7),mat(0x2b4d33));
+  sasi.position.set(0,1.05,0.3); sasi.castShadow=true; g.add(sasi);
+  const kab=new THREE.Mesh(new THREE.BoxGeometry(2.5,2,2),mat(0x4fae4a));
+  kab.position.set(0,2.15,-2.6); kab.castShadow=true; g.add(kab);
+  const cam=new THREE.Mesh(new THREE.BoxGeometry(2.1,1,1.7),
+    new THREE.MeshLambertMaterial({color:0x9fd0ef,transparent:true,opacity:0.85}));
+  cam.position.set(0,2.6,-2.7); g.add(cam);
+  for(const tz of[-0.6,3.3]) for(const sx of[-1.25,1.25]){
+    const d=new THREE.Mesh(new THREE.BoxGeometry(0.22,1.9,0.22),mat(0x39322a));
+    d.position.set(sx,2.1,tz); g.add(d);
+  }
+  const vinc=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,2.6),mat(0xd9a13d));
+  vinc.position.set(0.9,3.3,-1); vinc.rotation.x=-0.5; g.add(vinc);
+  for(const tz of[-2.6,0.6,2.9]) for(const sx of[-1.5,1.5]){
+    const t=new THREE.Mesh(new THREE.CylinderGeometry(0.72,0.72,0.55,10),mat(0x24211d));
+    t.rotation.z=Math.PI/2; t.position.set(sx,0.72,tz); g.add(t);
+  }
+  const istif=new THREE.Group();
+  istif.position.set(0,1.75,1.4);
+  g.add(istif);
+  g.userData={istif};
+  sahne.add(g);
+  return g;
+}
+
 /* ── kamyonlar ── */
 let kamyonlar=[];
 function kamyonYap(){
@@ -427,18 +466,18 @@ function kamyonYap(){
   }
   const yukG=new THREE.Group(); yukG.position.set(0,1.6,0.8); g.add(yukG);
   g.userData={yukG};
-  g.rotation.y=-Math.PI/2;         /* burun +x: soldan girer, sağa çıkar */
+  g.rotation.y=-Math.PI/2;
   sahne.add(g); return g;
 }
 function kamyonKur(){
   kamyonlar.forEach(k=>sahne.remove(k.mesh)); kamyonlar=[];
   for(let i=0;i<S.sev.kamyon;i++){
-    kamyonlar.push({mesh:kamyonYap(),bay:i,x:-DW*0.75-i*16,z:YOL_Z,
+    kamyonlar.push({mesh:kamyonYap(),bay:i,x:-DW*0.75-i*18,z:SB,
       durum:'gelis',yuk:0,gelen:0,gosterilen:-1});
   }
 }
 function kamyonYukGoster(K){
-  const n=Math.min(KAMYON_KAP,K.yuk);
+  const n=Math.min(40,K.yuk);
   if(n===K.gosterilen)return; K.gosterilen=n;
   const gg=K.mesh.userData.yukG;
   while(gg.children.length>n)gg.remove(gg.children[gg.children.length-1]);
@@ -479,34 +518,41 @@ function forkliftYap(){
 function forkliftKur(){
   forkliftler.forEach(f=>sahne.remove(f.mesh)); forkliftler=[];
   for(let i=0;i<S.sev.fork;i++){
-    const px=DEPO.x+8+ (i%2)*5, pz=DEPO.z+3+Math.floor(i/2)*5;
+    const px=DEPO.x+8+(i%2)*5, pz=DEPO.z+3+Math.floor(i/2)*5;
     const m=forkliftYap(); m.position.set(px,0,pz);
     forkliftler.push({mesh:m,x:px,z:pz,px,pz,a:Math.PI,durum:'bekle',tasinan:0,kamyon:null,gosterilen:-1});
   }
 }
 function forkYukGoster(F){
-  if(F.tasinan===F.gosterilen)return; F.gosterilen=F.tasinan;
+  const n=Math.min(10,F.tasinan);
+  if(n===F.gosterilen)return; F.gosterilen=n;
   const gg=F.mesh.userData.tasG;
-  while(gg.children.length>F.tasinan)gg.remove(gg.children[gg.children.length-1]);
-  while(gg.children.length<F.tasinan){
+  while(gg.children.length>n)gg.remove(gg.children[gg.children.length-1]);
+  while(gg.children.length<n){
     const i=gg.children.length;
     const k=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,1.7,7),mat(0xc98d4e));
     k.rotation.z=Math.PI/2;
-    k.position.set(0,(i%2)*0.62,(Math.floor(i/2)-0.5)*0.66);
+    k.position.set(0,(i%2)*0.62,(Math.floor(i/2)-1)*0.66);
     gg.add(k);
   }
 }
 
-/* ── botlar ── */
-let botlar=[];
-function botKur(){
-  botlar.forEach(b=>sahne.remove(b.mesh));
-  botlar=[];
-  for(let i=0;i<S.sev.bot;i++){
-    const m=aracYap(0x3d8bfd);
-    m.position.set(-10+i*6,0,DH*0.25);
+/* ── kesici + toplayıcı botlar ── */
+let kesiciler=[], toplayicilar=[];
+function botlarKur(){
+  kesiciler.forEach(b=>sahne.remove(b.mesh));
+  toplayicilar.forEach(b=>sahne.remove(b.mesh));
+  kesiciler=[]; toplayicilar=[];
+  for(let i=0;i<S.sev.kesiciB;i++){
+    const m=aracYap(0x3f8d3a);   /* orman yeşili hasatçı */
+    m.position.set(-14+i*7,0,DH*0.22);
     m.scale.setScalar(0.85);
-    botlar.push({mesh:m,x:m.position.x,z:m.position.z,a:0,yuk:0,hedef:null});
+    kesiciler.push({mesh:m,x:m.position.x,z:m.position.z,a:0,hedef:null});
+  }
+  for(let i=0;i<S.sev.toplayici;i++){
+    const m=toplayiciYap();
+    m.position.set(10+i*6,0,DH*0.22);
+    toplayicilar.push({mesh:m,x:m.position.x,z:m.position.z,a:0,yuk:0});
   }
 }
 
@@ -593,7 +639,6 @@ function guncelle(dt){
     if(tus.ArrowUp||tus.w)hz=-1; if(tus.ArrowDown||tus.s)hz=1;
     if(tus.ArrowLeft||tus.a)hx=-1; if(tus.ArrowRight||tus.d)hx=1;
   } else {
-    /* otopilot: eller serbest / forklift modunda kesici kendi çalışır */
     const t=otoHedef();
     if(t){ const dx=t.x-oyuncu.x, dz=t.z-oyuncu.z, L=Math.hypot(dx,dz);
       if(L>3){ hx=dx/L; hz=dz/L; } }
@@ -695,41 +740,48 @@ function guncelle(dt){
     const n=Math.floor(dikimSayaci);
     if(n>0){ dikimSayaci-=n; fidanEk(Math.min(n,kesilen-dikilen)); }
   }
-  /* botlar: ağaç keser + yerdeki kütükleri toplar + depoya boşaltır */
-  for(const b of botlar){
-    let tx=null,tz=null,mod=null;
-    if(b.yuk>=KAP()*0.8){ mod='depo'; tx=DEPO.x; tz=DEPO.z; }
-    else{
-      let enK=null,dK=1e9;
-      for(const k of kutukler){
-        if(k.ucus)continue;
-        const d=Math.hypot(k.x-b.x,k.z-b.z);
-        if(d<dK){ dK=d; enK=k; }
-      }
-      if(!b.hedef||!b.hedef.canli){
-        let enY=null,enD=1e9;
-        for(const a of agaclar){ if(!a.canli)continue;
-          const d=Math.hypot(a.x-b.x,a.z-b.z); if(d<enD){enD=d;enY=a;} }
-        b.hedef=enY;
-      }
-      const dT=b.hedef?Math.hypot(b.hedef.x-b.x,b.hedef.z-b.z):1e9;
-      if(enK&&b.yuk<KAP()&&dK<dT){ mod='kutuk'; tx=enK.x; tz=enK.z; }
-      else if(b.hedef){ mod='agac'; tx=b.hedef.x; tz=b.hedef.z; }
-      else if(b.yuk>0){ mod='depo'; tx=DEPO.x; tz=DEPO.z; }
+  /* KESİCİ botlar: sadece ağaç devirir */
+  for(const b of kesiciler){
+    if(!b.hedef||!b.hedef.canli){
+      let enY=null,enD=1e9;
+      for(const a of agaclar){ if(!a.canli)continue;
+        const d=Math.hypot(a.x-b.x,a.z-b.z); if(d<enD){enD=d;enY=a;} }
+      b.hedef=enY;
     }
-    if(mod){
-      const dx=tx-b.x, dz=tz-b.z;
-      const L=Math.hypot(dx,dz)||1;
+    if(b.hedef){
+      const dx=b.hedef.x-b.x, dz=b.hedef.z-b.z, L=Math.hypot(dx,dz)||1;
       b.a=Math.atan2(dx,dz);
       const bh=HIZ()*0.55;
       b.x+=dx/L*bh*dt; b.z+=dz/L*bh*dt;
-      b.mesh.position.set(b.x,0,b.z);
-      b.mesh.rotation.y=b.a+Math.PI;
-      b.mesh.userData.testere.rotation.y+=dt*14;
-      istifGuncelle(b.mesh,b.yuk);
-      if(mod==='agac'&&L<4&&b.hedef&&b.hedef.canli){ agacDevir(b.hedef,'bot'); b.hedef=null; }
-      if(mod==='depo'&&L<DEPO.r){ if(b.yuk>0){ S.depo+=b.yuk; b.yuk=0; blip(620,0.06,0.06); } }
+      if(L<4&&b.hedef.canli){ agacDevir(b.hedef,'bot'); b.hedef=null; }
     }
+    b.mesh.position.set(b.x,0,b.z);
+    b.mesh.rotation.y=b.a+Math.PI;
+    b.mesh.userData.testere.rotation.y+=dt*14;
+  }
+  /* TOPLAYICI botlar: yerdeki kütükleri depoya taşır */
+  for(const b of toplayicilar){
+    let tx=null,tz=null;
+    if(b.yuk>=KAP()){ tx=DEPO.x; tz=DEPO.z; }
+    else{
+      let enK=null,dK=1e9;
+      for(const k of kutukler){ if(k.ucus)continue;
+        const d=Math.hypot(k.x-b.x,k.z-b.z); if(d<dK){dK=d;enK=k;} }
+      if(enK){ tx=enK.x; tz=enK.z; }
+      else if(b.yuk>0){ tx=DEPO.x; tz=DEPO.z; }
+    }
+    if(tx!==null){
+      const dx=tx-b.x, dz=tz-b.z, L=Math.hypot(dx,dz)||1;
+      b.a=Math.atan2(dx,dz);
+      const bh=HIZ()*0.6;
+      b.x+=dx/L*bh*dt; b.z+=dz/L*bh*dt;
+      if(Math.hypot(b.x-DEPO.x,b.z-DEPO.z)<DEPO.r&&b.yuk>0){
+        S.depo+=b.yuk; b.yuk=0; blip(620,0.06,0.06);
+      }
+    }
+    b.mesh.position.set(b.x,0,b.z);
+    b.mesh.rotation.y=b.a+Math.PI;
+    istifGuncelle(b.mesh,b.yuk);
     for(const k of kutukler){
       if(!k.ucus&&b.yuk<KAP()&&Math.hypot(k.x-b.x,k.z-b.z)<6){ k.ucus=b; b.yuk++; }
     }
@@ -737,23 +789,22 @@ function guncelle(dt){
   /* forkliftler: depo → kamyon */
   for(const F of forkliftler){
     if(S.mod==='forklift'&&F===forkliftler[0]){
-      /* forklift sende: parmakla sür, depo/kamyonda otomatik al-boşalt */
       if(hedefNokta){
         const dx=hedefNokta.x-F.x, dz=hedefNokta.z-F.z, L=Math.hypot(dx,dz);
         if(L>1.5){ F.a=Math.atan2(dx,dz); F.x+=dx/L*13*dt; F.z+=dz/L*13*dt; }
       }
       F.x=Math.max(-DW*0.48,Math.min(DW*0.48,F.x));
       F.z=Math.max(-DH*0.48,Math.min(DH*0.48,F.z));
-      if(F.tasinan<4&&S.depo>0&&Math.hypot(F.x-DEPO.x,F.z-DEPO.z)<DEPO.r+2){
+      if(F.tasinan<FKAP()&&S.depo>0&&Math.hypot(F.x-DEPO.x,F.z-DEPO.z)<DEPO.r+2){
         F.alS=(F.alS||0)+dt*5;
-        const n=Math.min(Math.floor(F.alS),4-F.tasinan,S.depo);
+        const n=Math.min(Math.floor(F.alS),FKAP()-F.tasinan,S.depo);
         if(n>0){ F.alS-=n; S.depo-=n; F.tasinan+=n; blip(540,0.04,0.06); }
       }
       if(F.tasinan>0){
         for(const K of kamyonlar){
           if(K.durum!=='bekle')continue;
-          if(Math.hypot(F.x-bayX(K.bay),F.z-YOL_Z)<7){
-            const n=Math.min(F.tasinan,KAMYON_KAP-K.yuk-K.gelen);
+          if(Math.hypot(F.x-bayX(K.bay),F.z-SY)<7){
+            const n=Math.min(F.tasinan,KKAP()-K.yuk-K.gelen);
             if(n>0){ K.yuk+=n; F.tasinan-=n; blip(660,0.06,0.07); buzz(8); }
           }
         }
@@ -765,19 +816,19 @@ function guncelle(dt){
     }
     let tx=null,tz=null;
     if(F.durum==='bekle'){
-      const kam=kamyonlar.find(K=>K.durum==='bekle'&&K.yuk+K.gelen<KAMYON_KAP);
+      const kam=kamyonlar.find(K=>K.durum==='bekle'&&K.yuk+K.gelen<KKAP());
       if(S.depo>0&&kam){
-        const c=Math.min(4,S.depo,KAMYON_KAP-kam.yuk-kam.gelen);
+        const c=Math.min(FKAP(),S.depo,KKAP()-kam.yuk-kam.gelen);
         S.depo-=c; F.tasinan=c; kam.gelen+=c; F.kamyon=kam; F.durum='git';
       }
-      tx=DEPO.x+6; tz=DEPO.z+1;   /* depo kenarında bekle */
+      tx=DEPO.x+6; tz=DEPO.z+1;
       if(Math.hypot(tx-F.x,tz-F.z)<1.5){ tx=null; }
     }
     else if(F.durum==='git'){
-      if(F.kamyon.durum!=='bekle'){   /* kamyon gitti: iade et, dön */
+      if(F.kamyon.durum!=='bekle'){
         F.kamyon.gelen-=F.tasinan; S.depo+=F.tasinan; F.tasinan=0; F.durum='don';
       } else {
-        tx=bayX(F.kamyon.bay); tz=YOL_Z-6;
+        tx=bayX(F.kamyon.bay); tz=SY-6;
         if(Math.hypot(tx-F.x,tz-F.z)<2){
           F.kamyon.yuk+=F.tasinan; F.kamyon.gelen-=F.tasinan; F.tasinan=0;
           blip(660,0.06,0.07); F.durum='don';
@@ -798,22 +849,33 @@ function guncelle(dt){
     F.mesh.rotation.y=F.a+Math.PI;
     forkYukGoster(F);
   }
-  /* kamyonlar: gel → yüklen → dolunca git → para */
+  /* kamyonlar: boş şeritten gel → yanaş → yüklen → boş şeride çık → git */
   for(const K of kamyonlar){
     if(K.durum==='gelis'){
       K.x+=dt*16;
-      if(K.x>=bayX(K.bay)){ K.x=bayX(K.bay); K.durum='bekle'; }
+      K.z+=(SB-K.z)*Math.min(1,dt*4);
+      if(K.x>=bayX(K.bay)-9)K.durum='yanas';
+    } else if(K.durum==='yanas'){
+      K.x+=(bayX(K.bay)-K.x)*Math.min(1,dt*3);
+      K.z+=(SY-K.z)*Math.min(1,dt*3);
+      if(Math.abs(K.x-bayX(K.bay))<0.5&&Math.abs(K.z-SY)<0.5){
+        K.x=bayX(K.bay); K.z=SY; K.durum='bekle';
+      }
     } else if(K.durum==='bekle'){
-      if(K.yuk>=KAMYON_KAP){ K.durum='gidis'; blip(300,0.2,0.1,'sawtooth'); }
+      if(K.yuk>=KKAP()){ K.durum='cik'; blip(300,0.2,0.1,'sawtooth'); }
+    } else if(K.durum==='cik'){
+      K.z+=(SB-K.z)*Math.min(1,dt*3);
+      K.x+=dt*7;
+      if(Math.abs(K.z-SB)<0.5){ K.z=SB; K.durum='gidis'; }
     } else {
-      K.x+=dt*20;
+      K.x+=dt*22;
       if(K.x>DW*0.8){
         const kaz=K.yuk*KUTUK_DEGER();
         S.para+=kaz; S.toplamPara+=kaz;
         toast('🚚 kamyon satıldı +💰'+kaz);
         blip(880,0.09,0.12); blip(1175,0.14,0.1); buzz([10,20,10]);
         K.yuk=0; K.gosterilen=-1; kamyonYukGoster(K);
-        K.x=-DW*0.75; K.durum='gelis';
+        K.x=-DW*0.75; K.z=SB; K.durum='gelis';
         kaydet();
       }
     }
@@ -847,13 +909,14 @@ function guncelle(dt){
       kaydet();
     }
   } else etK.style.display='none';
-  /* kamera takip */
-  let kx=oyuncu.x, kz=oyuncu.z;
+  /* kamera: normalde takip, izle modunda tepeden 2B kuşbakışı */
+  let kx=oyuncu.x, kz=oyuncu.z, ky=34, koff=24, bakOff=-4;
   if(S.mod==='forklift'&&forkliftler[0]){ kx=forkliftler[0].x; kz=forkliftler[0].z; }
+  if(S.mod==='izle'){ ky=118; koff=0.5; bakOff=0; }
   kamera.position.x+=(kx-kamera.position.x)*Math.min(1,dt*4);
-  kamera.position.y+=(34-kamera.position.y)*Math.min(1,dt*4);
-  kamera.position.z+=(kz+24-kamera.position.z)*Math.min(1,dt*4);
-  kamera.lookAt(kx,0,kz-4);
+  kamera.position.y+=(ky-kamera.position.y)*Math.min(1,dt*4);
+  kamera.position.z+=(kz+koff-kamera.position.z)*Math.min(1,dt*4);
+  kamera.lookAt(kx,0,kz+bakOff);
   gunes.position.set(kx-30,60,kz+20);
   gunes.target.position.set(kx,0,kz);
 }
@@ -880,9 +943,9 @@ function yonOku(id,tx,tz,goster){
   el.querySelector('.okM').textContent=Math.round(Math.hypot(dx,dz))+'m';
 }
 function etiketle(){
-  yonOku('okSat',DEPO.x,DEPO.z,oyuncu.yuk>0||tanitim>0);
-  yonOku('okFidan',FIDAN.x,FIDAN.z,(sonKalan===0&&dikilen<kesilen)||tanitim>0);
-  yonOku('okKapi',KAPI.x,KAPI.z,sonKalan===0&&kesilen>0&&dikilen>=kesilen);
+  yonOku('okSat',DEPO.x,DEPO.z,(oyuncu.yuk>0||tanitim>0)&&S.mod!=='izle');
+  yonOku('okFidan',FIDAN.x,FIDAN.z,((sonKalan===0&&dikilen<kesilen)||tanitim>0)&&S.mod!=='izle');
+  yonOku('okKapi',KAPI.x,KAPI.z,sonKalan===0&&kesilen>0&&dikilen>=kesilen&&S.mod!=='izle');
   const koy=(id,x,z)=>{
     const el=document.getElementById(id);
     const v=new THREE.Vector3(x,0.5,z).project(kamera);
@@ -902,9 +965,12 @@ const FIYAT={
   hiz:  s=>Math.round(25*Math.pow(1.6,s-1)),
   kap:  s=>Math.round(20*Math.pow(1.6,s-1)),
   mik:  s=>Math.round(22*Math.pow(1.65,s-1)),
-  bot:  s=>Math.round(150*Math.pow(2.1,s)),
+  kesiciB:s=>Math.round(150*Math.pow(2.1,s)),
+  toplayici:s=>Math.round(130*Math.pow(2,s)),
   fork: s=>Math.round(120*Math.pow(2.1,s-1)),
+  forkKap:s=>Math.round(60*Math.pow(1.75,s-1)),
   kamyon:s=>Math.round(220*Math.pow(2.3,s-1)),
+  kamyonKap:s=>Math.round(90*Math.pow(1.8,s-1)),
   fidanci:s=>Math.round(18*Math.pow(1.55,s))
 };
 function marketYaz(){
@@ -923,9 +989,12 @@ function marketYaz(){
   yaz('upHiz','⚡ Motor Sv.'+(S.sev.hiz+1),'daha hızlı sürüş','hiz');
   yaz('upKap','📦 Kasa Sv.'+(S.sev.kap+1),'kapasite +6 kütük','kap');
   yaz('upMik','🧲 Mıknatıs Sv.'+(S.sev.mik+1),'kütükleri uzaktan çeker','mik');
-  yaz('upBot','🤖 Bot Hasatçı ('+S.sev.bot+'/'+MAKS.bot+')','keser, yerdeki kütükleri toplar, depoya taşır','bot');
+  yaz('upKesiciB','🌲 Kesici Bot ('+S.sev.kesiciB+'/'+MAKS.kesiciB+')','yeşil hasatçı: durmadan ağaç devirir','kesiciB');
+  yaz('upToplayici','🚛 Toplayıcı Bot ('+S.sev.toplayici+'/'+MAKS.toplayici+')','forwarder: yerdeki kütükleri depoya taşır','toplayici');
   yaz('upFork','🚜 Forklift ('+S.sev.fork+'/'+MAKS.fork+')','depodan kamyona daha hızlı yükleme','fork');
-  yaz('upKamyon','🚚 Kamyon ('+S.sev.kamyon+'/'+MAKS.kamyon+')','yeni yanaşma yeri + ek kamyon = daha çok satış','kamyon');
+  yaz('upForkKap','🍴 Forklift Çatalı Sv.'+(S.sev.forkKap+1),'sefer başına +2 kütük (şu an '+FKAP()+')','forkKap');
+  yaz('upKamyon','🚚 Kamyon ('+S.sev.kamyon+'/'+MAKS.kamyon+')','yeni yanaşma yeri + ek kamyon','kamyon');
+  yaz('upKamyonKap','🧱 Kamyon Kasası Sv.'+(S.sev.kamyonKap+1),'her kamyon +12 kütük alır (şu an '+KKAP()+')','kamyonKap');
   yaz('upFidanci','🌱 Fidancı ('+(S.sev.fidanci+1)+'.)','otomatik fidan diker','fidanci');
 }
 function al(anahtar,ses){
@@ -933,14 +1002,16 @@ function al(anahtar,ses){
   const f=FIYAT[anahtar](S.sev[anahtar]);
   if(S.para<f)return;
   S.para-=f; S.sev[anahtar]++;
-  if(anahtar==='bot')botKur();
+  if(anahtar==='kesiciB'||anahtar==='toplayici')botlarKur();
   if(anahtar==='fork')forkliftKur();
   if(anahtar==='kamyon'){ kamyonKur(); yolKur(); }
   blip(ses,0.12,0.12); blip(ses*1.5,0.16,0.1); buzz(12);
   marketYaz(); kaydet();
 }
 [['upBicak','bicak',500],['upHiz','hiz',540],['upKap','kap',580],['upMik','mik',620],
- ['upBot','bot',660],['upFork','fork',700],['upKamyon','kamyon',740],['upFidanci','fidanci',780]].forEach(([id,k,s])=>{
+ ['upKesiciB','kesiciB',660],['upToplayici','toplayici',680],['upFork','fork',700],
+ ['upForkKap','forkKap',720],['upKamyon','kamyon',740],['upKamyonKap','kamyonKap',760],
+ ['upFidanci','fidanci',780]].forEach(([id,k,s])=>{
   document.getElementById(id).addEventListener('click',()=>al(k,s));
 });
 document.getElementById('marketBtn').addEventListener('click',()=>{
@@ -953,11 +1024,10 @@ document.getElementById('market').addEventListener('click',e=>{
 });
 const MODLAR=['kesici','forklift','izle'];
 const MOD_EMOJI={kesici:'🪚',forklift:'🚜',izle:'👁️'};
-const MOD_MSG={kesici:'🪚 Kesici sende!',forklift:'🚜 Forklift sende — depodan al, kamyona yükle!',izle:'👁️ Eller serbest: arkana yaslan, fabrika çalışıyor'};
+const MOD_MSG={kesici:'🪚 Kesici sende!',forklift:'🚜 Forklift sende — depodan al, kamyona yükle!',izle:'👁️ Eller serbest: kuşbakışı izle, fabrika çalışıyor'};
 function modUygula(){ document.getElementById('modBtn').textContent=MOD_EMOJI[S.mod]||'🪚'; }
 document.getElementById('modBtn').addEventListener('click',()=>{
   audio();
-  /* forklift modundan çıkarken eldeki yükü depoya iade et */
   if(S.mod==='forklift'&&forkliftler[0]&&forkliftler[0].tasinan>0){
     S.depo+=forkliftler[0].tasinan; forkliftler[0].tasinan=0; forkliftler[0].durum='don';
   }
@@ -965,9 +1035,7 @@ document.getElementById('modBtn').addEventListener('click',()=>{
   modUygula(); toast(MOD_MSG[S.mod]); blip(760,0.08,0.1); buzz(10); kaydet();
 });
 document.getElementById('sesBtn').addEventListener('click',()=>{
-  S.ses=!S.ses; if(!S.mod||!['kesici','forklift','izle'].includes(S.mod))S.mod='kesici';
-modUygula();
-document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇'; kaydet();
+  S.ses=!S.ses; document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇'; kaydet();
 });
 document.getElementById('baslaBtn').addEventListener('click',()=>{
   audio(); document.getElementById('giris').classList.add('gizli'); tanitim=6;
@@ -992,8 +1060,8 @@ function hud(){
   d.textContent='🌱 '+dikilen+'/'+kesilen;
   d.className='rozet '+(dikilen>=kesilen?'iyi':'kotu');
   if(S.mod==='forklift'&&forkliftler[0]){
-    document.getElementById('kapDolu').style.width=(forkliftler[0].tasinan/4*100)+'%';
-    document.getElementById('kapYazi').textContent='🚜 '+forkliftler[0].tasinan+'/4 · 🏭 '+S.depo;
+    document.getElementById('kapDolu').style.width=(forkliftler[0].tasinan/FKAP()*100)+'%';
+    document.getElementById('kapYazi').textContent='🚜 '+forkliftler[0].tasinan+'/'+FKAP()+' · 🏭 '+S.depo;
   } else {
     document.getElementById('kapDolu').style.width=(oyuncu.yuk/KAP()*100)+'%';
     document.getElementById('kapYazi').textContent='🪵 '+oyuncu.yuk+'/'+KAP()+' · 🏭 '+S.depo;
@@ -1026,8 +1094,9 @@ addEventListener('visibilitychange',()=>{ if(document.hidden)kaydet(); });
 /* test kancası */
 window.__O={get S(){return S},get oyuncu(){return oyuncu},get agaclar(){return agaclar},
   get kutukler(){return kutukler},get kesilen(){return kesilen},get dikilen(){return dikilen},
-  get botlar(){return botlar},get kamyonlar(){return kamyonlar},get forkliftler(){return forkliftler},
-  agacDevir,DEPO,SAT:DEPO,FIDAN,KAPI,
+  get kesiciler(){return kesiciler},get toplayicilar(){return toplayicilar},
+  get kamyonlar(){return kamyonlar},get forkliftler(){return forkliftler},
+  KKAP,FKAP,agacDevir,DEPO,SAT:DEPO,FIDAN,KAPI,SY,SB,
   set kesilenVer(v){kesilen=v},set dikilenVer(v){dikilen=v},set depoVer(v){S.depo=v}};
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
