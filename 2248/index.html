@@ -45,6 +45,19 @@
   <div id="board"><canvas id="cv"></canvas></div>
   <div class="hint">aynı sayıdan başla · eşit ya da iki katıyla zinciri sürdür</div>
 </div>
+<button id="yenidenBtn" aria-label="Yeni oyun" title="Yeni oyun"
+  style="position:fixed;right:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:5;
+  width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.45);
+  background:rgba(20,22,40,.78);color:#f0f2ff;font-size:20px;cursor:pointer;
+  box-shadow:0 3px 12px rgba(0,0,0,.35)">🔄</button>
+
+<div class="card hidden" id="over">
+  <h1 style="font-size:clamp(30px,8vw,52px)">OYUN BİTTİ</h1>
+  <p>Hamle kalmadı — birleşecek komşu taş yok. Skorun:</p>
+  <div class="big" id="overScore"></div>
+  <span class="hint" id="overBest"></span>
+  <button class="btn" id="againBtn">🔄 Yeni Oyun</button>
+</div>
 
 <div class="card" id="intro">
   <h1>2248</h1>
@@ -161,6 +174,28 @@ async function release(){
   }
   falling=false;
   updHud(); save();
+  bittiKontrol();
+}
+/* birleşebilecek komşu (eşit değerli) taş kaldı mı? */
+function hamleVar(){
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+    const v=grid[y][x]; if(!v)continue;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+      if(!dx&&!dy)continue;
+      const nx=x+dx,ny=y+dy;
+      if(nx<0||nx>=COLS||ny<0||ny>=ROWS)continue;
+      if(grid[ny][nx]===v)return true;
+    }
+  }
+  return false;
+}
+function bittiKontrol(){
+  if(state!=='play'||hamleVar())return;
+  state='over';
+  document.getElementById('overScore').textContent=score.toLocaleString('tr-TR');
+  document.getElementById('overBest').textContent='REKORUN: '+best.toLocaleString('tr-TR');
+  document.getElementById('over').classList.remove('hidden');
+  blip(320,0.25,0.14,'sawtooth'); blip(220,0.35,0.12,'sawtooth'); buzz(40);
 }
 
 /* girdi */
@@ -226,7 +261,19 @@ function tap(el,fn){ el._fn=fn;
   el.addEventListener('click',fire); el.addEventListener('touchend',fire); }
 tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
   state='play';
-  document.getElementById('intro').classList.add('hidden'); });
+  document.getElementById('intro').classList.add('hidden');
+  bittiKontrol();   /* kayıtlı oyun kilitli geldiyse hemen yeni oyun teklif et */ });
+tap(document.getElementById('againBtn'),()=>{ try{audio();}catch(e){}
+  reset(); state='play';
+  document.getElementById('over').classList.add('hidden');
+  blip(520,0.1,0.15); });
+tap(document.getElementById('yenidenBtn'),()=>{
+  if(state==='play'&&score>0&&!confirm('Yeni oyun başlasın mı? Bu oyunun skoru sıfırlanır.'))return;
+  try{audio();}catch(e){}
+  reset();
+  document.getElementById('over').classList.add('hidden');
+  if(state!=='intro')state='play';
+  blip(520,0.1,0.15); });
 
 resize();
 let loaded=false;
@@ -235,6 +282,9 @@ try{ const s=JSON.parse(localStorage.getItem('g2248_save'));
     document.getElementById('startBtn').textContent='Devam Et'; } }catch(e){}
 if(!loaded) reset(); else updHud();
 draw();
+/* test kancası */
+window.__G={get grid(){return grid},set gridVer(g){grid=g;},get state(){return state},
+  get score(){return score},hamleVar,bittiKontrol,reset};
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
 
