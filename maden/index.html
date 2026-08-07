@@ -25,6 +25,9 @@
   #sesBtn{position:fixed;right:12px;bottom:max(14px,env(safe-area-inset-bottom));z-index:6;
     width:50px;height:50px;border-radius:16px;border:2px solid rgba(255,255,255,.3);
     background:rgba(24,16,9,.85);font-size:22px;cursor:pointer;color:var(--ink)}
+  #profilBtn{position:fixed;left:12px;bottom:max(14px,env(safe-area-inset-bottom));z-index:6;
+    width:50px;height:50px;border-radius:16px;border:2px solid rgba(255,255,255,.3);
+    background:rgba(24,16,9,.85);font-size:22px;cursor:pointer;color:var(--ink)}
   @keyframes nabiz{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
   #madenlerBtn{position:fixed;right:12px;top:calc(max(10px,env(safe-area-inset-top)) + 104px);
     z-index:6;display:none;font:inherit;font-weight:900;font-size:12px;color:var(--ink);
@@ -74,6 +77,7 @@
 <button id="madenBtn">🌋 YENİ MADEN!</button>
 <button id="madenlerBtn">⛏️ MADENLERİM</button>
 <button id="sesBtn">🔊</button>
+<button id="profilBtn">👤</button>
 <div id="ipucu"><span id="ipucuEl">👆</span><span id="ipucuYazi"></span></div>
 <div id="toast"></div>
 <div id="dondur"><span class="tel">📱</span><p>Telefonu dik tut!</p><small>Maden Ocağı dikey ekranda oynanır 🙂</small></div>
@@ -81,8 +85,11 @@
 <div class="kart" id="giris">
   <h1>MADEN OCAĞI</h1>
   <p>Önce kendi ellerinle kaz: <b style="color:var(--bakir)">madenciye, asansöre ve vagona dokun</b>. Para kazandıkça <b style="color:var(--altin)">usta tut</b> — her şey otomatiğe bağlansın! 30 kat derinleş, madeni bitir, <b>daha değerli cevherli</b> yeni madenlere geç: bakır → gümüş → altın → elmas… Sonsuza kadar! ⛏️</p>
+  <span class="hint">👨‍👩‍👧‍👦 Kim oynuyor?</span>
+  <div id="profilSec" style="display:flex;gap:7px;flex-wrap:wrap;justify-content:center;max-width:92vw"></div>
   <button class="btn" id="baslaBtn">Kazmaya Başla!</button>
   <button class="btn2" id="nasilBtnG">❓ Nasıl Oynanır</button>
+  <button class="btn2" id="sifirlaBtn" style="font-size:11.5px;padding:8px 18px;color:#e08d8d;border-color:rgba(224,90,110,.5)">🗑️ İlerlemeyi Sıfırla</button>
   <span class="hint" id="kayitHint"></span>
 </div>
 
@@ -100,7 +107,9 @@
 
 6️⃣ Maden 30 katta DOLAR. Sonra 🌋 YENİ MADEN: bakırdan gümüşe, altına, elmasa… her yeni madenin cevheri 5 kat değerli! Eski madenler KAPANMAZ — ⛏️ MADENLERİM'den geri dönebilir, 💸 ile para aktarabilirsin.
 
-7️⃣ Usta tuttuğun birimler sen yokken de çalışır — dönünce biriken parayı al 😴💰</p>
+7️⃣ Usta tuttuğun birimler sen yokken de çalışır — TÜM madenlerde! Dönünce her madende biriken parayı al 😴💰
+
+8️⃣ 👤 düğmesi: 5 kardeşe kadar ayrı kayıt! Herkes kendi madenini kazar, isteyen kendi ilerlemesini sıfırlar.</p>
   <button class="btn" id="nasilKapatBtn">Anladım</button>
 </div>
 
@@ -130,21 +139,31 @@
 'use strict';
 /* ══════════ KAYIT ══════════ */
 const bosMaden=()=>({para:0,katlar:[{sev:1,oto:false}],asansor:{sev:1,oto:false},vagon:{sev:1,oto:false}});
-const VARS={para:0, maden:1, madenler:null,
+const VARS={para:0, maden:1, madenler:null, ad:'',
   katlar:[{sev:1,oto:false}], asansor:{sev:1,oto:false}, vagon:{sev:1,oto:false},
   toplamKazanc:0, ses:true, sonZaman:0, yardim:0};
-let S;
-try{ S=Object.assign({},VARS,JSON.parse(localStorage.getItem('maden_v2')||'{}'));
+const PROFIL_MAX=5;
+let S, PROFIL=1;
+/* eski tek kayıt → 1. kardeş profiline taşı */
+try{ if(localStorage.getItem('maden_v2')&&!localStorage.getItem('maden_p1')){
+  localStorage.setItem('maden_p1',localStorage.getItem('maden_v2'));
+  localStorage.removeItem('maden_v2'); } }catch(e){}
+try{ PROFIL=Math.min(PROFIL_MAX,Math.max(1,parseInt(localStorage.getItem('maden_aktifP')||'1')||1)); }catch(e){}
+function profilOku(n){ try{ return JSON.parse(localStorage.getItem('maden_p'+n)||'null'); }catch(e){ return null; } }
+function yukleProfil(n){
+  PROFIL=n; try{ localStorage.setItem('maden_aktifP',''+n); }catch(e){}
+  S=Object.assign(JSON.parse(JSON.stringify(VARS)),profilOku(n)||{});
   if(!Array.isArray(S.katlar)||!S.katlar.length)S.katlar=[{sev:1,oto:false}];
   S.asansor=Object.assign({sev:1,oto:false},S.asansor||{});
   S.vagon=Object.assign({sev:1,oto:false},S.vagon||{});
-}catch(e){ S=JSON.parse(JSON.stringify(VARS)); }
-/* eski kayıtlar: her maden için ayrı durum listesi kur */
-if(!Array.isArray(S.madenler)||S.madenler.length<S.maden){
-  S.madenler=[];
-  for(let i=0;i<S.maden-1;i++)S.madenler.push(bosMaden());
-  S.madenler.push(null);
+  /* eski kayıtlar: her maden için ayrı durum listesi kur */
+  if(!Array.isArray(S.madenler)||S.madenler.length<S.maden){
+    S.madenler=[];
+    for(let i=0;i<S.maden-1;i++)S.madenler.push(bosMaden());
+    S.madenler.push(null);
+  }
 }
+yukleProfil(PROFIL);
 function aktifKaydet(){ S.madenler[S.maden-1]={para:S.para,katlar:S.katlar,asansor:S.asansor,vagon:S.vagon}; }
 function madenYukle(n){
   aktifKaydet();
@@ -155,7 +174,7 @@ function madenYukle(n){
   simKur(); kamY=0; kaydet();
 }
 function kaydet(){ aktifKaydet(); S.sonZaman=Date.now();
-  try{ localStorage.setItem('maden_v2',JSON.stringify(S)); }catch(e){} }
+  try{ localStorage.setItem('maden_p'+PROFIL,JSON.stringify(S)); }catch(e){} }
 
 /* ══════════ SES (zengin WebAudio) ══════════ */
 let AC=null;
@@ -215,10 +234,12 @@ const katUretim=i=>S.katlar[i].sev*katTaban(i);
 const katYukseltFiyat=i=>Math.round(10*Math.pow(2.6,i)*Math.pow(1.34,S.katlar[i].sev-1));
 const katUstaFiyat=i=>Math.round(110*Math.pow(2.6,i));
 const yeniKatFiyat=()=>Math.round(70*Math.pow(3.9,S.katlar.length-1));
-const ASANSOR_KAP=()=>Math.round(30*Math.pow(1.5,S.asansor.sev-1));
+const ASANSOR_KAP_M=a=>Math.round(30*Math.pow(1.5,a.sev-1));
+const ASANSOR_KAP=()=>ASANSOR_KAP_M(S.asansor);
 const asansorFiyat=()=>Math.round(45*Math.pow(1.7,S.asansor.sev-1));
 const asansorUstaFiyat=()=>170;
-const VAGON_KAP=()=>Math.round(25*Math.pow(1.5,S.vagon.sev-1));
+const VAGON_KAP_M=v=>Math.round(25*Math.pow(1.5,v.sev-1));
+const VAGON_KAP=()=>VAGON_KAP_M(S.vagon);
 const vagonFiyat=()=>Math.round(35*Math.pow(1.7,S.vagon.sev-1));
 const vagonUstaFiyat=()=>130;
 const PRESTIJ_ESIK=()=>40000*Math.pow(35,S.maden-1);
@@ -229,15 +250,16 @@ function kisa(n){
   if(e>B.length)return n.toExponential(2);
   return (n/Math.pow(1000,e)).toFixed(n/Math.pow(1000,e)<100?1:0)+B[e-1];
 }
-/* çevrimdışı: sadece USTA tutulmuş birimler çalışır */
-function uretimHizi(){
-  if(!S.vagon.oto||!S.asansor.oto)return 0;
+/* çevrimdışı: sadece USTA tutulmuş birimler çalışır — her maden kendi hızında */
+function uretimHiziM(m){
+  if(!m.vagon.oto||!m.asansor.oto)return 0;
   let kat=0;
-  for(let i=0;i<S.katlar.length;i++)if(S.katlar[i].oto)kat+=katUretim(i)/3.4;
-  const asansor=ASANSOR_KAP()/(3+S.katlar.length*0.8);
-  const vagon=VAGON_KAP()/4.2;
+  for(let i=0;i<m.katlar.length;i++)if(m.katlar[i].oto)kat+=m.katlar[i].sev*katTaban(i)/3.4;
+  const asansor=ASANSOR_KAP_M(m.asansor)/(3+m.katlar.length*0.8);
+  const vagon=VAGON_KAP_M(m.vagon)/4.2;
   return Math.min(kat,asansor,vagon);
 }
+function uretimHizi(){ return uretimHiziM(S); }
 
 /* ══════════ SİM ══════════ */
 let madenciler=[], katStok=[], yuzeyStok=0;
@@ -773,17 +795,27 @@ document.getElementById('madenlerBtn').addEventListener('click',()=>{
 document.getElementById('madenlerKapat').addEventListener('click',()=>
   document.getElementById('madenlerKart').classList.add('gizli'));
 
-/* ══════════ ÇEVRİMDIŞI ══════════ */
-(function(){
+/* ══════════ ÇEVRİMDIŞI — tüm madenlerdeki ustalar çalışır ══════════ */
+function cevrimdisiKontrol(){
   if(!S.sonZaman||S.toplamKazanc<=0)return;
   const gecen=Math.min((Date.now()-S.sonZaman)/1000,4*3600);
   if(gecen<90)return;
-  const kazanc=Math.floor(uretimHizi()*CARPAN()*gecen*0.5);
-  if(kazanc<1)return;
-  S.para+=kazanc; S.toplamKazanc+=kazanc;
-  document.getElementById('offlineMiktar').textContent='+💰'+kisa(kazanc);
+  aktifKaydet();
+  const satirlar=[];
+  for(let n=1;n<=S.madenler.length;n++){
+    const m=S.madenler[n-1]; if(!m)continue;
+    const kazanc=Math.floor(uretimHiziM(m)*carpanN(n)*gecen*0.5);
+    if(kazanc<1)continue;
+    if(n===S.maden)S.para+=kazanc; else m.para=(m.para||0)+kazanc;
+    S.toplamKazanc+=kazanc;
+    satirlar.push('+💰'+kisa(kazanc)+' '+birimAdN(n));
+  }
+  if(!satirlar.length)return;
+  document.getElementById('offlineMiktar').innerHTML=satirlar.join('<br>');
   document.getElementById('offlineKart').classList.remove('gizli');
-})();
+  kaydet();
+}
+cevrimdisiKontrol();
 document.getElementById('offlineAl').addEventListener('click',()=>{
   audio(); sesPara();
   document.getElementById('offlineKart').classList.add('gizli'); kaydet();
@@ -809,10 +841,53 @@ document.getElementById('nasilBtnG').addEventListener('click',()=>
   document.getElementById('nasil').classList.remove('gizli'));
 document.getElementById('nasilKapatBtn').addEventListener('click',()=>
   document.getElementById('nasil').classList.add('gizli'));
-document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
-document.getElementById('kayitHint').textContent=S.toplamKazanc>0
-  ?'Kayıtlı madenin hazır — '+BIRIM_AD()+'!':'önce elle kaz · usta tut · otomatikleştir';
-if(S.toplamKazanc>0)document.getElementById('baslaBtn').textContent='Devam Et';
+/* ══════════ PROFİLLER (5 kardeş) & SIFIRLAMA ══════════ */
+function profilCiz(){
+  const kap=document.getElementById('profilSec'); kap.innerHTML='';
+  for(let n=1;n<=PROFIL_MAX;n++){
+    const p=(n===PROFIL)?S:profilOku(n);
+    const b=document.createElement('button');
+    b.className='btn2';
+    b.style.cssText='padding:9px 12px;font-size:12.5px'
+      +(n===PROFIL?';border-color:var(--altin);color:var(--altin);background:rgba(255,206,84,.14)':'');
+    b.textContent=p?('👷 '+(p.ad||('Kardeş '+n))):'➕';
+    b.addEventListener('click',()=>{
+      audio();
+      if(n===PROFIL)return;
+      kaydet();                                    /* önce mevcut kardeşin kaydı */
+      const yeni=!profilOku(n);
+      yukleProfil(n);
+      if(yeni){
+        const ad=(prompt('Yeni kayıt! Adın ne?','Kardeş '+n)||'').trim().slice(0,12);
+        S.ad=ad||('Kardeş '+n); kaydet();
+      }
+      simKur(); kamY=0; girisGuncelle(); cevrimdisiKontrol();
+      toast('👷 '+(S.ad||('Kardeş '+n))+' oynuyor!');
+    });
+    kap.append(b);
+  }
+}
+function girisGuncelle(){
+  document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
+  document.getElementById('kayitHint').textContent=(S.ad?'👷 '+S.ad+' · ':'')
+    +(S.toplamKazanc>0?'Kayıtlı madenin hazır — '+BIRIM_AD()+'!':'önce elle kaz · usta tut · otomatikleştir');
+  document.getElementById('baslaBtn').textContent=S.toplamKazanc>0?'Devam Et':'Kazmaya Başla!';
+  document.getElementById('sifirlaBtn').style.display=S.toplamKazanc>0?'':'none';
+  profilCiz();
+}
+document.getElementById('sifirlaBtn').addEventListener('click',()=>{
+  if(!confirm((S.ad||'Bu kayıt')+' — TÜM ilerleme silinsin mi? Madenler, para, ustalar… Geri alınamaz!'))return;
+  const ad=S.ad, ses=S.ses;
+  S=JSON.parse(JSON.stringify(VARS));
+  S.ad=ad; S.ses=ses; S.madenler=[null];
+  simKur(); kamY=0; kaydet(); girisGuncelle();
+  toast('🗑️ Sıfırlandı — yeni maceraya!');
+});
+document.getElementById('profilBtn').addEventListener('click',()=>{
+  audio(); kaydet(); girisGuncelle();
+  document.getElementById('giris').classList.remove('gizli');
+});
+girisGuncelle();
 
 let sonTs=performance.now(), kayitS=0;
 function dongu(ts){
@@ -833,6 +908,7 @@ addEventListener('visibilitychange',()=>{ if(document.hidden)kaydet(); });
 window.__M={get S(){return S},get katStok(){return katStok},get yuzeyStok(){return yuzeyStok},
   get asansor(){return asansor},get vagon(){return vagon},get madenciler(){return madenciler},
   get madenler(){return S.madenler},madenYukle,madenPanelAc,
+  get PROFIL(){return PROFIL},yukleProfil,cevrimdisiKontrol,uretimHiziM,girisGuncelle,
   tetikKat,tetikAsansor,tetikVagon,uretimHizi,kisa,CARPAN,BIRIM,BIRIM_AD,PRESTIJ_ESIK,MAX_KAT,
   set paraVer(v){S.para=v},set kazancVer(v){S.toplamKazanc=v},
   set katlarVer(v){S.katlar=v;simKur();}};
