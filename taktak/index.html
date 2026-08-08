@@ -211,7 +211,14 @@ const PARCALAR=[
   {h:[[0,1,1],[1,1,0]],ton:3},
   {h:[[1,1,0],[0,1,1]],ton:4},
   {h:[[1,0,0],[1,1,1]],ton:5},
-  {h:[[0,0,1],[1,1,1]],ton:6}
+  {h:[[0,0,1],[1,1,1]],ton:6},
+  /* seviye 4+: ufaklıklar havuza girer */
+  {h:[[1]],ton:2},
+  {h:[[1,1]],ton:4},
+  /* seviye 7+: zorlayıcı büyükler */
+  {h:[[0,1,0],[1,1,1],[0,1,0]],ton:0},
+  {h:[[1,0,0,0],[1,1,1,1]],ton:5},
+  {h:[[1,1],[1,1],[1,1]],ton:3}
 ];
 /* ahşap tonları: [açık üst, ana, koyu kenar] */
 const TONLAR=[
@@ -226,14 +233,14 @@ const TONLAR=[
 let grid, parca, px, py, pdon, sirada, skor, satirlar, seviye, sure, bitti, dusmeS, kilitS;
 let sacilanlar=[], puanlar=[], tozlar=[], flaslar=[], kilitEfekt=null, sarsinti=0, puls=0, run=false;
 let dusenler={}, devamHakki=1;
-function torba(){
-  const t=[0,1,2,3,4,5,6].sort(()=>Math.random()-0.5);
-  return t;
-}
+function torba(){ return [0,1,2,3,4,5,6]; }   /* eski kayıt uyumu */
 let torbaKuyruk=[];
 function sonrakiParca(){
-  if(torbaKuyruk.length<4)torbaKuyruk.push(...torba());
-  return torbaKuyruk.shift();
+  /* tam rastgele akış: seviye yükseldikçe havuz genişler */
+  const havuz=[0,1,2,3,4,5,6];
+  if((seviye||1)>=4)havuz.push(7,8);
+  if((seviye||1)>=7)havuz.push(9,10,11);
+  return havuz[Math.floor(Math.random()*havuz.length)];
 }
 function sekilAl(i,don){
   let h=PARCALAR[i].h.map(r=>[...r]);
@@ -340,7 +347,12 @@ function satirKontrol(zincir){
   const n=dolular.length;
   const p=[0,100,300,500,800][Math.min(4,n)]*seviye*zincir;
   skor+=p; satirlar+=n; S.toplamSatir+=n;
+  const eskiSeviye=seviye;
   seviye=1+Math.floor(satirlar/10);
+  if(seviye>eskiSeviye){
+    puanlar.push({t:'⚡ SEVİYE '+seviye+' — hızlanıyor!',x:0.5,y:0.35,omur:1.4,buyuk:true});
+    ton(659,0,0.1,0.08); ton(880,0.09,0.14,0.09);
+  }
   sesSaçıl(n); buzz(n>=2||zincir>1?[20,30,20]:12);
   sarsinti=0.2+n*0.07+(zincir-1)*0.08;
   puanlar.push({t:(zincir>1?'ZİNCİR x'+zincir+'  +':'+')+p,x:0.5,y:(dolular[0]/ROWS),
@@ -367,7 +379,7 @@ function oyunBitti(){
 function guncelle(dt){
   sure+=dt;
   if(sarsinti>0)sarsinti-=dt;
-  const hiz=Math.max(0.09,0.75*Math.pow(0.88,seviye-1))*(hizli?0.08:1);
+  const hiz=Math.max(0.07,0.72*Math.pow(0.85,seviye-1))*(hizli?0.08:1);
   dusmeS+=dt;
   if(dusmeS>=hiz){
     dusmeS=0;

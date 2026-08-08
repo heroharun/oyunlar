@@ -169,8 +169,12 @@ let tohum=1;
 function rasgele(){ tohum=(tohum*1103515245+12345)%2147483648; return tohum/2147483648; }
 function bolumUret(no){
   tohum=no*7919+13;
-  const GW=Math.min(9,5+Math.floor(no/6)), GH=Math.min(12,6+Math.floor(no/4));
-  const hedefAdet=Math.min(Math.floor(GW*GH*0.62/2),5+Math.floor(no*1.4));
+  /* bölüm profilleri: her bölüm farklı karakterde */
+  const profil=no%4;   /* 0 dengeli · 1 uzun araç konvoyu · 2 küçük araç kalabalığı · 3 dev otopark */
+  let GW=Math.min(9,5+Math.floor(no/6)), GH=Math.min(12,6+Math.floor(no/4));
+  if(profil===3){ GW=Math.min(9,GW+1); GH=Math.min(13,GH+1); }
+  let hedefAdet=Math.min(Math.floor(GW*GH*0.62/2),5+Math.floor(no*1.4));
+  if(profil===2)hedefAdet=Math.min(Math.floor(GW*GH*0.7/1.6),hedefAdet+4);
   const dolu=Array.from({length:GH},()=>Array(GW).fill(-1));
   const araclar=[];
   const yolAcik=(x,y,len,dir,hariç)=>{
@@ -189,7 +193,8 @@ function bolumUret(no){
   let deneme=0;
   while(araclar.length<hedefAdet&&deneme<3000){
     deneme++;
-    const len=[1,2,2,3][Math.floor(rasgele()*4)];
+    const lenHavuz=profil===1?[2,3,3,3]:profil===2?[1,1,1,2,2]:[1,2,2,3];
+    const len=lenHavuz[Math.floor(rasgele()*lenHavuz.length)];
     const dir=['L','R','U','D'][Math.floor(rasgele()*4)];
     const yatay=(dir==='L'||dir==='R');
     const x=Math.floor(rasgele()*(yatay?GW-len+1:GW));
@@ -666,10 +671,12 @@ c.addEventListener('pointerdown',e=>{
 });
 
 /* ══════════ BÖLÜM HARİTASI ══════════ */
+let haritaLimit=0;
 function bolumleriGoster(){
   const kutu=document.getElementById('bolumGrid');
   kutu.innerHTML='';
-  const maks=Math.max(S.bolum+4,15);
+  const maks=Math.max(S.bolum+10,20,haritaLimit);
+  haritaLimit=maks;
   for(let i=1;i<=maks;i++){
     const b=document.createElement('button');
     const yil=S.yildizlar[i]||0;
@@ -684,6 +691,15 @@ function bolumleriGoster(){
     });
     kutu.appendChild(b);
   }
+  /* sonsuz harita: istedikçe uzar */
+  const dahaBtn=document.createElement('button');
+  dahaBtn.className='bolumBtn';
+  dahaBtn.style.gridColumn='span 5';
+  dahaBtn.style.aspectRatio='auto';
+  dahaBtn.style.padding='12px';
+  dahaBtn.textContent='⬇ Daha Fazla Bölüm';
+  dahaBtn.addEventListener('click',()=>{ haritaLimit+=25; bolumleriGoster(); });
+  kutu.appendChild(dahaBtn);
 }
 document.getElementById('bolumlerBtn').addEventListener('click',()=>{
   audio(); bolumleriGoster();
