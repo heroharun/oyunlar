@@ -54,6 +54,7 @@
   <p>Marangoz dükkânında keyifli bir akşam… 🪵 Tahta bloklar tepsiye <b style="color:#f0c88a">tak tak</b> diye oturuyor. Sürükle-yerleştir, satırı doldur — <b style="color:#f0c88a">küpler şangır şungur saçılsın!</b> Sakin marimba müziği eşliğinde, sonsuza kadar diz.</p>
   <p style="font-size:13px">👆 sürükle: taşı · tek dokunuş: çevir · aşağı savur: bırak</p>
   <button class="btn" id="baslaBtn">Başla!</button>
+  <button class="btn2" id="yeniBtn" style="display:none">🔄 Yeni Oyun</button>
   <button class="btn2" id="nasilBtnG">❓ Nasıl Oynanır</button>
   <span class="hint" id="kayitHint"></span>
 </div>
@@ -91,6 +92,12 @@ let S;
 try{ S=Object.assign({},VARS,JSON.parse(localStorage.getItem('taktak_v1')||'{}')); }
 catch(e){ S=JSON.parse(JSON.stringify(VARS)); }
 function kaydet(){ try{ localStorage.setItem('taktak_v1',JSON.stringify(S)); }catch(e){} }
+function oyunKaydet(){
+  if(!run||bitti){ return; }
+  S.oyun={grid,skor,satirlar,seviye,sure,sirada,torbaKuyruk,parca,px,py,pdon,devamHakki};
+  kaydet();
+}
+function oyunSil(){ S.oyun=null; kaydet(); }
 
 /* ══════════ SES: ahşap tıkırtılar + marimba müziği ══════════ */
 let AC=null;
@@ -236,6 +243,18 @@ function sekilAl(i,don){
   }
   return h;
 }
+function oyunYukle(){
+  const o=S.oyun;
+  if(!o||!o.grid)return false;
+  grid=o.grid; skor=o.skor; satirlar=o.satirlar; seviye=o.seviye; sure=o.sure;
+  sirada=o.sirada; torbaKuyruk=o.torbaKuyruk||torba();
+  parca=o.parca; px=o.px; py=o.py; pdon=o.pdon;
+  devamHakki=(o.devamHakki===undefined)?1:o.devamHakki;
+  bitti=false; dusmeS=0; kilitS=0;
+  sacilanlar=[]; puanlar=[]; dusenler={};
+  run=true;
+  return true;
+}
 function oyunBaslat(){
   grid=Array.from({length:ROWS},()=>Array(COLS).fill(-1));
   torbaKuyruk=[...torba()];
@@ -331,6 +350,7 @@ function satirKontrol(zincir){
 }
 function oyunBitti(){
   bitti=true; run=false;
+  oyunSil();
   sesSon(); buzz([40,60,40]);
   const rekor=skor>S.enIyi;
   if(rekor)S.enIyi=skor;
@@ -751,7 +771,13 @@ document.getElementById('sesBtn').addEventListener('click',()=>{
   kaydet();
 });
 document.getElementById('baslaBtn').addEventListener('click',()=>{
-  audio(); muzikBaslat(); oyunBaslat();
+  audio(); muzikBaslat();
+  if(!(S.oyun&&oyunYukle()))oyunBaslat();
+  document.getElementById('giris').classList.add('gizli');
+  sonEtkilesim=performance.now()-2500;
+});
+document.getElementById('yeniBtn').addEventListener('click',()=>{
+  audio(); muzikBaslat(); oyunSil(); oyunBaslat();
   document.getElementById('giris').classList.add('gizli');
   sonEtkilesim=performance.now()-2500;
 });
@@ -780,29 +806,36 @@ document.getElementById('tekrarBtn').addEventListener('click',()=>{
 });
 document.getElementById('menuBtn').addEventListener('click',()=>{
   document.getElementById('sonKart').classList.add('gizli');
-  document.getElementById('kayitHint').textContent='Rekorun: '+S.enIyi.toLocaleString('tr');
+  girisHazirla();
   document.getElementById('giris').classList.remove('gizli');
 });
+function girisHazirla(){
+  const kayitli=!!(S.oyun&&S.oyun.grid);
+  document.getElementById('baslaBtn').textContent=kayitli?'▶ Devam Et':'Başla!';
+  document.getElementById('yeniBtn').style.display=kayitli?'':'none';
+  document.getElementById('kayitHint').textContent=
+    kayitli?('Kayıtlı oyun: '+S.oyun.skor.toLocaleString('tr')+' puan · seviye '+S.oyun.seviye)
+    :(S.enIyi>0?'Rekorun: '+S.enIyi.toLocaleString('tr'):'ahşap tıkırtılar · marimba · sonsuz');
+}
 document.getElementById('nasilBtnG').addEventListener('click',()=>
   document.getElementById('nasil').classList.remove('gizli'));
 document.getElementById('nasilKapatBtn').addEventListener('click',()=>
   document.getElementById('nasil').classList.add('gizli'));
 document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
-document.getElementById('kayitHint').textContent=S.enIyi>0
-  ?'Rekorun: '+S.enIyi.toLocaleString('tr')+' · '+S.toplamSatir+' satır diz(d)in'
-  :'ahşap tıkırtılar · marimba · sonsuz';
+girisHazirla();
 
 oyunBaslat(); run=false;
-let sonTs=performance.now();
+let sonTs=performance.now(), kayitS=0;
 function dongu(ts){
   const dt=Math.min(0.05,(ts-sonTs)/1000); sonTs=ts;
   if(run)guncelle(dt);
   ciz();
   ipucuKontrol();
+  if(run&&(kayitS+=dt)>4){ kayitS=0; oyunKaydet(); }
   requestAnimationFrame(dongu);
 }
 requestAnimationFrame(dongu);
-addEventListener('visibilitychange',()=>{ if(document.hidden)kaydet(); });
+addEventListener('visibilitychange',()=>{ if(document.hidden){ oyunKaydet(); kaydet(); } });
 /* test kancası */
 window.__B={get grid(){return grid},get skor(){return skor},get satirlar(){return satirlar},
   get run(){return run},get sacilanlar(){return sacilanlar},get parca(){return parca},
