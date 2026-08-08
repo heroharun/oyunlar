@@ -109,7 +109,9 @@
   <h1 style="font-size:24px">🐱 KEDİLER &amp; KOSTÜM</h1>
   <p id="gardropBalik" style="font-weight:900;color:#7ad0e0;font-size:17px"></p>
   <p style="margin:-6px 0 0;font-size:12.5px">Balıkları macerada topla, burada harca! Kostümler küçük güç bonusu da verir.</p>
+  <span class="hint" style="margin-top:4px">🐱 Kediler</span>
   <div id="kediListe" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:min(96vw,460px)"></div>
+  <span class="hint" style="margin-top:8px">🎩 Kostümler — kedinin üstünde gör</span>
   <div id="esyaListe" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:min(96vw,460px)"></div>
   <button class="btn" id="gardropKapat">Tamam</button>
 </div>
@@ -524,25 +526,15 @@ function runBitir(){
 }
 
 /* ══════════ ÇİZİM ══════════ */
-function kediCiz(){
-  const T=TEMA();
-  const b=BIRIM()*0.05, zip=kedi.kosuyor?Math.abs(Math.sin(performance.now()/90))*4:0;
-  ctx.save();
-  ctx.translate(W/2,H/2-zip);
-  ctx.scale(kedi.yon,1);
-  if(kedi.invuln>0&&Math.floor(performance.now()/90)%2===0)ctx.globalAlpha=0.4;
-  /* kalkan halkası */
-  if(kedi.guc&&kedi.guc.kalkan>0){
-    ctx.strokeStyle='rgba(122,208,224,'+(0.5+Math.sin(performance.now()/120)*0.3)+')';
-    ctx.lineWidth=3;
-    ctx.beginPath(); ctx.arc(0,-b*0.2,b*1.25,0,7); ctx.stroke();
-  }
+/* kedi figürü — oyunda da gardırop önizlemesinde de aynı çizim (ctx2: hedef bağlam) */
+function kediFigur(ctx,b,T,tak,anim){
+  const zipG=0;
   /* gölge */
-  ctx.beginPath(); ctx.ellipse(0,b*0.75+zip,b*0.72,b*0.2,0,0,7);
+  ctx.beginPath(); ctx.ellipse(0,b*0.75+zipG,b*0.72,b*0.2,0,0,7);
   ctx.fillStyle='rgba(10,16,6,.35)'; ctx.fill();
   /* pelerin (dalgalanır) — Mor Kahraman Pelerini takılıysa mor */
-  const dal=Math.sin(performance.now()/160)*b*0.14;
-  ctx.fillStyle=S.takili.elbise==='pelerin'?'#8a5fd0':'#e0514e';
+  const dal=anim?Math.sin(performance.now()/160)*b*0.14:b*0.06;
+  ctx.fillStyle=tak.elbise==='pelerin'?'#8a5fd0':'#e0514e';
   ctx.beginPath();
   ctx.moveTo(-b*0.2,-b*0.55);
   ctx.quadraticCurveTo(-b*0.95,-b*0.1+dal,-b*0.8,b*0.6+dal);
@@ -565,7 +557,7 @@ function kediCiz(){
   ctx.fillStyle=T.karin;
   ctx.beginPath(); ctx.ellipse(b*0.08,b*0.28,b*0.28,b*0.32,0,0,7); ctx.fill();
   /* deri yelek */
-  if(S.takili.elbise==='yelek'){
+  if(tak.elbise==='yelek'){
     ctx.fillStyle='#8a5a2e';
     ctx.beginPath(); ctx.ellipse(-b*0.1,b*0.02,b*0.34,b*0.4,0.25,0,7); ctx.fill();
     ctx.strokeStyle='#5c3a18'; ctx.lineWidth=1.6; ctx.stroke();
@@ -574,7 +566,7 @@ function kediCiz(){
     ctx.beginPath(); ctx.arc(-b*0.06,b*0.2,b*0.04,0,7); ctx.fill();
   }
   /* çizmeler (Çizmeli Kedi!) */
-  if(S.takili.cizme==='cizme'){
+  if(tak.cizme==='cizme'){
     for(const cx2 of[-0.22,0.2]){
       ctx.fillStyle='#8a5a2e';
       ctx.beginPath(); ctx.roundRect(b*cx2-b*0.13,b*0.42,b*0.28,b*0.3,b*0.07); ctx.fill();
@@ -584,7 +576,7 @@ function kediCiz(){
     }
   }
   /* kılıç (İnce Kılıç — yanda) */
-  if(S.takili.kilic==='kilic'){
+  if(tak.kilic==='kilic'){
     ctx.save(); ctx.translate(-b*0.42,b*0.1); ctx.rotate(0.6);
     ctx.strokeStyle='#d8dde4'; ctx.lineWidth=b*0.06;
     ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,b*0.85); ctx.stroke();
@@ -649,8 +641,8 @@ function kediCiz(){
   ctx.beginPath(); ctx.arc(b*0.26,-b*0.63,b*0.02,0,7); ctx.fill();
   ctx.beginPath(); ctx.arc(-b*0.06,-b*0.63,b*0.02,0,7); ctx.fill();
   /* gözlük */
-  if(S.takili.gozluk){
-    if(S.takili.gozluk==='gunes'){
+  if(tak.gozluk){
+    if(tak.gozluk==='gunes'){
       ctx.fillStyle='rgba(20,22,30,.92)';
       ctx.beginPath(); ctx.arc(b*0.28,-b*0.6,b*0.11,0,7); ctx.fill();
       ctx.beginPath(); ctx.arc(-b*0.04,-b*0.6,b*0.11,0,7); ctx.fill();
@@ -680,21 +672,21 @@ function kediCiz(){
     ctx.beginPath(); ctx.moveTo(b*0.42,b*wy*1); ctx.lineTo(b*0.72,b*(wy-0.03)); ctx.stroke();
   }
   /* şapka — en üstte */
-  if(S.takili.sapka==='bere'){
+  if(tak.sapka==='bere'){
     ctx.fillStyle='#e0514e';
     ctx.beginPath(); ctx.arc(b*0.1,-b*0.94,b*0.34,Math.PI,0); ctx.fill();
     ctx.fillStyle='#c93a38';
     ctx.beginPath(); ctx.roundRect(b*0.1-b*0.36,-b*0.98,b*0.72,b*0.1,b*0.05); ctx.fill();
     ctx.fillStyle='#fff8ea';
     ctx.beginPath(); ctx.arc(b*0.1,-b*1.26,b*0.08,0,7); ctx.fill();
-  } else if(S.takili.sapka==='kaptan'){
+  } else if(tak.sapka==='kaptan'){
     ctx.fillStyle='#2a3e5c';
     ctx.beginPath(); ctx.arc(b*0.1,-b*0.96,b*0.36,Math.PI,0); ctx.fill();
     ctx.fillStyle='#1a2a42';
     ctx.beginPath(); ctx.roundRect(b*0.1-b*0.44,-b*1,b*0.88,b*0.12,b*0.05); ctx.fill();
     ctx.fillStyle='#ffce54';
     ctx.beginPath(); ctx.arc(b*0.1,-b*1.08,b*0.07,0,7); ctx.fill();
-  } else if(S.takili.sapka==='tac'){
+  } else if(tak.sapka==='tac'){
     ctx.fillStyle='#ffce54';
     ctx.beginPath();
     ctx.moveTo(b*0.1-b*0.3,-b*0.95);
@@ -706,6 +698,20 @@ function kediCiz(){
     ctx.fillStyle='#e0514e';
     ctx.beginPath(); ctx.arc(b*0.1,-b*1.02,b*0.045,0,7); ctx.fill();
   }
+}
+function kediCiz(){
+  const b=BIRIM()*0.05, zip=kedi.kosuyor?Math.abs(Math.sin(performance.now()/90))*4:0;
+  ctx.save();
+  ctx.translate(W/2,H/2-zip);
+  ctx.scale(kedi.yon,1);
+  if(kedi.invuln>0&&Math.floor(performance.now()/90)%2===0)ctx.globalAlpha=0.4;
+  /* kalkan halkası */
+  if(kedi.guc&&kedi.guc.kalkan>0){
+    ctx.strokeStyle='rgba(122,208,224,'+(0.5+Math.sin(performance.now()/120)*0.3)+')';
+    ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(0,-b*0.2,b*1.25,0,7); ctx.stroke();
+  }
+  kediFigur(ctx,b,TEMA(),S.takili,true);
   ctx.restore();
 }
 function dusmanCiz(d){
@@ -914,6 +920,28 @@ function magazaYaz(){
 });
 
 /* ══════════ GARDIROP (kediler + kostümler, balıkla) ══════════ */
+/* canlı önizleme: kediFigur'u minik bir canvas'a çizer */
+function kediOnizleme(T,tak,px){
+  px=px||88;
+  const d=Math.min(devicePixelRatio||1,2);
+  const cv2=document.createElement('canvas');
+  cv2.width=px*d; cv2.height=px*d;
+  cv2.style.cssText='width:'+px+'px;height:'+px+'px;display:block;pointer-events:none';
+  const g2=cv2.getContext('2d');
+  g2.setTransform(d,0,0,d,0,0);
+  g2.translate(px/2,px*0.62);
+  kediFigur(g2,px*0.3,T,tak,false);
+  return cv2;
+}
+function cipYap(metin,tip){ /* tip: secili|sahip|fiyat */
+  const s=document.createElement('small');
+  s.textContent=metin;
+  s.style.cssText='font-weight:900;border-radius:99px;padding:3px 9px;font-size:10.5px;letter-spacing:.03em;'
+    +(tip==='secili'?'background:rgba(95,208,138,.2);color:#5fd08a;border:1.5px solid rgba(95,208,138,.6)'
+     :tip==='sahip'?'background:rgba(122,208,224,.15);color:#7ad0e0;border:1.5px solid rgba(122,208,224,.5)'
+     :'background:rgba(255,206,84,.15);color:#ffce54;border:1.5px solid rgba(255,206,84,.5)');
+  return s;
+}
 function gardropYaz(){
   document.getElementById('gardropBalik').textContent='🐟 '+kisa(S.balik)+' balığın var';
   const kl=document.getElementById('kediListe'); kl.innerHTML='';
@@ -921,13 +949,17 @@ function gardropYaz(){
     const K=KEDILER[id], sahip=S.kediler.includes(id), aktif=S.aktifKedi===id;
     const b=document.createElement('button');
     b.className='secKart';
-    b.style.width='min(31%,120px)'; b.style.minHeight='120px';
-    if(aktif){ b.style.borderColor='#7ad0e0'; b.style.boxShadow='0 0 0 2px rgba(122,208,224,.4)'; }
-    b.innerHTML='<span class="ikon" style="width:40px;height:40px;border-radius:50%;'
-      +'background:linear-gradient(135deg,'+K.govde+' 55%,'+K.govde2+' 55%);'
-      +'border:2px solid rgba(42,26,10,.4)"></span>'
-      +'<span style="font-size:12px">'+K.ad+'</span>'
-      +'<small>'+(aktif?'✓ SEÇİLİ':sahip?'Seç':'🐟'+kisa(K.fiyat))+'</small>';
+    b.style.cssText='width:min(31%,124px);min-height:150px;gap:4px;padding:8px 6px;cursor:pointer;'
+      +'transition:transform .12s,border-color .2s,box-shadow .2s;'
+      +(aktif?'border-color:#5fd08a;box-shadow:0 0 0 2px rgba(95,208,138,.4)':'')
+      +(!sahip?';filter:saturate(.75)':'');
+    b.setAttribute('aria-label',K.ad+(aktif?' (seçili)':sahip?'':' — '+K.fiyat+' balık'));
+    b.appendChild(kediOnizleme(K,S.takili));         /* mevcut kostümlerinle önizleme */
+    const ad=document.createElement('span');
+    ad.textContent=K.ad; ad.style.cssText='font-size:11.5px;line-height:1.2';
+    b.appendChild(ad);
+    b.appendChild(aktif?cipYap('✓ SEÇİLİ','secili')
+      :sahip?cipYap('SEÇ','sahip'):cipYap('🐟 '+kisa(K.fiyat),'fiyat'));
     b.addEventListener('click',()=>{
       if(sahip){ S.aktifKedi=id; }
       else if(S.balik>=K.fiyat){
@@ -943,11 +975,20 @@ function gardropYaz(){
     const E=ESYALAR[id], sahip=S.esyalar.includes(id), takili=takiliMi(id);
     const b=document.createElement('button');
     b.className='secKart';
-    b.style.width='min(31%,120px)'; b.style.minHeight='116px';
-    if(takili){ b.style.borderColor='#5fd08a'; b.style.boxShadow='0 0 0 2px rgba(95,208,138,.4)'; }
-    b.innerHTML='<span class="ikon" style="font-size:28px">'+E.ikon+'</span>'
-      +'<span style="font-size:11.5px">'+E.ad+'</span>'
-      +'<small>'+E.bonus+'<br>'+(takili?'✓ TAKILI · çıkar':sahip?'Tak':'🐟'+kisa(E.fiyat))+'</small>';
+    b.style.cssText='width:min(31%,124px);min-height:168px;gap:4px;padding:8px 6px;cursor:pointer;'
+      +'transition:transform .12s,border-color .2s,box-shadow .2s;'
+      +(takili?'border-color:#5fd08a;box-shadow:0 0 0 2px rgba(95,208,138,.4)':'');
+    b.setAttribute('aria-label',E.ad+' '+E.bonus+(takili?' (takılı)':sahip?'':' — '+E.fiyat+' balık'));
+    /* aktif kedinin üstünde bu parça nasıl duruyor? */
+    b.appendChild(kediOnizleme(TEMA(),Object.assign({},S.takili,{[E.slot]:id})));
+    const ad=document.createElement('span');
+    ad.textContent=E.ikon+' '+E.ad; ad.style.cssText='font-size:11px;line-height:1.2';
+    b.appendChild(ad);
+    const bonus=document.createElement('small');
+    bonus.textContent=E.bonus; bonus.style.cssText='color:#7ad0e0;font-weight:700';
+    b.appendChild(bonus);
+    b.appendChild(takili?cipYap('✓ TAKILI · çıkar','secili')
+      :sahip?cipYap('TAK','sahip'):cipYap('🐟 '+kisa(E.fiyat),'fiyat'));
     b.addEventListener('click',()=>{
       if(takili){ S.takili[E.slot]=null; }
       else if(sahip){ S.takili[E.slot]=id; }
