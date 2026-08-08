@@ -88,7 +88,7 @@
   <h1 style="font-size:26px">NASIL OYNANIR</h1>
   <p style="text-align:left;white-space:pre-line">1️⃣ Her aracın üstündeki OK, gideceği yönü gösterir.
 
-2️⃣ Araca DOKUN 👆 → önü açıksa vın diye çıkar, duraktan yolcularını alır. Önü kapalıysa kornaya basar, kımıldayamaz! 📢
+2️⃣ Araca DOKUN 👆 → yolu tamamen açıksa vın diye çıkar, yolcularını alır. Önünde biraz boşluk varsa gidebildiği kadar ilerleyip durur (geri gitmek yok!). Hiç yeri yoksa kornaya basar. 📢\n\n⚠️ Dikkat: hiçbir araç kımıldayamaz hâle gelirse otopark KİLİTLENİR — oyun biter, baştan alırsın!
 
 3️⃣ Doğru SIRAYLA dokunarak tüm araçları çıkar → bölüm biter! 🎉
 
@@ -104,6 +104,13 @@
   <h1 style="font-size:26px">🗺️ BÖLÜMLER</h1>
   <div id="bolumGrid"></div>
   <button class="btn2" id="bolumKapat">Kapat</button>
+</div>
+
+<div class="kart gizli" id="sikistinKart">
+  <h1 style="font-size:28px">🚧 SIKIŞTIN!</h1>
+  <p>Hiçbir araç kımıldayamıyor — otopark tamamen kilitlendi. Ama dert değil, bir daha dene!</p>
+  <button class="btn" id="yenidenBtn">🔄 Yeniden Başla</button>
+  <button class="btn2" id="anaMenuBtn">🏠 Ana Menü</button>
 </div>
 
 <div class="kart gizli" id="kazandinKart">
@@ -227,7 +234,10 @@ function bolumKur(no,kayitliDurum){
   seviyeVeri=bolumUret(no);
   GW=seviyeVeri.GW; GH=seviyeVeri.GH;
   araclar=seviyeVeri.araclar.map(a=>({...a,ofs:0,sallanti:0,cikiyor:false}));
-  if(kayitliDurum&&kayitliDurum.kalanIdler){
+  if(kayitliDurum&&kayitliDurum.araclarD){
+    araclar=kayitliDurum.araclarD.map(a=>({...a,ofs:0,sallanti:0,cikiyor:false}));
+    kornalar=kayitliDurum.kornalar||0;
+  } else if(kayitliDurum&&kayitliDurum.kalanIdler){
     araclar=araclar.filter(a=>kayitliDurum.kalanIdler.includes(a.id));
     kornalar=kayitliDurum.kornalar||0;
   } else kornalar=0;
@@ -240,7 +250,8 @@ function bolumKur(no,kayitliDurum){
   oyunKaydet();
 }
 function oyunKaydet(){
-  S.oyun={bolum,kalanIdler:araclar.map(a=>a.id),kornalar};
+  S.oyun={bolum,kornalar,
+    araclarD:araclar.map(a=>({id:a.id,x:a.x,y:a.y,len:a.len,dir:a.dir,renk:a.renk}))};
   S.bolum=Math.max(S.bolum,bolum);
   kaydet();
 }
@@ -256,24 +267,32 @@ function dolulukHaritasi(){
   }
   return d;
 }
-function onuAcikMi(a){
+function onBosluk(a){
+  /* önündeki boş hücre sayısı + kenara ulaşıyor mu */
   const d=dolulukHaritasi();
-  const yatay=(a.dir==='L'||a.dir==='R');
-  let cx=a.x, cy=a.y;
+  let cx=a.x, cy=a.y, bos=0;
   if(a.dir==='R')cx=a.x+a.len; else if(a.dir==='L')cx=a.x-1;
   else if(a.dir==='D')cy=a.y+a.len; else cy=a.y-1;
   while(cx>=0&&cx<GW&&cy>=0&&cy<GH){
-    if(d[cy][cx]>=0)return false;
+    if(d[cy][cx]>=0)return {bos,kenar:false};
+    bos++;
     if(a.dir==='R')cx++; else if(a.dir==='L')cx--;
     else if(a.dir==='D')cy++; else cy--;
   }
-  return true;
+  return {bos,kenar:true};
 }
+function onuAcikMi(a){ return onBosluk(a).kenar; }
 function aracaDokun(a){
-  if(a.cikiyor||!run)return;
-  if(onuAcikMi(a)){
+  if(a.cikiyor||a.kayma||!run)return;
+  const {bos,kenar}=onBosluk(a);
+  if(kenar){
     a.cikiyor=true; a.cikisT=0;
     sesMotor(); buzz(8);
+    if(S.yardim===0){ S.yardim=1; kaydet(); }
+  } else if(bos>0){
+    /* önü kısmen açık: boşluk kadar ilerle, orada dur (geri dönüş yok) */
+    a.kayma={hedef:bos,hiz:0};
+    sesMotor(); buzz(6);
     if(S.yardim===0){ S.yardim=1; kaydet(); }
   } else {
     a.sallanti=0.35; kornalar++;
@@ -281,11 +300,35 @@ function aracaDokun(a){
     oyunKaydet();
   }
 }
+function sikismaKontrol(){
+  /* animasyon yokken: hiçbir araç 1 hücre bile gidemiyorsa oyun kilitlendi */
+  if(!run||kazanildi||araclar.length===0)return;
+  if(araclar.some(a=>a.cikiyor||a.kayma))return;
+  for(const a of araclar)if(onBosluk(a).bos>0)return;
+  run=false;
+  sesKorna(); setTimeout(sesKorna,350); buzz([60,80,60]);
+  setTimeout(()=>document.getElementById('sikistinKart').classList.remove('gizli'),700);
+}
 
 /* ══════════ GÜNCELLE ══════════ */
 function guncelle(dt){
   for(const a of araclar){
     if(a.sallanti>0)a.sallanti-=dt;
+    if(a.kayma){
+      a.kayma.hiz=Math.min(9,a.kayma.hiz+dt*26);
+      a.ofs+=a.kayma.hiz*dt;
+      if(a.ofs>=a.kayma.hedef){
+        /* konumu işle: araç yeni yerinde durur */
+        const m2=a.kayma.hedef;
+        if(a.dir==='R')a.x+=m2; else if(a.dir==='L')a.x-=m2;
+        else if(a.dir==='D')a.y+=m2; else a.y-=m2;
+        a.ofs=0; a.kayma=null;
+        gurultu(0,0.08,0.08,500,0.8);   /* fren */
+        buzz(5);
+        oyunKaydet();
+        sikismaKontrol();
+      }
+    }
     if(a.cikiyor){
       a.cikisT+=dt;
       a.ofs+=dt*(6+a.cikisT*22);   /* hızlanarak çıkar */
@@ -310,6 +353,7 @@ function guncelle(dt){
   araclar=araclar.filter(a=>!a.bitti);
   if(araclar.length!==oncekiAdet){
     oyunKaydet();
+    sikismaKontrol();
     if(araclar.length===0&&!kazanildi){
       kazanildi=true; run=false;
       S.oyun=null;
@@ -716,6 +760,18 @@ document.getElementById('kazBolumler').addEventListener('click',()=>{
   bolumleriGoster();
   document.getElementById('bolumKart').classList.remove('gizli');
 });
+document.getElementById('yenidenBtn').addEventListener('click',()=>{
+  audio(); buzz(8);
+  document.getElementById('sikistinKart').classList.add('gizli');
+  bolumKur(bolum);
+});
+document.getElementById('anaMenuBtn').addEventListener('click',()=>{
+  document.getElementById('sikistinKart').classList.add('gizli');
+  S.oyun=null; kaydet();
+  document.getElementById('baslaBtn').textContent='Oyna!';
+  document.getElementById('kayitHint').textContent='Bölüm '+S.bolum+' seni bekliyor';
+  document.getElementById('giris').classList.remove('gizli');
+});
 document.getElementById('restartBtn').addEventListener('click',()=>{
   audio(); buzz(8);
   toast('🔄 Bölüm baştan!');
@@ -751,7 +807,7 @@ document.getElementById('sesBtn').addEventListener('click',()=>{
 });
 document.getElementById('baslaBtn').addEventListener('click',()=>{
   audio();
-  if(S.oyun&&S.oyun.bolum&&S.oyun.kalanIdler&&S.oyun.kalanIdler.length>0){
+  if(S.oyun&&S.oyun.bolum&&((S.oyun.araclarD&&S.oyun.araclarD.length>0)||(S.oyun.kalanIdler&&S.oyun.kalanIdler.length>0))){
     bolumKur(S.oyun.bolum,S.oyun);
   } else bolumKur(Math.min(bolum,S.bolum));
   document.getElementById('giris').classList.add('gizli');
@@ -763,7 +819,7 @@ document.getElementById('nasilKapatBtn').addEventListener('click',()=>
   document.getElementById('nasil').classList.add('gizli'));
 document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
 (function(){
-  const devam=S.oyun&&S.oyun.kalanIdler&&S.oyun.kalanIdler.length>0;
+  const devam=S.oyun&&((S.oyun.araclarD&&S.oyun.araclarD.length>0)||(S.oyun.kalanIdler&&S.oyun.kalanIdler.length>0));
   document.getElementById('baslaBtn').textContent=devam?'▶ Devam Et':'Oyna!';
   document.getElementById('kayitHint').textContent=devam
     ?('Bölüm '+S.oyun.bolum+' yarıda — kaldığın hamleden sürer')
@@ -773,14 +829,15 @@ document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
 bolum=S.oyun&&S.oyun.bolum?S.oyun.bolum:S.bolum;
 seviyeVeri=null;
 /* menü arkasında görsel dursun diye kur ama oynatma */
-bolumKur(bolum,S.oyun&&S.oyun.kalanIdler?S.oyun:null); run=false;
+bolumKur(bolum,S.oyun&&(S.oyun.araclarD||S.oyun.kalanIdler)?S.oyun:null); run=false;
 
 let sonTs=performance.now();
 function dongu(ts){
   const dt=Math.min(0.05,(ts-sonTs)/1000); sonTs=ts;
   const acikKartYok=document.getElementById('giris').classList.contains('gizli')
     &&document.getElementById('bolumKart').classList.contains('gizli')
-    &&document.getElementById('kazandinKart').classList.contains('gizli');
+    &&document.getElementById('kazandinKart').classList.contains('gizli')
+    &&document.getElementById('sikistinKart').classList.contains('gizli');
   if(acikKartYok&&!kazanildi)run=true; else if(!acikKartYok)run=false;
   if(run||kazanildi)guncelle(dt);
   ciz();
@@ -793,7 +850,8 @@ addEventListener('visibilitychange',()=>{ if(document.hidden){ oyunKaydet(); kay
 window.__P={get S(){return S},get araclar(){return araclar},get bolum(){return bolum},
   get kalanYolcu(){return kalanYolcu},get kornalar(){return kornalar},get run(){return run},
   get GW(){return GW},get GH(){return GH},
-  onuAcikMi,aracaDokun,bolumKur,bolumUret,
+  onuAcikMi,onBosluk,aracaDokun,bolumKur,bolumUret,sikismaKontrol,
+  set araclarVer(v){araclar=v;},
   cozumSirasi(){ /* tersine yerleştirme: id büyükten küçüğe çöz */
     return [...araclar].sort((a,b)=>b.id-a.id).map(a=>a.id); }};
 </script>
