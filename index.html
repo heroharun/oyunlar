@@ -676,6 +676,70 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
   input.addEventListener('input',filtrele);
   temizle.addEventListener('click',()=>{ input.value=''; filtrele(); input.focus(); });
 })();
+
+/* ── 🎁 Günün Oyunu: hiç oynanmamış oyunlardan günde 1 öneri.
+   Ana sayfada 4 sn içinde oyuna girilmezse sorar; her gün farklı oyun, tekrar yok ── */
+(function(){
+  /* oyunların bilinen kayıt anahtarları: mevcut ilerlemeden "oynanmış" çıkarımı */
+  const ANAHTAR={'2048':'g2048_','2248':'g2248_','ates-su':'atessu_','ayna-araba':'aynaaraba_',
+   'blok-yagmuru':'blok_','boyama':'boyama_','buz-kule':'buzkule_','cop-basket':'cop_',
+   'denge-ustasi':'denge_','duble-yol':'dubleyol_','fatihin-toplari':'fatih_','gokyuzu-kartali':'iha_',
+   'isikli-hafiza':'isikli_','kedi':'kedi_','kelime-bahcesi':'kbahce_','kelime':'kelime_',
+   'kim-alim':'kimalim_','kos-zipla':'koszipla_','kuafor':'kuafor_','kule':'kule_',
+   'kutlu-yolculuk':'hicaz_','maden':'maden_','mayin':'mayin_','meyve':'meyve_',
+   'minik-modaci':'modaci_','ormanci':'ormanci_','park':'park_v','penalti':'pen_',
+   'piyano':'piyano_','renk-tuzagi':'renktuzagi_','sekerci-bizim':'sekerci_','sudoku':'sudoku_',
+   'taktak':'taktak_','tava-tabak':'tavatabak_','tesettur-butigi':'tb_v','tugla-kiran':'tugla_',
+   'usta-sofor':'park_prog','yilan':'yilan_','yorunge':'yorunge_','yumurta':'yumurta_'};
+  const klasor=a=>(a.getAttribute('href')||'').replace(/\/.*$/,'').replace(/\/$/,'');
+  const kartlar=[...document.querySelectorAll('section.kategori a.game')]
+    .filter(a=>!a.closest('#favBolum,#yeniBolum'));
+  const OYN=()=>{ try{ return JSON.parse(localStorage.getItem('mp_oynanan')||'[]'); }catch(e){ return []; } };
+  function oynandiKaydet(id){ const o=OYN(); if(!o.includes(id)){ o.push(id);
+    try{ localStorage.setItem('mp_oynanan',JSON.stringify(o)); }catch(e){} } }
+  /* her oyun kartı tıklaması "oynandı" sayılır (favori/yeni kopyaları dahil) */
+  document.addEventListener('click',e=>{ const a=e.target.closest('a.game');
+    if(a&&!e.target.closest('.favBtn')) oynandiKaydet(klasor(a)); },true);
+  function oynanmisMi(id){
+    if(OYN().includes(id))return true;
+    const on=ANAHTAR[id]; if(!on)return false;
+    for(let i=0;i<localStorage.length;i++) if(localStorage.key(i).startsWith(on)) return true;
+    return false;
+  }
+  const bugun=new Date().toISOString().slice(0,10);
+  if(localStorage.getItem('mp_oneriGun')===bugun)return;
+  let iptal=false;
+  document.addEventListener('click',e=>{ if(e.target.closest('a.game'))iptal=true; },true);
+  setTimeout(()=>{
+    if(iptal||document.hidden||document.getElementById('tasimaBar'))return;
+    let onerilen; try{ onerilen=JSON.parse(localStorage.getItem('mp_onerilen')||'[]'); }catch(e){ onerilen=[]; }
+    let havuz=kartlar.filter(a=>!oynanmisMi(klasor(a))&&!onerilen.includes(klasor(a)));
+    if(!havuz.length){ onerilen=[]; havuz=kartlar.filter(a=>!oynanmisMi(klasor(a))); }
+    if(!havuz.length)return; /* her oyunu oynamış — önerecek şey kalmadı */
+    const sec=havuz[Math.floor(Math.random()*havuz.length)];
+    const id=klasor(sec);
+    const ad=(sec.querySelector('.name')||{textContent:id}).textContent;
+    const emoji=(sec.querySelector('.emoji')||{textContent:'🎮'}).textContent;
+    try{ localStorage.setItem('mp_oneriGun',bugun);
+      onerilen.push(id); localStorage.setItem('mp_onerilen',JSON.stringify(onerilen)); }catch(e){}
+    const st=document.createElement('style');
+    st.textContent='@keyframes oneriGel{from{transform:translateY(24px);opacity:0}}';
+    document.head.appendChild(st);
+    const b=document.createElement('div');
+    b.id='gununOyunu';
+    b.style.cssText='position:fixed;left:12px;right:12px;bottom:14px;z-index:50;background:#241f44;'
+      +'border:1.5px solid rgba(255,201,77,.5);border-radius:16px;padding:13px 14px;'
+      +'font-size:13.5px;line-height:1.55;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:oneriGel .4s ease';
+    b.innerHTML='<b style="color:#ffd97a">🎁 Bugünün oyunu: '+emoji+' '+ad+'</b><br>'
+      +'Bunu hiç denemedin — bugün bir şans verir misin?'
+      +'<div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button id="oneriOyna" style="font:inherit;font-weight:800;background:linear-gradient(180deg,#ffd97a,#ff9d5c);color:#33210a;border:none;border-radius:999px;padding:9px 18px;cursor:pointer">🚀 Oyna</button>'
+      +'<button id="oneriGec" style="font:inherit;font-weight:700;background:rgba(255,255,255,.1);color:#cfc9ea;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:9px 16px;cursor:pointer">Belki Yarın</button></div>';
+    document.body.appendChild(b);
+    document.getElementById('oneriOyna').addEventListener('click',()=>{ oynandiKaydet(id); location.href=sec.getAttribute('href'); });
+    document.getElementById('oneriGec').addEventListener('click',()=>b.remove());
+  },4000);
+})();
 </script>
 </main>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
