@@ -104,6 +104,15 @@
     background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.24);
     border-radius:999px;padding:10px 24px;cursor:pointer}
   .hint{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+  #rzGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;width:min(88vw,380px);
+    max-height:44vh;overflow-y:auto;padding:2px}
+  .rz{display:flex;flex-direction:column;gap:3px;align-items:center;text-align:center;
+    background:linear-gradient(180deg,#1c2557,#10163a);border:2px solid var(--cizgi);
+    border-radius:14px;padding:10px 4px}
+  .rz .ri{font-size:26px}
+  .rz .ra{font-size:11px;font-weight:800;color:var(--altin)}
+  .rz .rd{font-size:9.5px;color:var(--dim);line-height:1.35}
+  .rz.kilitliR{filter:grayscale(1);opacity:.42}
 </style>
 
 <div id="oyun">
@@ -131,9 +140,13 @@
   <p>12 soruluk ilim merdiveni: her basamakta sorular zorlaşır, puanlar katlanır. 3 jokerin var — <b style="color:var(--altin)">½</b> iki yanlışı eler, <b style="color:var(--altin)">👥</b> seyirciye sorar, <b style="color:var(--altin)">2×</b> iki cevap hakkı verir. 5. ve 10. sorular güvence basamağıdır!</p>
   <div id="katlar">
     <button class="kat" data-kat="ibadet"><span class="ikon">🕌</span>İbadetlerim<span class="alt" id="b-ibadet"></span></button>
+    <button class="kat" data-kat="fikih"><span class="ikon">📗</span>İlmihal · Hanefi<span class="alt" id="b-fikih"></span></button>
+    <button class="kat" data-kat="ahlak"><span class="ikon">🌸</span>Edep &amp; Ahlâk<span class="alt" id="b-ahlak"></span></button>
+    <button class="kat" data-kat="peygamber"><span class="ikon">🌟</span>Peygamberler<span class="alt" id="b-peygamber"></span></button>
+    <button class="kat" data-kat="akaid"><span class="ikon">☪️</span>Akaid (İnanç)<span class="alt" id="b-akaid"></span></button>
     <button class="kat" data-kat="islam"><span class="ikon">📜</span>İslam Tarihi<span class="alt" id="b-islam"></span></button>
     <button class="kat" data-kat="osmanli"><span class="ikon">🏰</span>Osmanlı Tarihi<span class="alt" id="b-osmanli"></span></button>
-    <button class="kat" data-kat="akaid"><span class="ikon">☪️</span>Akaid (İnanç)<span class="alt" id="b-akaid"></span></button>
+    <button class="kat" id="rozetBtn"><span class="ikon">🏅</span>Rozetlerim<span class="alt" id="b-rozet"></span></button>
     <button class="kat genis" data-kat="karisik"><span class="ikon">🎲</span>Karışık — Büyük Yarışma<span class="alt" id="b-karisik"></span></button>
   </div>
   <span class="hint">her yarışmada sorular değişir · sesli · reklamsız</span>
@@ -145,6 +158,13 @@
   <p id="sonMsg"></p>
   <button class="btn" id="tekrarBtn">Yeni Yarışma</button>
   <button class="btn2" id="menuBtn">Kategori Seç</button>
+</div>
+
+<div class="kart gizli" id="rozetKart">
+  <h1 style="font-size:26px">🏅 ROZETLERİM</h1>
+  <p id="rozetOzet"></p>
+  <div id="rzGrid"></div>
+  <button class="btn2" id="rozetKapat">Kapat</button>
 </div>
 
 <script>
@@ -376,6 +396,162 @@ akaid:[
 {s:'Allah’ın varlığının kendinden olması, kimseye muhtaç olmaması hangi sıfattır?',c:['Kıyam binefsihî','Kıdem','Vahdâniyet','Kudret'],z:5},
 {s:'Yaratma sıfatını (Tekvin) müstakil sıfat kabul eden itikad ekolü hangisidir?',c:['Mâturîdîlik','Eş’arîlik','Mutezile','Selefiyye'],z:5},
 {s:'“Varlığı zorunlu olan” anlamında Allah için kullanılan kavram hangisidir?',c:['Vâcibü’l-vücûd','Mümkinü’l-vücûd','Kadîm','Vahdehû'],z:5}
+],
+ahlak:[
+{s:'Büyüklerimizle konuşurken nasıl davranmalıyız?',c:['Saygılı ve kibar oluruz','Bağırarak konuşuruz','Sözünü keseriz','Duymazdan geliriz'],z:1},
+{s:'Yemeğe başlarken ne söyleriz?',c:['Besmele çekeriz','Afiyet olsun deriz','Şarkı söyleriz','Hiçbir şey demeyiz'],z:1},
+{s:'Yemek bitince Allah’a şükür için ne deriz?',c:['Elhamdülillah','İnşallah','Maşallah','Aleykümselam'],z:1},
+{s:'Bir Müslüman karşılaştığı kardeşine ne der?',c:['Selâmün aleyküm','Elveda','Uğurlar olsun','Hiçbir şey demez'],z:1},
+{s:'Yalan söylemek dinimizde nedir?',c:['Büyük günahtır','Serbesttir','Sevaptır','Şakaysa güzeldir'],z:1},
+{s:'Verdiğimiz sözü ne yapmalıyız?',c:['Mutlaka tutmalıyız','Unutmalıyız','İşimize gelirse tutarız','Kimse görmüyorsa bozarız'],z:1},
+{s:'Sünnete göre yemeği hangi elimizle yeriz?',c:['Sağ elimizle','Sol elimizle','İki elimizle','Fark etmez'],z:1},
+{s:'Anne ve babamıza karşı nasıl davranmalıyız?',c:['Saygılı ve iyi davranırız','Bağırırız','Küser dururuz','Sözlerini dinlemeyiz'],z:1},
+{s:'“Temizlik …dandır” hadisinde boşluğa ne gelir?',c:['İman','Namaz','Oruç','Zekât'],z:1},
+{s:'Hapşırınca ne deriz?',c:['Elhamdülillah','Çok yaşa','Pardon','Sus'],z:1},
+{s:'Hasta olan arkadaşımız için en güzel davranış hangisidir?',c:['Ziyaret edip iyileşmesi için dua etmek','Onu unutmak','Alay etmek','Hiç aramamak'],z:1},
+{s:'Eve girerken ailemize ne yapmak güzeldir?',c:['Selam vermek','Sessizce süzülmek','Kapıyı çarpmak','Bağırmak'],z:1},
+{s:'Hapşırıp “Elhamdülillah” diyene ne denir?',c:['Yerhamükellah','Aleykümselam','Maşallah','Bereket versin'],z:2},
+{s:'Bir kişinin arkasından hoşlanmayacağı şekilde konuşmaya ne denir?',c:['Gıybet','Nasihat','Sohbet','Dua'],z:2},
+{s:'Birine yapmadığı bir kötülüğü yakıştırmaya ne denir?',c:['İftira','Gıybet','Şaka','Eleştiri'],z:2},
+{s:'İhtiyacımızdan fazlasını boş yere harcamaya ne denir?',c:['İsraf','İkram','İnfak','Cömertlik'],z:2},
+{s:'Elindekini ihtiyaç sahipleriyle seve seve paylaşmaya ne denir?',c:['Cömertlik','Cimrilik','Bencillik','İsraf'],z:2},
+{s:'Sofra adabına göre yemeği nereden yemeliyiz?',c:['Kendi önümüzden','Tabağın ortasından','Arkadaşımızın önünden','Nereden olursa'],z:2},
+{s:'Bizden küçüklere nasıl davranmalıyız?',c:['Şefkat ve merhametle','Kaba kuvvetle','Alay ederek','Görmezden gelerek'],z:2},
+{s:'“Komşusu açken tok yatan…” hadisi bize neyi öğretir?',c:['Komşumuzu gözetmeyi','Çok yemek yemeyi','Erken yatmayı','Yalnız yaşamayı'],z:2},
+{s:'“Tebessüm (gülümsemek) …dır” hadisinde boşluğa ne gelir?',c:['Sadaka','Farz','Oruç','Hediye'],z:2},
+{s:'Bir odaya girmeden önce ne yapmalıyız?',c:['Kapıyı çalıp izin istemeliyiz','Aniden dalmalıyız','Bağırmalıyız','Pencereden bakmalıyız'],z:2},
+{s:'Otobüste yaşlı birini görünce ne yaparız?',c:['Yerimizi veririz','Görmezden geliriz','Uyur numarası yaparız','Camdan bakarız'],z:2},
+{s:'Arkadaşımız düştüğünde ne yaparız?',c:['Yardım edip kaldırırız','Güleriz','Seyrederiz','Kaçarız'],z:2},
+{s:'Başkasının hakkını haksızca almaya ne denir?',c:['Kul hakkı yemek','Ticaret','Hediyeleşme','Ödünç almak'],z:3},
+{s:'Akrabaları ziyaret edip gözetmeye ne denir?',c:['Sıla-i rahim','Taziye','Ziyafet','Misafirlik'],z:3},
+{s:'İnsanların arasını bozmak için söz taşımaya ne denir?',c:['Koğuculuk (nemîme)','Gıybet','Nasihat','Muhabbet'],z:3},
+{s:'Kendini başkalarından üstün görmeye ne denir?',c:['Kibir','Tevazu','İzzet','Cesaret'],z:3},
+{s:'Alçakgönüllü olmaya ne denir?',c:['Tevazu','Gurur','Riya','Kibir'],z:3},
+{s:'İyiliği insanlara gösteriş için yapmaya ne denir?',c:['Riya','İhlas','İhsan','Sabır'],z:3},
+{s:'İbadeti ve iyiliği yalnız Allah rızası için yapmaya ne denir?',c:['İhlas','Riya','İsraf','Haset'],z:3},
+{s:'Zorluklar karşısında yılmadan dayanmaya ne denir?',c:['Sabır','Acele','Öfke','Ümitsizlik'],z:3},
+{s:'Allah’ın verdiği nimetlere teşekkür etmeye ne denir?',c:['Şükür','Şikâyet','İsraf','Gaflet'],z:3},
+{s:'Başkasındaki nimeti çekemeyip yok olmasını istemeye ne denir?',c:['Haset','İmrenme','Takdir','Dua'],z:3},
+{s:'Bize kötülük yapanı bağışlamaya ne denir?',c:['Affetmek','İntikam almak','Küsmek','Unutmamak'],z:3},
+{s:'“Ben güzel ahlâkı tamamlamak için gönderildim” sözü nedir?',c:['Hadis-i şerif','Âyet','Atasözü','Şiir'],z:4},
+{s:'Bütün canlılara acıyıp iyilik etme duygusuna ne denir?',c:['Merhamet','Cesaret','Zekâ','Kuvvet'],z:4},
+{s:'“Kanaat” ne demektir?',c:['Elindekiyle yetinmeyi bilmek','Çok mal istemek','Cimrilik yapmak','Hep şikâyet etmek'],z:4},
+{s:'“Hayâ” ne demektir?',c:['Utanma ve edep duygusu','Korkaklık','Neşe','Öfke'],z:4},
+{s:'“Îsâr” ne demektir?',c:['Kardeşini kendi nefsine tercih etmek','Cimrilik etmek','Mal biriktirmek','Kıskanmak'],z:4},
+{s:'Hadise göre emanete hıyanet etmek kimin alametidir?',c:['Münafığın','Müminin','Cömerdin','Sabırlının'],z:4},
+{s:'Hadiste münafığın alameti kaç şeydir?',c:['Üç','Beş','İki','Yedi'],z:4},
+{s:'Anne-babaya “öf” bile demeyi yasaklayan kaynak hangisidir?',c:['Kur’an-ı Kerim (İsrâ suresi)','Atasözleri','Mecelle','Divan şiiri'],z:4},
+{s:'Sünnete göre selamı kim önce verir?',c:['Gelen, oradakilere önce verir','Oturanlar gelene verir','Kimse vermez','Sadece büyükler verir'],z:4},
+{s:'Hz. Âişe, Peygamberimizin ahlâkını nasıl tarif etmiştir?',c:['“Onun ahlâkı Kur’an’dı”','“Çok sert biriydi”','“Kimseyle görüşmezdi”','“Hiç gülmezdi”'],z:5},
+{s:'“Hüsn-i zan” ne demektir?',c:['İnsanlar hakkında iyi düşünmek','Kötü düşünmek','Şüphelenmek','Kusur aramak'],z:5},
+{s:'“Sû-i zan” ne demektir?',c:['Delilsiz kötü zanda bulunmak','İyi niyet beslemek','Güvenmek','Övmek'],z:5},
+{s:'Yiğitlik, cömertlik ve ahlâkı birleştiren Anadolu esnaf geleneği hangisidir?',c:['Ahilik (fütüvvet)','Âşıklık','Hattatlık','Ebru'],z:5},
+{s:'“Veren el, alan elden üstündür” hadisi neyi öğütler?',c:['Cömertliği ve yardım etmeyi','Mal biriktirmeyi','Borç almayı','Hediye beklemeyi'],z:5},
+{s:'“Edep bir tâc imiş nûr-i Hudâ’dan” mısrası neyi anlatır?',c:['Edebin insanı yücelten ilahî bir taç olduğunu','Tacın pahalı olduğunu','Şiir yazmanın zorluğunu','Sarayların güzelliğini'],z:5}
+],
+fikih:[
+{s:'Hanefi mezhebinin kurucusu kimdir?',c:['İmam-ı Âzam Ebû Hanîfe','İmam Şâfiî','İmam Mâlik','İmam Ahmed bin Hanbel'],z:1},
+{s:'Dinimizde yapılması kesin olarak emredilen işlere ne denir?',c:['Farz','Mubah','Mekruh','Âdet'],z:1},
+{s:'Dinimizde yapılması kesin olarak yasaklanan işlere ne denir?',c:['Haram','Helal','Sünnet','Mubah'],z:1},
+{s:'Yapılması serbest olan, günah da sevap da olmayan işlere ne denir?',c:['Mubah','Farz','Haram','Vacip'],z:1},
+{s:'Peygamberimizin yapıp bize tavsiye ettiği davranışlara ne denir?',c:['Sünnet','Farz','Haram','Bid’at'],z:1},
+{s:'Yenilip içilmesi dinen serbest olan şeylere ne denir?',c:['Helal','Haram','Mekruh','Müfsid'],z:1},
+{s:'Dinimizin temel bilgilerini öğreten kitaba ne ad verilir?',c:['İlmihal','Sözlük','Ansiklopedi','Atlas'],z:1},
+{s:'İbadetlerin ve işlerin dinî hükmünü bildiren ilim dalı hangisidir?',c:['Fıkıh','Tarih','Coğrafya','Tecvid'],z:1},
+{s:'Sünni Müslümanların uyduğu büyük fıkıh mezhebi kaç tanedir?',c:['4','2','7','10'],z:1},
+{s:'Türkiye’deki Müslümanların çoğu hangi fıkıh mezhebine uyar?',c:['Hanefi','Şâfiî','Mâlikî','Hanbelî'],z:1},
+{s:'Domuz eti yemek dinimizde nedir?',c:['Haram','Helal','Mekruh','Mubah'],z:1},
+{s:'İçki içmek dinimizde nedir?',c:['Haram','Mubah','Mekruh','Serbest'],z:1},
+{s:'Hanefi mezhebine göre abdestin farzı kaç tanedir?',c:['4','6','3','7'],z:2},
+{s:'Hanefi mezhebine göre guslün farzı kaç tanedir?',c:['3','4','5','2'],z:2},
+{s:'Namazın farzı toplam kaç tanedir?',c:['12','10','8','6'],z:2},
+{s:'Namazın dışındaki farzlarına ne ad verilir?',c:['Namazın şartları','Namazın rükünleri','Namazın sünnetleri','Namazın âdâbı'],z:2},
+{s:'Namazın içindeki farzlarına ne ad verilir?',c:['Namazın rükünleri','Namazın şartları','Namazın vacipleri','Namazın nafileleri'],z:2},
+{s:'Farz kadar kesin olmayan ama kuvvetli delille emredilen işe Hanefi’de ne denir?',c:['Vacip','Sünnet','Mubah','Müstehab'],z:2},
+{s:'Yapılması hoş karşılanmayan, sevimsiz işlere ne denir?',c:['Mekruh','Mubah','Müstehab','Mendub'],z:2},
+{s:'Vitir namazı kaç rekâttır?',c:['3','2','4','1'],z:2},
+{s:'Hanefi mezhebine göre kurban kesmek, zengin Müslüman için nedir?',c:['Vacip','Farz','Nafile','Mubah'],z:2},
+{s:'Hanefi mezhebine göre bayram namazının hükmü nedir?',c:['Vacip','Farz','Sünnet','Müstehab'],z:2},
+{s:'Abdestte başı mesh etmek nedir?',c:['Farzdır','Sünnettir','Vaciptir','Müstehaptır'],z:2},
+{s:'Sevimli görülen, yapana sevap kazandıran işlere ne denir?',c:['Müstehab','Mekruh','Haram','Müfsid'],z:2},
+{s:'İmam-ı Âzam’ın asıl adı nedir?',c:['Numan bin Sabit','Muhammed bin İdris','Mâlik bin Enes','Ahmed bin Hanbel'],z:3},
+{s:'İmam-ı Âzam hangi şehirde yetişmiştir?',c:['Kûfe','Mekke','İstanbul','Şam'],z:3},
+{s:'“İmam-ı Âzam” ne demektir?',c:['En büyük imam','İlk imam','Genç imam','Son imam'],z:3},
+{s:'Namazda Fâtiha’dan sonra sure okumak (zamm-ı sure) Hanefi’de nedir?',c:['Vacip','Farz','Sünnet','Mubah'],z:3},
+{s:'Vaktinde kılınamayan namazı sonradan kılmaya ne denir?',c:['Kaza','Nafile','Vitir','İade'],z:3},
+{s:'Bir nimete kavuşunca yapılan secdeye ne denir?',c:['Şükür secdesi','Sehiv secdesi','Tilavet secdesi','Kaza secdesi'],z:3},
+{s:'Mest üzerine mesh süresi, yolcu olmayan için ne kadardır?',c:['1 gün 1 gece (24 saat)','3 gün 3 gece','12 saat','1 hafta'],z:3},
+{s:'Ramazan orucunu özürsüz, bilerek bozmanın cezasına ne denir?',c:['Kefaret','Kaza','Fidye','Adak'],z:3},
+{s:'“Ameller …e göredir” hadisinde boşluğa ne gelir?',c:['Niyetler','Sonuçlar','Sözler','Alışkanlıklar'],z:3},
+{s:'Abdestsiz kılınamayan ibadet hangisidir?',c:['Namaz','Oruç','Zekât','Dua'],z:3},
+{s:'Dinen sorumlu (mükellef) olmanın şartı hangisidir?',c:['Akıllı ve ergenlik çağına ermiş olmak','Zengin olmak','Yaşlı olmak','Şehirde yaşamak'],z:3},
+{s:'İmam Ebû Yûsuf ile İmam Muhammed’e birlikte ne ad verilir?',c:['İmameyn','Şeyhayn','Hafızayn','Kurrâ'],z:4},
+{s:'Hanefi mezhebine göre teyemmümün farzı kaçtır?',c:['2','4','3','5'],z:4},
+{s:'Yolcu için mest üzerine mesh süresi ne kadardır?',c:['3 gün 3 gece','1 gün 1 gece','12 saat','5 gün'],z:4},
+{s:'Oruç kefareti kaç gün peş peşe tutulur?',c:['60','30','10','3'],z:4},
+{s:'Hanefi mezhebine göre kurban kesme süresi kaç gündür?',c:['3','4','7','1'],z:4},
+{s:'“32 farz” hangi farzların toplamıdır?',c:['İman, İslam, namaz, abdest, gusül ve teyemmümün farzları','Sadece namazın farzları','Hac ve zekâtın farzları','Cuma namazının farzları'],z:4},
+{s:'Öğle namazının ilk sünneti kaç rekâttır?',c:['4','2','3','1'],z:4},
+{s:'Namazda bir vacibi yanılarak terk eden ne yapar?',c:['Sehiv secdesi yapar','Namazı yeniden kılar','Tekrar abdest alır','Hiçbir şey yapmaz'],z:4},
+{s:'Ebû Yûsuf, Hanefi fıkhını hangi görevle devlete taşımıştır?',c:['Baş kadılık (kâdı’l-kudât)','Vezirlik','Valilik','Elçilik'],z:4},
+{s:'İmam-ı Âzam hangi yıllar arasında yaşamıştır?',c:['699–767','571–632','810–870','1058–1111'],z:5},
+{s:'Hanefi görüşlerini “Zâhirü’r-rivâye” kitaplarında toplayan âlim kimdir?',c:['İmam Muhammed eş-Şeybânî','İmam Ebû Yûsuf','İmam Züfer','İmam Serahsî'],z:5},
+{s:'Fecr-i sâdık (gerçek tan ağarması) neyi başlatır?',c:['Sabah namazı vaktini ve orucun başlangıcını','Öğle vaktini','İftar vaktini','Gece yarısını'],z:5},
+{s:'Gümüşte zekât nisabı kaç dirhemdir?',c:['200','100','40','500'],z:5},
+{s:'Hanefi usulünde benzer hükümden yola çıkıp sonuca varmaya ne denir?',c:['Kıyas','İcmâ','Rüya yorumu','Oy çokluğu'],z:5},
+{s:'Altında zekât nisabı kaç miskaldir?',c:['20','10','40','100'],z:5}
+],
+peygamber:[
+{s:'İlk insan ve ilk peygamber kimdir?',c:['Hz. Âdem','Hz. Nûh','Hz. İbrâhim','Hz. Mûsâ'],z:1},
+{s:'Büyük tufandan önce gemi yapan peygamber kimdir?',c:['Hz. Nûh','Hz. Yûnus','Hz. Yûsuf','Hz. Îsâ'],z:1},
+{s:'Son peygamber kimdir?',c:['Hz. Muhammed (s.a.v.)','Hz. Îsâ','Hz. Mûsâ','Hz. İbrâhim'],z:1},
+{s:'Ateşe atılan ama Allah’ın izniyle yanmayan peygamber kimdir?',c:['Hz. İbrâhim','Hz. Dâvûd','Hz. Hârun','Hz. Yâkub'],z:1},
+{s:'Kardeşleri tarafından kuyuya atılan peygamber kimdir?',c:['Hz. Yûsuf','Hz. Yahyâ','Hz. Sâlih','Hz. Şuayb'],z:1},
+{s:'Denizde büyük bir balığın yuttuğu peygamber kimdir?',c:['Hz. Yûnus','Hz. Nûh','Hz. Süleyman','Hz. Zekeriyyâ'],z:1},
+{s:'Asasıyla denizin yarılması mucizesi verilen peygamber kimdir?',c:['Hz. Mûsâ','Hz. Îsâ','Hz. Âdem','Hz. Eyyûb'],z:1},
+{s:'Hz. Îsâ’nın annesi kimdir?',c:['Hz. Meryem','Hz. Âsiye','Hz. Havvâ','Hz. Hâcer'],z:1},
+{s:'Kâbe’yi oğluyla birlikte inşa eden peygamber kimdir?',c:['Hz. İbrâhim','Hz. Mûsâ','Hz. Nûh','Hz. Dâvûd'],z:1},
+{s:'Hz. İbrâhim’le Kâbe’yi inşa eden oğlu kimdir?',c:['Hz. İsmâil','Hz. İshâk','Hz. Yâkub','Hz. Yûsuf'],z:1},
+{s:'Hz. Âdem’in eşinin adı nedir?',c:['Hz. Havvâ','Hz. Meryem','Hz. Hâcer','Hz. Sâre'],z:1},
+{s:'Kuşların ve karıncaların dilini bilen peygamber kimdir?',c:['Hz. Süleyman','Hz. Dâvûd','Hz. Yûnus','Hz. Hârun'],z:1},
+{s:'Tevrat hangi peygambere indirildi?',c:['Hz. Mûsâ','Hz. Îsâ','Hz. Dâvûd','Hz. Muhammed'],z:2},
+{s:'İncil hangi peygambere indirildi?',c:['Hz. Îsâ','Hz. Mûsâ','Hz. Dâvûd','Hz. İbrâhim'],z:2},
+{s:'Zebur hangi peygambere indirildi?',c:['Hz. Dâvûd','Hz. Süleyman','Hz. Mûsâ','Hz. Nûh'],z:2},
+{s:'Sesi çok güzel olan, demiri elinde şekillendiren peygamber kimdir?',c:['Hz. Dâvûd','Hz. Süleyman','Hz. İdrîs','Hz. Sâlih'],z:2},
+{s:'Hastalığına uzun yıllar sabreden peygamber kimdir?',c:['Hz. Eyyûb','Hz. Yûsuf','Hz. Lût','Hz. Hûd'],z:2},
+{s:'Hz. Mûsâ’nın yardımcısı olan kardeşi kimdir?',c:['Hz. Hârun','Hz. Yahyâ','Hz. İsmâil','Hz. Şît'],z:2},
+{s:'Hz. Mûsâ’ya zulmeden Mısır kralına ne denirdi?',c:['Firavun','Nemrut','Kisrâ','Kayser'],z:2},
+{s:'Hz. İbrâhim’i ateşe attıran zalim kral kimdir?',c:['Nemrut','Firavun','Câlût','Ebrehe'],z:2},
+{s:'Rüyaları yorumlama ilmi verilen peygamber kimdir?',c:['Hz. Yûsuf','Hz. Yûnus','Hz. Eyyûb','Hz. Âdem'],z:2},
+{s:'Hz. Yûsuf’un babası olan peygamber kimdir?',c:['Hz. Yâkub','Hz. İshâk','Hz. İbrâhim','Hz. Mûsâ'],z:2},
+{s:'Zemzem suyu hangi peygamber bebekken çıkmıştır?',c:['Hz. İsmâil','Hz. İshâk','Hz. Yûsuf','Hz. Îsâ'],z:2},
+{s:'Beşikteyken konuşma mucizesi gösteren peygamber kimdir?',c:['Hz. Îsâ','Hz. Mûsâ','Hz. Yahyâ','Hz. Süleyman'],z:2},
+{s:'Hz. Mûsâ, Allah’ın kelamını hangi dağda işitmiştir?',c:['Tûr Dağı','Hira Dağı','Uhud Dağı','Arafat'],z:3},
+{s:'Kavmine mucize olarak kayadan deve çıkarılan peygamber kimdir?',c:['Hz. Sâlih','Hz. Hûd','Hz. Şuayb','Hz. Lût'],z:3},
+{s:'Âd kavmine gönderilen peygamber kimdir?',c:['Hz. Hûd','Hz. Sâlih','Hz. Lût','Hz. Nûh'],z:3},
+{s:'Medyen halkına ölçü ve tartıda dürüstlüğü öğütleyen peygamber kimdir?',c:['Hz. Şuayb','Hz. Hârun','Hz. Zekeriyyâ','Hz. Yahyâ'],z:3},
+{s:'Hz. İbrâhim’in lakabı “Halîlullah” ne demektir?',c:['Allah’ın dostu','Allah’ın kelamı','Allah’ın aslanı','Allah’ın şahidi'],z:3},
+{s:'Hz. Süleyman’ın emrine verilen, onu uzaklara taşıyan şey nedir?',c:['Rüzgâr','Bulut','Deniz','Yıldızlar'],z:3},
+{s:'Hz. Zekeriyyâ’nın oğlu olan peygamber kimdir?',c:['Hz. Yahyâ','Hz. Îsâ','Hz. Hârun','Hz. İsmâil'],z:3},
+{s:'Hz. İbrâhim’in oğlu, İsrâiloğullarına giden soyun atası kimdir?',c:['Hz. İshâk','Hz. İsmâil','Hz. Yûsuf','Hz. Hârun'],z:3},
+{s:'Kur’an’da “kıssaların en güzeli” olarak anlatılan kıssa kimindir?',c:['Hz. Yûsuf’un','Hz. Mûsâ’nın','Hz. Nûh’un','Hz. Âdem’in'],z:3},
+{s:'Hz. Yûnus balığın karnından nasıl kurtuldu?',c:['Tövbe ve dua ederek','Yüzerek','Gemiyle','Bağırarak'],z:3},
+{s:'Göğe yükseltildiğine inanılan, kıyamete yakın ineceği bildirilen peygamber kimdir?',c:['Hz. Îsâ','Hz. Mûsâ','Hz. İdrîs','Hz. Nûh'],z:3},
+{s:'Kur’an’da oğluna verdiği hikmetli öğütlerle anılan kişi kimdir?',c:['Lokman Hekim','Hızır','Zülkarneyn','Üzeyir'],z:4},
+{s:'“Ülü’l-azm” denilen büyük sabır sahibi peygamberler kaç tanedir?',c:['5','3','7','10'],z:4},
+{s:'Hangisi ülü’l-azm peygamberlerden biri değildir?',c:['Hz. Yûnus','Hz. Nûh','Hz. Mûsâ','Hz. Îsâ'],z:4},
+{s:'İlk defa kalemle yazı yazdığı bildirilen peygamber kimdir?',c:['Hz. İdrîs','Hz. Âdem','Hz. Şît','Hz. Dâvûd'],z:4},
+{s:'Hz. Süleyman’a gelen Sebe ülkesinin kraliçesi kimdir?',c:['Belkıs','Âsiye','Züleyhâ','Sâre'],z:4},
+{s:'Hz. Mûsâ’nın ilim yolculuğunda arkadaşlık ettiği hikmetli kul kimdir?',c:['Hızır','Lokman','Üzeyir','Zülkarneyn'],z:4},
+{s:'Hz. Yâkub’un diğer adı nedir?',c:['İsrâil','Kelîm','Halîl','Emîn'],z:4},
+{s:'“Kelîmullah” (Allah ile konuşan) lakabı hangi peygamberindir?',c:['Hz. Mûsâ','Hz. Îsâ','Hz. İbrâhim','Hz. Muhammed'],z:4},
+{s:'Hz. Dâvûd’un gençken yendiği zalim komutan kimdir?',c:['Câlût','Nemrut','Firavun','Hâmân'],z:4},
+{s:'Peygamberlerin günah işlemekten korunmuş olma sıfatı hangisidir?',c:['İsmet','Sıdk','Emanet','Fetânet'],z:5},
+{s:'Peygamberlerin akıllı ve zeki olma sıfatı hangisidir?',c:['Fetânet','Tebliğ','İsmet','Sıdk'],z:5},
+{s:'Kur’an’da adı geçen peygamber sayısı kaçtır?',c:['25','33','12','99'],z:5},
+{s:'“Rûhullah” lakabı hangi peygamber için kullanılır?',c:['Hz. Îsâ','Hz. Âdem','Hz. Yahyâ','Hz. Hârun'],z:5},
+{s:'Hz. Îsâ’ya inanan yardımcılarına ne ad verilir?',c:['Havâriler','Sahâbîler','Ensar','Muhacirler'],z:5},
+{s:'Peygamberimizin soyu hangi peygambere dayanır?',c:['Hz. İsmâil','Hz. İshâk','Hz. Yûsuf','Hz. Hârun'],z:5}
 ]};
 
 /* ═══════════ OYUN ═══════════ */
@@ -397,40 +573,105 @@ const buzz=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
 
-let kat='karisik', basamak=0, soru=null, kilit=false, ciftHak=false;
+let kat='karisik', basamak=0, soru=null, kilit=false, ciftHak=false, jokerKullanildi=false;
 let jokerDurum={j50:true,jSeyirci:true,jCift:true};
 let seans=[];   /* bu yarışmada seçilen 12 soru */
 
-/* kullanılan soruları hatırla: tekrar oynamada yeni sorular gelsin */
-function kullanilanlar(k){ try{ return JSON.parse(localStorage.getItem('kimalim_used_'+k)||'[]'); }catch(e){ return []; } }
-function kullanildi(k,id){ const u=kullanilanlar(k); if(!u.includes(id)){ u.push(id);
-  try{ localStorage.setItem('kimalim_used_'+k,JSON.stringify(u)); }catch(e){} } }
+/* ── görülen sorular: hedef, her oyuncunun TÜM soruları görmesi.
+   Görülmemişler önce gelir; bir zorluk turu bitince o tur sıfırlanıp baştan döner ── */
+function gorulenOku(){ try{ return JSON.parse(localStorage.getItem('kimalim_gorulen')||'[]'); }catch(e){ return []; } }
+function gorulenYaz(g){ try{ localStorage.setItem('kimalim_gorulen',JSON.stringify(g)); }catch(e){} }
+(function(){ /* eski kayıtları tek listeye taşı */
+  if(localStorage.getItem('kimalim_gorulen'))return;
+  let eski=[];
+  ['ibadet','islam','osmanli','akaid','karisik'].forEach(k=>{ try{ eski=eski.concat(JSON.parse(localStorage.getItem('kimalim_used_'+k)||'[]')); }catch(e){} });
+  if(eski.length){ gorulenYaz([...new Set(eski)]);
+    try{ localStorage.setItem('kimalim_kapsam',JSON.stringify([...new Set(eski)])); }catch(e){} }
+})();
+function gorulduIsaretle(id){
+  const g=gorulenOku();
+  if(!g.includes(id)){ g.push(id); gorulenYaz(g); }
+  /* kapsam listesi hiç sıfırlanmaz: "tüm soruları gördün" rozeti buradan ölçülür */
+  let kap; try{ kap=JSON.parse(localStorage.getItem('kimalim_kapsam')||'[]'); }catch(e){ kap=[]; }
+  if(!kap.includes(id)){ kap.push(id); try{ localStorage.setItem('kimalim_kapsam',JSON.stringify(kap)); }catch(e){} }
+  const kk=id.split('#')[0];
+  if(BANKA[kk]&&BANKA[kk].every((q,i)=>kap.includes(kk+'#'+i))) rozetVer('tam_'+kk);
+}
+
+/* ── ROZETLER ── */
+const ROZETLER=[
+ {id:'ilkAdim',ikon:'🌱',ad:'İlk Adım',aciklama:'İlk yarışmanı tamamla'},
+ {id:'guvence',ikon:'🛡️',ad:'Sağlam Basamak',aciklama:'Bir yarışmada 5. soruyu geç'},
+ {id:'zirveYolu',ikon:'🏔️',ad:'Zirve Yolcusu',aciklama:'Bir yarışmada 10. soruyu geç'},
+ {id:'sampiyon',ikon:'🏆',ad:'Büyük Âlim',aciklama:'1.000.000 puana ulaş'},
+ {id:'jokersiz',ikon:'🎯',ad:'Kendi Bilgimle',aciklama:'Hiç joker kullanmadan şampiyon ol'},
+ {id:'azimli',ikon:'🔥',ad:'Azimli Talebe',aciklama:'10 yarışma tamamla'},
+ {id:'kirkDogru',ikon:'📿',ad:'Kırk Doğru',aciklama:'Toplam 40 soruyu doğru bil'},
+ {id:'yuzDogru',ikon:'🌊',ad:'İlim Deryası',aciklama:'Toplam 100 soruyu doğru bil'},
+ {id:'tam_ibadet',ikon:'🕌',ad:'İbadet Âlimi',aciklama:'İbadet sorularının tamamını gör'},
+ {id:'tam_fikih',ikon:'📗',ad:'Fıkıh Bilgini',aciklama:'İlmihal sorularının tamamını gör'},
+ {id:'tam_ahlak',ikon:'🌸',ad:'Ahlâk Güneşi',aciklama:'Edep & Ahlâk sorularının tamamını gör'},
+ {id:'tam_peygamber',ikon:'🌟',ad:'Kıssa Bilgini',aciklama:'Peygamberler sorularının tamamını gör'},
+ {id:'tam_akaid',ikon:'☪️',ad:'Akaid Âlimi',aciklama:'Akaid sorularının tamamını gör'},
+ {id:'tam_islam',ikon:'📜',ad:'Tarih Âlimi',aciklama:'İslam Tarihi sorularının tamamını gör'},
+ {id:'tam_osmanli',ikon:'🏰',ad:'Osmanlı Bilgini',aciklama:'Osmanlı sorularının tamamını gör'}
+];
+function IST(){ try{ return JSON.parse(localStorage.getItem('kimalim_ist')||'{}'); }catch(e){ return {}; } }
+function istYaz(o){ try{ localStorage.setItem('kimalim_ist',JSON.stringify(o)); }catch(e){} }
+function rozetler(){ try{ return JSON.parse(localStorage.getItem('kimalim_rozet')||'[]'); }catch(e){ return []; } }
+function rozetVer(id){
+  const t=ROZETLER.find(x=>x.id===id); if(!t)return;
+  const r=rozetler(); if(r.includes(id))return;
+  r.push(id); try{ localStorage.setItem('kimalim_rozet',JSON.stringify(r)); }catch(e){}
+  setTimeout(()=>{ toast('🏅 Rozet kazandın: '+t.ikon+' '+t.ad+'!');
+    nota(660,0.14,0.13); nota(880,0.14,0.13,'triangle',0.13); nota(1100,0.3,0.13,'triangle',0.26); buzz([25,40,25]); },600);
+}
+function rozetCiz(){
+  const r=rozetler();
+  document.getElementById('rozetOzet').textContent=r.length+' / '+ROZETLER.length+' rozet topladın — hepsini kazanabilir misin?';
+  const g=document.getElementById('rzGrid'); g.innerHTML='';
+  ROZETLER.forEach(t=>{
+    const d=document.createElement('div');
+    d.className='rz'+(r.includes(t.id)?'':' kilitliR');
+    d.innerHTML='<span class="ri">'+t.ikon+'</span><span class="ra">'+t.ad+'</span><span class="rd">'+t.aciklama+'</span>';
+    g.appendChild(d);
+  });
+}
 function havuz(k){ return k==='karisik' ? Object.entries(BANKA).flatMap(([kk,list])=>list.map((q,i)=>({...q,id:kk+'#'+i})))
   : BANKA[k].map((q,i)=>({...q,id:k+'#'+i})); }
 
 function yarismaKur(){
   const tum=havuz(kat);
-  const gecmis=kullanilanlar(kat);
+  let gecmis=gorulenOku();
   seans=[];
   for(let b=0;b<12;b++){
     const z=ZORLUK[b];
     let aday=tum.filter(q=>q.z===z&&!gecmis.includes(q.id)&&!seans.some(s=>s.id===q.id));
-    if(!aday.length) aday=tum.filter(q=>q.z===z&&!seans.some(s=>s.id===q.id));           /* havuz bitti: sıfırdan */
+    if(!aday.length){
+      /* bu havuzda bu zorluğun tamamı görüldü: tur tamamlandı, sıfırla ve baştan döndür */
+      const tur=new Set(tum.filter(q=>q.z===z).map(q=>q.id));
+      gecmis=gecmis.filter(id=>!tur.has(id));
+      gorulenYaz(gecmis);
+      aday=tum.filter(q=>q.z===z&&!seans.some(s=>s.id===q.id));
+    }
     if(!aday.length) aday=tum.filter(q=>Math.abs(q.z-z)<=1&&!seans.some(s=>s.id===q.id)); /* komşu zorluk */
     seans.push(aday[Math.floor(Math.random()*aday.length)]);
   }
 }
 function bestGoster(){
-  for(const k of ['ibadet','islam','osmanli','akaid','karisik']){
+  Object.keys(BANKA).concat(['karisik']).forEach(k=>{
+    const el=document.getElementById('b-'+k); if(!el)return;
     const b=+(localStorage.getItem('kimalim_best_'+k)||0);
-    document.getElementById('b-'+k).textContent=b>0?'rekor: '+b.toLocaleString('tr-TR'):' ';
-  }
+    el.textContent=b>0?'rekor: '+b.toLocaleString('tr-TR'):' ';
+  });
+  const rEl=document.getElementById('b-rozet');
+  if(rEl)rEl.textContent=rozetler().length+' / '+ROZETLER.length+' rozet';
 }
 
 function soruGoster(){
   kilit=false; ciftHak=false;
   soru=seans[basamak];
-  kullanildi(kat,soru.id);
+  gorulduIsaretle(soru.id);
   document.getElementById('puanRozet').textContent='💰 Soru '+(basamak+1)+'/12 · '+ODULLER[basamak].toLocaleString('tr-TR')+' puan';
   document.getElementById('seyirciBar').classList.remove('acik');
   document.getElementById('soruMetin').textContent=soru.s;
@@ -461,8 +702,13 @@ function secildi(btn){
     if(dogruMu){
       btn.classList.remove('kilitli'); btn.classList.add('dogru');
       dogruSesi(); buzz([20,30,20]);
+      const ist=IST(); ist.dogru=(ist.dogru||0)+1; istYaz(ist);
+      if(ist.dogru>=40)rozetVer('kirkDogru');
+      if(ist.dogru>=100)rozetVer('yuzDogru');
       setTimeout(()=>{
         basamak++;
+        if(basamak>=5)rozetVer('guvence');
+        if(basamak>=10)rozetVer('zirveYolu');
         if(basamak>=12){ bitir(true,ODULLER[11]); }
         else{ if(GUVENCELER.includes(basamak-1)) toast('🛡️ Güvence: '+ODULLER[basamak-1].toLocaleString('tr-TR')+' puan!');
           soruGoster(); }
@@ -482,6 +728,10 @@ function secildi(btn){
   },bekle);
 }
 function bitir(sampiyon,puan){
+  const ist=IST(); ist.oyun=(ist.oyun||0)+1; istYaz(ist);
+  rozetVer('ilkAdim');
+  if(ist.oyun>=10)rozetVer('azimli');
+  if(sampiyon){ rozetVer('sampiyon'); if(!jokerKullanildi)rozetVer('jokersiz'); }
   const bestKey='kimalim_best_'+kat;
   const best=+(localStorage.getItem(bestKey)||0);
   if(puan>best) localStorage.setItem(bestKey,puan);
@@ -503,14 +753,14 @@ function cekil(){
 /* ── JOKERLER ── */
 function j50(){
   if(!jokerDurum.j50||kilit)return;
-  jokerDurum.j50=false; document.getElementById('j50').classList.add('gitti');
+  jokerDurum.j50=false; jokerKullanildi=true; document.getElementById('j50').classList.add('gitti');
   const yanlislar=[...document.querySelectorAll('.cevap')].filter(b=>b.dataset.dogru==='0'&&!b.classList.contains('silik'));
   yanlislar.sort(()=>Math.random()-0.5).slice(0,2).forEach(b=>b.classList.add('silik'));
   nota(700,0.12,0.1); nota(500,0.15,0.1,'triangle',0.1); buzz(15);
 }
 function jSeyirci(){
   if(!jokerDurum.jSeyirci||kilit)return;
-  jokerDurum.jSeyirci=false; document.getElementById('jSeyirci').classList.add('gitti');
+  jokerDurum.jSeyirci=false; jokerKullanildi=true; document.getElementById('jSeyirci').classList.add('gitti');
   const gorunur=[...document.querySelectorAll('.cevap')].filter(b=>!b.classList.contains('silik'));
   /* seyirci: doğruya ağırlıklı ama zorlukta şaşırabilir */
   const dogruPay=Math.max(34,78-ZORLUK[basamak]*9+Math.random()*10);
@@ -530,7 +780,7 @@ function jSeyirci(){
 }
 function jCift(){
   if(!jokerDurum.jCift||kilit)return;
-  jokerDurum.jCift=false; document.getElementById('jCift').classList.add('gitti');
+  jokerDurum.jCift=false; jokerKullanildi=true; document.getElementById('jCift').classList.add('gitti');
   ciftHak=true; toast('2× aktif: bu soruda iki hakkın var!');
   nota(650,0.12,0.11); buzz(15);
 }
@@ -554,16 +804,16 @@ function merdivenCiz(){
 /* ── AKIŞ ── */
 const tap=(el,fn)=>{ el.addEventListener('click',fn);
   el.addEventListener('touchend',e=>{ e.preventDefault(); e.stopPropagation(); fn(); },{passive:false}); };
-document.querySelectorAll('.kat').forEach(b=>tap(b,()=>{
+document.querySelectorAll('.kat[data-kat]').forEach(b=>tap(b,()=>{
   audio(); kat=b.dataset.kat;
-  basamak=0; jokerDurum={j50:true,jSeyirci:true,jCift:true};
+  basamak=0; jokerKullanildi=false; jokerDurum={j50:true,jSeyirci:true,jCift:true};
   document.querySelectorAll('.joker').forEach(j=>j.classList.remove('gitti'));
   yarismaKur();
   document.getElementById('giris').classList.add('gizli');
   soruGoster();
 }));
 tap(document.getElementById('tekrarBtn'),()=>{
-  audio(); basamak=0; jokerDurum={j50:true,jSeyirci:true,jCift:true};
+  audio(); basamak=0; jokerKullanildi=false; jokerDurum={j50:true,jSeyirci:true,jCift:true};
   document.querySelectorAll('.joker').forEach(j=>j.classList.remove('gitti'));
   yarismaKur();
   document.getElementById('son').classList.add('gizli');
@@ -579,6 +829,8 @@ tap(document.getElementById('merdivenBtn'),()=>{ merdivenCiz(); document.getElem
 tap(document.getElementById('j50'),j50);
 tap(document.getElementById('jSeyirci'),jSeyirci);
 tap(document.getElementById('jCift'),jCift);
+tap(document.getElementById('rozetBtn'),()=>{ audio(); rozetCiz(); document.getElementById('rozetKart').classList.remove('gizli'); });
+tap(document.getElementById('rozetKapat'),()=>document.getElementById('rozetKart').classList.add('gizli'));
 addEventListener('keydown',e=>{
   const i={'a':0,'b':1,'c':2,'d':3}[e.key.toLowerCase()];
   if(i!==undefined){ const b=[...document.querySelectorAll('.cevap')][i]; if(b&&!b.classList.contains('silik')) secildi(b); }
@@ -616,7 +868,7 @@ bestGoster();
 (function(){
   var btn=document.getElementById('mpNasilBtn'),
       kap=document.getElementById('mpNasilKap');
-  document.querySelector('#mpNasilKart p').textContent='1️⃣ Kategori seç, 12 soruluk ilim merdivenine başla.\n2️⃣ Her doğruda puan katlanır; 5. ve 10. sorular güvence basamağı.\n3️⃣ Jokerler: ½ iki yanlışı eler, 👥 seyirciye sorar, 2× ikinci hak verir.\n4️⃣ 🚪 Çekil dersen o ana kadarki puanın senin.\n💡 Yanlışta son güvence puanına düşersin — jokerleri zor sorulara sakla.';
+  document.querySelector('#mpNasilKart p').textContent='1️⃣ Kategori seç, 12 soruluk ilim merdivenine başla.\n2️⃣ Her doğruda puan katlanır; 5. ve 10. sorular güvence basamağı.\n3️⃣ Jokerler: ½ iki yanlışı eler, 👥 seyirciye sorar, 2× ikinci hak verir.\n4️⃣ 🚪 Çekil dersen o ana kadarki puanın senin.\n💡 Yanlışta son güvence puanına düşersin — jokerleri zor sorulara sakla.\n🏅 Başarıların rozet kazandırır: menüdeki Rozetlerim bölümünden koleksiyonunu takip et!';
   function ac(e){ if(e){e.preventDefault();e.stopPropagation();} kap.classList.add('mpAcik'); }
   function kapat(e){ if(e){e.preventDefault();e.stopPropagation();} kap.classList.remove('mpAcik'); }
   btn.addEventListener('click',ac); btn.addEventListener('touchend',ac);
