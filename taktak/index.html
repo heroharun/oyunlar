@@ -78,7 +78,8 @@
   <h1 style="font-size:28px" id="sonBaslik">🪵 TEPSİ DOLDU!</h1>
   <div class="buyuk" id="sonSkor"></div>
   <p id="sonOzet"></p>
-  <button class="btn" id="tekrarBtn">Tekrar Oyna!</button>
+  <button class="btn" id="devamBtn">🪄 Devam Et</button>
+  <button class="btn2" id="tekrarBtn">Tekrar Oyna</button>
   <button class="btn2" id="menuBtn">Ana Menü</button>
 </div>
 
@@ -194,7 +195,7 @@ function muzikBaslat(){
 const buzz=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
 
 /* ══════════ OYUN VERİSİ ══════════ */
-const COLS=10, ROWS=17;
+const COLS=14, ROWS=23;
 /* parça şekilleri (klasik yedili) + ahşap ton indeksi */
 const PARCALAR=[
   {h:[[1,1,1,1]],ton:0},
@@ -217,6 +218,7 @@ const TONLAR=[
 ];
 let grid, parca, px, py, pdon, sirada, skor, satirlar, seviye, sure, bitti, dusmeS, kilitS;
 let sacilanlar=[], puanlar=[], tozlar=[], flaslar=[], kilitEfekt=null, sarsinti=0, puls=0, run=false;
+let dusenler={}, devamHakki=1;
 function torba(){
   const t=[0,1,2,3,4,5,6].sort(()=>Math.random()-0.5);
   return t;
@@ -238,8 +240,8 @@ function oyunBaslat(){
   grid=Array.from({length:ROWS},()=>Array(COLS).fill(-1));
   torbaKuyruk=[...torba()];
   sirada=[sonrakiParca(),sonrakiParca(),sonrakiParca()];
-  skor=0; satirlar=0; seviye=1; sure=0; bitti=false;
-  sacilanlar=[]; puanlar=[];
+  skor=0; satirlar=0; seviye=1; sure=0; bitti=false; devamHakki=1;
+  sacilanlar=[]; puanlar=[]; dusenler={};
   yeniParca();
   run=true;
 }
@@ -286,32 +288,46 @@ function kilitle(){
   satirKontrol();
   if(!bitti)yeniParca();
 }
-function satirKontrol(){
+function yercekimi(){
+  /* satır kırılınca üstteki taşlar deliklere sütun sütun akar */
+  for(let c=0;c<COLS;c++){
+    let yaz=ROWS-1;
+    for(let r=ROWS-1;r>=0;r--){
+      if(grid[r][c]>=0){
+        if(yaz!==r){
+          grid[yaz][c]=grid[r][c]; grid[r][c]=-1;
+          dusenler[yaz+'_'+c]={ofs:yaz-r,hiz:1.6};
+        }
+        yaz--;
+      }
+    }
+  }
+}
+function satirKontrol(zincir){
+  zincir=zincir||1;
   const dolular=[];
   for(let r=0;r<ROWS;r++)if(grid[r].every(v=>v>=0))dolular.push(r);
   if(!dolular.length)return;
   /* saçılma fiziği */
   for(const r of dolular)for(let c=0;c<COLS;c++){
-    const a=Math.random()*Math.PI-Math.PI;  /* yukarı yönlü yay */
     sacilanlar.push({gx:c,gy:r,ton:grid[r][c],
-      vx:(c-COLS/2)*14+(Math.random()-0.5)*60,
-      vy:-120-Math.random()*160,
-      rot:Math.random()*6.28,vr:(Math.random()-0.5)*9,omur:1.4});
+      vx:(c-COLS/2)*11+(Math.random()-0.5)*50,
+      vy:-100-Math.random()*150,
+      rot:Math.random()*6.28,vr:(Math.random()-0.5)*9,omur:1.35});
   }
-  for(const r of dolular){
-    grid.splice(r,1);
-    grid.unshift(Array(COLS).fill(-1));
-  }
-  for(const r of dolular)flaslar.push({r,t:0.16});
+  for(const r of dolular){ grid[r].fill(-1); flaslar.push({r,t:0.16}); }
+  yercekimi();
   puls=0.1+dolular.length*0.05;
   const n=dolular.length;
-  const p=[0,100,300,500,800][n]*seviye;
+  const p=[0,100,300,500,800][Math.min(4,n)]*seviye*zincir;
   skor+=p; satirlar+=n; S.toplamSatir+=n;
   seviye=1+Math.floor(satirlar/10);
-  sesSaçıl(n); buzz(n>=2?[20,30,20]:12);
-  sarsinti=0.25+n*0.08;
-  puanlar.push({t:'+'+p,x:0.5,y:(dolular[0]/ROWS),omur:1,buyuk:n>=2});
+  sesSaçıl(n); buzz(n>=2||zincir>1?[20,30,20]:12);
+  sarsinti=0.2+n*0.07+(zincir-1)*0.08;
+  puanlar.push({t:(zincir>1?'ZİNCİR x'+zincir+'  +':'+')+p,x:0.5,y:(dolular[0]/ROWS),
+    omur:1.1,buyuk:n>=2||zincir>1});
   kaydet();
+  satirKontrol(zincir+1);   /* akış yeni satır doldurduysa zincirle */
 }
 function oyunBitti(){
   bitti=true; run=false;
@@ -323,6 +339,7 @@ function oyunBitti(){
   document.getElementById('sonSkor').textContent=skor.toLocaleString('tr');
   document.getElementById('sonOzet').textContent=
     satirlar+' satır · seviye '+seviye+(rekor?' · Rekoru kırdın! 🎉':' · Rekorun: '+S.enIyi.toLocaleString('tr'));
+  document.getElementById('devamBtn').style.display=devamHakki>0?'':'none';
   setTimeout(()=>document.getElementById('sonKart').classList.remove('gizli'),700);
 }
 
@@ -359,6 +376,12 @@ function guncelle(dt){
   flaslar=flaslar.filter(f2=>f2.t>0);
   if(kilitEfekt){ kilitEfekt.t+=dt; if(kilitEfekt.t>0.2)kilitEfekt=null; }
   if(puls>0)puls-=dt*0.6;
+  for(const an in dusenler){
+    const d2=dusenler[an];
+    d2.hiz+=dt*42; d2.ofs-=d2.hiz*dt;
+    if(d2.ofs<=0){ delete dusenler[an];
+      if(Math.random()<0.12)tahtaVur(0.25,2+Math.random()*3,0); }
+  }
   for(const p of puanlar){ p.y-=dt*0.06; p.omur-=dt*0.9; }
   puanlar=puanlar.filter(p=>p.omur>0);
 }
@@ -525,8 +548,10 @@ function ciz(){
   ctx.fillStyle=dg4; ctx.fillRect(L.x,L.y+L.bh-dv,L.bw,dv);
   /* ── yerleşik bloklar ── */
   for(let r=0;r<ROWS;r++)for(let cc=0;cc<COLS;cc++){
-    if(grid&&grid[r][cc]>=0)
-      tuglaCiz(grid[r][cc],L.x+cc*L.hucre,L.y+r*L.hucre,L.hucre);
+    if(grid&&grid[r][cc]>=0){
+      const d2=dusenler[r+'_'+cc];
+      tuglaCiz(grid[r][cc],L.x+cc*L.hucre,L.y+(r-(d2?Math.max(0,d2.ofs):0))*L.hucre,L.hucre);
+    }
   }
   /* ── hayalet + aktif parça ── */
   if(run&&!bitti){
@@ -654,16 +679,17 @@ c.addEventListener('pointermove',e=>{
   if(!dokun||!run)return;
   const L=yerlesim();
   const dx=e.clientX-dokun.x, dy=e.clientY-dokun.y;
-  /* yatay taşıma */
-  const adim=Math.round(dx/L.hucre);
-  const hedefX=dokun.bx+adim;
-  if(hedefX!==px){
-    const yon=hedefX>px?1:-1;
-    while(px!==hedefX&&sigarMi(px+yon,py,pdon)){ px+=yon; sesTik(); dokun.tasindi=true; }
-    if(px!==hedefX)dokun.bx=px-adim;   /* duvara dayandı */
+  /* akıcı 1:1 taşıma: parmak nereye, parça oraya (geçerli en yakın sütun) */
+  const hedef=Math.round(dokun.bx+dx*1.12/L.hucre);
+  if(hedef!==px){
+    const yon=hedef>px?1:-1;
+    let oynadi=false;
+    while(px!==hedef&&sigarMi(px+yon,py,pdon)){ px+=yon; oynadi=true; }
+    if(oynadi){ sesTik(); kilitS=0; }
   }
-  /* aşağı sürükleme = hızlandır */
-  if(dy>L.hucre*1.2){ hizli=true; dokun.tasindi=true; }
+  if(Math.abs(dx)>13)dokun.tasindi=true;
+  /* yavaş aşağı sürükleme = hızlandır */
+  if(dy>L.hucre*1.4){ hizli=true; dokun.tasindi=true; }
 });
 addEventListener('pointerup',e=>{
   if(!dokun)return;
@@ -677,11 +703,11 @@ addEventListener('pointerup',e=>{
       sesDusme(); sarsinti=0.18;
       kilitle();
       if(S.yardim<2){ S.yardim=2; kaydet(); }
-    } else if(!dokun.tasindi&&dt2<260){
+    } else if(!dokun.tasindi&&dt2<300&&Math.abs(dy)<20){
       /* tek dokunuş: döndür (duvar itmeli) */
       const yeniDon=(pdon+1)%4;
       for(const kay of [0,-1,1,-2,2]){
-        if(sigarMi(px+kay,py,yeniDon)){ px+=kay; pdon=yeniDon; sesDondur(); break; }
+        if(sigarMi(px+kay,py,yeniDon)){ px+=kay; pdon=yeniDon; sesDondur(); kilitS=0; break; }
       }
       if(S.yardim<1){ S.yardim=1; kaydet(); }
     }
@@ -691,12 +717,12 @@ addEventListener('pointerup',e=>{
 addEventListener('pointercancel',()=>{ hizli=false; dokun=null; });
 addEventListener('keydown',e=>{
   if(!run)return;
-  if(e.key==='ArrowLeft'&&sigarMi(px-1,py,pdon)){ px--; sesTik(); }
-  else if(e.key==='ArrowRight'&&sigarMi(px+1,py,pdon)){ px++; sesTik(); }
+  if(e.key==='ArrowLeft'&&sigarMi(px-1,py,pdon)){ px--; sesTik(); kilitS=0; }
+  else if(e.key==='ArrowRight'&&sigarMi(px+1,py,pdon)){ px++; sesTik(); kilitS=0; }
   else if(e.key==='ArrowUp'){
     const yeniDon=(pdon+1)%4;
     for(const kay of [0,-1,1,-2,2])
-      if(sigarMi(px+kay,py,yeniDon)){ px+=kay; pdon=yeniDon; sesDondur(); break; }
+      if(sigarMi(px+kay,py,yeniDon)){ px+=kay; pdon=yeniDon; sesDondur(); kilitS=0; break; }
   }
   else if(e.key==='ArrowDown')hizli=true;
   else if(e.key===' '){
@@ -728,6 +754,25 @@ document.getElementById('baslaBtn').addEventListener('click',()=>{
   audio(); muzikBaslat(); oyunBaslat();
   document.getElementById('giris').classList.add('gizli');
   sonEtkilesim=performance.now()-2500;
+});
+document.getElementById('devamBtn').addEventListener('click',()=>{
+  audio();
+  if(devamHakki<=0)return;
+  devamHakki--;
+  /* üst yarı temizlenir, alt birikimin dizilişi korunur */
+  const kesim=Math.floor(ROWS*0.45);
+  for(let r=0;r<kesim;r++)for(let c2=0;c2<COLS;c2++){
+    if(grid[r][c2]>=0){
+      sacilanlar.push({gx:c2,gy:r,ton:grid[r][c2],
+        vx:(c2-COLS/2)*10,vy:-110-Math.random()*120,
+        rot:Math.random()*6.28,vr:(Math.random()-0.5)*8,omur:1.2});
+      grid[r][c2]=-1;
+    }
+  }
+  bitti=false; run=true;
+  sesSaçıl(2); sarsinti=0.3; buzz([15,25,15]);
+  yeniParca();
+  document.getElementById('sonKart').classList.add('gizli');
 });
 document.getElementById('tekrarBtn').addEventListener('click',()=>{
   audio(); oyunBaslat();
