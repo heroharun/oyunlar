@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<title>SIKIŞIK PARK — Yolu Aç, Servisi Kaldır!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  :root{ --ink:#f2f4f8; --dim:#9ca8b8; --sari:#f2c53d; --yesil:#5fae52; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#2a3240;color:var(--ink);
+    font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  canvas{display:block}
+  #ustBtnlar{position:fixed;left:12px;top:max(10px,env(safe-area-inset-top));z-index:6;
+    display:flex;gap:10px}
+  .yuvarlakBtn{width:48px;height:48px;border-radius:15px;border:2px solid rgba(255,255,255,.3);
+    background:rgba(16,22,32,.85);font-size:21px;cursor:pointer;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+  .yuvarlakBtn:active{transform:scale(.92)}
+  #sesBtn{position:fixed;right:12px;bottom:max(14px,env(safe-area-inset-bottom));z-index:6;
+    width:48px;height:48px;border-radius:15px;border:2px solid rgba(255,255,255,.3);
+    background:rgba(16,22,32,.85);font-size:21px;cursor:pointer;color:var(--ink)}
+  #ipucu{position:fixed;left:0;top:0;z-index:9;pointer-events:none;display:none;
+    flex-direction:column;align-items:center;gap:4px;transform:translate(-50%,-100%)}
+  #ipucuEl{font-size:40px;animation:elSalla 1s ease-in-out infinite;filter:drop-shadow(0 3px 6px rgba(0,0,0,.7))}
+  #ipucuYazi{background:rgba(16,22,32,.94);border:2px solid var(--sari);border-radius:12px;
+    padding:8px 13px;font-size:13.5px;font-weight:800;white-space:nowrap;color:var(--sari)}
+  @keyframes elSalla{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(13px) rotate(6deg)}}
+  #toast{position:fixed;top:24%;left:50%;transform:translateX(-50%);font-size:20px;font-weight:900;
+    color:var(--sari);opacity:0;pointer-events:none;white-space:nowrap;z-index:8;
+    text-shadow:0 2px 12px rgba(0,0,0,.9)}
+  #toast.pop{animation:tp .95s ease-out}
+  @keyframes tp{0%{opacity:0;transform:translateX(-50%) scale(.6)}15%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{opacity:1}100%{opacity:0}}
+  #dondur{position:fixed;inset:0;z-index:60;background:#2a3240;display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
+  #dondur .tel{font-size:74px;animation:dondurAn 1.6s ease-in-out infinite}
+  @keyframes dondurAn{0%,25%{transform:rotate(90deg)}60%,100%{transform:rotate(0)}}
+  #dondur p{font-size:18px;font-weight:900;color:var(--sari)}
+  #dondur small{color:var(--dim);font-size:13px}
+  .kart{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:14px;text-align:center;background:rgba(12,16,24,.97);
+    transition:opacity .3s;padding:24px;z-index:30;overflow-y:auto}
+  .kart.gizli{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+  .kart.gizli .btn{pointer-events:none}
+  .kart h1{font-size:clamp(30px,8.4vw,52px);font-weight:900;line-height:1.05;transform:rotate(-2deg);
+    background:linear-gradient(180deg,#ffd97a,#f2c53d 55%,#e0913d);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .kart p{max-width:42ch;color:var(--dim);font-size:14.5px;line-height:1.65}
+  .kart .buyuk{font-size:30px;font-weight:900;color:var(--sari)}
+  .btn{font:inherit;font-weight:900;font-size:16px;letter-spacing:.05em;text-transform:uppercase;
+    color:#2a3240;background:linear-gradient(180deg,#ffd97a,#f2c53d);border:none;border-radius:999px;
+    padding:15px 42px;cursor:pointer;box-shadow:0 5px 0 #b8862e}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b8862e}
+  .btn2{font:inherit;font-weight:800;font-size:13px;color:var(--ink);
+    background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.25);
+    border-radius:999px;padding:11px 26px;cursor:pointer}
+  .hint{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+  /* bölüm haritası */
+  #bolumGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;width:min(100%,400px)}
+  .bolumBtn{font:inherit;aspect-ratio:1;border-radius:16px;border:2px solid rgba(242,197,61,.4);
+    background:rgba(242,197,61,.1);color:var(--ink);font-weight:900;font-size:16px;
+    cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .bolumBtn .yild{font-size:9px;letter-spacing:1px}
+  .bolumBtn.kilitli{opacity:.35;border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.05)}
+  .bolumBtn.aktif{background:linear-gradient(180deg,#ffd97a,#f2c53d);color:#2a3240;
+    box-shadow:0 4px 0 #b8862e}
+  .bolumBtn:active{transform:scale(.94)}
+</style>
+<canvas id="c"></canvas>
+<div id="ustBtnlar">
+  <button class="yuvarlakBtn" id="geriBtn" aria-label="Bölümler">🗺️</button>
+  <button class="yuvarlakBtn" id="restartBtn" aria-label="Baştan">🔄</button>
+</div>
+<button id="sesBtn">🔊</button>
+<div id="ipucu"><span id="ipucuEl">👆</span><span id="ipucuYazi"></span></div>
+<div id="toast"></div>
+<div id="dondur"><span class="tel">📱</span><p>Telefonu dik tut!</p><small>Sıkışık Park dikey ekranda oynanır 🙂</small></div>
+
+<div class="kart" id="giris">
+  <h1>SIKIŞIK PARK</h1>
+  <p>Servisler otoparkta düğüm oldu! 🚌 Her aracın gideceği yön üstünde yazıyor. <b style="color:var(--sari)">Yolu açık olana dokun</b> — vın diye çıksın, duraktaki yolcuları alıp yola koyulsun. Sırayı doğru çözersen park boşalır! Bölümden bölüme zorlaşan sonsuz trafik bilmecesi.</p>
+  <button class="btn" id="baslaBtn">Oyna!</button>
+  <button class="btn2" id="bolumlerBtn">🗺️ Bölümler</button>
+  <button class="btn2" id="nasilBtnG">❓ Nasıl Oynanır</button>
+  <span class="hint" id="kayitHint"></span>
+</div>
+
+<div class="kart gizli" id="nasil">
+  <h1 style="font-size:26px">NASIL OYNANIR</h1>
+  <p style="text-align:left;white-space:pre-line">1️⃣ Her aracın üstündeki OK, gideceği yönü gösterir.
+
+2️⃣ Araca DOKUN 👆 → önü açıksa vın diye çıkar, duraktan yolcularını alır. Önü kapalıysa kornaya basar, kımıldayamaz! 📢
+
+3️⃣ Doğru SIRAYLA dokunarak tüm araçları çıkar → bölüm biter! 🎉
+
+4️⃣ Az korna = çok yıldız: hiç tıkanmadan bitirirsen ⭐⭐⭐!
+
+5️⃣ 🔄 ile bölümü baştan başlatabilir, 🗺️ ile bölüm haritasına dönebilirsin. Oyundan çıksan bile kaldığın hamleden devam edersin.
+
+6️⃣ Her 8 bölümde yeni bir semt: gündüz, gün batımı, gece, kar… Bölümler gitgide büyür ve sonsuza kadar sürer!</p>
+  <button class="btn" id="nasilKapatBtn">Anladım</button>
+</div>
+
+<div class="kart gizli" id="bolumKart">
+  <h1 style="font-size:26px">🗺️ BÖLÜMLER</h1>
+  <div id="bolumGrid"></div>
+  <button class="btn2" id="bolumKapat">Kapat</button>
+</div>
+
+<div class="kart gizli" id="kazandinKart">
+  <h1 style="font-size:28px">🎉 PARK BOŞALDI!</h1>
+  <div class="buyuk" id="kazYildiz"></div>
+  <p id="kazOzet"></p>
+  <button class="btn" id="sonrakiBtn">Sonraki Bölüm ➜</button>
+  <button class="btn2" id="kazBolumler">🗺️ Bölümler</button>
+</div>
+
+<script>
+'use strict';
+/* ══════════ KAYIT ══════════ */
+const VARS={bolum:1, yildizlar:{}, ses:true, yardim:0, oyun:null};
+let S;
+try{ S=Object.assign({},VARS,JSON.parse(localStorage.getItem('park_v1')||'{}'));
+  S.yildizlar=S.yildizlar||{};
+}catch(e){ S=JSON.parse(JSON.stringify(VARS)); }
+function kaydet(){ try{ localStorage.setItem('park_v1',JSON.stringify(S)); }catch(e){} }
+
+/* ══════════ SES ══════════ */
+let AC=null;
+const audio=()=>{ if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
+function ton(f,t0,d,v,tip,kay){ const a=audio(),o=a.createOscillator(),g=a.createGain();
+  o.type=tip||'triangle'; o.frequency.setValueAtTime(f,a.currentTime+t0);
+  if(kay)o.frequency.exponentialRampToValueAtTime(kay,a.currentTime+t0+d);
+  g.gain.setValueAtTime(0.0001,a.currentTime+t0);
+  g.gain.linearRampToValueAtTime(v,a.currentTime+t0+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+t0+d);
+  o.connect(g).connect(a.destination); o.start(a.currentTime+t0); o.stop(a.currentTime+t0+d+0.03); }
+function gurultu(t0,d,v,frek,q){ const a=audio(),n=a.createBufferSource(),
+  buf=a.createBuffer(1,Math.max(1,a.sampleRate*d),a.sampleRate),dd=buf.getChannelData(0);
+  for(let i=0;i<dd.length;i++)dd[i]=(Math.random()*2-1)*Math.pow(1-i/dd.length,1.4);
+  n.buffer=buf; const g=a.createGain(); g.gain.value=v;
+  const f=a.createBiquadFilter(); f.type='bandpass'; f.frequency.value=frek||2000; f.Q.value=q||1;
+  n.connect(f).connect(g).connect(a.destination); n.start(a.currentTime+t0); }
+const sesMotor=()=>{ if(S.ses)try{
+  ton(85,0,0.4,0.09,'sawtooth',150); gurultu(0,0.35,0.04,600,0.6);
+  ton(140,0.15,0.3,0.06,'sawtooth',260); }catch(e){} };
+const sesKorna=()=>{ if(S.ses)try{
+  ton(392,0,0.14,0.1,'square'); ton(494,0,0.14,0.08,'square');
+  ton(392,0.18,0.2,0.1,'square'); ton(494,0.18,0.2,0.08,'square'); }catch(e){} };
+const sesYolcu=i=>{ if(S.ses)try{ ton(700+i*80,0,0.05,0.05,'sine'); }catch(e){} };
+const sesTik=()=>{ if(S.ses)try{ gurultu(0,0.02,0.06,4200,2); }catch(e){} };
+const sesKazandin=()=>{ if(S.ses)try{
+  [523,659,784,1047].forEach((f,i)=>ton(f,i*0.09,0.2,0.09));
+  ton(1319,0.4,0.4,0.08); }catch(e){} };
+const buzz=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+/* ══════════ TEMALAR (her 8 bölümde semt değişir) ══════════ */
+const TEMALAR=[
+  {ad:'Gündüz Semti', gok:'#8fc4e8', bina:'#c96a4e', asfalt:'#4a505c', cizgi:'#e8eaf0', zemin:'#5c6470', arac:['#f2c53d','#e8b73c']},
+  {ad:'Gün Batımı',   gok:'#f2a45c', bina:'#8a5a72', asfalt:'#524858', cizgi:'#f0d8c0', zemin:'#665a68', arac:['#e07a3c','#d96a30']},
+  {ad:'Gece Vardiyası',gok:'#243050', bina:'#3a4a6a', asfalt:'#303646', cizgi:'#8a94b8', zemin:'#3c4254', arac:['#5fb4e0','#4aa0d0']},
+  {ad:'Karlı Sabah',  gok:'#c9dbe8', bina:'#7a8a9c', asfalt:'#5a6472', cizgi:'#f2f4f8', zemin:'#8a94a0', arac:['#5fae52','#4f9e46']}
+];
+const TEMA=()=>TEMALAR[Math.floor((bolum-1)/8)%TEMALAR.length];
+
+/* ══════════ BÖLÜM ÜRETİMİ (tersine yerleştirme → çözülebilirlik garantisi) ══════════ */
+let tohum=1;
+function rasgele(){ tohum=(tohum*1103515245+12345)%2147483648; return tohum/2147483648; }
+function bolumUret(no){
+  tohum=no*7919+13;
+  const GW=Math.min(9,5+Math.floor(no/6)), GH=Math.min(12,6+Math.floor(no/4));
+  const hedefAdet=Math.min(Math.floor(GW*GH*0.62/2),5+Math.floor(no*1.4));
+  const dolu=Array.from({length:GH},()=>Array(GW).fill(-1));
+  const araclar=[];
+  const yolAcik=(x,y,len,dir,hariç)=>{
+    /* aracın önünden kenara kadar tüm hücreler boş mu */
+    const yatay=(dir==='L'||dir==='R');
+    let cx=x, cy=y;
+    if(dir==='R')cx=x+len; else if(dir==='L')cx=x-1;
+    else if(dir==='D')cy=y+len; else cy=y-1;
+    while(cx>=0&&cx<GW&&cy>=0&&cy<GH){
+      if(dolu[cy][cx]>=0&&dolu[cy][cx]!==hariç)return false;
+      if(dir==='R')cx++; else if(dir==='L')cx--;
+      else if(dir==='D')cy++; else cy--;
+    }
+    return true;
+  };
+  let deneme=0;
+  while(araclar.length<hedefAdet&&deneme<3000){
+    deneme++;
+    const len=[1,2,2,3][Math.floor(rasgele()*4)];
+    const dir=['L','R','U','D'][Math.floor(rasgele()*4)];
+    const yatay=(dir==='L'||dir==='R');
+    const x=Math.floor(rasgele()*(yatay?GW-len+1:GW));
+    const y=Math.floor(rasgele()*(yatay?GH:GH-len+1));
+    /* gövde boş mu */
+    let uygun=true;
+    for(let i=0;i<len;i++){
+      const cx=yatay?x+i:x, cy=yatay?y:y+i;
+      if(dolu[cy][cx]>=0){ uygun=false; break; }
+    }
+    if(!uygun)continue;
+    /* çıkış yolu şu ana dek yerleşenlerden temiz mi (ters sıra çözümü garanti eder) */
+    if(!yolAcik(x,y,len,dir,-9))continue;
+    const id=araclar.length;
+    for(let i=0;i<len;i++){
+      const cx=yatay?x+i:x, cy=yatay?y:y+i;
+      dolu[cy][cx]=id;
+    }
+    araclar.push({id,x,y,len,dir,renk:Math.floor(rasgele()*5)});
+  }
+  return {GW,GH,araclar};
+}
+
+/* ══════════ OYUN DURUMU ══════════ */
+let bolum=S.bolum, seviyeVeri=null, araclar=[], GW=0, GH=0;
+let kalanYolcu=0, kornalar=0, cikanlar=[], parcalar=[], run=false, kazanildi=false;
+let yolcular=[];   /* duraktaki bekleyen kişiler (görsel) */
+function bolumKur(no,kayitliDurum){
+  bolum=no;
+  seviyeVeri=bolumUret(no);
+  GW=seviyeVeri.GW; GH=seviyeVeri.GH;
+  araclar=seviyeVeri.araclar.map(a=>({...a,ofs:0,sallanti:0,cikiyor:false}));
+  if(kayitliDurum&&kayitliDurum.kalanIdler){
+    araclar=araclar.filter(a=>kayitliDurum.kalanIdler.includes(a.id));
+    kornalar=kayitliDurum.kornalar||0;
+  } else kornalar=0;
+  kalanYolcu=araclar.reduce((t,a)=>t+a.len*4,0);
+  yolcular=[];
+  for(let i=0;i<Math.min(14,kalanYolcu);i++)
+    yolcular.push({sira:i,renk:Math.floor(Math.random()*5),zip:Math.random()*6.28});
+  cikanlar=[]; parcalar=[]; kazanildi=false;
+  run=true;
+  oyunKaydet();
+}
+function oyunKaydet(){
+  S.oyun={bolum,kalanIdler:araclar.map(a=>a.id),kornalar};
+  S.bolum=Math.max(S.bolum,bolum);
+  kaydet();
+}
+function dolulukHaritasi(){
+  const d=Array.from({length:GH},()=>Array(GW).fill(-1));
+  for(const a of araclar){
+    if(a.cikiyor)continue;
+    const yatay=(a.dir==='L'||a.dir==='R');
+    for(let i=0;i<a.len;i++){
+      const cx=yatay?a.x+i:a.x, cy=yatay?a.y:a.y+i;
+      d[cy][cx]=a.id;
+    }
+  }
+  return d;
+}
+function onuAcikMi(a){
+  const d=dolulukHaritasi();
+  const yatay=(a.dir==='L'||a.dir==='R');
+  let cx=a.x, cy=a.y;
+  if(a.dir==='R')cx=a.x+a.len; else if(a.dir==='L')cx=a.x-1;
+  else if(a.dir==='D')cy=a.y+a.len; else cy=a.y-1;
+  while(cx>=0&&cx<GW&&cy>=0&&cy<GH){
+    if(d[cy][cx]>=0)return false;
+    if(a.dir==='R')cx++; else if(a.dir==='L')cx--;
+    else if(a.dir==='D')cy++; else cy--;
+  }
+  return true;
+}
+function aracaDokun(a){
+  if(a.cikiyor||!run)return;
+  if(onuAcikMi(a)){
+    a.cikiyor=true; a.cikisT=0;
+    sesMotor(); buzz(8);
+    if(S.yardim===0){ S.yardim=1; kaydet(); }
+  } else {
+    a.sallanti=0.35; kornalar++;
+    sesKorna(); buzz([25,30,25]);
+    oyunKaydet();
+  }
+}
+
+/* ══════════ GÜNCELLE ══════════ */
+function guncelle(dt){
+  for(const a of araclar){
+    if(a.sallanti>0)a.sallanti-=dt;
+    if(a.cikiyor){
+      a.cikisT+=dt;
+      a.ofs+=dt*(6+a.cikisT*22);   /* hızlanarak çıkar */
+      /* tamamen dışarı çıktı mı */
+      if(a.ofs>Math.max(GW,GH)+a.len+2){
+        a.bitti=true;
+        /* yolcu alma */
+        const alinan=a.len*4;
+        kalanYolcu=Math.max(0,kalanYolcu-alinan);
+        for(let i=0;i<Math.min(alinan,yolcular.length);i++){
+          sesYolcu(i);
+        }
+        yolcular.splice(0,alinan);
+        while(yolcular.length<Math.min(14,kalanYolcu))
+          yolcular.push({sira:yolcular.length,renk:Math.floor(Math.random()*5),zip:Math.random()*6.28});
+        cikanlar.push({t:0,len:a.len,renk:a.renk});
+        buzz(10);
+      }
+    }
+  }
+  const oncekiAdet=araclar.length;
+  araclar=araclar.filter(a=>!a.bitti);
+  if(araclar.length!==oncekiAdet){
+    oyunKaydet();
+    if(araclar.length===0&&!kazanildi){
+      kazanildi=true; run=false;
+      S.oyun=null;
+      const y=kornalar===0?3:(kornalar<=3?2:1);
+      const eski=S.yildizlar[bolum]||0;
+      S.yildizlar[bolum]=Math.max(eski,y);
+      S.bolum=Math.max(S.bolum,bolum+1);
+      kaydet();
+      sesKazandin(); buzz([30,50,30,50,60]);
+      for(let i=0;i<40;i++)
+        parcalar.push({x:Math.random(),y:-Math.random()*0.3,
+          vx:(Math.random()-0.5)*0.3,vy:0.3+Math.random()*0.5,
+          renk:['#f2c53d','#5fae52','#5fb4e0','#e07a3c','#d96a9c'][i%5],
+          don:Math.random()*6.28,omur:3});
+      document.getElementById('kazYildiz').textContent='⭐'.repeat(y)+'☆'.repeat(3-y);
+      document.getElementById('kazOzet').textContent=
+        'Bölüm '+bolum+' bitti! '+(kornalar===0?'Hiç korna yok — usta şoförsün! 🏆':kornalar+' korna çaldı.');
+      setTimeout(()=>document.getElementById('kazandinKart').classList.remove('gizli'),900);
+    }
+  }
+  for(const ck of cikanlar)ck.t+=dt;
+  cikanlar=cikanlar.filter(ck=>ck.t<2);
+  for(const p of parcalar){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.don+=dt*5; p.omur-=dt; }
+  parcalar=parcalar.filter(p=>p.omur>0);
+}
+
+/* ══════════ ÇİZİM ══════════ */
+const c=document.getElementById('c'), ctx=c.getContext('2d');
+let W=0,H=0,DPR=1;
+function boyut(){
+  DPR=Math.min(devicePixelRatio||1,2.5);
+  W=innerWidth; H=innerHeight;
+  c.width=W*DPR; c.height=H*DPR;
+  c.style.width=W+'px'; c.style.height=H+'px';
+  document.getElementById('dondur').style.display=(W>H&&H<560)?'flex':'none';
+}
+boyut(); addEventListener('resize',boyut);
+addEventListener('orientationchange',()=>setTimeout(boyut,250));
+const rnd=i=>((i*9301+49297)%233280)/233280;
+function yerlesim(){
+  const ustH=H*0.245;
+  const pad=W*0.045;
+  const hucre=Math.min((W-pad*2)/GW,(H-ustH-H*0.05)/GH);
+  return {ustH,x:(W-hucre*GW)/2,y:ustH+ (H-ustH-H*0.04-hucre*GH)/2,hucre};
+}
+const ARAC_RENK=[
+  ['#ffd75c','#e8b73c','#a8842a'],
+  ['#ffcf4a','#f0b83c','#b8862e'],
+  ['#f5c847','#dcae34','#9c7a24'],
+  ['#ffda6b','#eec04a','#af8c30'],
+  ['#fbd254','#e4b840','#a58230']
+];
+function aracCiz(a,L){
+  const T=TEMA();
+  const yatay=(a.dir==='L'||a.dir==='R');
+  let ox=0, oy=0;
+  if(a.cikiyor){
+    if(a.dir==='R')ox=a.ofs; else if(a.dir==='L')ox=-a.ofs;
+    else if(a.dir==='D')oy=a.ofs; else oy=-a.ofs;
+  }
+  if(a.sallanti>0){
+    const n=Math.sin(a.sallanti*40)*0.08*a.sallanti;
+    if(yatay)ox+=(a.dir==='R'?1:-1)*n; else oy+=(a.dir==='D'?1:-1)*n;
+  }
+  const x=L.x+(a.x+ox)*L.hucre, y=L.y+(a.y+oy)*L.hucre;
+  const w=(yatay?a.len:1)*L.hucre, h=(yatay?1:a.len)*L.hucre;
+  const [ac,ana,koyu]=ARAC_RENK[a.renk];
+  const m=L.hucre*0.07;
+  ctx.save();
+  /* gölge */
+  ctx.fillStyle='rgba(10,14,22,.35)';
+  ctx.beginPath(); ctx.roundRect(x+m+2,y+m+3.4,w-m*2,h-m*2,L.hucre*0.24); ctx.fill();
+  /* gövde */
+  const g=ctx.createLinearGradient(x,y,x+ (yatay?0:w),y+(yatay?h:0));
+  g.addColorStop(0,ac); g.addColorStop(0.55,ana); g.addColorStop(1,koyu);
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.roundRect(x+m,y+m,w-m*2,h-m*2,L.hucre*0.24); ctx.fill();
+  ctx.strokeStyle='rgba(30,20,4,.4)'; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.roundRect(x+m,y+m,w-m*2,h-m*2,L.hucre*0.24); ctx.stroke();
+  /* ön cam (yön tarafında) */
+  ctx.fillStyle='#bfe0f0';
+  const cw=L.hucre*0.44, ch=L.hucre*0.3;
+  let camX=x+w/2-cw/2, camY=y+h/2-ch/2;
+  if(a.dir==='R')camX=x+w-m-L.hucre*0.34;
+  else if(a.dir==='L')camX=x+m+L.hucre*0.02;
+  else if(a.dir==='D')camY=y+h-m-L.hucre*0.34;
+  else camY=y+m+L.hucre*0.02;
+  if(yatay){ ctx.beginPath(); ctx.roundRect(camX,y+h/2-ch/2,L.hucre*0.3,ch,4); ctx.fill(); }
+  else { ctx.beginPath(); ctx.roundRect(x+w/2-ch/2,camY,ch,L.hucre*0.3,4); ctx.fill(); }
+  /* yan pencereler (uzun araçlarda) */
+  ctx.fillStyle='rgba(191,224,240,.8)';
+  for(let i=1;i<a.len;i++){
+    if(yatay){ ctx.beginPath();
+      ctx.roundRect(x+i*L.hucre-L.hucre*0.32,y+h*0.22,L.hucre*0.24,h*0.2,3); ctx.fill();
+      ctx.beginPath();
+      ctx.roundRect(x+i*L.hucre-L.hucre*0.32,y+h*0.58,L.hucre*0.24,h*0.2,3); ctx.fill();
+    } else { ctx.beginPath();
+      ctx.roundRect(x+w*0.22,y+i*L.hucre-L.hucre*0.32,w*0.2,L.hucre*0.24,3); ctx.fill();
+      ctx.beginPath();
+      ctx.roundRect(x+w*0.58,y+i*L.hucre-L.hucre*0.32,w*0.2,L.hucre*0.24,3); ctx.fill();
+    }
+  }
+  /* tavan parlaklığı */
+  ctx.fillStyle='rgba(255,255,255,.22)';
+  if(yatay){ ctx.beginPath(); ctx.roundRect(x+m+3,y+m+3,w-m*2-6,(h-m*2)*0.3,L.hucre*0.16); ctx.fill(); }
+  else { ctx.beginPath(); ctx.roundRect(x+m+3,y+m+3,(w-m*2)*0.3,h-m*2-6,L.hucre*0.16); ctx.fill(); }
+  /* yön oku */
+  ctx.fillStyle='#fff';
+  ctx.strokeStyle='rgba(30,20,4,.35)'; ctx.lineWidth=1.4;
+  const okB=L.hucre*0.24;
+  const merkX=x+w/2, merkY=y+h/2;
+  ctx.save();
+  ctx.translate(merkX,merkY);
+  const aci={R:0,D:Math.PI/2,L:Math.PI,U:-Math.PI/2}[a.dir];
+  ctx.rotate(aci);
+  ctx.beginPath();
+  ctx.moveTo(okB*0.9,0);
+  ctx.lineTo(okB*0.1,-okB*0.62);
+  ctx.lineTo(okB*0.1,-okB*0.26);
+  ctx.lineTo(-okB*0.9,-okB*0.26);
+  ctx.lineTo(-okB*0.9,okB*0.26);
+  ctx.lineTo(okB*0.1,okB*0.26);
+  ctx.lineTo(okB*0.1,okB*0.62);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.restore();
+  ctx.restore();
+}
+function ciz(){
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  const T=TEMA(), t=performance.now();
+  if(!seviyeVeri){ ctx.fillStyle='#2a3240'; ctx.fillRect(0,0,W,H); return; }
+  const L=yerlesim();
+  /* ── üst sahne: gökyüzü, bina, durak ── */
+  ctx.fillStyle=T.gok; ctx.fillRect(0,0,W,L.ustH);
+  /* bina */
+  ctx.fillStyle=T.bina;
+  ctx.fillRect(W*0.28,L.ustH*0.05,W*0.68,L.ustH*0.52);
+  ctx.fillStyle='rgba(255,255,255,.75)';
+  for(let i=0;i<4;i++){
+    ctx.fillRect(W*0.32+i*W*0.16,L.ustH*0.12,W*0.1,L.ustH*0.3);
+    ctx.strokeStyle='rgba(30,30,40,.4)'; ctx.lineWidth=2;
+    ctx.strokeRect(W*0.32+i*W*0.16,L.ustH*0.12,W*0.1,L.ustH*0.3);
+  }
+  ctx.fillStyle='rgba(0,0,0,.14)';
+  ctx.fillRect(W*0.28,L.ustH*0.5,W*0.68,L.ustH*0.07);
+  /* durak tabelası + sayaç */
+  ctx.fillStyle='#3a4250';
+  ctx.fillRect(W*0.055,L.ustH*0.18,W*0.16,L.ustH*0.34);
+  ctx.fillStyle='#f2f4f8';
+  ctx.fillRect(W*0.07,L.ustH*0.24,W*0.13,L.ustH*0.22);
+  ctx.fillStyle='#2a3240';
+  ctx.font='900 '+(L.ustH*0.16)+'px "Avenir Next",sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(kalanYolcu,W*0.135,L.ustH*0.36);
+  ctx.fillStyle='#3a4250';
+  ctx.fillRect(W*0.13,L.ustH*0.52,W*0.012,L.ustH*0.3);
+  /* kaldırım + yol */
+  ctx.fillStyle=T.zemin; ctx.fillRect(0,L.ustH*0.57,W,L.ustH*0.19);
+  ctx.fillStyle=T.asfalt; ctx.fillRect(0,L.ustH*0.76,W,L.ustH*0.24);
+  ctx.strokeStyle=T.cizgi; ctx.lineWidth=2.4; ctx.setLineDash([12,10]);
+  ctx.beginPath(); ctx.moveTo(0,L.ustH*0.88); ctx.lineTo(W,L.ustH*0.88); ctx.stroke();
+  ctx.setLineDash([]);
+  /* bekleyen yolcular (zıplayan tatlı kişiler) */
+  yolcular.forEach((yo,i)=>{
+    const yx=W*0.3+i*W*0.047, yy=L.ustH*0.68+Math.abs(Math.sin(t/300+yo.zip))* -L.ustH*0.03;
+    const renk=['#e0714e','#5fae52','#5fb4e0','#d96a9c','#b07ae0'][yo.renk];
+    ctx.fillStyle='rgba(10,14,22,.25)';
+    ctx.beginPath(); ctx.ellipse(yx,L.ustH*0.72,W*0.014,W*0.005,0,0,7); ctx.fill();
+    ctx.fillStyle=renk;
+    ctx.beginPath(); ctx.roundRect(yx-W*0.011,yy-L.ustH*0.1,W*0.022,L.ustH*0.1,W*0.01); ctx.fill();
+    ctx.beginPath(); ctx.arc(yx,yy-L.ustH*0.12,W*0.012,0,7); ctx.fill();
+  });
+  /* çıkan servis animasyonu: durağa uğrayıp gider */
+  for(const ck of cikanlar){
+    const f=ck.t/2;
+    const cx2=-W*0.2+f*W*1.4;
+    const [ac,ana]=ARAC_RENK[ck.renk];
+    ctx.fillStyle=ana;
+    ctx.beginPath(); ctx.roundRect(cx2,L.ustH*0.78,W*0.16,L.ustH*0.14,6); ctx.fill();
+    ctx.fillStyle='#bfe0f0';
+    for(let i=0;i<3;i++){
+      ctx.fillRect(cx2+W*0.02+i*W*0.045,L.ustH*0.8,W*0.03,L.ustH*0.05);
+    }
+    ctx.fillStyle='#1c2028';
+    ctx.beginPath(); ctx.arc(cx2+W*0.035,L.ustH*0.93,W*0.013,0,7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx2+W*0.125,L.ustH*0.93,W*0.013,0,7); ctx.fill();
+  }
+  /* ── otopark zemini ── */
+  ctx.fillStyle=T.zemin;
+  ctx.fillRect(0,L.ustH,W,H-L.ustH);
+  const px2=L.x-L.hucre*0.3, py2=L.y-L.hucre*0.3;
+  const pw=GW*L.hucre+L.hucre*0.6, ph=GH*L.hucre+L.hucre*0.6;
+  ctx.fillStyle='rgba(10,14,22,.25)';
+  ctx.beginPath(); ctx.roundRect(px2+4,py2+5,pw,ph,L.hucre*0.3); ctx.fill();
+  ctx.fillStyle=T.asfalt;
+  ctx.beginPath(); ctx.roundRect(px2,py2,pw,ph,L.hucre*0.3); ctx.fill();
+  /* park çizgileri */
+  ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1.4;
+  for(let gx=1;gx<GW;gx++){
+    ctx.beginPath(); ctx.moveTo(L.x+gx*L.hucre,L.y); ctx.lineTo(L.x+gx*L.hucre,L.y+GH*L.hucre); ctx.stroke();
+  }
+  for(let gy=1;gy<GH;gy++){
+    ctx.beginPath(); ctx.moveTo(L.x,L.y+gy*L.hucre); ctx.lineTo(L.x+GW*L.hucre,L.y+gy*L.hucre); ctx.stroke();
+  }
+  /* asfalt lekeleri */
+  ctx.fillStyle='rgba(0,0,0,.1)';
+  for(let i=0;i<8;i++){
+    ctx.beginPath();
+    ctx.ellipse(L.x+rnd(i+3)*GW*L.hucre,L.y+rnd(i+13)*GH*L.hucre,L.hucre*0.5,L.hucre*0.2,rnd(i),0,7);
+    ctx.fill();
+  }
+  /* araçlar (önce çıkmayanlar sonra çıkanlar üstte) */
+  for(const a of araclar)if(!a.cikiyor)aracCiz(a,L);
+  for(const a of araclar)if(a.cikiyor)aracCiz(a,L);
+  /* konfeti */
+  for(const p of parcalar){
+    ctx.save();
+    ctx.translate(p.x*W,p.y*H);
+    ctx.rotate(p.don);
+    ctx.globalAlpha=Math.min(1,p.omur);
+    ctx.fillStyle=p.renk;
+    ctx.fillRect(-4,-2.5,8,5);
+    ctx.restore();
+  }
+  ctx.globalAlpha=1;
+  /* bölüm etiketi */
+  ctx.font='800 12px "Avenir Next",sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.fillStyle='rgba(242,244,248,.6)';
+  ctx.fillText('BÖLÜM '+bolum+' · '+TEMA().ad+' · '+araclar.length+' araç',W/2,H*0.008+ (window.innerHeight>700?H*0.055:H*0.07));
+  /* vinyet */
+  const vin=ctx.createRadialGradient(W/2,H/2,H*0.4,W/2,H/2,H*0.78);
+  vin.addColorStop(0,'transparent'); vin.addColorStop(1,'rgba(8,12,20,.4)');
+  ctx.fillStyle=vin; ctx.fillRect(0,0,W,H);
+}
+
+/* ══════════ GİRİŞ ══════════ */
+c.addEventListener('pointerdown',e=>{
+  audio(); sonEtkilesim=performance.now();
+  if(!run||!seviyeVeri)return;
+  const L=yerlesim();
+  const gx=Math.floor((e.clientX-L.x)/L.hucre);
+  const gy=Math.floor((e.clientY-L.y)/L.hucre);
+  if(gx<0||gx>=GW||gy<0||gy>=GH)return;
+  const d=dolulukHaritasi();
+  const id=d[gy][gx];
+  if(id>=0){
+    const a=araclar.find(a2=>a2.id===id);
+    if(a)aracaDokun(a);
+  } else sesTik();
+});
+
+/* ══════════ BÖLÜM HARİTASI ══════════ */
+function bolumleriGoster(){
+  const kutu=document.getElementById('bolumGrid');
+  kutu.innerHTML='';
+  const maks=Math.max(S.bolum+4,15);
+  for(let i=1;i<=maks;i++){
+    const b=document.createElement('button');
+    const yil=S.yildizlar[i]||0;
+    b.className='bolumBtn'+(i>S.bolum?' kilitli':(i===bolum?' aktif':''));
+    b.innerHTML=(i>S.bolum?'🔒':i)+(yil>0?'<span class="yild">'+'⭐'.repeat(yil)+'</span>':'');
+    if(i<=S.bolum)b.addEventListener('click',()=>{
+      audio();
+      document.getElementById('bolumKart').classList.add('gizli');
+      document.getElementById('giris').classList.add('gizli');
+      document.getElementById('kazandinKart').classList.add('gizli');
+      bolumKur(i);
+    });
+    kutu.appendChild(b);
+  }
+}
+document.getElementById('bolumlerBtn').addEventListener('click',()=>{
+  audio(); bolumleriGoster();
+  document.getElementById('bolumKart').classList.remove('gizli');
+});
+document.getElementById('geriBtn').addEventListener('click',()=>{
+  audio(); bolumleriGoster();
+  document.getElementById('bolumKart').classList.remove('gizli');
+});
+document.getElementById('bolumKapat').addEventListener('click',()=>
+  document.getElementById('bolumKart').classList.add('gizli'));
+document.getElementById('kazBolumler').addEventListener('click',()=>{
+  document.getElementById('kazandinKart').classList.add('gizli');
+  bolumleriGoster();
+  document.getElementById('bolumKart').classList.remove('gizli');
+});
+document.getElementById('restartBtn').addEventListener('click',()=>{
+  audio(); buzz(8);
+  toast('🔄 Bölüm baştan!');
+  bolumKur(bolum);
+});
+document.getElementById('sonrakiBtn').addEventListener('click',()=>{
+  audio();
+  document.getElementById('kazandinKart').classList.add('gizli');
+  bolumKur(bolum+1);
+});
+
+/* ══════════ AKILLI DEMO ══════════ */
+let sonEtkilesim=performance.now();
+function ipucuKontrol(){
+  const el=document.getElementById('ipucu');
+  if(S.yardim>=1||!run){ el.style.display='none'; return; }
+  if((performance.now()-sonEtkilesim)/1000<3.5){ el.style.display='none'; return; }
+  /* önü açık bir aracı işaret et */
+  const aday=araclar.find(a=>!a.cikiyor&&onuAcikMi(a));
+  if(!aday){ el.style.display='none'; return; }
+  const L=yerlesim();
+  const yatay=(aday.dir==='L'||aday.dir==='R');
+  const ax=L.x+(aday.x+(yatay?aday.len/2:0.5))*L.hucre;
+  const ay=L.y+(aday.y+(yatay?0.5:aday.len/2))*L.hucre;
+  el.style.display='flex';
+  el.style.transform='translate(-50%,-100%) translate('+ax+'px,'+ay+'px)';
+  document.getElementById('ipucuYazi').textContent='👆 Önü açık — dokun, çıksın!';
+}
+
+/* ══════════ UI & DÖNGÜ ══════════ */
+document.getElementById('sesBtn').addEventListener('click',()=>{
+  S.ses=!S.ses; document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇'; kaydet();
+});
+document.getElementById('baslaBtn').addEventListener('click',()=>{
+  audio();
+  if(S.oyun&&S.oyun.bolum&&S.oyun.kalanIdler&&S.oyun.kalanIdler.length>0){
+    bolumKur(S.oyun.bolum,S.oyun);
+  } else bolumKur(Math.min(bolum,S.bolum));
+  document.getElementById('giris').classList.add('gizli');
+  sonEtkilesim=performance.now()-2500;
+});
+document.getElementById('nasilBtnG').addEventListener('click',()=>
+  document.getElementById('nasil').classList.remove('gizli'));
+document.getElementById('nasilKapatBtn').addEventListener('click',()=>
+  document.getElementById('nasil').classList.add('gizli'));
+document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
+(function(){
+  const devam=S.oyun&&S.oyun.kalanIdler&&S.oyun.kalanIdler.length>0;
+  document.getElementById('baslaBtn').textContent=devam?'▶ Devam Et':'Oyna!';
+  document.getElementById('kayitHint').textContent=devam
+    ?('Bölüm '+S.oyun.bolum+' yarıda — kaldığın hamleden sürer')
+    :(S.bolum>1?'Bölüm '+S.bolum+' seni bekliyor':'dokun-çöz · zengin bölümler · sonsuz');
+})();
+
+bolum=S.oyun&&S.oyun.bolum?S.oyun.bolum:S.bolum;
+seviyeVeri=null;
+/* menü arkasında görsel dursun diye kur ama oynatma */
+bolumKur(bolum,S.oyun&&S.oyun.kalanIdler?S.oyun:null); run=false;
+
+let sonTs=performance.now();
+function dongu(ts){
+  const dt=Math.min(0.05,(ts-sonTs)/1000); sonTs=ts;
+  const acikKartYok=document.getElementById('giris').classList.contains('gizli')
+    &&document.getElementById('bolumKart').classList.contains('gizli')
+    &&document.getElementById('kazandinKart').classList.contains('gizli');
+  if(acikKartYok&&!kazanildi)run=true; else if(!acikKartYok)run=false;
+  if(run||kazanildi)guncelle(dt);
+  ciz();
+  ipucuKontrol();
+  requestAnimationFrame(dongu);
+}
+requestAnimationFrame(dongu);
+addEventListener('visibilitychange',()=>{ if(document.hidden){ oyunKaydet(); kaydet(); } });
+/* test kancası */
+window.__P={get S(){return S},get araclar(){return araclar},get bolum(){return bolum},
+  get kalanYolcu(){return kalanYolcu},get kornalar(){return kornalar},get run(){return run},
+  get GW(){return GW},get GH(){return GH},
+  onuAcikMi,aracaDokun,bolumKur,bolumUret,
+  cozumSirasi(){ /* tersine yerleştirme: id büyükten küçüğe çöz */
+    return [...araclar].sort((a,b)=>b.id-a.id).map(a=>a.id); }};
+</script>
+<script>/* MasalPark: oyun sirasinda ekran uykuya gecmesin */
+(function(){var wl=null;function al(){try{if(navigator.wakeLock&&document.visibilityState==='visible')
+navigator.wakeLock.request('screen').then(function(l){wl=l;}).catch(function(){});}catch(e){}}
+document.addEventListener('visibilitychange',function(){if(!document.hidden)al();});
+document.addEventListener('pointerdown',al,{once:true});al();})();</script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
+</html>
