@@ -8,7 +8,7 @@
 <meta name="description" content="Kendi dönerci dükkânını işlet! Döner kes, lavaş aç, malzemeleri diz, sar ve müşterine servis et. Reklamsız, üyeliksiz, çevrimdışı çalışır.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Dönerci — MasalPark">
-<meta property="og:description" content="Döner şişinden et kes, dürüm sar, tombik kapat; marketten keskin bıçak ve otomatik kesme makinesi al!">
+<meta property="og:description" content="Döner şişinden et kes, dürüm sar; marketten keskin bıçak ve otomatik kesme makinesi al!">
 <meta property="og:site_name" content="MasalPark">
 <style>
 /* ============================================================
@@ -190,7 +190,6 @@ button{font-family:inherit; color:inherit; border:0; background:none; cursor:poi
   <div id="panel">
     <div class="p-row" id="rowEkmek">
       <button class="bin" data-ekmek="durum"><span class="em">🫓</span>LAVAŞ<small>dürüm için</small></button>
-      <button class="bin" data-ekmek="tombik"><span class="em">🥯</span>TOMBİK<small>ekmek arası</small></button>
       <button class="bin" data-mal="et" id="binEt"><span class="em">🥩</span>ET<small>tepsiden</small><span class="cnt" id="etCnt">0</span></button>
     </div>
     <div class="p-row" id="rowMal">
@@ -233,11 +232,11 @@ button{font-family:inherit; color:inherit; border:0; background:none; cursor:poi
     <div class="card">
       <div class="card-head"><h1 style="font-size:22px">❓ Nasıl Oynanır</h1></div>
       <div class="card-body">
-        <p>1️⃣ Müşterinin balonundaki siparişe bak: ekmek tipi 🌯/🥙 ve içindekiler.<br>
+        <p>1️⃣ Müşterinin balonundaki siparişe bak: 🌯 dürüm içindekileri.<br>
         2️⃣ Döner şişine dokun → bıçak eti keser, dilimler tepsiye düşer.<br>
-        3️⃣ Doğru ekmeğe dokun: LAVAŞ (dürüm) veya TOMBİK.<br>
+        3️⃣ LAVAŞ istasyonuna dokun — dürüm ekmeği tezgaha gelsin.<br>
         4️⃣ Malzeme kaplarına dokunarak siparişteki her şeyi ekle — eksik ya da fazla olmasın! Et için önce şişten kesmen gerekir.<br>
-        5️⃣ SAR / KAPAT düğmesine bas, dürümün sarılsın ve müşterine uçsun!<br>
+        5️⃣ SAR düğmesine bas, dürümün sarılsın ve müşterine uçsun!<br>
         💡 Hata yaptıysan ÇÖP ile tezgahı temizle. Hızlı olursan bahşiş kazanırsın. Marketten keskin bıçak ve otomatik makineler almayı unutma!</p>
         <button class="btn" id="btnNasilTamam">Anladım!</button>
       </div>
@@ -415,7 +414,7 @@ var ISIMLER = ['Ali','Ayşe','Mehmet','Zeynep','Ömer','Elif','Yusuf','Meryem','
 /* ---------- Sipariş üretimi ---------- */
 function siparisUret(){
   var lvl = S.seviye;
-  var sip = { ekmek: Math.random()<0.5?'durum':'tombik', mal:{}, icecek:null };
+  var sip = { ekmek: 'durum', mal:{}, icecek:null };
   sip.mal.et = clamp(ri(1, 1+Math.min(2,Math.floor(lvl/2))), 1, 3);
   if(Math.random()<0.8) sip.mal.domates = 1;
   if(Math.random()<0.7) sip.mal.yesillik = 1;
@@ -472,7 +471,7 @@ function ekmekAl(tip){
   if(!R.siparis){ toast('Önce müşteri gelsin 🙂'); return; }
   if(R.tezgah.ekmek){ toast('Tezgahta zaten ekmek var'); Snd.hata(); return; }
   if(tip!==R.siparis.ekmek){
-    toast(R.siparis.ekmek==='durum' ? 'Müşteri LAVAŞ istiyor 🫓' : 'Müşteri TOMBİK istiyor 🥯');
+    toast('Müşteri LAVAŞ istiyor 🫓');
     Snd.hata(); return;
   }
   R.tezgah.ekmek = tip;
@@ -894,7 +893,7 @@ function cizMusteri(t,dt){
 function cizBalon(cx, cy, t){
   var sip=R.siparis;
   var satirlar=[];
-  satirlar.push((sip.ekmek==='durum'?'🌯 Dürüm':'🥙 Tombik'));
+  satirlar.push('🌯 Dürüm');
   var mal=[];
   for(var k in MALZEME){
     var n=sip.mal[k]||0;
@@ -1208,7 +1207,7 @@ function dongu(ms){
 
   /* SAR düğmesi durumu */
   btnSar.disabled = !R.tezgah.ekmek || R.sariliyor || !!R.servisUcus;
-  btnSar.textContent = R.tezgah.ekmek==='tombik' ? '🥙 KAPAT' : '🌯 SAR';
+  btnSar.textContent = '🌯 SAR';
 
   kocGuncelle();
 }
@@ -1379,7 +1378,7 @@ window.__DN = {
 (function(){
   var btn=document.getElementById('mpNasilBtn'),
       kap=document.getElementById('mpNasilKap');
-  document.querySelector('#mpNasilKart p').textContent='1️⃣ Müşterinin balonundaki siparişe bak: ekmek tipi ve içindekiler.\n2️⃣ Döner şişine dokun, bıçak eti kessin; dilimler tepsiye düşsün.\n3️⃣ Doğru ekmeğe (lavaş/tombik) dokun, sonra malzemeleri tam siparişteki gibi ekle.\n4️⃣ SAR / KAPAT düğmesine bas ve müşterine servis et!\n💡 Hızlı olursan bahşiş kazanırsın; marketten keskin bıçak ve otomatik makineler al.';
+  document.querySelector('#mpNasilKart p').textContent='1️⃣ Müşterinin balonundaki siparişe bak: dürümün içindekileri.\n2️⃣ Döner şişine dokun, bıçak eti kessin; dilimler tepsiye düşsün.\n3️⃣ Lavaşa dokun, sonra malzemeleri tam siparişteki gibi ekle.\n4️⃣ SAR düğmesine bas ve müşterine servis et!\n💡 Hızlı olursan bahşiş kazanırsın; marketten keskin bıçak ve otomatik makineler al.';
   function ac(e){ if(e){e.preventDefault();e.stopPropagation();} kap.classList.add('mpAcik'); }
   function kapat(e){ if(e){e.preventDefault();e.stopPropagation();} kap.classList.remove('mpAcik'); }
   btn.addEventListener('click',ac); btn.addEventListener('touchend',ac);
