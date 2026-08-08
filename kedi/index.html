@@ -92,6 +92,11 @@
 
 <div class="kart" id="giris">
   <h1>SARMAN REİS</h1>
+  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+    <span class="rozet" id="girisBalik" style="color:#7ad0e0;font-size:15px">🐟 0</span>
+    <span class="rozet" id="girisPati" style="color:var(--turuncu);font-size:15px">🐾 0</span>
+    <span class="rozet" id="girisKedi" style="font-size:15px">🐱 Sarman</span>
+  </div>
   <p>Mahallenin kahramanı Sarman Reis bahçesini savunuyor! 🐱 <b style="color:var(--turuncu)">Parmağını sürükle</b> — kedi yürüsün, en yakın yaramaza <b style="color:var(--altin)">otomatik yün yumağı</b> fırlatsın. Balıkları topla, seviye atla, güçler seç. Ne kadar dayanırsan o kadar 🐾 pati kazan — patilerle kalıcı güçlen, <b>sonsuza kadar!</b></p>
   <div id="magaza" style="display:flex;flex-direction:column;gap:8px;width:min(100%,420px)">
     <button class="up" id="upCan"></button>
@@ -1053,9 +1058,11 @@ document.getElementById('nasilKapatBtn').addEventListener('click',()=>
   document.getElementById('nasil').classList.add('gizli'));
 document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
 function girisHint(){
+  document.getElementById('girisBalik').textContent='🐟 '+kisa(S.balik);
+  document.getElementById('girisPati').textContent='🐾 '+kisa(S.pati);
+  document.getElementById('girisKedi').textContent='🐱 '+TEMA().ad;
   document.getElementById('kayitHint').textContent=S.toplamPati>0
     ?'Rekorun: '+Math.floor(S.enIyi/60)+':'+(Math.floor(S.enIyi%60)<10?'0':'')+Math.floor(S.enIyi%60)
-      +' · 🐾'+kisa(S.pati)+' · 🐟'+kisa(S.balik)+' · '+TEMA().ad
     :'sürükle-koş · otomatik yumak · balık topla · sonsuz';
 }
 girisHint();
