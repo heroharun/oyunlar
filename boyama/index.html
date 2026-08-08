@@ -13,7 +13,9 @@
     padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
   header{display:flex;align-items:center;gap:10px;width:min(94vw,480px);justify-content:space-between}
   h1{font-size:20px;font-weight:900}
-  .pick{display:flex;gap:6px}
+  .pick{display:flex;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .pick::-webkit-scrollbar{display:none}
+  @media(max-width:520px){#wrap{padding-bottom:64px}}
   .pickbtn{font:inherit;font-size:22px;background:#fff;border:2px solid #eaddcd;border-radius:12px;
     width:44px;height:44px;cursor:pointer}
   .pickbtn.on{border-color:#ff9f5f;background:#fff2e8}

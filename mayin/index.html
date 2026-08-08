@@ -40,7 +40,8 @@
     padding:13px 32px;cursor:pointer;box-shadow:0 5px 0 #708294}
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #708294}
   .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-  .diffrow{display:flex;gap:8px}
+  .diffrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  @media(max-width:360px){.btn{padding:12px 20px;font-size:14px}}
 </style>
 
 <div id="wrap">
