@@ -481,11 +481,9 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
     }
   });
 
-  /* ── ☁️ Bulut Kaydı (Aile Kodu) ── şimdilik kapalı: sunucu kurulunca
-     localStorage.setItem('mp_bulutApi','https://.../api/kayit/') ile açılır */
-  if(!localStorage.getItem('mp_bulutApi'))return;
+  /* ── ☁️ Bulut Kaydı (Aile Kodu) ── Cloudflare Worker + R2 üzerinde çalışır */
   document.getElementById('bulutBolum').hidden=false;
-  const BULUT_API=localStorage.getItem('mp_bulutApi');
+  const BULUT_API=localStorage.getItem('mp_bulutApi')||'https://masalpark.com/api/kayit/';
   const aileKodu=()=>localStorage.getItem('mp_aileKodu')||'';
   function bulutCiz(){
     const k=aileKodu();
