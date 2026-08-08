@@ -99,10 +99,12 @@
   </div>
   <p>Mahallenin kahramanı Sarman Reis bahçesini savunuyor! 🐱 <b style="color:var(--turuncu)">Parmağını sürükle</b> — kedi yürüsün, en yakın yaramaza <b style="color:var(--altin)">otomatik yün yumağı</b> fırlatsın. Balıkları topla, seviye atla, güçler seç. Ne kadar dayanırsan o kadar 🐾 pati kazan — patilerle kalıcı güçlen, <b>sonsuza kadar!</b></p>
   <div id="magaza" style="display:flex;flex-direction:column;gap:8px;width:min(100%,420px)">
+    <span class="hint" id="magazaBaslik" style="text-align:center">🐾 Pati Dükkânı — patiyle alınır (patiler maceradan gelir)</span>
     <button class="up" id="upCan"></button>
     <button class="up" id="upHasar"></button>
     <button class="up" id="upHiz"></button>
     <button class="up" id="upMik"></button>
+    <button class="up" id="bozdurBtn" style="border-color:rgba(122,208,224,.5);background:rgba(122,208,224,.1)"></button>
   </div>
   <button class="btn" id="baslaBtn">Maceraya Başla!</button>
   <button class="btn2" id="gardropBtn">🐱 Kediler &amp; Kostüm</button>
@@ -905,6 +907,8 @@ function ciz(){
 
 /* ══════════ MAĞAZA ══════════ */
 function magazaYaz(){
+  document.getElementById('magazaBaslik').textContent=
+    '🐾 Pati Dükkânı — 🐾'+kisa(S.pati)+' patin var (patiler maceradan gelir)';
   const yaz2=(id,ad,alt,f)=>{
     const b=document.getElementById(id);
     b.innerHTML='<span>'+ad+'<small>'+alt+'</small></span><span class="fiyat">🐾'+kisa(f)+'</span>';
@@ -914,7 +918,16 @@ function magazaYaz(){
   yaz2('upHasar','💪 Pati Gücü Sv'+S.sev.hasar,'yumak hasarı +%25/seviye',MF.hasar());
   yaz2('upHiz','👟 Çeviklik Sv'+S.sev.hiz,'koşu hızı +%6/seviye',MF.hiz());
   yaz2('upMik','🧲 Balık Sevgisi Sv'+S.sev.mik,'balık toplama alanı büyür',MF.mik());
+  const bb=document.getElementById('bozdurBtn');
+  bb.innerHTML='<span>🔁 Balık Bozdur<small>10 balığı 5 patiye çevir — 🐟'+kisa(S.balik)+' balığın var</small></span>'
+    +'<span class="fiyat" style="color:#7ad0e0">🐟10→🐾5</span>';
+  bb.disabled=S.balik<10;
 }
+document.getElementById('bozdurBtn').addEventListener('click',()=>{
+  if(S.balik<10)return;
+  S.balik-=10; S.pati+=5;
+  sesBalik(); buzz(8); magazaYaz(); girisHint(); kaydet();
+});
 [['upCan','can'],['upHasar','hasar'],['upHiz','hiz'],['upMik','mik']].forEach(([id,k])=>{
   document.getElementById(id).addEventListener('click',()=>{
     const f=MF[k]();
@@ -1012,7 +1025,7 @@ document.getElementById('gardropBtn').addEventListener('click',()=>{
 });
 document.getElementById('gardropKapat').addEventListener('click',()=>{
   document.getElementById('gardropKart').classList.add('gizli');
-  girisHint();
+  girisHint(); magazaYaz();
 });
 
 /* ══════════ AKILLI DEMO ══════════ */
