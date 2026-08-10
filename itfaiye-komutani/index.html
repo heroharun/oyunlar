@@ -82,7 +82,12 @@ html[data-motion="0"] *{animation-duration:.001s!important;transition-duration:.
   background:linear-gradient(160deg,var(--steel-2),var(--steel));color:#F2F6FA;font-weight:700;font-size:1rem;
   box-shadow:0 5px 0 #172029, var(--sh);margin-bottom:11px;text-align:left;transition:transform .12s,box-shadow .12s}
 .mbtn:active{transform:translateY(4px);box-shadow:0 1px 0 #172029}
-.mbtn i{font-style:normal;font-size:1.45rem;line-height:1}
+.mbtn i{font-style:normal;font-size:1.45rem;line-height:1;display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px}
+.mbtn i svg{width:30px;height:30px;display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.uchip .sq svg{width:24px;height:16px;display:block}
+.obj .ic svg{width:24px;height:16px;display:block}
+.obj .ic svg.tall{width:20px;height:20px}
+.upill svg{width:22px;height:15px;display:block}
 .mbtn .sub{display:block;font-weight:400;font-size:.75rem;opacity:.78;margin-top:2px}
 .mbtn.alt{background:var(--paper);color:var(--ink);box-shadow:0 4px 0 rgba(29,38,46,.16), var(--sh-s)}
 .mbtn.alt:active{box-shadow:0 0 0}
@@ -129,17 +134,22 @@ html[data-motion="0"] *{animation-duration:.001s!important;transition-duration:.
 .obar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),#FFD37A);width:0;transition:width .4s}
 
 /* ================ 5. HARİTA ================ */
-#mapWrap{flex:1;min-height:0;display:grid;place-items:center;padding:8px;overflow:hidden;position:relative;
-  background:radial-gradient(120% 80% at 50% 0%,#F3F7FA,#D9E2EA)}
-#map{width:100%;height:100%;display:block;touch-action:manipulation}
+#mapWrap{flex:1;min-height:0;display:grid;place-items:center;padding:0;overflow:hidden;position:relative;
+  background:linear-gradient(180deg,#98CB7E,#84BC6B)}
+#map{width:100%;height:100%;display:block;touch-action:manipulation;overflow:visible}
 .tile-grass{fill:var(--grass)}
 .tile-road{fill:var(--road)}
 .bld{transition:filter .3s}
-.smoke{animation:smoke 3.4s ease-out infinite;transform-origin:center}
+.bcnA{animation:bflash .72s steps(1) infinite}
+.bcnB{animation:bflash .72s steps(1) .36s infinite}
+@keyframes bflash{0%,49%{opacity:1}50%,100%{opacity:.18}}
+.flame2{animation:flick .38s ease-in-out .12s infinite alternate;transform-origin:bottom center}
+.smoke{animation:smoke 3.4s ease-out infinite;transform-origin:center;transform-box:fill-box}
 @keyframes smoke{0%{opacity:0;transform:translateY(0) scale(.5)}25%{opacity:.5}100%{opacity:0;transform:translateY(-34px) scale(1.5)}}
-.flame{animation:flick .5s ease-in-out infinite alternate;transform-origin:bottom center}
+.flame{animation:flick .5s ease-in-out infinite alternate;transform-origin:bottom center;transform-box:fill-box}
 @keyframes flick{from{transform:scaleY(.86) scaleX(1.04)}to{transform:scaleY(1.1) scaleX(.94)}}
-.ring{animation:ring 1.6s ease-out infinite;transform-origin:center}
+.flame2{transform-box:fill-box}
+.ring{animation:ring 1.6s ease-out infinite;transform-origin:center;transform-box:fill-box}
 @keyframes ring{0%{opacity:.85;transform:scale(.35)}100%{opacity:0;transform:scale(1.6)}}
 .mk{cursor:pointer}
 .mk .hit{fill:transparent}
@@ -248,16 +258,211 @@ html[data-motion="0"] *{animation-duration:.001s!important;transition-duration:.
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <!-- boya sunucuları (harita) -->
+  <pattern id="pGrass" width="46" height="46" patternUnits="userSpaceOnUse">
+    <rect width="46" height="46" fill="#8CC272"/>
+    <circle cx="8" cy="10" r="2.6" fill="#7BB463"/><circle cx="30" cy="6" r="2" fill="#98CE7E"/>
+    <circle cx="40" cy="24" r="2.6" fill="#7BB463"/><circle cx="18" cy="30" r="2.2" fill="#98CE7E"/>
+    <circle cx="6" cy="40" r="2" fill="#7BB463"/><circle cx="33" cy="41" r="2.4" fill="#82BA69"/>
+    <path d="M22 16l2-4 2 4Z" fill="#79B160" opacity=".8"/>
+    <path d="M40 38l2-4 2 4Z" fill="#79B160" opacity=".7"/>
+  </pattern>
+  <linearGradient id="gRoadH" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#535F6C"/><stop offset=".5" stop-color="#5D6A77"/><stop offset="1" stop-color="#4C5865"/>
+  </linearGradient>
+  <linearGradient id="gRoadV" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#535F6C"/><stop offset=".5" stop-color="#5D6A77"/><stop offset="1" stop-color="#4C5865"/>
+  </linearGradient>
+  <linearGradient id="gRoof" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity=".25"/><stop offset="1" stop-color="#000000" stop-opacity=".12"/>
+  </linearGradient>
+  <linearGradient id="gRoofKir" x1="0" y1="0" x2=".7" y2="1">
+    <stop offset="0" stop-color="#D5674A"/><stop offset="1" stop-color="#A5432C"/>
+  </linearGradient>
+  <linearGradient id="gRoofTer" x1="0" y1="0" x2=".7" y2="1">
+    <stop offset="0" stop-color="#DE9A5C"/><stop offset="1" stop-color="#B06B34"/>
+  </linearGradient>
+  <linearGradient id="gRoofGri" x1="0" y1="0" x2=".7" y2="1">
+    <stop offset="0" stop-color="#A9B4BE"/><stop offset="1" stop-color="#7E8994"/>
+  </linearGradient>
+  <linearGradient id="gRoofFab" x1="0" y1="0" x2=".7" y2="1">
+    <stop offset="0" stop-color="#8494A2"/><stop offset="1" stop-color="#5F6E7B"/>
+  </linearGradient>
+  <linearGradient id="gRoofHas" x1="0" y1="0" x2=".7" y2="1">
+    <stop offset="0" stop-color="#FDFEFF"/><stop offset="1" stop-color="#D7E2EC"/>
+  </linearGradient>
+  <linearGradient id="gWin" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#E4F3FC"/><stop offset="1" stop-color="#8FB8D6"/>
+  </linearGradient>
+  <radialGradient id="gTree" cx=".38" cy=".34" r=".8">
+    <stop offset="0" stop-color="#6FB35E"/><stop offset="1" stop-color="#3F7A3A"/>
+  </radialGradient>
+  <radialGradient id="gGlow" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#FF9333" stop-opacity=".55"/><stop offset="1" stop-color="#FF9333" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- logo -->
   <symbol id="logo" viewBox="0 0 120 120">
-    <rect x="8" y="46" width="104" height="52" rx="10" fill="#D93B30"/>
-    <rect x="8" y="46" width="104" height="10" rx="5" fill="#F0574B"/>
-    <rect x="20" y="62" width="30" height="20" rx="4" fill="#BFD8EA"/>
-    <rect x="60" y="62" width="44" height="20" rx="4" fill="#A32A21"/>
-    <circle cx="34" cy="100" r="12" fill="#27313B"/><circle cx="34" cy="100" r="5" fill="#8FA3B4"/>
-    <circle cx="90" cy="100" r="12" fill="#27313B"/><circle cx="90" cy="100" r="5" fill="#8FA3B4"/>
-    <rect x="48" y="34" width="24" height="12" rx="4" fill="#F5A623" class="beacon"/>
-    <path d="M60 6c7 12 16 18 16 28a16 16 0 0 1-32 0c0-10 9-16 16-28Z" fill="#F5A623"/>
-    <path d="M60 16c4 7 9 11 9 17a9 9 0 0 1-18 0c0-6 5-10 9-17Z" fill="#FFD37A"/>
+    <ellipse cx="60" cy="103" rx="46" ry="6" fill="rgba(0,0,0,.28)"/>
+    <rect x="70" y="52" width="38" height="34" rx="6" fill="#C13327"/>
+    <rect x="74" y="57" width="20" height="15" rx="3" fill="#BFD8EA"/>
+    <rect x="74" y="57" width="20" height="6" rx="3" fill="#E4F3FC"/>
+    <rect x="8" y="48" width="66" height="38" rx="7" fill="#D93B30"/>
+    <rect x="8" y="48" width="66" height="9" rx="4.5" fill="#F0574B"/>
+    <rect x="8" y="72" width="100" height="7" fill="#F1F5F8"/>
+    <rect x="8" y="72" width="100" height="7" fill="none"/>
+    <rect x="14" y="40" width="62" height="5" rx="2.5" fill="#C9D2DA"/>
+    <rect x="14" y="33" width="62" height="5" rx="2.5" fill="#C9D2DA"/>
+    <rect x="22" y="33" width="4" height="12" fill="#98A5B1"/><rect x="38" y="33" width="4" height="12" fill="#98A5B1"/>
+    <rect x="54" y="33" width="4" height="12" fill="#98A5B1"/><rect x="68" y="33" width="4" height="12" fill="#98A5B1"/>
+    <rect x="16" y="58" width="12" height="18" rx="2" fill="#A32A21"/>
+    <rect x="34" y="58" width="12" height="18" rx="2" fill="#A32A21"/>
+    <rect x="52" y="58" width="12" height="18" rx="2" fill="#A32A21"/>
+    <circle cx="30" cy="92" r="12" fill="#22282E"/><circle cx="30" cy="92" r="5.5" fill="#8FA3B4"/><circle cx="30" cy="92" r="2" fill="#C9D2DA"/>
+    <circle cx="90" cy="92" r="12" fill="#22282E"/><circle cx="90" cy="92" r="5.5" fill="#8FA3B4"/><circle cx="90" cy="92" r="2" fill="#C9D2DA"/>
+    <rect x="88" y="44" width="14" height="8" rx="3" fill="#F5A623" class="beacon"/>
+    <path d="M60 2c6.5 11 15 17 15 26.5a15 15 0 0 1-30 0C45 19 53.5 13 60 2Z" fill="#F5A623"/>
+    <path d="M60 12c3.8 6.5 8.5 10 8.5 15.5a8.5 8.5 0 0 1-17 0c0-5.5 4.7-9 8.5-15.5Z" fill="#FFD37A"/>
+  </symbol>
+
+  <!-- menü ikonları -->
+  <symbol id="mi-play" viewBox="0 0 32 32">
+    <path d="M16 1.5v3.4M4.5 6.5 7 9M27.5 6.5 25 9" stroke="#FFD37A" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M16 8a9.5 9.5 0 0 1 9.5 9.5V23h-19v-5.5A9.5 9.5 0 0 1 16 8Z" fill="#FF6B5E"/>
+    <path d="M16 8a9.5 9.5 0 0 1 9.5 9.5v1.2h-19v-1.2A9.5 9.5 0 0 1 16 8Z" fill="#FFD3CE" opacity=".55"/>
+    <rect x="4" y="23" width="24" height="5.5" rx="2.7" fill="#C9D2DA"/>
+  </symbol>
+  <symbol id="mi-map" viewBox="0 0 32 32">
+    <path d="M4 8l8-3.5L20 8l8-3.5V24l-8 3.5L12 24 4 27.5Z" fill="#BFE3A9"/>
+    <path d="M12 4.5V24M20 8v19.5" stroke="#8CC272" stroke-width="1.6"/>
+    <path d="M5.5 14h6M14 18h5M22 12h4.5" stroke="#5D6A77" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    <circle cx="21" cy="17.5" r="4.2" fill="#D93B30"/><circle cx="21" cy="17.5" r="1.7" fill="#fff"/>
+  </symbol>
+  <symbol id="mi-station" viewBox="0 0 32 32">
+    <path d="M3 13 16 4l13 9" fill="none" stroke="#A32A21" stroke-width="3.4" stroke-linecap="round"/>
+    <rect x="5" y="13" width="22" height="15" rx="2" fill="#D93B30"/>
+    <rect x="8" y="17" width="7" height="11" rx="1.2" fill="#F1E4CE"/><rect x="8" y="17" width="7" height="3" fill="#D6C4A8"/>
+    <rect x="17" y="17" width="7" height="11" rx="1.2" fill="#F1E4CE"/><rect x="17" y="17" width="7" height="3" fill="#D6C4A8"/>
+    <rect x="13" y="8" width="6" height="4" rx="1.4" fill="#FFD37A"/>
+  </symbol>
+  <symbol id="mi-how" viewBox="0 0 32 32">
+    <rect x="6" y="4.5" width="20" height="24.5" rx="3" fill="#F4F7FA"/>
+    <rect x="11.5" y="2.5" width="9" height="5.5" rx="2" fill="#8FA3B4"/>
+    <path d="M10.5 13h11M10.5 18h11M10.5 23h6.5" stroke="#5A6774" stroke-width="2.2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="mi-safety" viewBox="0 0 32 32">
+    <path d="M12.5 6.5c-4.5.3-6.6 2.6-7.5 5.6" stroke="#5A6774" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <rect x="13" y="4" width="6" height="4.4" rx="1.4" fill="#8FA3B4"/>
+    <rect x="10.8" y="9" width="10.4" height="19" rx="5" fill="#D93B30"/>
+    <rect x="13" y="15" width="6" height="7.5" rx="1.4" fill="#FFF"/>
+    <path d="M20 5.6l3.4-1.8" stroke="#8FA3B4" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="mi-gear" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="9" fill="none" stroke="#8FA3B4" stroke-width="6" stroke-dasharray="4.7 4.72"/>
+    <circle cx="16" cy="16" r="7.6" fill="#C9D5DF"/>
+    <circle cx="16" cy="16" r="3.4" fill="#35424F"/>
+  </symbol>
+
+  <!-- olay ikonları -->
+  <symbol id="ii-yangin" viewBox="0 0 24 24">
+    <path d="M12 2c3 5 7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 4-7 7-12Z" fill="#E8552B"/>
+    <path d="M12 9c1.8 2.6 3.6 4 3.6 6.4A3.6 3.6 0 0 1 12 19a3.6 3.6 0 0 1-3.6-3.6C8.4 13 10.2 11.6 12 9Z" fill="#FFD37A"/>
+  </symbol>
+  <symbol id="ii-mahsur" viewBox="0 0 24 24">
+    <circle cx="11" cy="6.6" r="3.4" fill="#2E7CC4"/>
+    <path d="M11 11c-3.2 0-5.4 2.2-5.4 5.4V21h10.8v-4.6c0-3.2-2.2-5.4-5.4-5.4Z" fill="#2E7CC4"/>
+    <path d="M15.8 11.6 20 7" stroke="#2E7CC4" stroke-width="2.8" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ii-yarali" viewBox="0 0 24 24">
+    <rect x="4" y="4" width="16" height="16" rx="4.5" fill="#D93B30"/>
+    <path d="M12 8v8M8 12h8" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ii-enkaz" viewBox="0 0 24 24">
+    <rect x="2.6" y="7" width="18.8" height="6.4" rx="1.6" fill="#F5A623"/>
+    <path d="M7.4 7 4 13.4M13.4 7 10 13.4M19.4 7 16 13.4" stroke="#35424F" stroke-width="2.5"/>
+    <rect x="5" y="13.4" width="2.8" height="6.6" rx="1" fill="#5A6774"/>
+    <rect x="16.2" y="13.4" width="2.8" height="6.6" rx="1" fill="#5A6774"/>
+  </symbol>
+  <symbol id="ii-gaz" viewBox="0 0 24 24">
+    <path d="M12 2.6 22.4 20.4H1.6Z" fill="#F5A623"/>
+    <rect x="10.7" y="8.6" width="2.6" height="6.4" rx="1.3" fill="#27313B"/>
+    <circle cx="12" cy="17.6" r="1.6" fill="#27313B"/>
+  </symbol>
+  <symbol id="ii-sikisan" viewBox="0 0 24 24">
+    <path d="M6.4 9.6 8.4 5h7.2l2 4.6" fill="#5FA8D6"/>
+    <rect x="3.6" y="9" width="16.8" height="9" rx="3" fill="#2E7CC4"/>
+    <rect x="6" y="11" width="12" height="3" rx="1.5" fill="#BFD8EA"/>
+    <circle cx="7.4" cy="18.6" r="2.2" fill="#22282E"/><circle cx="16.6" cy="18.6" r="2.2" fill="#22282E"/>
+  </symbol>
+  <symbol id="ii-kedi" viewBox="0 0 24 24">
+    <path d="M6 9 5.2 3l5 3.4Z" fill="#8A5F3C"/><path d="M18 9l.8-6-5 3.4Z" fill="#8A5F3C"/>
+    <circle cx="12" cy="13" r="7.2" fill="#A5744B"/>
+    <circle cx="9.3" cy="11.8" r="1.2" fill="#2A1C10"/><circle cx="14.7" cy="11.8" r="1.2" fill="#2A1C10"/>
+    <path d="M12 14.6l-1.2 1.4h2.4Z" fill="#E58FA0"/>
+    <path d="M4.4 14h3M4.6 16.4l2.8-.6M19.6 14h-3M19.4 16.4l-2.8-.6" stroke="#F1E4CE" stroke-width="1" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- filo araç ikonları (kuşbakışı, sağa bakar) -->
+  <symbol id="uv-sondurme" viewBox="0 0 48 32">
+    <ellipse cx="24" cy="26.5" rx="19" ry="3.2" fill="rgba(0,0,0,.22)"/>
+    <rect x="5" y="7" width="5" height="18" rx="2" fill="#22282E"/><rect x="27" y="7" width="5" height="18" rx="2" fill="#22282E"/>
+    <rect x="4" y="8" width="40" height="16" rx="4" fill="#D93B30"/>
+    <rect x="4" y="8" width="40" height="5.5" rx="2.7" fill="#F0574B"/>
+    <rect x="33" y="9.4" width="9.6" height="13.2" rx="2.6" fill="#A32A21"/>
+    <rect x="30.6" y="10" width="3" height="12" rx="1.2" fill="#BFD8EA"/>
+    <rect x="6.5" y="12.6" width="22" height="2.4" rx="1.2" fill="#C9D2DA"/>
+    <rect x="6.5" y="17" width="22" height="2.4" rx="1.2" fill="#C9D2DA"/>
+    <rect x="10" y="12.6" width="2" height="6.8" fill="#98A5B1"/><rect x="17" y="12.6" width="2" height="6.8" fill="#98A5B1"/><rect x="24" y="12.6" width="2" height="6.8" fill="#98A5B1"/>
+    <rect x="35" y="12" width="4" height="3.4" rx="1.2" fill="#FF5A4E" class="bcnA"/>
+    <rect x="35" y="16.6" width="4" height="3.4" rx="1.2" fill="#4FA3E8" class="bcnB"/>
+  </symbol>
+  <symbol id="uv-merdiven" viewBox="0 0 48 32">
+    <ellipse cx="24" cy="26.5" rx="19" ry="3.2" fill="rgba(0,0,0,.22)"/>
+    <rect x="5" y="7" width="5" height="18" rx="2" fill="#22282E"/><rect x="27" y="7" width="5" height="18" rx="2" fill="#22282E"/>
+    <rect x="4" y="8" width="40" height="16" rx="4" fill="#B8372B"/>
+    <rect x="4" y="8" width="40" height="5.5" rx="2.7" fill="#D24A3C"/>
+    <rect x="33" y="9.4" width="9.6" height="13.2" rx="2.6" fill="#8A2A20"/>
+    <rect x="30.6" y="10" width="3" height="12" rx="1.2" fill="#BFD8EA"/>
+    <circle cx="13" cy="16" r="5" fill="#8A2A20"/>
+    <rect x="8" y="12.8" width="26" height="2.6" rx="1.3" fill="#D9DFE5"/>
+    <rect x="8" y="16.8" width="26" height="2.6" rx="1.3" fill="#D9DFE5"/>
+    <rect x="12" y="12.8" width="2" height="6.6" fill="#98A5B1"/><rect x="19" y="12.8" width="2" height="6.6" fill="#98A5B1"/><rect x="26" y="12.8" width="2" height="6.6" fill="#98A5B1"/>
+    <rect x="35" y="12" width="4" height="3.4" rx="1.2" fill="#FF5A4E" class="bcnA"/>
+    <rect x="35" y="16.6" width="4" height="3.4" rx="1.2" fill="#4FA3E8" class="bcnB"/>
+  </symbol>
+  <symbol id="uv-tanker" viewBox="0 0 48 32">
+    <ellipse cx="24" cy="26.5" rx="19" ry="3.2" fill="rgba(0,0,0,.22)"/>
+    <rect x="5" y="7" width="5" height="18" rx="2" fill="#22282E"/><rect x="27" y="7" width="5" height="18" rx="2" fill="#22282E"/>
+    <rect x="4" y="8" width="40" height="16" rx="4" fill="#2E7CC4"/>
+    <rect x="33" y="9.4" width="9.6" height="13.2" rx="2.6" fill="#1F5A91"/>
+    <rect x="30.6" y="10" width="3" height="12" rx="1.2" fill="#BFD8EA"/>
+    <rect x="6.5" y="10.5" width="24" height="11" rx="5.5" fill="#C9D2DA"/>
+    <rect x="8.5" y="12" width="20" height="3" rx="1.5" fill="#EDF1F5"/>
+    <circle cx="18" cy="16" r="3" fill="#5FA8D6"/>
+  </symbol>
+  <symbol id="uv-ambulans" viewBox="0 0 48 32">
+    <ellipse cx="24" cy="26.5" rx="19" ry="3.2" fill="rgba(0,0,0,.22)"/>
+    <rect x="5" y="7" width="5" height="18" rx="2" fill="#22282E"/><rect x="27" y="7" width="5" height="18" rx="2" fill="#22282E"/>
+    <rect x="4" y="8" width="40" height="16" rx="4" fill="#F8FAFC"/>
+    <rect x="4" y="8" width="40" height="3" rx="1.5" fill="#D93B30"/>
+    <rect x="4" y="21" width="40" height="3" rx="1.5" fill="#D93B30"/>
+    <rect x="33" y="9.4" width="9.6" height="13.2" rx="2.6" fill="#DDE4EB"/>
+    <rect x="30.6" y="10" width="3" height="12" rx="1.2" fill="#8FB8D6"/>
+    <circle cx="16" cy="16" r="4.6" fill="#D93B30"/><circle cx="17.8" cy="16" r="3.7" fill="#F8FAFC"/>
+    <rect x="35" y="12" width="4" height="3.4" rx="1.2" fill="#FF5A4E" class="bcnA"/>
+    <rect x="35" y="16.6" width="4" height="3.4" rx="1.2" fill="#4FA3E8" class="bcnB"/>
+  </symbol>
+  <symbol id="uv-teknik" viewBox="0 0 48 32">
+    <ellipse cx="24" cy="26.5" rx="19" ry="3.2" fill="rgba(0,0,0,.22)"/>
+    <rect x="5" y="7" width="5" height="18" rx="2" fill="#22282E"/><rect x="27" y="7" width="5" height="18" rx="2" fill="#22282E"/>
+    <rect x="4" y="8" width="40" height="16" rx="4" fill="#F5A623"/>
+    <rect x="4" y="8" width="40" height="5.5" rx="2.7" fill="#FFC14E"/>
+    <rect x="33" y="9.4" width="9.6" height="13.2" rx="2.6" fill="#C97E10"/>
+    <rect x="30.6" y="10" width="3" height="12" rx="1.2" fill="#BFD8EA"/>
+    <rect x="7" y="14.4" width="21" height="3.4" rx="1.7" fill="#5A6774"/>
+    <circle cx="9.5" cy="16" r="2.4" fill="#35424F"/>
+    <path d="M7.5 17.8v3.4" stroke="#35424F" stroke-width="1.8" stroke-linecap="round"/>
+    <rect x="35" y="14" width="4" height="4" rx="1.2" fill="#FFE9A8" class="bcnA"/>
   </symbol>
 </defs></svg>
 
@@ -280,17 +485,17 @@ html[data-motion="0"] *{animation-duration:.001s!important;transition-duration:.
         <p>Sevk et, söndür, kurtar.</p>
       </div>
       <button class="mbtn hot" data-act="play" type="button">
-        <i aria-hidden="true">🚨</i><span>Göreve çık<span class="sub" id="menuMission">1. Görev</span></span></button>
+        <i aria-hidden="true"><svg viewBox="0 0 32 32"><use href="#mi-play" xlink:href="#mi-play"/></svg></i><span>Göreve çık<span class="sub" id="menuMission">1. Görev</span></span></button>
       <button class="mbtn alt" data-act="go-missions" type="button">
-        <i aria-hidden="true">🗺️</i><span>Görev haritası<span class="sub" id="menuMedals">0 madalya</span></span></button>
+        <i aria-hidden="true"><svg viewBox="0 0 32 32"><use href="#mi-map" xlink:href="#mi-map"/></svg></i><span>Görev haritası<span class="sub" id="menuMedals">0 madalya</span></span></button>
       <button class="mbtn alt" data-act="go-station" type="button">
-        <i aria-hidden="true">🏢</i><span>İstasyon<span class="sub" id="menuPoints">0 puan</span></span></button>
+        <i aria-hidden="true"><svg viewBox="0 0 32 32"><use href="#mi-station" xlink:href="#mi-station"/></svg></i><span>İstasyon<span class="sub" id="menuPoints">0 puan</span></span></button>
       <button class="mbtn alt" data-act="how" type="button">
-        <i aria-hidden="true">📋</i><span>Nasıl oynanır<span class="sub">Sevkiyatın kuralları</span></span></button>
+        <i aria-hidden="true"><svg viewBox="0 0 32 32"><use href="#mi-how" xlink:href="#mi-how"/></svg></i><span>Nasıl oynanır<span class="sub">Sevkiyatın kuralları</span></span></button>
       <button class="mbtn alt" data-act="safety" type="button">
-        <i aria-hidden="true">🧯</i><span>Güvenlik kartları<span class="sub" id="menuCards">0 kart öğrenildi</span></span></button>
+        <i aria-hidden="true"><svg viewBox="0 0 32 32"><use href="#mi-safety" xlink:href="#mi-safety"/></svg></i><span>Güvenlik kartları<span class="sub" id="menuCards">0 kart öğrenildi</span></span></button>
       <button class="mbtn alt" data-act="settings" type="button">
-        <i aria-hidden="true">⚙️</i><span>Ayarlar<span class="sub">Ses, zorluk, veri</span></span></button>
+        <i aria-hidden="true"><svg viewBox="0 0 32 32"><use href="#mi-gear" xlink:href="#mi-gear"/></svg></i><span>Ayarlar<span class="sub">Ses, zorluk, veri</span></span></button>
       <p style="text-align:center;font-size:.72rem;color:var(--dim);margin-top:16px;line-height:1.6">
         Reklam yok · Satın alma yok · İnternet gerekmez<br>İlerlemen yalnızca bu cihazda saklanır.</p>
     </div>
@@ -893,28 +1098,38 @@ const Render = {
     svg.setAttribute("viewBox", "0 0 " + (S.w*TS) + " " + (S.h*TS));
     this.svg = svg; this.unitEls = {}; this.incEls = {}; this.fireEls = {};
 
-    const defs = el("defs", null, svg);
-    const g1 = el("linearGradient", { id:"gRoof", x1:"0", y1:"0", x2:"0", y2:"1" }, defs);
-    el("stop", { offset:"0", "stop-color":"#FFFFFF", "stop-opacity":".25" }, g1);
-    el("stop", { offset:"1", "stop-color":"#000000", "stop-opacity":".12" }, g1);
-
     this.ly.ground = el("g", null, svg);
     this.ly.obj    = el("g", null, svg);
     this.ly.fx     = el("g", null, svg);
     this.ly.units  = el("g", null, svg);
     this.ly.marks  = el("g", null, svg);
 
-    /* zemin */
-    el("rect", { x:0, y:0, width:S.w*TS, height:S.h*TS, class:"tile-grass" }, this.ly.ground);
-    for(let y=0;y<S.h;y++) for(let x=0;x<S.w;x++){
-      const c = S.grid[y][x];
-      if(c.road) el("rect", { x:x*TS, y:y*TS, width:TS, height:TS, class:"tile-road" }, this.ly.ground);
-    }
-    /* yol çizgileri */
-    MAPS[S.mis.map].rows.forEach(y=> el("line",{ x1:0, y1:y*TS+TS/2, x2:S.w*TS, y2:y*TS+TS/2,
-      stroke:"#E8C24A", "stroke-width":2, "stroke-dasharray":"9 11", opacity:".6" }, this.ly.ground));
-    MAPS[S.mis.map].cols.forEach(x=> el("line",{ x1:x*TS+TS/2, y1:0, x2:x*TS+TS/2, y2:S.h*TS,
-      stroke:"#E8C24A", "stroke-width":2, "stroke-dasharray":"9 11", opacity:".6" }, this.ly.ground));
+    /* zemin: harita dışına taşan çimen örtüsü */
+    const GW = S.w*TS, GH = S.h*TS, EXT = 900;
+    const gr = this.ly.ground;
+    el("rect", { x:-EXT, y:-EXT, width:GW+EXT*2, height:GH+EXT*2, fill:"url(#pGrass)" }, gr);
+    const rows = MAPS[S.mis.map].rows, cols = MAPS[S.mis.map].cols;
+    /* kaldırım şeritleri */
+    rows.forEach(y=> el("rect", { x:-EXT, y:y*TS-4, width:GW+EXT*2, height:TS+8, rx:2, fill:"#B9C0B0" }, gr));
+    cols.forEach(x=> el("rect", { x:x*TS-4, y:-EXT, width:TS+8, height:GH+EXT*2, rx:2, fill:"#B9C0B0" }, gr));
+    /* asfalt */
+    rows.forEach(y=> el("rect", { x:-EXT, y:y*TS, width:GW+EXT*2, height:TS, fill:"url(#gRoadH)" }, gr));
+    cols.forEach(x=> el("rect", { x:x*TS, y:-EXT, width:TS, height:GH+EXT*2, fill:"url(#gRoadV)" }, gr));
+    /* şerit çizgileri */
+    rows.forEach(y=> el("line",{ x1:-EXT, y1:y*TS+TS/2, x2:GW+EXT, y2:y*TS+TS/2,
+      stroke:"#E8C24A", "stroke-width":2, "stroke-dasharray":"9 11", opacity:".55" }, gr));
+    cols.forEach(x=> el("line",{ x1:x*TS+TS/2, y1:-EXT, x2:x*TS+TS/2, y2:GH+EXT,
+      stroke:"#E8C24A", "stroke-width":2, "stroke-dasharray":"9 11", opacity:".55" }, gr));
+    /* kavşak: asfalt yaması + yaya geçitleri */
+    rows.forEach(y=> cols.forEach(x=>{
+      el("rect", { x:x*TS, y:y*TS, width:TS, height:TS, fill:"#5D6A77" }, gr);
+      for(let i=0;i<4;i++){
+        el("rect", { x:x*TS-13-i*6, y:y*TS+4, width:3.4, height:TS-8, rx:1.6, fill:"#EDF1F5", opacity:".85" }, gr);
+        el("rect", { x:x*TS+TS+2+i*6, y:y*TS+4, width:3.4, height:TS-8, rx:1.6, fill:"#EDF1F5", opacity:".85" }, gr);
+        el("rect", { x:x*TS+4, y:y*TS-13-i*6, width:TS-8, height:3.4, rx:1.6, fill:"#EDF1F5", opacity:".85" }, gr);
+        el("rect", { x:x*TS+4, y:y*TS+TS+2+i*6, width:TS-8, height:3.4, rx:1.6, fill:"#EDF1F5", opacity:".85" }, gr);
+      }
+    }));
 
     /* nesneler */
     S.objs.forEach(o=> this.drawObject(o));
@@ -929,73 +1144,144 @@ const Render = {
 
   drawObject(o){
     const g = el("g", { class:"bld", transform:"translate("+(o.x*TS)+","+(o.y*TS)+")" }, this.ly.obj);
-    el("ellipse", { cx:TS/2, cy:TS-4, rx:TS*0.40, ry:5, fill:"rgba(0,0,0,.16)" }, g);
     if(o.t==="a"){
-      el("rect", { x:TS/2-3, y:TS/2, width:6, height:TS/2-5, rx:3, fill:"#7A5B3C" }, g);
-      el("circle", { cx:TS/2, cy:TS/2-2, r:12, fill:"#4E8C46" }, g);
+      /* ağaç: gövde + katmanlı taç */
+      el("ellipse", { cx:TS/2+3, cy:TS-6, rx:TS*0.34, ry:4.5, fill:"rgba(29,38,46,.18)" }, g);
+      el("rect", { x:TS/2-2.6, y:TS/2+2, width:5.2, height:TS/2-9, rx:2.6, fill:"#7A5B3C" }, g);
+      el("circle", { cx:TS/2, cy:TS/2-1, r:13, fill:"url(#gTree)" }, g);
       el("circle", { cx:TS/2-7, cy:TS/2+5, r:8, fill:"#5EA354" }, g);
-      el("circle", { cx:TS/2+7, cy:TS/2+4, r:7, fill:"#3F7A3A" }, g);
+      el("circle", { cx:TS/2+7, cy:TS/2+4, r:7, fill:"#4E8C46" }, g);
+      el("circle", { cx:TS/2-4, cy:TS/2-6, r:3.2, fill:"#8FCB74", opacity:".85" }, g);
       o.el = g; return g;
     }
     const tall = o.t==="t";
     const pad = tall ? 3 : 5;
-    const fill = o.t==="h" ? "#F4F7FA" : o.t==="f" ? "#9AA6B2" : tall ? "#C9B79E" : "#E0C9A6";
-    const roof = o.t==="h" ? "#C9D6E2" : o.t==="f" ? "#6E7C89" : tall ? "#8E7A62" : "#B08A5E";
-    el("rect", { x:pad, y:pad, width:TS-pad*2, height:TS-pad*2-2, rx:4, fill }, g);
-    el("rect", { x:pad, y:pad, width:TS-pad*2, height:TS-pad*2-2, rx:4, fill:"url(#gRoof)" }, g);
-    el("rect", { x:pad, y:pad, width:TS-pad*2, height:7, rx:3, fill:roof }, g);
+    const W = TS-pad*2, H = TS-pad*2, DEP = tall ? 5 : 4;   // güney yüz derinliği
+    /* kontak gölgesi (sağ-alt) */
+    el("rect", { x:pad+3, y:pad+4, width:W, height:H, rx:5, fill:"rgba(29,38,46,.20)" }, g);
+    /* duvar (güneye bakan koyu yüz) */
+    const wall = o.t==="h" ? "#A9BAC8" : o.t==="f" ? "#4E5B67" : tall ? "#6E7C89" : ((o.x*7+o.y*13)%3===0 ? "#7E3A28" : (o.x*7+o.y*13)%3===1 ? "#8C5527" : "#5F6A74");
+    el("rect", { x:pad, y:pad+DEP, width:W, height:H-DEP+2, rx:5, fill:wall }, g);
+    /* çatı */
+    const roofGrad = o.t==="h" ? "url(#gRoofHas)" : o.t==="f" ? "url(#gRoofFab)"
+      : tall ? "url(#gRoofGri)"
+      : ((o.x*7+o.y*13)%3===0 ? "url(#gRoofKir)" : (o.x*7+o.y*13)%3===1 ? "url(#gRoofTer)" : "url(#gRoofGri)");
+    el("rect", { x:pad, y:pad, width:W, height:H-DEP, rx:4.5, fill:roofGrad }, g);
+    el("rect", { x:pad, y:pad, width:W, height:H-DEP, rx:4.5, fill:"url(#gRoof)" }, g);
+    /* çatı sırtı parlaması */
+    el("rect", { x:pad+3, y:pad+2.5, width:W-6, height:2.6, rx:1.3, fill:"rgba(255,255,255,.45)" }, g);
     if(o.t==="h"){
-      el("rect", { x:TS/2-8, y:TS/2-3, width:16, height:5, rx:1.5, fill:"#D93B30" }, g);
-      el("rect", { x:TS/2-2.5, y:TS/2-8.5, width:5, height:16, rx:1.5, fill:"#D93B30" }, g);
+      el("rect", { x:TS/2-9, y:TS/2-4, width:18, height:6, rx:2, fill:"#D93B30" }, g);
+      el("rect", { x:TS/2-3, y:TS/2-10, width:6, height:18, rx:2, fill:"#D93B30" }, g);
     }else if(o.t==="f"){
-      el("rect", { x:TS-16, y:2, width:8, height:14, rx:2, fill:"#5A6874" }, g);
-      el("rect", { x:pad+3, y:TS/2, width:TS-pad*2-6, height:8, rx:2, fill:"rgba(0,0,0,.16)" }, g);
+      /* testere çatı çizgileri + baca */
+      el("rect", { x:pad+3, y:pad+9, width:W-6, height:2, rx:1, fill:"rgba(255,255,255,.22)" }, g);
+      el("rect", { x:pad+3, y:pad+17, width:W-6, height:2, rx:1, fill:"rgba(255,255,255,.22)" }, g);
+      el("rect", { x:TS-16, y:3, width:8, height:13, rx:2.5, fill:"#48545F" }, g);
+      el("circle", { cx:TS-12, cy:5, r:2.6, fill:"#6E7C89" }, g);
+      el("rect", { x:pad+4, y:TS/2+2, width:W-8, height:7, rx:2, fill:"rgba(0,0,0,.22)" }, g);
+    }else if(tall){
+      /* çatı katı + klima */
+      el("rect", { x:pad+5, y:pad+6, width:11, height:9, rx:2, fill:"#8E9AA5" }, g);
+      el("rect", { x:TS-pad-14, y:pad+7, width:9, height:7, rx:1.6, fill:"#B8C2CB" }, g);
+      el("circle", { cx:TS-pad-9.5, cy:pad+10.5, r:2.2, fill:"#7E8994" }, g);
+      const rows2 = 2;
+      for(let r=0;r<rows2;r++) for(let c=0;c<2;c++){
+        el("rect", { x:pad+6+c*12, y:pad+18+r*7.5, width:8, height:5.4, rx:1.3, fill:"url(#gWin)" }, g);
+        el("rect", { x:pad+6+c*12, y:pad+18+r*7.5, width:3.4, height:2.2, rx:1, fill:"#FFFFFF", opacity:".75" }, g);
+      }
     }else{
-      const rows = tall ? 3 : 2, cols = 2;
-      for(let r=0;r<rows;r++) for(let c=0;c<cols;c++)
-        el("rect", { x:pad+6+c*11, y:pad+11+r*8, width:7, height:5.5, rx:1.2,
-                     fill:"#7FA8C4", opacity:".85" }, g);
+      /* ev: çatı penceresi + baca */
+      el("rect", { x:TS-pad-11, y:pad+4, width:6, height:8, rx:1.5, fill:"rgba(0,0,0,.22)" }, g);
+      for(let c=0;c<2;c++){
+        el("rect", { x:pad+5+c*12, y:pad+12, width:8.5, height:6.5, rx:1.5, fill:"url(#gWin)" }, g);
+        el("rect", { x:pad+5+c*12, y:pad+12, width:3.6, height:2.6, rx:1, fill:"#FFFFFF", opacity:".8" }, g);
+      }
     }
     o.el = g;
     return g;
   },
 
   drawStation(x,y){
+    /* istasyon cebi: kırmızı-beyaz şeritli park alanı — bina değil, alan olarak okunur */
     const g = el("g", { transform:"translate("+(x*TS)+","+(y*TS)+")" }, this.ly.obj);
-    el("rect", { x:4, y:6, width:TS-8, height:TS-12, rx:4, fill:"#B5342A" }, g);
-    el("rect", { x:4, y:6, width:TS-8, height:7, rx:3, fill:"#8C271F" }, g);
-    el("rect", { x:9, y:17, width:TS-18, height:TS-25, rx:2, fill:"#F1E4CE" }, g);
-    el("rect", { x:9, y:17, width:TS-18, height:3.5, fill:"#D6C4A8" }, g);
-    el("text", { x:TS/2, y:14, "text-anchor":"middle", "font-size":"7",
-                 fill:"#FFE9C9", "font-weight":"700", "letter-spacing":".5" }, g).textContent = "112";
+    el("rect", { x:2, y:2, width:TS-4, height:TS-4, rx:6, fill:"#66727F" }, g);
+    el("rect", { x:2, y:2, width:TS-4, height:TS-4, rx:6, fill:"none",
+                 stroke:"#D93B30", "stroke-width":3, "stroke-dasharray":"7 5" }, g);
+    el("rect", { x:2, y:2, width:TS-4, height:TS-4, rx:6, fill:"none",
+                 stroke:"#F1F5F8", "stroke-width":3, "stroke-dasharray":"5 7", "stroke-dashoffset":"-7" }, g);
+    el("circle", { cx:TS/2, cy:TS/2+3, r:9.5, fill:"#D93B30" }, g);
+    el("circle", { cx:TS/2, cy:TS/2+3, r:9.5, fill:"none", stroke:"#A32A21", "stroke-width":1.6 }, g);
+    const t = el("text", { x:TS/2, y:TS/2+6, "text-anchor":"middle", "font-size":"8",
+                 fill:"#FFF", "font-weight":"700", "letter-spacing":".5" }, g);
+    t.textContent = "112";
+    el("path", { d:"M"+(TS/2)+" 5c2.4 4 5.4 6.2 5.4 9.4a5.4 5.4 0 0 1-10.8 0C10.6 11.2 13.6 9 "+(TS/2)+" 5Z",
+                 fill:"#F5A623", transform:"translate(0,-1)" }, g);
   },
   drawHydrant(x,y){
+    /* kuşbakışı hidrant: kapaklı disk + üç ağız */
     const g = el("g", { transform:"translate("+(x*TS)+","+(y*TS)+")" }, this.ly.obj);
-    el("circle", { cx:TS/2, cy:TS/2, r:11, fill:"#2E7CC4", opacity:".22" }, g);
-    el("rect", { x:TS/2-4, y:TS/2-8, width:8, height:14, rx:3, fill:"#D93B30" }, g);
-    el("rect", { x:TS/2-8, y:TS/2-3, width:16, height:4, rx:2, fill:"#A32A21" }, g);
-    el("circle", { cx:TS/2, cy:TS/2-9, r:3.5, fill:"#F0574B" }, g);
+    el("circle", { cx:TS/2, cy:TS/2, r:12.5, fill:"#5FA8D6", opacity:".26" }, g);
+    el("circle", { cx:TS/2, cy:TS/2, r:12.5, fill:"none", stroke:"#EDF6FC", "stroke-width":1.8, "stroke-dasharray":"4 4", opacity:".85" }, g);
+    el("ellipse", { cx:TS/2+1.5, cy:TS/2+2, rx:7.5, ry:6.8, fill:"rgba(29,38,46,.25)" }, g);
+    [[0,-8],[-7,4.5],[7,4.5]].forEach(n=>
+      el("circle", { cx:TS/2+n[0], cy:TS/2+n[1], r:3.1, fill:"#A32A21" }, g));
+    el("circle", { cx:TS/2, cy:TS/2, r:7, fill:"#D93B30" }, g);
+    el("circle", { cx:TS/2, cy:TS/2, r:7, fill:"none", stroke:"#A32A21", "stroke-width":1.4 }, g);
+    el("circle", { cx:TS/2, cy:TS/2, r:3.2, fill:"#F0574B" }, g);
+    el("path", { d:"M"+(TS/2)+" "+(TS/2-2.4)+"l2.3 1.7-.9 2.7h-2.8l-.9-2.7Z", fill:"#7E1F18" }, g);
+    el("circle", { cx:TS/2-2, cy:TS/2-2.4, r:1.2, fill:"#FFC9C4", opacity:".9" }, g);
   },
 
   drawUnit(u){
     const d = UNITS[u.type];
     const g = el("g", { class:"unit" }, this.ly.units);
     const b = el("g", null, g);
-    el("ellipse", { cx:0, cy:8, rx:15, ry:4, fill:"rgba(0,0,0,.22)" }, b);
-    el("rect", { x:-15, y:-8, width:30, height:16, rx:3.5, fill:d.color }, b);
-    el("rect", { x:-15, y:-8, width:30, height:5, rx:2.5, fill:"rgba(255,255,255,.28)" }, b);
-    el("rect", { x:6, y:-7, width:8, height:14, rx:2.5, fill:d.dark }, b);
-    el("rect", { x:7.5, y:-5, width:5, height:5, rx:1.2, fill:"#BFD8EA" }, b);
-    if(u.type==="tanker") el("rect", { x:-13, y:-6, width:16, height:12, rx:6, fill:"#4B93D4" }, b);
-    if(u.type==="merdiven") el("rect", { x:-13, y:-10.5, width:22, height:4, rx:2, fill:"#D9C08A" }, b);
-    if(u.type==="teknik") el("rect", { x:-12, y:-12, width:4, height:9, rx:2, fill:"#8A5F12" }, b);
+    /* gölge + lastikler (kuşbakışı) */
+    el("ellipse", { cx:1, cy:2, rx:16.5, ry:9.5, fill:"rgba(29,38,46,.25)" }, b);
+    [[-10,-9.6],[6,-9.6],[-10,7.2],[6,7.2]].forEach(w=>
+      el("rect", { x:w[0], y:w[1], width:6, height:2.4, rx:1.2, fill:"#22282E" }, b));
     if(u.type==="ambulans"){
-      el("rect", { x:-11, y:-2, width:14, height:4, rx:1, fill:"#D93B30" }, b);
-      el("rect", { x:-5.5, y:-6, width:3.6, height:11, rx:1, fill:"#D93B30" }, b);
+      el("rect", { x:-15, y:-8, width:30, height:16, rx:3.5, fill:"#F8FAFC" }, b);
+      el("rect", { x:-15, y:-8, width:30, height:2.4, rx:1.2, fill:"#D93B30" }, b);
+      el("rect", { x:-15, y:5.6, width:30, height:2.4, rx:1.2, fill:"#D93B30" }, b);
+      el("rect", { x:5.2, y:-6.6, width:2.6, height:13.2, rx:1.1, fill:"#8FB8D6" }, b);   // ön cam
+      el("rect", { x:8.2, y:-7.2, width:6.4, height:14.4, rx:2.2, fill:"#DDE4EB" }, b);   // kaput
+      el("circle", { cx:-4, cy:0, r:4.2, fill:"#D93B30" }, b);                            // hilal
+      el("circle", { cx:-2.4, cy:0, r:3.3, fill:"#F8FAFC" }, b);
+    }else if(u.type==="tanker"){
+      el("rect", { x:-15, y:-8, width:30, height:16, rx:3.5, fill:"#2E7CC4" }, b);
+      el("rect", { x:5.2, y:-6.6, width:2.6, height:13.2, rx:1.1, fill:"#BFD8EA" }, b);
+      el("rect", { x:8.2, y:-7.2, width:6.4, height:14.4, rx:2.2, fill:"#1F5A91" }, b);
+      el("rect", { x:-14, y:-5.6, width:18.5, height:11.2, rx:5.4, fill:"#C9D2DA" }, b);
+      el("rect", { x:-12.5, y:-4, width:15.5, height:2.6, rx:1.3, fill:"#EDF1F5" }, b);
+      el("circle", { cx:-5, cy:1, r:2.6, fill:"#5FA8D6" }, b);
+    }else if(u.type==="teknik"){
+      el("rect", { x:-15, y:-8, width:30, height:16, rx:3.5, fill:"#F5A623" }, b);
+      el("rect", { x:-15, y:-8, width:30, height:4.6, rx:2.3, fill:"#FFC14E" }, b);
+      el("rect", { x:5.2, y:-6.6, width:2.6, height:13.2, rx:1.1, fill:"#BFD8EA" }, b);
+      el("rect", { x:8.2, y:-7.2, width:6.4, height:14.4, rx:2.2, fill:"#C97E10" }, b);
+      el("rect", { x:-13.5, y:-1.6, width:17, height:3.2, rx:1.6, fill:"#5A6774" }, b);   // vinç kolu
+      el("circle", { cx:-11.5, cy:0, r:2.4, fill:"#35424F" }, b);
+      el("rect", { x:2, y:-1.1, width:3.4, height:2.2, rx:1.1, fill:"#35424F" }, b);
+    }else{
+      /* söndürme + merdiven */
+      const mer = u.type==="merdiven";
+      el("rect", { x:-15, y:-8, width:30, height:16, rx:3.5, fill:d.color }, b);
+      el("rect", { x:-15, y:-8, width:30, height:4.6, rx:2.3, fill:mer?"#D24A3C":"#F0574B" }, b);
+      el("rect", { x:5.2, y:-6.6, width:2.6, height:13.2, rx:1.1, fill:"#BFD8EA" }, b);   // ön cam
+      el("rect", { x:8.2, y:-7.2, width:6.4, height:14.4, rx:2.2, fill:d.dark }, b);      // kaput
+      if(mer) el("circle", { cx:-6, cy:0, r:4.4, fill:d.dark }, b);                       // taret
+      /* gümüş merdiven rayları + basamaklar */
+      const lx = mer ? -14 : -13, lw = mer ? 21 : 17;
+      el("rect", { x:lx, y:-3.4, width:lw, height:2, rx:1, fill:"#D9DFE5" }, b);
+      el("rect", { x:lx, y:1.4, width:lw, height:2, rx:1, fill:"#D9DFE5" }, b);
+      for(let i=0;i<4;i++) el("rect", { x:lx+2.4+i*(lw-4)/3.3, y:-3.4, width:1.7, height:6.8, fill:"#98A5B1" }, b);
     }
-    el("circle", { cx:-8, cy:8, r:3.6, fill:"#22282E" }, b);
-    el("circle", { cx:8, cy:8, r:3.6, fill:"#22282E" }, b);
-    const bc = el("rect", { x:-4, y:-12, width:8, height:3.5, rx:1.5, fill:"#4FA3E8", class:"beam" }, b);
+    /* tepe lambası: kırmızı-mavi dönüşümlü */
+    const bc = el("g", null, b);
+    el("rect", { x:9.6, y:-4.4, width:4, height:3.6, rx:1.4, fill:"#FF5A4E", class:"bcnA" }, bc);
+    el("rect", { x:9.6, y:0.8, width:4, height:3.6, rx:1.4, fill:"#4FA3E8", class:"bcnB" }, bc);
     g.__beacon = bc; g.__body = b;
     return g;
   },
@@ -1006,17 +1292,23 @@ const Render = {
                         role:"button", tabindex:"0" }, this.ly.marks);
     g.setAttribute("aria-label", INC[e.k].name);
     const CY = -30;
+    const tone = (e.k==="yangin"||e.k==="gaz") ? "#D93B30" : (e.k==="yarali"||e.k==="sikisan") ? "#2E7CC4" : "#C97E10";
     el("circle", { class:"hit", cx:0, cy:CY, r:23 }, g);
     const ring = el("circle", { class:"ring", cx:0, cy:CY, r:16, fill:"none",
                                 stroke:"#D93B30", "stroke-width":3 }, g);
-    el("path", { d:"M0 "+(CY+16)+" L-5 "+(CY+11)+" L5 "+(CY+11)+" Z", fill:"#FFFFFF" }, g);
-    el("circle", { class:"badge", cx:0, cy:CY, r:13, fill:"#FFFFFF", stroke:"#D93B30", "stroke-width":2.5 }, g);
+    el("ellipse", { cx:0, cy:1.5, rx:5.5, ry:2.2, fill:"rgba(29,38,46,.30)" }, g);
+    /* damla / pin gövdesi */
+    el("path", { d:"M0 0C-3 -8 -15.5 -14 -15.5 -30a15.5 15.5 0 1 1 31 0C15.5 -14 3 -8 0 0Z", fill:tone }, g);
+    el("path", { d:"M-9 -38a12 12 0 0 1 8 -6" , fill:"none", stroke:"rgba(255,255,255,.55)",
+                 "stroke-width":2.6, "stroke-linecap":"round" }, g);
+    const badge = el("circle", { class:"badge", cx:0, cy:CY, r:11.5, fill:"#FFFFFF" }, g);
     const arc = el("circle", { cx:0, cy:CY, r:16.5, fill:"none", stroke:"#F5A623", "stroke-width":3,
-                               "stroke-linecap":"round", transform:"rotate(-90)", opacity:"0" }, g);
-    const t = el("text", { x:0, y:CY+5, "text-anchor":"middle", "font-size":"14" }, g);
-    t.textContent = INC[e.k].icon;
-    el("rect", { x:-13, y:CY+18, width:26, height:4, rx:2, fill:"rgba(0,0,0,.22)" }, g);
-    const bar = el("rect", { x:-13, y:CY+18, width:0, height:4, rx:2, fill:"#3E9E62" }, g);
+                               "stroke-linecap":"round", transform:"rotate(-90 0 "+CY+")", opacity:"0" }, g);
+    const us = el("use", { x:-8, y:CY-8, width:16, height:16 }, g);
+    us.setAttribute("href", "#ii-"+e.k);
+    us.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#ii-"+e.k);
+    el("rect", { x:-13, y:CY+21, width:26, height:4, rx:2, fill:"rgba(0,0,0,.25)" }, g);
+    const bar = el("rect", { x:-13, y:CY+21, width:0, height:4, rx:2, fill:"#3E9E62" }, g);
     g.__ring = ring; g.__arc = arc; g.__bar = bar;
     this.incEls[e.id] = g;
     return g;
@@ -1025,14 +1317,29 @@ const Render = {
   drawFire(e){
     if(!e.obj) return null;
     const g = el("g", { transform:"translate("+(e.x*TS)+","+(e.y*TS)+")" }, this.ly.fx);
-    const glow = el("rect", { x:4, y:4, width:TS-8, height:TS-10, rx:4, fill:"#FF7A2F", opacity:".2" }, g);
-    const f1 = el("path", { d:"M20 34c-9 0-15-6-15-14 0-9 9-12 10-22 5 5 6 9 6 13 3-3 4-7 4-11 5 6 10 12 10 20 0 8-6 14-15 14Z",
-                            fill:"#F5A623", class:"flame" }, g);
-    const f2 = el("path", { d:"M20 33c-5 0-9-4-9-9 0-5 5-8 6-14 4 5 12 10 12 14 0 5-4 9-9 9Z", fill:"#E8552B", class:"flame" }, g);
-    const s1 = el("circle", { cx:13, cy:2, r:5.5, fill:"#8E9AA6", opacity:".5", class:"smoke" }, g);
-    const s2 = el("circle", { cx:27, cy:0, r:4.5, fill:"#A6B1BC", opacity:".45", class:"smoke",
-                              style:"animation-delay:1.4s" }, g);
-    g.__glow = glow; g.__f1 = f1; g.__f2 = f2; g.__s1 = s1; g.__s2 = s2;
+    /* kararan bina */
+    const ch = el("rect", { x:3, y:3, width:TS-6, height:TS-6, rx:5, fill:"#1D262E", opacity:"0" }, g);
+    const glow = el("ellipse", { cx:TS/2, cy:TS/2, rx:TS*0.72, ry:TS*0.62, fill:"url(#gGlow)", opacity:".3" }, g);
+    /* üç katmanlı alev: dış kızıl, orta turuncu, iç sarı — fs: şiddet ölçeği */
+    const fs = el("g", null, g);
+    const f1 = el("g", { class:"flame" }, fs);
+    el("path", { d:"M20 35c-10 0-16.5-6.5-16.5-15 0-9.5 10-13 11-24 5.5 5.5 6.5 10 6.5 14.5 3.3-3.3 4.4-7.7 4.4-12 5.5 6.5 11 13 11 21.5 0 8.5-6.4 15-16.4 15Z",
+                 fill:"#D63A20", transform:"translate(20,35) scale(1.08) translate(-20,-35)" }, f1);
+    el("path", { d:"M20 35c-9 0-15-6-15-14 0-9 9-12 10-22 5 5 6 9 6 13 3-3 4-7 4-11 5 6 10 12 10 20 0 8-6 14-15 14Z",
+                 fill:"#F5821F" }, f1);
+    const f2 = el("g", { class:"flame2" }, fs);
+    el("path", { d:"M20 34c-5 0-9-4-9-9 0-5 5-8 6-14 4 5 12 10 12 14 0 5-4 9-9 9Z", fill:"#FFC93C" }, f2);
+    el("path", { d:"M20 33c-2.6 0-4.6-2-4.6-4.6 0-2.6 2.6-4 3.2-7 2 2.5 6 5 6 7.2 0 2.4-2 4.4-4.6 4.4Z", fill:"#FFF3C4" }, f2);
+    /* duman kıvrımları */
+    const s1 = el("g", { class:"smoke" }, g);
+    el("circle", { cx:12, cy:3, r:5.5, fill:"#8E9AA6", opacity:".5" }, s1);
+    el("circle", { cx:17, cy:-2, r:3.6, fill:"#A6B1BC", opacity:".45" }, s1);
+    const s2 = el("g", { class:"smoke", style:"animation-delay:1.2s" }, g);
+    el("circle", { cx:27, cy:1, r:4.6, fill:"#A6B1BC", opacity:".45" }, s2);
+    el("circle", { cx:23, cy:-4, r:3, fill:"#B9C3CC", opacity:".4" }, s2);
+    const s3 = el("g", { class:"smoke", style:"animation-delay:2.3s" }, g);
+    el("circle", { cx:20, cy:0, r:4, fill:"#98A4AF", opacity:".42" }, s3);
+    g.__glow = glow; g.__fs = fs; g.__s1 = s1; g.__s2 = s2; g.__s3 = s3; g.__ch = ch;
     this.fireEls[e.id] = g;
     return g;
   },
@@ -1099,12 +1406,12 @@ const Render = {
       const f = this.fireEls[e.id];
       if(f && INC[e.k].fire){
         const k = clamp(e.intensity/100, 0, 1);
-        f.__glow.setAttribute("opacity", (0.10 + k*0.34).toFixed(2));
+        f.__glow.setAttribute("opacity", (0.15 + k*0.5).toFixed(2));
+        f.__ch.setAttribute("opacity", (k*0.5).toFixed(2));
         const sc = 0.5 + k*0.7;
-        f.__f1.setAttribute("transform", "translate(20,34) scale("+sc.toFixed(2)+") translate(-20,-34)");
-        f.__f2.setAttribute("transform", "translate(20,33) scale("+sc.toFixed(2)+") translate(-20,-33)");
+        f.__fs.setAttribute("transform", "translate(20,34) scale("+sc.toFixed(2)+") translate(-20,-34)");
         const sm = k > 0.45 ? "" : "none";
-        f.__s1.style.display = sm; f.__s2.style.display = sm;
+        f.__s1.style.display = sm; f.__s2.style.display = sm; f.__s3.style.display = sm;
       }
     });
   },
@@ -1196,7 +1503,7 @@ const UI = {
       const wp = u.cap ? Math.round(u.water/u.cap*100) : 100;
       return '<button type="button" class="uchip'+(this.sel===u.id?" sel":"")+(u.state!=="idle"?" busy":"")+'"'
         + ' data-act="unit" data-v="'+u.id+'" aria-pressed="'+(this.sel===u.id)+'" aria-label="'+esc(t.name)+', '+st+'">'
-        + '<span class="r1"><span class="sq" style="background:'+t.color+'22">'+t.icon+'</span>'
+        + '<span class="r1"><span class="sq" style="background:'+t.color+'22"><svg viewBox="0 0 48 32" aria-hidden="true"><use href="#uv-'+u.type+'" xlink:href="#uv-'+u.type+'"/></svg></span>'
         + '<span><span class="nm">'+t.abbr+'</span><br><span class="st">'+st+'</span></span></span>'
         + (u.cap ? '<span class="wtank"><i style="width:'+wp+'%"></i></span>' : '')
         + '</button>';
@@ -1246,7 +1553,7 @@ const UI = {
       const t=UNITS[u.type];
       const st = u.state==="idle" ? "hazır" : u.state==="moving" ? "yolda" : "görevde";
       return '<button type="button" class="obj" style="width:100%;text-align:left" data-act="dispatch" data-v="'+e.id+'|'+u.id+'">'
-        + '<span class="ic" style="background:'+t.color+'22">'+t.icon+'</span>'
+        + '<span class="ic" style="background:'+t.color+'22"><svg viewBox="0 0 48 32" aria-hidden="true"><use href="#uv-'+u.type+'" xlink:href="#uv-'+u.type+'"/></svg></span>'
         + '<span class="tx" style="flex:1"><b>'+esc(t.name)+'</b><br><span style="font-size:.72rem;color:var(--dim)">'+st+'</span></span>'
         + '<span aria-hidden="true">▶</span></button>';
     }).join("") : '<p style="font-size:.85rem;color:var(--dim)">Bu olaya uygun araç filonda yok. Görevi yeniden başlatabilirsin.</p>';
@@ -1293,11 +1600,11 @@ const Flow = {
       (card ? '<div class="brief"><h4>🧯 GÜVENLİK NOTU · '+esc(card.t)+'</h4><p>'+esc(card.x)+'</p></div>' : '')
       + '<div class="sect" style="margin:16px 0 8px">Beklenen olaylar</div>'
       + '<div class="objs">'+Object.keys(counts).map(k=>
-          '<div class="obj"><span class="ic" style="background:#F5A62322">'+INC[k].icon+'</span>'
+          '<div class="obj"><span class="ic" style="background:#F5A62322"><svg viewBox="0 0 24 24" class="tall" aria-hidden="true"><use href="#ii-'+k+'" xlink:href="#ii-'+k+'"/></svg></span>'
           + '<span class="tx">'+esc(INC[k].name)+'</span><b style="margin-left:auto">×'+counts[k]+'</b></div>').join("")+'</div>'
       + '<div class="sect" style="margin:16px 0 8px">Filo</div>'
       + '<div class="unitrow">'+Object.keys(units).map(u=>
-          '<span class="upill">'+UNITS[u].icon+' '+esc(UNITS[u].abbr)+' ×'+units[u]+'</span>').join("")+'</div>'
+          '<span class="upill"><svg viewBox="0 0 48 32" aria-hidden="true"><use href="#uv-'+u+'" xlink:href="#uv-'+u+'"/></svg> '+esc(UNITS[u].abbr)+' ×'+units[u]+'</span>').join("")+'</div>'
       + '<div class="sect" style="margin:16px 0 8px">Madalya süresi</div>'
       + '<div class="statrow"><div><b>'+fmtTime(mis.gold*mode.timeMul)+'</b><span>🥇 Altın</span></div>'
       + '<div><b>'+fmtTime(mis.silver*mode.timeMul)+'</b><span>🥈 Gümüş</span></div>'
@@ -1477,7 +1784,7 @@ const Screens = {
       + '<p style="margin-top:10px"><b>2.</b> Olaya dokunursan hangi araçların o işi yapabileceğini gösteren liste açılır.</p>'
       + '<p style="margin-top:10px"><b>3.</b> Araç seçiliyken bir yol karosuna dokunursan oraya gider. Mavi hidranta gidince su deposu dolar.</p>'
       + '<div class="sect" style="margin:16px 0 8px">Hangi araç neye gider</div>'
-      + Object.keys(INC).map(k=>'<div class="obj"><span class="ic" style="background:#F5A62322">'+INC[k].icon+'</span>'
+      + Object.keys(INC).map(k=>'<div class="obj"><span class="ic" style="background:#F5A62322"><svg viewBox="0 0 24 24" class="tall" aria-hidden="true"><use href="#ii-'+k+'" xlink:href="#ii-'+k+'"/></svg></span>'
           + '<span class="tx"><b>'+esc(INC[k].name)+'</b><br><span style="font-size:.75rem;color:var(--dim)">'
           + INC[k].need.map(n=>UNITS[n].name).join(" / ") + '</span></span></div>').join("")
       + '<div class="brief" style="margin-top:14px"><h4>⚠️ DİKKAT</h4>'

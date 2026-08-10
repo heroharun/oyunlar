@@ -96,6 +96,7 @@ html[data-motion="0"] *{animation-duration:.001s!important;transition-duration:.
 .bcard{display:flex;gap:13px;padding:13px;border-radius:var(--r-m);background:var(--paper);
   border:1px solid var(--line);box-shadow:var(--sh-s);text-align:left;transition:transform .16s,box-shadow .2s}
 .bcard:active{transform:scale(.985)}
+.bcard:hover{box-shadow:var(--sh);transform:translateY(-1px)}
 .bcard .th{width:64px;height:64px;flex:0 0 64px;border-radius:12px;overflow:hidden;background:var(--plaster-2)}
 .bcard .th svg{width:100%;height:100%;display:block}
 .bcard .bd{flex:1;min-width:0}
@@ -125,10 +126,13 @@ html[data-motion="0"] *{animation-duration:.001s!important;transition-duration:.
 #room{width:100%;display:block;touch-action:none}
 #caption{text-align:center;margin-top:9px;font-family:var(--disp);font-size:.76rem;color:var(--dim);font-style:italic}
 
-/* Seçim çerçevesi */
-.selbox{fill:none;stroke:var(--clay);stroke-width:1.6;stroke-dasharray:5 4;pointer-events:none}
+/* Seçim: yumuşak halo */
+.selbox{fill:none;stroke:var(--clay);stroke-width:1.4;opacity:.7;pointer-events:none}
+.halo{fill:none;stroke:var(--clay);stroke-width:8;opacity:.14;pointer-events:none}
 .piece{cursor:grab}
 .piece.drag{cursor:grabbing}
+@keyframes settle{0%{transform:translateY(-9px);opacity:0}62%{transform:translateY(1.5px);opacity:1}100%{transform:none;opacity:1}}
+.settle-in{animation:settle .42s cubic-bezier(.25,.9,.35,1) both}
 .ghostline{stroke:var(--clay);stroke-width:1;stroke-dasharray:3 4;opacity:.5}
 
 /* Seçili parça araç çubuğu */
@@ -155,13 +159,15 @@ html[data-motion="0"] *{animation-duration:.001s!important;transition-duration:.
   display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px;gap:2px;
   transition:transform .15s,border-color .2s,background .2s;position:relative;overflow:hidden}
 .item:active{transform:scale(.93)}
-.item:hover{border-color:var(--clay)}
-.item svg{width:100%;height:64%;display:block}
+.item:hover{border-color:var(--clay);transform:translateY(-2px);box-shadow:var(--sh-s)}
+.item svg{width:100%;height:64%;display:block;filter:drop-shadow(0 2.5px 2px rgba(42,37,33,.16))}
 .item .nm{font-size:.56rem;color:var(--ink-2);text-align:center;line-height:1.15;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .item.used::after{content:"";position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--clay)}
-.item.lock{opacity:.34;pointer-events:none}
-.item.lock::before{content:"🔒";position:absolute;top:5px;right:6px;font-size:.6rem}
+.item.lock{pointer-events:none;background:linear-gradient(152deg,#FBF8F1,#EFE7D8);border-color:var(--line-2)}
+.item.lock svg{filter:grayscale(.7) blur(1.1px);opacity:.4}
+.item.lock .nm{opacity:.45}
+.item.lock::before{content:"🔒";position:absolute;top:5px;right:6px;font-size:.6rem;opacity:.6}
 
 /* Renk ve zemin şeritleri */
 .sw{display:flex;gap:7px;flex-wrap:wrap;padding:4px 2px}
@@ -393,6 +399,20 @@ html[data-motion="0"] *{animation-duration:.001s!important;transition-duration:.
 
 <div id="toasts" aria-live="polite"></div>
 
+<!-- Paylaşılan SVG tanımları: kontak gölge, duvar eşyası gölgesi, dinamik ton gradyanları -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs id="gdefs">
+    <radialGradient id="ctsh" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2A2521" stop-opacity=".28"/>
+      <stop offset="62%" stop-color="#2A2521" stop-opacity=".13"/>
+      <stop offset="100%" stop-color="#2A2521" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="wsh" x="-25%" y="-25%" width="150%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#2A2521" flood-opacity=".16"/>
+    </filter>
+  </defs>
+</svg>
+
 <script>
 "use strict";
 /* =====================================================================
@@ -441,7 +461,23 @@ const R = (x,y,w,h,f,rx) => '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h
 const C = (cx,cy,r,f) => '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+f+'"/>';
 const P = (d,f) => '<path d="'+d+'" fill="'+f+'"/>';
 const L = (x1,y1,x2,y2,s,w) => '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+s+'" stroke-width="'+(w||2)+'" stroke-linecap="round"/>';
-const sh = (w,h) => '<ellipse cx="'+(w/2)+'" cy="'+(h-2)+'" rx="'+(w*0.44)+'" ry="4" fill="rgba(42,37,33,.16)"/>';
+/* yumuşak kontak gölgesi — eşya zemine "oturur" */
+const sh = (w,h) => '<ellipse cx="'+(w/2)+'" cy="'+(h-2.5)+'" rx="'+(w*0.48)+'" ry="6" fill="url(#ctsh)"/>';
+/* dinamik dikey gradyan: üstü aydınlık, altı loş (yumuşak hacim) */
+const GRAD = {};
+function gfill(c){
+  const id = "g" + String(c).replace("#","");
+  if(!GRAD[id]){
+    GRAD[id] = 1;
+    const d = document.getElementById("gdefs");
+    if(d) d.insertAdjacentHTML("beforeend",
+      '<linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1">'
+      + '<stop offset="0" stop-color="'+lt(c,15)+'"/>'
+      + '<stop offset=".55" stop-color="'+c+'"/>'
+      + '<stop offset="1" stop-color="'+dk(c,11)+'"/></linearGradient>');
+  }
+  return "url(#"+id+")";
+}
 /* Ton hesabı JS'te yapılır: color-mix() desteklenmeyen tarayıcıda
    fill geçersiz olup siyaha düşerdi. */
 function hex2rgb(h){ h=h.replace("#",""); if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
@@ -455,14 +491,14 @@ const lt = (c,a) => mix(c, "#ffffff", (a||22)/100);
 const ITEMS = [
   /* ---------- HALI ---------- */
   { id:"kilim", name:"Kilim", cat:"hali", w:420, h:120, tags:["anadolu","bohem"], t:["kiremit","cini","bordo","zeytin"],
-    draw:(c)=>{ let s=R(0,0,420,120,lt(c,10),4)+R(0,0,420,120,c,4);
+    draw:(c)=>{ let s=R(0,0,420,120,lt(c,10),4)+R(0,0,420,120,gfill(c),4);
       for(let i=0;i<6;i++){ const x=24+i*66;
         s+=P('M'+x+' 26 L'+(x+22)+' 60 L'+x+' 94 L'+(x-22)+' 60 Z', TONES.krem);
         s+=P('M'+x+' 42 L'+(x+11)+' 60 L'+x+' 78 L'+(x-11)+' 60 Z', dk(c,35)); }
       s+=R(0,10,420,3,TONES.krem)+R(0,107,420,3,TONES.krem);
       s+=R(0,0,420,6,dk(c,40))+R(0,114,420,6,dk(c,40)); return s; } },
   { id:"halikoyu", name:"Yün halı", cat:"hali", w:400, h:116, tags:["modern","iskandinav"], t:["kum","gri","zeytin","gul"],
-    draw:(c)=>{ let s=R(0,0,400,116,c,8)+R(12,12,376,92,lt(c,12),5);
+    draw:(c)=>{ let s=R(0,0,400,116,gfill(c),8)+R(12,12,376,92,gfill(lt(c,12)),5);
       /* dokuma dokusu */
       for(let i=0;i<11;i++){ const x=30+i*34;
         s+='<path d="M'+x+' 40 L'+(x+17)+' 58 L'+x+' 76" fill="none" stroke="'+dk(c,16)+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'; }
@@ -471,88 +507,88 @@ const ITEMS = [
       for(let i=0;i<26;i++) s+=L(8+i*15,104,8+i*15,114,dk(c,22),2);
       return s; } },
   { id:"yolluk", name:"Yolluk", cat:"hali", w:300, h:76, tags:["anadolu","klasik"], t:["bordo","cini","ceviz","hardal"],
-    draw:(c)=>{ let s=R(0,0,300,76,c,4);
+    draw:(c)=>{ let s=R(0,0,300,76,gfill(c),4);
       for(let i=0;i<9;i++) s+=R(14+i*32,16,18,44,i%2?TONES.krem:dk(c,32),2);
       return s+R(0,0,300,5,dk(c,40))+R(0,71,300,5,dk(c,40)); } },
 
   /* ---------- MOBİLYA (yer) ---------- */
   { id:"sedir", name:"Sedir", cat:"yer", w:300, h:120, tags:["anadolu","klasik"], t:["kiremit","cini","zeytin","hardal"],
-    draw:(c)=>sh(300,120)+R(6,44,288,52,TONES.ceviz,6)+R(10,36,280,20,c,7)
-      +R(18,10,60,32,lt(c,16),7)+R(86,10,60,32,lt(c,16),7)+R(154,10,60,32,lt(c,16),7)+R(222,10,60,32,lt(c,16),7)
+    draw:(c)=>sh(300,120)+R(6,44,288,52,gfill(TONES.ceviz),6)+R(10,36,280,20,gfill(c),7)
+      +R(18,10,60,32,gfill(lt(c,16)),7)+R(86,10,60,32,gfill(lt(c,16)),7)+R(154,10,60,32,gfill(lt(c,16)),7)+R(222,10,60,32,gfill(lt(c,16)),7)
       +R(14,92,14,26,TONES.koyu,3)+R(272,92,14,26,TONES.koyu,3) },
   { id:"koltuk", name:"Koltuk", cat:"yer", w:150, h:132, tags:["modern","iskandinav","klasik"], t:["zeytin","cini","gul","kum2"],
-    draw:(c)=>sh(150,132)+R(10,30,130,68,c,10)+R(0,42,20,58,dk(c,14),8)+R(130,42,20,58,dk(c,14),8)
-      +R(18,20,114,32,lt(c,12),10)+R(22,62,106,20,lt(c,8),8)
+    draw:(c)=>sh(150,132)+R(10,30,130,68,gfill(c),10)+R(0,42,20,58,gfill(dk(c,14)),8)+R(130,42,20,58,gfill(dk(c,14)),8)
+      +R(18,20,114,32,gfill(lt(c,12)),10)+R(22,62,106,20,gfill(lt(c,8)),8)
       +R(20,96,12,32,TONES.ceviz,3)+R(118,96,12,32,TONES.ceviz,3) },
   { id:"kanepe", name:"Üçlü kanepe", cat:"yer", w:330, h:136, tags:["modern","iskandinav","klasik"], t:["kum2","zeytin","lacivert","gul"],
-    draw:(c)=>sh(330,136)+R(14,34,302,70,c,12)+R(0,46,24,60,dk(c,14),10)+R(306,46,24,60,dk(c,14),10)
-      +R(26,22,278,34,lt(c,12),11)
-      +R(30,66,88,22,lt(c,8),8)+R(122,66,88,22,lt(c,8),8)+R(214,66,88,22,lt(c,8),8)
+    draw:(c)=>sh(330,136)+R(14,34,302,70,gfill(c),12)+R(0,46,24,60,gfill(dk(c,14)),10)+R(306,46,24,60,gfill(dk(c,14)),10)
+      +R(26,22,278,34,gfill(lt(c,12)),11)
+      +R(30,66,88,22,gfill(lt(c,8)),8)+R(122,66,88,22,gfill(lt(c,8)),8)+R(214,66,88,22,gfill(lt(c,8)),8)
       +R(28,102,12,32,TONES.ceviz,3)+R(290,102,12,32,TONES.ceviz,3) },
   { id:"sehpa", name:"Sehpa", cat:"yer", w:170, h:66, tags:["modern","anadolu","iskandinav"], t:["ceviz","koyu","pirinc","krem"],
-    draw:(c)=>sh(170,66)+R(4,6,162,12,c,5)+R(16,18,10,44,dk(c,18),3)+R(144,18,10,44,dk(c,18),3)
+    draw:(c)=>sh(170,66)+R(4,6,162,12,gfill(c),5)+R(16,18,10,44,dk(c,18),3)+R(144,18,10,44,dk(c,18),3)
       +R(24,36,122,6,dk(c,10),2) },
   { id:"yansehpa", name:"Yan sehpa", cat:"yer", w:78, h:76, tags:["modern","iskandinav"], t:["ceviz","pirinc","antrasit","krem"],
-    draw:(c)=>sh(78,76)+'<ellipse cx="39" cy="12" rx="35" ry="9" fill="'+c+'"/>'+R(35,16,8,54,dk(c,20),3)
+    draw:(c)=>sh(78,76)+'<ellipse cx="39" cy="12" rx="35" ry="9" fill="'+gfill(c)+'"/>'+R(35,16,8,54,dk(c,20),3)
       +'<ellipse cx="39" cy="70" rx="22" ry="6" fill="'+dk(c,26)+'"/>' },
   { id:"kitaplik", name:"Kitaplık", cat:"yer", w:180, h:250, tags:["klasik","modern"], t:["ceviz","koyu","krem","zeytin"],
-    draw:(c)=>{ let s=sh(180,250)+R(0,0,180,250,c,4)+R(8,8,164,234,dk(c,16),2);
+    draw:(c)=>{ let s=sh(180,250)+R(0,0,180,250,gfill(c),4)+R(8,8,164,234,gfill(dk(c,16)),2);
       [8,68,128,188].forEach(y=>{ s+=R(8,y+50,164,7,c);
         for(let i=0;i<7;i++){ const bh=26+((i*7)%14); s+=R(18+i*21,y+50-bh,15,bh,[TONES.kiremit,TONES.cini,TONES.krem,TONES.hardal,TONES.zeytin][i%5],1.5); } });
       return s; } },
   { id:"konsol", name:"Konsol", cat:"yer", w:210, h:104, tags:["klasik","modern"], t:["ceviz","koyu","krem","cini"],
-    draw:(c)=>sh(210,104)+R(0,0,210,62,c,4)+R(10,10,88,42,dk(c,14),3)+R(112,10,88,42,dk(c,14),3)
+    draw:(c)=>sh(210,104)+R(0,0,210,62,gfill(c),4)+R(10,10,88,42,gfill(dk(c,14)),3)+R(112,10,88,42,gfill(dk(c,14)),3)
       +C(54,31,4,TONES.pirinc)+C(156,31,4,TONES.pirinc)
       +R(12,62,10,40,dk(c,26),3)+R(188,62,10,40,dk(c,26),3) },
   { id:"sandik", name:"Çeyiz sandığı", cat:"yer", w:160, h:96, tags:["anadolu","bohem"], t:["ceviz","bordo","cini","koyu"],
-    draw:(c)=>sh(160,96)+P('M4 34 Q80 6 156 34 L156 42 L4 42 Z',lt(c,12))+R(4,42,152,46,c,3)
+    draw:(c)=>sh(160,96)+P('M4 34 Q80 6 156 34 L156 42 L4 42 Z',gfill(lt(c,12)))+R(4,42,152,46,gfill(c),3)
       +R(4,50,152,5,TONES.pirinc)+R(70,40,20,18,TONES.pirinc,2)+C(80,50,3,dk(c,40))
       +R(10,88,12,8,TONES.koyu,2)+R(138,88,12,8,TONES.koyu,2) },
   { id:"puf", name:"Puf", cat:"yer", w:82, h:60, tags:["bohem","anadolu"], t:["kiremit","hardal","cini","gul"],
-    draw:(c)=>sh(82,60)+'<ellipse cx="41" cy="30" rx="40" ry="28" fill="'+c+'"/>'
-      +'<ellipse cx="41" cy="22" rx="40" ry="22" fill="'+lt(c,12)+'"/>'
+    draw:(c)=>sh(82,60)+'<ellipse cx="41" cy="30" rx="40" ry="28" fill="'+gfill(c)+'"/>'
+      +'<ellipse cx="41" cy="22" rx="40" ry="22" fill="'+gfill(lt(c,12))+'"/>'
       +L(41,2,41,42,dk(c,30),1.5)+L(8,22,74,22,dk(c,30),1.5) },
   { id:"minder", name:"Yer minderi", cat:"yer", w:110, h:40, tags:["anadolu","bohem"], t:["kiremit","zeytin","cini","gul"],
-    draw:(c)=>sh(110,40)+R(0,6,110,32,c,10)+R(6,10,98,12,lt(c,14),6)+L(20,30,90,30,dk(c,26),2) },
+    draw:(c)=>sh(110,40)+R(0,6,110,32,gfill(c),10)+R(6,10,98,12,gfill(lt(c,14)),6)+L(20,30,90,30,dk(c,26),2) },
   { id:"saksi", name:"Büyük saksı", cat:"yer", w:110, h:200, tags:["modern","bohem","iskandinav"], t:["kum2","kiremit","krem","cini"],
     draw:(c)=>{ let s=sh(110,200);
       s+=P('M55 150 Q20 110 26 62 Q44 92 52 118 Q46 70 62 34 Q70 84 62 120 Q78 92 92 66 Q92 116 55 150Z', TONES.zeytin);
-      s+=P('M28 150 L82 150 L74 198 L36 198 Z', c)+R(24,142,62,14,lt(c,12),3); return s; } },
+      s+=P('M28 150 L82 150 L74 198 L36 198 Z', gfill(c))+R(24,142,62,14,gfill(lt(c,12)),3); return s; } },
   { id:"zeminlamba", name:"Ayaklı lamba", cat:"yer", w:96, h:250, tags:["modern","iskandinav"], t:["krem","hardal","cini","antrasit"],
-    draw:(c)=>sh(96,250)+P('M22 10 L74 10 L84 74 L12 74 Z',c)+R(44,74,8,160,TONES.antrasit,3)
+    draw:(c)=>sh(96,250)+P('M22 10 L74 10 L84 74 L12 74 Z',gfill(c))+R(44,74,8,160,TONES.antrasit,3)
       +'<ellipse cx="48" cy="240" rx="30" ry="8" fill="'+TONES.antrasit+'"/>'
       +'<ellipse cx="48" cy="76" rx="36" ry="7" fill="'+TONES.pirinc+'" opacity=".55"/>' },
   { id:"masa", name:"Çalışma masası", cat:"yer", w:230, h:120, tags:["modern","iskandinav"], t:["ceviz","krem","koyu","zeytin"],
-    draw:(c)=>sh(230,120)+R(0,0,230,14,c,3)+R(12,14,64,88,dk(c,12),2)+R(20,26,48,6,lt(c,20))+R(20,48,48,6,lt(c,20))
+    draw:(c)=>sh(230,120)+R(0,0,230,14,gfill(c),3)+R(12,14,64,88,gfill(dk(c,12)),2)+R(20,26,48,6,lt(c,20))+R(20,48,48,6,lt(c,20))
       +R(212,14,10,102,dk(c,22),3) },
   { id:"yatak", name:"Yatak", cat:"yer", w:340, h:160, tags:["iskandinav","klasik","modern"], t:["krem","kum","cini","zeytin"],
-    draw:(c)=>sh(340,160)+R(10,26,320,96,TONES.ceviz,6)+R(0,0,84,140,dk(TONES.ceviz,18),6)
-      +R(84,44,246,60,c,5)+R(96,30,80,30,TONES.krem,7)+R(184,30,80,30,TONES.krem,7)
-      +R(84,88,246,20,dk(c,16),4)+R(300,110,14,44,TONES.koyu,3)+R(20,110,14,44,TONES.koyu,3) },
+    draw:(c)=>sh(340,160)+R(10,26,320,96,gfill(TONES.ceviz),6)+R(0,0,84,140,gfill(dk(TONES.ceviz,18)),6)
+      +R(84,44,246,60,gfill(c),5)+R(96,30,80,30,gfill(TONES.krem),7)+R(184,30,80,30,gfill(TONES.krem),7)
+      +R(84,88,246,20,gfill(dk(c,16)),4)+R(300,110,14,44,TONES.koyu,3)+R(20,110,14,44,TONES.koyu,3) },
   { id:"komodin", name:"Komodin", cat:"yer", w:90, h:96, tags:["iskandinav","klasik"], t:["ceviz","krem","koyu","cini"],
-    draw:(c)=>sh(90,96)+R(0,0,90,74,c,4)+R(8,8,74,26,dk(c,14),3)+R(8,40,74,26,dk(c,14),3)
+    draw:(c)=>sh(90,96)+R(0,0,90,74,gfill(c),4)+R(8,8,74,26,gfill(dk(c,14)),3)+R(8,40,74,26,gfill(dk(c,14)),3)
       +C(45,21,3.5,TONES.pirinc)+C(45,53,3.5,TONES.pirinc)+R(8,74,10,20,TONES.koyu,3)+R(72,74,10,20,TONES.koyu,3) },
 
   /* ---------- DUVAR ---------- */
   { id:"tablo", name:"Tablo", cat:"duvar", w:120, h:150, tags:["modern","iskandinav","klasik"], t:["ceviz","antrasit","pirinc","krem"],
-    draw:(c)=>R(0,0,120,150,c,3)+R(9,9,102,132,TONES.krem)
+    draw:(c)=>R(0,0,120,150,gfill(c),3)+R(9,9,102,132,TONES.krem)
       +P('M9 141 L44 78 L70 112 L92 88 L111 141 Z',TONES.zeytin)+C(88,42,13,TONES.hardal) },
   { id:"ayna", name:"Ayna", cat:"duvar", w:110, h:150, tags:["klasik","bohem"], t:["pirinc","ceviz","antrasit","krem"],
-    draw:(c)=>P('M55 0 Q110 0 110 55 L110 150 L0 150 L0 55 Q0 0 55 0Z',c)
+    draw:(c)=>P('M55 0 Q110 0 110 55 L110 150 L0 150 L0 55 Q0 0 55 0Z',gfill(c))
       +P('M55 10 Q100 10 100 55 L100 140 L10 140 L10 55 Q10 10 55 10Z','#DCE6E8')
       +P('M22 132 L48 60 L74 132 Z','rgba(255,255,255,.5)') },
   { id:"hat", name:"Hat levhası", cat:"duvar", w:160, h:110, tags:["anadolu","klasik"], t:["koyu","pirinc","cini","ceviz"],
-    draw:(c)=>R(0,0,160,110,c,4)+R(8,8,144,94,TONES.krem,2)+R(14,14,132,82,'none')
+    draw:(c)=>R(0,0,160,110,gfill(c),4)+R(8,8,144,94,TONES.krem,2)+R(14,14,132,82,'none')
       +'<rect x="14" y="14" width="132" height="82" fill="none" stroke="'+TONES.pirinc+'" stroke-width="1.5"/>'
       +P('M34 74 Q56 30 76 62 Q92 84 110 46 Q120 30 128 46',"none")
       +'<path d="M34 74 Q56 30 76 62 Q92 84 110 46 Q120 30 128 46" fill="none" stroke="'+dk(c,10)+'" stroke-width="5" stroke-linecap="round"/>'
       +C(120,66,4,dk(c,10))+C(132,66,4,dk(c,10)) },
   { id:"raf", name:"Duvar rafı", cat:"duvar", w:180, h:60, tags:["modern","iskandinav"], t:["ceviz","krem","antrasit","zeytin"],
-    draw:(c)=>R(0,44,180,10,c,3)+R(18,20,14,24,TONES.kiremit,2)+R(36,12,12,32,TONES.cini,2)
+    draw:(c)=>R(0,44,180,10,gfill(c),3)+R(18,20,14,24,TONES.kiremit,2)+R(36,12,12,32,TONES.cini,2)
       +R(52,24,16,20,TONES.krem,2)+'<ellipse cx="120" cy="34" rx="16" ry="10" fill="'+TONES.zeytin+'"/>'
       +R(146,18,16,26,TONES.hardal,3) },
   { id:"saat", name:"Duvar saati", cat:"duvar", w:90, h:90, tags:["klasik","modern"], t:["pirinc","antrasit","ceviz","krem"],
-    draw:(c)=>C(45,45,44,c)+C(45,45,36,TONES.krem)+L(45,45,45,22,TONES.antrasit,3)+L(45,45,62,52,TONES.antrasit,2.5)
+    draw:(c)=>C(45,45,44,gfill(c))+C(45,45,36,TONES.krem)+L(45,45,45,22,TONES.antrasit,3)+L(45,45,62,52,TONES.antrasit,2.5)
       +C(45,45,3.5,TONES.kiremit) },
   { id:"cinipano", name:"Çini pano", cat:"duvar", w:150, h:150, tags:["anadolu","bohem"], t:["cini","lacivert","bordo","zeytin"],
     draw:(c)=>{ let s=R(0,0,150,150,TONES.krem,3)+'<rect x="0" y="0" width="150" height="150" fill="none" stroke="'+c+'" stroke-width="4" rx="3"/>';
@@ -561,7 +597,7 @@ const ITEMS = [
         s+=C(cx,cy,4,TONES.krem); }
       return s; } },
   { id:"pencere", name:"Pencere", cat:"duvar", w:220, h:280, tags:["modern","klasik","iskandinav"], t:["krem","ceviz","antrasit","zeytin"],
-    draw:(c)=>R(0,0,220,280,c,4)+R(12,12,196,256,'#CFE3EC')
+    draw:(c)=>R(0,0,220,280,gfill(c),4)+R(12,12,196,256,'#CFE3EC')
       +'<path d="M12 200 L70 120 L120 190 L160 150 L208 210 L208 268 L12 268Z" fill="#B7D3C4"/>'
       +R(104,12,10,256,c)+R(12,132,196,10,c)
       +R(-6,0,20,290,dk(c,18),3)+R(206,0,20,290,dk(c,18),3) },
@@ -572,14 +608,14 @@ const ITEMS = [
   /* ---------- TAVAN ---------- */
   { id:"avize", name:"Avize", cat:"tavan", w:150, h:180, tags:["klasik","anadolu","modern"], t:["pirinc","antrasit","krem","cini"],
     draw:(c)=>{ let s=L(75,0,75,66,c,3);
-      s+=P('M30 66 L120 66 L104 116 L46 116 Z',c)+R(46,112,58,7,lt(c,20),3);
+      s+=P('M30 66 L120 66 L104 116 L46 116 Z',gfill(c))+R(46,112,58,7,lt(c,20),3);
       s+='<ellipse cx="75" cy="118" rx="30" ry="8" fill="'+TONES.hardal+'" opacity=".6"/>';
       for(let i=0;i<3;i++){ const x=45+i*30; s+=L(x,116,x,140,c,1.5)+C(x,146,7,TONES.hardal); }
       return s; } },
 
   /* ---------- AKSESUAR (üst) ---------- */
   { id:"vazo", name:"Vazo", cat:"ust", w:56, h:100, tags:["modern","bohem","anadolu"], t:["cini","kiremit","krem","pirinc"],
-    draw:(c)=>P('M18 42 Q6 74 14 98 L42 98 Q50 74 38 42 Z',c)+R(20,32,16,12,dk(c,18),2)
+    draw:(c)=>P('M18 42 Q6 74 14 98 L42 98 Q50 74 38 42 Z',gfill(c))+R(20,32,16,12,dk(c,18),2)
       +P('M28 32 Q16 10 8 2 M28 32 Q40 12 50 6',"none")
       +'<path d="M28 32 Q16 12 8 2" fill="none" stroke="'+TONES.zeytin+'" stroke-width="3"/>'
       +'<path d="M28 32 Q40 12 50 6" fill="none" stroke="'+TONES.zeytin+'" stroke-width="3"/>'
@@ -598,11 +634,11 @@ const ITEMS = [
     draw:(c)=>P('M18 42 Q6 24 10 8 Q20 22 26 36 Q24 14 34 2 Q40 22 34 40 Q46 26 52 14 Q52 36 40 46Z',TONES.zeytin)
       +P('M14 44 L46 44 L41 72 L19 72 Z',c)+R(11,40,38,9,lt(c,14),2) },
   { id:"semaver", name:"Semaver", cat:"ust", w:70, h:104, tags:["anadolu","klasik"], t:["pirinc","antrasit","kiremit","krem"],
-    draw:(c)=>P('M20 30 Q10 60 18 88 L52 88 Q60 60 50 30 Z',c)+R(24,20,22,12,dk(c,16),2)
+    draw:(c)=>P('M20 30 Q10 60 18 88 L52 88 Q60 60 50 30 Z',gfill(c))+R(24,20,22,12,dk(c,16),2)
       +C(35,14,7,lt(c,22))+L(50,52,62,52,dk(c,24),4)+L(20,52,8,52,dk(c,24),4)
       +R(26,88,18,12,dk(c,30),2)+R(14,98,42,6,dk(c,36),2) },
   { id:"masalamba", name:"Masa lambası", cat:"ust", w:80, h:96, tags:["modern","iskandinav","klasik"], t:["krem","hardal","cini","antrasit"],
-    draw:(c)=>P('M18 8 L62 8 L72 52 L8 52 Z',c)+R(36,52,8,36,TONES.antrasit,3)
+    draw:(c)=>P('M18 8 L62 8 L72 52 L8 52 Z',gfill(c))+R(36,52,8,36,TONES.antrasit,3)
       +'<ellipse cx="40" cy="92" rx="24" ry="6" fill="'+TONES.antrasit+'"/>'
       +'<ellipse cx="40" cy="54" rx="30" ry="6" fill="'+TONES.hardal+'" opacity=".5"/>' },
   { id:"cerceve", name:"Çerçeve", cat:"ust", w:64, h:76, tags:["klasik","iskandinav","modern"], t:["ceviz","pirinc","antrasit","krem"],
@@ -610,7 +646,7 @@ const ITEMS = [
       +P('M14 52 Q32 34 50 52 Z',TONES.zeytin)+P('M22 66 L42 66 L38 76 L26 76 Z',dk(c,20)) },
   { id:"kase", name:"Meyve kâsesi", cat:"ust", w:74, h:48, tags:["anadolu","modern"], t:["cini","krem","pirinc","kiremit"],
     draw:(c)=>C(26,20,10,TONES.kiremit)+C(44,18,11,TONES.hardal)+C(36,26,9,TONES.zeytin)
-      +P('M4 26 Q37 56 70 26 Z',c)+'<ellipse cx="37" cy="26" rx="33" ry="6" fill="'+lt(c,16)+'"/>' }
+      +P('M4 26 Q37 56 70 26 Z',gfill(c))+'<ellipse cx="37" cy="26" rx="33" ry="6" fill="'+lt(c,16)+'"/>' }
 ];
 const ITEM = id => ITEMS.find(i=>i.id===id);
 
@@ -848,43 +884,84 @@ const Render = {
     svg.setAttribute("viewBox", "0 0 "+CFG.W+" "+CFG.H);
     svg.innerHTML = "";
     this.svg = svg; this.pieceEls = {};
-    ["bg","hali","main","sel"].forEach(k=>{
-      const g = document.createElementNS(NS,"g"); g.setAttribute("data-ly",k); svg.appendChild(g); this[k]=g;
+    ["bg","hali","main","fx","sel"].forEach(k=>{
+      const g = document.createElementNS(NS,"g"); g.setAttribute("data-ly",k);
+      if(k==="fx"||k==="sel") g.setAttribute("pointer-events","none");
+      svg.appendChild(g); this[k]=g;
     });
-    this.room(); this.pieces();
+    this.room();
+    /* tüm sahneye çok hafif vinyet — diorama derinliği */
+    this.fx.innerHTML = '<rect x="0" y="0" width="'+CFG.W+'" height="'+CFG.H+'" fill="url(#vigall)"/>';
+    this.pieces();
   },
 
   room(){
     const D = Design.D;
     const wall = WALLS.find(w=>w.id===D.wall) || WALLS[0];
     const fl = FLOORS.find(f=>f.id===D.floor) || FLOORS[0];
-    let s = R(0,0,CFG.W,CFG.WALL,wall.c);
-    /* duvar dokusu */
-    s += '<rect x="0" y="0" width="'+CFG.W+'" height="'+CFG.WALL+'" fill="url(#vig)"/>';
-    /* zemin */
-    s += R(0,CFG.WALL,CFG.W,CFG.H-CFG.WALL,fl.c);
+    const W = CFG.W, WH = CFG.WALL, FH = CFG.H - CFG.WALL;
+    /* dinamik gradyanlar: duvar/zemin rengine göre her seferinde yenilenir */
+    const defs = '<defs>'
+      + '<linearGradient id="wallg" x1="0" y1="0" x2="0" y2="1">'
+      +   '<stop offset="0" stop-color="'+lt(wall.c,10)+'"/><stop offset=".6" stop-color="'+wall.c+'"/>'
+      +   '<stop offset="1" stop-color="'+dk(wall.c,7)+'"/></linearGradient>'
+      + '<linearGradient id="floorg" x1="0" y1="0" x2="0" y2="1">'
+      +   '<stop offset="0" stop-color="'+lt(fl.c,6)+'"/><stop offset="1" stop-color="'+dk(fl.c,13)+'"/></linearGradient>'
+      + '<linearGradient id="sunw" x1="0" y1="0" x2=".85" y2="1">'
+      +   '<stop offset="0" stop-color="#FFF6DF" stop-opacity=".5"/>'
+      +   '<stop offset=".55" stop-color="#FFF6DF" stop-opacity=".16"/>'
+      +   '<stop offset="1" stop-color="#FFF6DF" stop-opacity="0"/></linearGradient>'
+      + '<linearGradient id="junc" x1="0" y1="0" x2="0" y2="1">'
+      +   '<stop offset="0" stop-color="#2A2521" stop-opacity=".15"/>'
+      +   '<stop offset="1" stop-color="#2A2521" stop-opacity="0"/></linearGradient>'
+      + '<radialGradient id="vig" cx="50%" cy="24%" r="80%">'
+      +   '<stop offset="52%" stop-color="#fff" stop-opacity="0"/>'
+      +   '<stop offset="100%" stop-color="#2A2521" stop-opacity=".15"/></radialGradient>'
+      + '<radialGradient id="vigall" cx="50%" cy="42%" r="75%">'
+      +   '<stop offset="70%" stop-color="#2A2521" stop-opacity="0"/>'
+      +   '<stop offset="100%" stop-color="#2A2521" stop-opacity=".09"/></radialGradient>'
+      + '<radialGradient id="sunf" cx="50%" cy="50%" r="50%">'
+      +   '<stop offset="0" stop-color="#FFF3D6" stop-opacity=".32"/>'
+      +   '<stop offset="1" stop-color="#FFF3D6" stop-opacity="0"/></radialGradient>'
+      + '</defs>';
+    /* duvar: degrade + sol üstten güneş şeridi + vinyet */
+    let s = R(0,0,W,WH,'url(#wallg)');
+    s += '<path d="M0 0 L340 0 L104 '+WH+' L0 '+WH+' Z" fill="url(#sunw)"/>';
+    s += '<rect x="0" y="0" width="'+W+'" height="'+WH+'" fill="url(#vig)"/>';
+    /* zemin: iki tonlu degrade + perspektif hissi veren tahta/karo aralıkları */
+    s += R(0,WH,W,FH,'url(#floorg)');
     if(fl.type==="ahsap"){
-      for(let i=0;i<9;i++) s += L(0,CFG.WALL+18+i*18,CFG.W,CFG.WALL+18+i*18,fl.c2,1.4);
-      for(let i=0;i<7;i++){ const x=(i*163+40)%CFG.W; s += L(x,CFG.WALL+18*(i%8),x,CFG.WALL+18*((i%8)+1),fl.c2,1.4); }
+      let yy = WH; const gaps=[13,14,15,17,19,21,24,27,30];
+      gaps.forEach((g,i)=>{
+        const y0 = yy; yy += g;
+        if(yy < CFG.H-3) s += L(0,yy,W,yy,fl.c2,1.1+i*0.09);
+        const x1=(i*167+60)%W, x2=(x1+W/2)%W;
+        s += L(x1,y0,x1,Math.min(yy,CFG.H),fl.c2,1.2) + L(x2,y0,x2,Math.min(yy,CFG.H),fl.c2,1.2);
+      });
     }else{
-      for(let i=0;i<=6;i++) s += L(0,CFG.WALL+i*28,CFG.W,CFG.WALL+i*28,fl.c2,1.4);
-      for(let i=0;i<=14;i++) s += L(i*72,CFG.WALL,i*72,CFG.H,fl.c2,1.4);
+      let yy = WH; [24,27,31,36,42].forEach((g,i)=>{ yy+=g; s += L(0,yy,W,yy,fl.c2,1.2+i*0.1); });
+      for(let i=0;i<=14;i++) s += L(i*72,WH,i*72,CFG.H,fl.c2,1.3);
     }
-    /* süpürgelik */
-    s += R(0,CFG.WALL-14,CFG.W,14,lt(wall.c,26))+R(0,CFG.WALL-2,CFG.W,4,dk(wall.c,14));
-    this.bg.innerHTML =
-      '<defs><radialGradient id="vig" cx="50%" cy="26%" r="78%">'
-      + '<stop offset="55%" stop-color="#fff" stop-opacity="0"/>'
-      + '<stop offset="100%" stop-color="#2A2521" stop-opacity=".13"/></radialGradient></defs>' + s;
+    /* güneşin zemine düşen sıcak lekesi */
+    s += '<ellipse cx="290" cy="'+(WH+64)+'" rx="255" ry="54" fill="url(#sunf)"/>';
+    /* duvar-zemin birleşiminde yumuşak iç gölge */
+    s += '<rect x="0" y="'+WH+'" width="'+W+'" height="46" fill="url(#junc)"/>';
+    /* süpürgelik: üst ışık çizgisi + alt gölge */
+    s += R(0,WH-16,W,16,lt(wall.c,28)) + R(0,WH-16,W,2,lt(wall.c,46)) + R(0,WH-2,W,4,dk(wall.c,16));
+    this.bg.innerHTML = defs + s;
   },
 
+  justAdded:null,
   pieceSVG(p){
     const it = ITEM(p.id), b = Design.box(p);
     const col = TONES[p.tone] || TONES.kum;
-    const inner = it.draw(col);
+    let inner = it.draw(col);
+    /* yerleşme animasyonu: yeni eklenen parça üstten süzülüp oturur */
+    if(p.uid === this.justAdded) inner = '<g class="settle-in">'+inner+'</g>';
     const sc = p.s, fx = p.flip ? -1 : 1;
+    const flt = (it.cat==="duvar" || it.cat==="tavan") ? ' filter="url(#wsh)"' : '';
     const tf = "translate("+(b.x + (p.flip ? b.w : 0))+","+b.y+") scale("+(sc*fx)+","+sc+")";
-    return '<g class="piece" data-p="'+p.uid+'" transform="'+tf+'">'
+    return '<g class="piece" data-p="'+p.uid+'" transform="'+tf+'"'+flt+'>'
       + '<rect x="0" y="0" width="'+it.w+'" height="'+it.h+'" fill="transparent"/>' + inner + '</g>';
   },
 
@@ -894,6 +971,7 @@ const Render = {
     const rest = D.pieces.filter(p=>ITEM(p.id).cat!=="hali");
     this.hali.innerHTML = rugs.map(p=>this.pieceSVG(p)).join("");
     this.main.innerHTML = rest.map(p=>this.pieceSVG(p)).join("");
+    this.justAdded = null;
     this.selection();
   },
 
@@ -903,7 +981,9 @@ const Render = {
     const p = Design.get(D.sel);
     if(!p){ this.sel.innerHTML=""; $("#pieceBar").classList.remove("on"); return; }
     const b = Design.box(p), m = 6;
-    this.sel.innerHTML = '<rect class="selbox" x="'+(b.x-m)+'" y="'+(b.y-m)+'" width="'+(b.w+m*2)+'" height="'+(b.h+m*2)+'" rx="6"/>';
+    this.sel.innerHTML =
+      '<rect class="halo" x="'+(b.x-m)+'" y="'+(b.y-m)+'" width="'+(b.w+m*2)+'" height="'+(b.h+m*2)+'" rx="10"/>'
+      + '<rect class="selbox" x="'+(b.x-m)+'" y="'+(b.y-m)+'" width="'+(b.w+m*2)+'" height="'+(b.h+m*2)+'" rx="8"/>';
     $("#pieceBar").classList.add("on");
   },
 
@@ -1076,6 +1156,7 @@ const Studio = {
     const p = Design.add(id, { x: CFG.W*spread[n%spread.length], y: it.cat==="duvar" ? 150+((n%3)*46) : null });
     Design.D.sel = p.uid;
     Sfx.place();
+    Render.justAdded = p.uid;
     Render.pieces(); Catalog.shelf();
   },
 
