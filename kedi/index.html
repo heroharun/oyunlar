@@ -1415,6 +1415,12 @@ addEventListener('visibilitychange',()=>{
 });
 addEventListener('pagehide',()=>{ kosuKaydet(); });
 devamBtnYaz();   /* açılışta yarım koşu varsa göster */
+/* ── tek seferlik hediye: tüm oyunculara 10.000 pati ── */
+if(!S.hediye10k){
+  S.hediye10k=true; S.pati+=10000; S.toplamPati+=10000; kaydet();
+  magazaYaz();
+  setTimeout(()=>{ toast('🎁 Sarman Reis\'ten hediye: +10.000 🐾 pati!'); buzz([30,50,30]); },900);
+}
 /* test kancası */
 window.__C={get S(){return S},get kedi(){return kedi},get dusmanlar(){return dusmanlar},
   get baliklar(){return baliklar},get run(){return run},get sure(){return sure},
