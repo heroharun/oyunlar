@@ -21,6 +21,20 @@
     height:10px;background:rgba(20,26,14,.8);border:1.5px solid rgba(255,255,255,.25);
     border-radius:99px;overflow:hidden;z-index:5;pointer-events:none}
   #xpDolu{height:100%;width:0;background:linear-gradient(90deg,#7ad0e0,#5fd08a);border-radius:99px;transition:width .2s}
+  /* ── yerden alınan güçlerin süre şeritleri: XP barının hemen altında, ince ve panik renkli ── */
+  #gucSerit{position:fixed;top:calc(max(10px,env(safe-area-inset-top)) + 59px);left:12px;right:12px;
+    display:flex;gap:10px;z-index:5;pointer-events:none}
+  .gserit{flex:1;display:none;align-items:center;gap:5px;max-width:110px}
+  .gserit.acik{display:flex;animation:gGel .25s ease}
+  @keyframes gGel{from{transform:translateY(-6px);opacity:0}}
+  .gserit .gi{font-size:12px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+  .gserit .gyol{display:block;flex:1;height:5px;border-radius:99px;background:rgba(12,16,8,.72);
+    border:1px solid rgba(255,255,255,.18);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+  .gserit .gdolu{display:block;height:100%;border-radius:99px;width:100%}
+  .gserit.panik .gi{animation:gTitre .38s ease-in-out infinite}
+  .gserit.panik .gdolu{animation:gYanip .38s steps(2,end) infinite}
+  @keyframes gTitre{50%{transform:scale(1.35)}}
+  @keyframes gYanip{50%{opacity:.3}}
   #sesBtn{position:fixed;right:12px;bottom:max(14px,env(safe-area-inset-bottom));z-index:6;
     width:50px;height:50px;border-radius:16px;border:2px solid rgba(255,255,255,.3);
     background:rgba(20,26,14,.85);font-size:22px;cursor:pointer;color:var(--ink)}
@@ -97,6 +111,7 @@
   <div class="rozet" id="patiEl">🐾 0</div>
 </div>
 <div id="xpKutu"><div id="xpDolu"></div></div>
+<div id="gucSerit"></div>
 <button id="sesBtn">🔊</button>
 <button id="durBtn" aria-label="Duraklat">⏸</button>
 <div id="ipucu"><span id="ipucuEl">👆</span><span id="ipucuYazi"></span></div>
@@ -146,7 +161,9 @@
 
 3️⃣ Yenilen yaramazlar 🐟 balık bırakır — yaklaş, kap! Balıklar hem XP hem PARADIR: macera bitince cebinde kalır, sayısı hep üstte yazar. Bar dolunca SEVİYE ATLARSIN: 3 güçten birini seç!
 
-3️⃣✚ Gezindikçe ve balık topladıkça yerde parlayan GÜÇLER belirir: ❤️ can, ⚡ hız, 🧲 mega mıknatıs, 💪 çifte hasar, 🛡️ kalkan, 🌀 yumak fırtınası — üstünden geç, kap! Hiç kaybolmazlar.
+3️⃣✚ Gezindikçe ve balık topladıkça yerde parlayan GÜÇLER belirir: ❤️ can, ⚡ hız, 🧲 mega mıknatıs, 💪 çifte hasar, 🛡️ kalkan, 🌀 yumak fırtınası — üstünden geç, kap! Hiç kaybolmazlar. Süreli güçlerin kalan zamanı üstteki XP barının hemen altındaki İNCE ŞERİTLERDE akar: yeşil = bol vakit, kırmızıya döndüyse bitmek üzere!
+
+🏀 KOCA YUMAK ne işe yarar? Yumak sadece görünüşte büyümez — ÇARPMA ALANI da genişler: iri yumak, kıl payı kaçacak yaramazlara bile çarpar. Çifte Yumak ve Hızlı Atış'la birleşince ekranı süpürür!
 
 3️⃣✚✚ 🐱 KEDİLER &amp; KOSTÜM: balıklarınla Tekir, Van Kedisi, Ankara Kedisi, British Shorthair, Scottish Fold ve Siyam'ı aç; bere-taç-gözlük-yelek tak, Çizmeli Kedi çizmesi ve kılıcıyla kahraman ol — her parça küçük güç bonusu verir!
 
@@ -1267,7 +1284,36 @@ function hudYaz(id,v){
   if(hudOnceki[id]===v)return;
   hudOnceki[id]=v; document.getElementById(id).textContent=v;
 }
+/* ── güç süre şeritleri ── */
+const GUC_MAX={hiz:8,mik:8,hasar:8,kalkan:6};
+const GUC_IKON={hiz:'⚡',mik:'🧲',hasar:'💪',kalkan:'🛡️'};
+const gucEl={};
+(function(){
+  const kap=document.getElementById('gucSerit');
+  for(const k in GUC_MAX){
+    const d=document.createElement('div');
+    d.className='gserit';
+    d.innerHTML='<span class="gi">'+GUC_IKON[k]+'</span><span class="gyol"><span class="gdolu"></span></span>';
+    kap.appendChild(d);
+    gucEl[k]={kutu:d,dolu:d.querySelector('.gdolu'),acikti:false};
+  }
+})();
+function gucSeritCiz(){
+  for(const k in GUC_MAX){
+    const v=kedi.guc[k], e=gucEl[k];
+    if(v<=0){ if(e.acikti){ e.kutu.classList.remove('acik','panik'); e.acikti=false; } continue; }
+    if(!e.acikti){ e.kutu.classList.add('acik'); e.acikti=true; }
+    const t=Math.max(0,Math.min(1,v/GUC_MAX[k]));
+    /* yeşil (138°) → amber → panik kırmızısı (6°) */
+    const ton=6+t*132;
+    e.dolu.style.width=(t*100).toFixed(1)+'%';
+    e.dolu.style.background='hsl('+ton+',85%,55%)';
+    e.dolu.style.boxShadow='0 0 6px hsla('+ton+',90%,60%,.8)';
+    e.kutu.classList.toggle('panik',v<1.6);
+  }
+}
 function hud(){
+  gucSeritCiz();
   const dk=Math.floor(sure/60), sn=Math.floor(sure%60);
   hudYaz('sureEl','⏱ '+dk+':'+(sn<10?'0':'')+sn);
   hudYaz('canEl','❤️'.repeat(Math.max(0,kedi.hp))+'🖤'.repeat(Math.max(0,kedi.maxHp-kedi.hp)));
