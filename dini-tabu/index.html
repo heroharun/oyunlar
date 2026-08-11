@@ -270,6 +270,35 @@ html[data-kontrast="1"] .yasaklar li{color:#8C1D13}
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
 html[data-animasyon="0"] *{animation:none !important;transition:none !important}
+
+/* ===================== BOT MODU ===================== */
+.bot-balon{position:relative;background:var(--yesil-acik);border:1px solid rgba(47,107,79,.28);
+  border-radius:16px;padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start}
+.bot-balon .bav{font-size:1.8rem;flex:none;line-height:1.2}
+.bot-balon .bic{flex:1;min-width:0}
+.bot-balon .bad{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--altin-koyu)}
+.bot-ipucular{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.bot-ipucular span{background:var(--kart);border:1px solid var(--altin);border-radius:10px;
+  padding:5px 10px;font-weight:700;color:var(--altin-koyu);font-size:.95rem}
+.bot-secenek{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.bot-secenek button{min-height:52px;border-radius:12px;background:var(--kart);
+  border:1.5px solid rgba(16,64,44,.16);font-weight:650;font-size:.96rem;padding:8px;
+  box-shadow:var(--golge-sm);transition:transform .1s;word-break:break-word}
+.bot-secenek button:active{transform:scale(.97)}
+.bot-secenek button.dogruIsaret{background:var(--dogru);color:#FFFCF6;border-color:var(--dogru)}
+.bot-secenek button.yanlisIsaret{background:var(--yasak);color:#FFFCF6;border-color:var(--yasak)}
+.bot-zorluk{width:100%;justify-content:flex-start !important;margin-bottom:8px;min-height:60px;text-align:start}
+.bot-avatar{width:96px;height:96px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;
+  font-size:3rem;background:var(--kart);border-radius:50%;box-shadow:var(--golge);border:2px solid var(--altin)}
+.bot-avatar.dusun{animation:dusun 1.4s ease-in-out infinite}
+@keyframes dusun{50%{transform:rotate(6deg) scale(1.05)}}
+.simskor{display:flex;justify-content:center;gap:14px;margin:10px 0}
+.simskor .mini{min-width:96px;text-align:center}
+.sallan{animation:sallan .5s}
+@keyframes sallan{20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(5px)}}
+.konf{position:absolute;width:8px;height:13px;top:-16px;border-radius:2px;pointer-events:none;z-index:6;
+  animation:konf .95s ease-in forwards}
+@keyframes konf{to{transform:translateY(65vh) rotate(560deg);opacity:0}}
 .gizle{display:none !important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
@@ -369,7 +398,23 @@ tr:{
  yeniden:"Yeni oyun kur", cikis_onay:"Oyundan çıkılsın mı? İlerleme kaydedilir.",
  yasak_onay:"Yasaklı kelime kullanıldı mı?", yasak_onay_evet:"Evet, ceza uygula", yasak_onay_hayir:"Hayır, oyuna dön",
  en_az_1_kat:"En az bir kategori seçin.", kart_yetersiz:"Seçilen kategorilerde yeterli kart yok.",
- hazir_kart:"{n} kart hazır", oyun_suresi:"Oyun süresi", kazanan:"Kazanan", paket:"Paket"
+ hazir_kart:"{n} kart hazır", oyun_suresi:"Oyun süresi", kazanan:"Kazanan", paket:"Paket",
+ bot:"Bota Karşı", bot_alt:"Tek kişilik: bot anlatır, sen bil",
+ bot_zorluk:"Bot zorluğu",
+ bz_caylak:"Çaylak", bz_caylak_a:"4 seçenek · rahat tempo · bot turunda ~%45 bilir",
+ bz_usta:"Usta", bz_usta_a:"6 seçenek · dengeli rakip · bot ~%65 bilir",
+ bz_alim:"Âlim", bz_alim_a:"8 seçenek · çetin rakip · bot ~%82 bilir",
+ bot_sen:"Sen", bot_senin_turun:"Senin turun", bot_bot_turu:"Bot turu",
+ bot_anlatiyor:"{ad} ipucu verecek, hedef kelimeyi sen bul!",
+ bot_dusunuyor:"{ad} kartları anlatıyor…", bot_ipucu:"İpucu",
+ bot_ipucu_iste:"Yeni ipucu", bot_hangisi:"Hangisi anlatılıyor?",
+ bot_olasi:"Olası puan", bot_dogrusu:"Doğrusu gösterildi", bot_atla:"Atla",
+ bot_kazandin:"Kazandın!", bot_kaybetti:"{ad} kazandı", bot_berabere:"Berabere!",
+ bot_dokum:"Tur dökümü", bot_rozetler:"Yeni rozet", ist_bot:"Bota Karşı",
+ bot_mac:"Maç", bot_galibiyet:"Galibiyet", bot_en_seri:"En iyi seri",
+ roz_ilk:"İlk Zafer", roz_ilk_a:"Botu ilk kez yendin",
+ roz_alim:"Âlim Avcısı", roz_alim_a:"Âlim botu yendin",
+ roz_seri:"Şimşek Zihin", roz_seri_a:"İlk ipucuyla üst üste 5 doğru"
 },
 en:{
  ad:"Faith Taboo", alt:"Describe, guess, win",
@@ -452,7 +497,23 @@ en:{
  yeniden:"Set up a new game", cikis_onay:"Leave the game? Progress is saved.",
  yasak_onay:"Was a forbidden word used?", yasak_onay_evet:"Yes, apply the penalty", yasak_onay_hayir:"No, back to the game",
  en_az_1_kat:"Pick at least one category.", kart_yetersiz:"Not enough cards in these categories.",
- hazir_kart:"{n} cards ready", oyun_suresi:"Duration", kazanan:"Winner", paket:"Pack"
+ hazir_kart:"{n} cards ready", oyun_suresi:"Duration", kazanan:"Winner", paket:"Pack",
+ bot:"Versus Bot", bot_alt:"Solo play: the bot describes, you guess",
+ bot_zorluk:"Bot difficulty",
+ bz_caylak:"Rookie", bz_caylak_a:"4 options · relaxed pace · bot gets ~45% right",
+ bz_usta:"Adept", bz_usta_a:"6 options · balanced rival · bot gets ~65% right",
+ bz_alim:"Scholar", bz_alim_a:"8 options · tough rival · bot gets ~82% right",
+ bot_sen:"You", bot_senin_turun:"Your turn", bot_bot_turu:"Bot's turn",
+ bot_anlatiyor:"{ad} will give clues — find the target word!",
+ bot_dusunuyor:"{ad} is describing the cards…", bot_ipucu:"Clue",
+ bot_ipucu_iste:"New clue", bot_hangisi:"Which one is being described?",
+ bot_olasi:"Possible points", bot_dogrusu:"The answer was revealed", bot_atla:"Skip",
+ bot_kazandin:"You win!", bot_kaybetti:"{ad} wins", bot_berabere:"It's a draw!",
+ bot_dokum:"Round breakdown", bot_rozetler:"New badge", ist_bot:"Versus Bot",
+ bot_mac:"Matches", bot_galibiyet:"Wins", bot_en_seri:"Best streak",
+ roz_ilk:"First Victory", roz_ilk_a:"You beat the bot for the first time",
+ roz_alim:"Scholar Hunter", roz_alim_a:"You beat the Scholar bot",
+ roz_seri:"Lightning Mind", roz_seri_a:"5 first-clue answers in a row"
 },
 ar:{
  ad:"تابو ديني", alt:"اشرح، خمّن، اربح",
@@ -535,7 +596,23 @@ ar:{
  yeniden:"إعداد لعبة جديدة", cikis_onay:"مغادرة اللعبة؟ سيُحفظ التقدم.",
  yasak_onay:"هل قيلت كلمة ممنوعة؟", yasak_onay_evet:"نعم، طبّق العقوبة", yasak_onay_hayir:"لا، عد للعبة",
  en_az_1_kat:"اختر فئة واحدة على الأقل.", kart_yetersiz:"لا توجد بطاقات كافية في هذه الفئات.",
- hazir_kart:"{n} بطاقة جاهزة", oyun_suresi:"المدة", kazanan:"الفائز", paket:"الحزمة"
+ hazir_kart:"{n} بطاقة جاهزة", oyun_suresi:"المدة", kazanan:"الفائز", paket:"الحزمة",
+ bot:"ضد الروبوت", bot_alt:"لعب فردي: الروبوت يشرح وأنت تخمّن",
+ bot_zorluk:"صعوبة الروبوت",
+ bz_caylak:"مبتدئ", bz_caylak_a:"4 خيارات · إيقاع مريح · يصيب الروبوت ~45%",
+ bz_usta:"ماهر", bz_usta_a:"6 خيارات · منافس متوازن · يصيب ~65%",
+ bz_alim:"عالِم", bz_alim_a:"8 خيارات · منافس قوي · يصيب ~82%",
+ bot_sen:"أنت", bot_senin_turun:"دورك", bot_bot_turu:"دور الروبوت",
+ bot_anlatiyor:"سيعطيك {ad} تلميحات — جِد الكلمة المستهدفة!",
+ bot_dusunuyor:"{ad} يشرح البطاقات…", bot_ipucu:"تلميح",
+ bot_ipucu_iste:"تلميح جديد", bot_hangisi:"أيّها المقصود؟",
+ bot_olasi:"النقاط الممكنة", bot_dogrusu:"عُرضت الإجابة الصحيحة", bot_atla:"تخطٍّ",
+ bot_kazandin:"فزت!", bot_kaybetti:"فاز {ad}", bot_berabere:"تعادل!",
+ bot_dokum:"تفصيل الجولات", bot_rozetler:"وسام جديد", ist_bot:"ضد الروبوت",
+ bot_mac:"مباريات", bot_galibiyet:"انتصارات", bot_en_seri:"أفضل سلسلة",
+ roz_ilk:"أول انتصار", roz_ilk_a:"هزمت الروبوت لأول مرة",
+ roz_alim:"صائد العالِم", roz_alim_a:"هزمت روبوت العالِم",
+ roz_seri:"ذهن البرق", roz_seri_a:"5 إجابات متتالية من التلميح الأول"
 },
 fr:{
  ad:"Tabou Religieux", alt:"Décris, devine, gagne",
@@ -618,7 +695,23 @@ fr:{
  yeniden:"Créer une partie", cikis_onay:"Quitter la partie ? La progression est gardée.",
  yasak_onay:"Un mot interdit a-t-il été dit ?", yasak_onay_evet:"Oui, appliquer la pénalité", yasak_onay_hayir:"Non, revenir au jeu",
  en_az_1_kat:"Choisissez au moins une catégorie.", kart_yetersiz:"Pas assez de cartes dans ces catégories.",
- hazir_kart:"{n} cartes prêtes", oyun_suresi:"Durée", kazanan:"Vainqueur", paket:"Paquet"
+ hazir_kart:"{n} cartes prêtes", oyun_suresi:"Durée", kazanan:"Vainqueur", paket:"Paquet",
+ bot:"Contre le Bot", bot_alt:"Jeu solo : le bot décrit, vous devinez",
+ bot_zorluk:"Difficulté du bot",
+ bz_caylak:"Novice", bz_caylak_a:"4 choix · rythme détendu · le bot réussit ~45%",
+ bz_usta:"Adepte", bz_usta_a:"6 choix · rival équilibré · le bot réussit ~65%",
+ bz_alim:"Érudit", bz_alim_a:"8 choix · rival redoutable · le bot réussit ~82%",
+ bot_sen:"Vous", bot_senin_turun:"Votre tour", bot_bot_turu:"Tour du bot",
+ bot_anlatiyor:"{ad} donnera des indices — trouvez le mot cible !",
+ bot_dusunuyor:"{ad} décrit les cartes…", bot_ipucu:"Indice",
+ bot_ipucu_iste:"Nouvel indice", bot_hangisi:"Lequel est décrit ?",
+ bot_olasi:"Points possibles", bot_dogrusu:"La bonne réponse a été montrée", bot_atla:"Passer",
+ bot_kazandin:"Vous gagnez !", bot_kaybetti:"{ad} gagne", bot_berabere:"Égalité !",
+ bot_dokum:"Détail des manches", bot_rozetler:"Nouveau badge", ist_bot:"Contre le Bot",
+ bot_mac:"Matchs", bot_galibiyet:"Victoires", bot_en_seri:"Meilleure série",
+ roz_ilk:"Première Victoire", roz_ilk_a:"Vous avez battu le bot pour la première fois",
+ roz_alim:"Chasseur d'Érudit", roz_alim_a:"Vous avez battu le bot Érudit",
+ roz_seri:"Esprit Éclair", roz_seri_a:"5 bonnes réponses d'affilée au premier indice"
 }
 };
 </script>
@@ -1724,6 +1817,7 @@ function ekranAna(){
   if(kayitli && kayitli.status && kayitli.status !== "finished")
     h += '<button class="dg altin" data-act="menu:devam"><span class="em">↻</span>'+ka(T("devamet"))+'</button>';
   h += '<button class="dg" data-act="menu:yeni"><span class="em">✦</span>'+ka(T("yeni"))+'</button>'+
+       '<button class="dg" style="background:linear-gradient(180deg,var(--yesil),#255741);border:1px solid var(--altin)" data-act="menu:bot"><span class="em">🤖</span>'+ka(T("bot"))+'</button>'+
        '<button class="dg ikincil" data-act="menu:hizli"><span class="em">⚡</span>'+ka(T("hizli"))+'</button>'+
        '</div>';
   h += '<div class="altmenu">'+
@@ -2165,6 +2259,421 @@ function ekranTurOzeti(){
 }
 </script>
 <script>
+/* =========================================================================
+   Bölüm 4b: Bot modu (tek kişilik "Bota Karşı")
+   Bot, kartın yasaklı kelimelerini tek tek ipucu olarak açar; oyuncu
+   seçeneklerden hedefi bulur. Bot kendi turunda olasılıkla puan toplar.
+   ========================================================================= */
+var BOT_KISI = {
+  caylak:{em:"🐦", p:0.45, sec:4, kp:[1,3], ad:{tr:"Meraklı Serçe",en:"Curious Sparrow",ar:"العصفور الفضولي",fr:"Moineau Curieux"}},
+  usta:{em:"🐜", p:0.65, sec:6, kp:[2,4], ad:{tr:"Hafız Karınca",en:"Studious Ant",ar:"النملة الحافظة",fr:"Fourmi Savante"}},
+  alim:{em:"🦉", p:0.82, sec:8, kp:[3,5], ad:{tr:"Bilge Baykuş",en:"Wise Owl",ar:"البومة الحكيمة",fr:"Hibou Sage"}}
+};
+var B = null;
+var BotKur = {zorluk:"usta", turSayisi:5, sure:90, katlar:["temel","ibadet","peygamber","ahlak"]};
+
+function botAdi(z){
+  var k = BOT_KISI[z || (B && B.zorluk) || "usta"];
+  return (k.ad[Ayar.dil] || k.ad.tr);
+}
+function botTemizle(){
+  if(!B) return;
+  if(B.sayacId){ clearInterval(B.sayacId); B.sayacId = null; }
+  if(B.simId){ clearTimeout(B.simId); B.simId = null; }
+}
+
+function botBaslat(){
+  if(!BotKur.katlar.length){ bilgi(T("kategoriler"), T("en_az_1_kat")); return; }
+  var havuz = havuzKur(Ayar.dil, BotKur.katlar);
+  if(havuz.length < 12){ bilgi(T("kart_havuzu"), T("kart_yetersiz")); return; }
+  B = {
+    zorluk:BotKur.zorluk, kisi:BOT_KISI[BotKur.zorluk], turSayisi:BotKur.turSayisi,
+    sure:BotKur.sure, havuz:havuz, deste:karistir(havuz), di:0, tur:1, evre:"devir-sen",
+    sen:{puan:0, dogru:0, yanlis:0, pas:0, seri1:0, enSeri1:0},
+    bot:{puan:0, dogru:0, pas:0},
+    kart:null, ipucu:1, secenekler:[], pasKalan:2, bitis:0, kilit:false,
+    dokum:[], turSen:0, sonSn:null, sayacId:null, simId:null, sim:null,
+    yeniRozet:[], baslangic:Date.now()
+  };
+  git("botdevir");
+}
+
+function botKartCek(){
+  if(B.di >= B.deste.length){ B.deste = karistir(B.deste); B.di = 0; }
+  var k = B.deste[B.di++], gor = {}, cel = [];
+  gor[k.word] = true;
+  var doldur = function(liste){
+    for(var i=0;i<liste.length && cel.length < B.kisi.sec-1;i++){
+      var w = liste[i].word;
+      if(!gor[w]){ gor[w] = true; cel.push(w); }
+    }
+  };
+  doldur(karistir(B.havuz.filter(function(c){ return c.category === k.category; })));
+  doldur(karistir(B.havuz));
+  B.kart = k; B.ipucu = 1; B.kilit = false;
+  B.secenekler = karistir([k.word].concat(cel));
+}
+function botOlasiPuan(){ return Math.max(1, 6 - B.ipucu); }
+
+/* --- Oyuncu turu (bot anlatıyor, sen bil) --- */
+function botTurBasla(){
+  B.evre = "oyun"; B.pasKalan = 2; B.turSen = 0; B.sonSn = null;
+  B.bitis = Date.now() + B.sure*1000;
+  botKartCek();
+  Ses.basla();
+  git("botoyun");
+  if(B.sayacId) clearInterval(B.sayacId);
+  B.sayacId = setInterval(botTik, 180);
+}
+function botTik(){
+  if(!B || B.evre !== "oyun") return;
+  var kalan = Math.max(0, B.bitis - Date.now());
+  var s = el("sayac");
+  if(s){ s.textContent = suSaniye(kalan);
+    if(kalan <= 10000) s.classList.add("kritik"); else s.classList.remove("kritik"); }
+  var ip = el("ilerle"); if(ip) ip.style.width = Math.max(0, (kalan/(B.sure*1000))*100)+"%";
+  var sn = Math.ceil(kalan/1000);
+  if(sn !== B.sonSn){ if(sn <= 5 && sn > 0) Ses.gerisayim(); B.sonSn = sn; }
+  if(kalan <= 0){
+    clearInterval(B.sayacId); B.sayacId = null;
+    Ses.bitis();
+    B.evre = "devir-bot"; git("botdevir");
+  }
+}
+function botKonfeti(){
+  var alan = el("botkutu"); if(!alan) return;
+  var renkler = ["#C6A15B","#2F6B4F","#B03A2E","#3C6E91","#8C5A9E"];
+  for(var i=0;i<16;i++){
+    var s = document.createElement("span");
+    s.className = "konf";
+    s.style.left = (6 + Math.random()*88) + "%";
+    s.style.background = renkler[i % renkler.length];
+    s.style.animationDelay = (Math.random()*0.15) + "s";
+    alan.appendChild(s);
+    (function(x){ setTimeout(function(){ if(x.parentNode) x.parentNode.removeChild(x); }, 1200); })(s);
+  }
+}
+function botCevap(ix){
+  if(!B || B.evre !== "oyun" || B.kilit) return;
+  var secilen = B.secenekler[ix];
+  if(secilen === undefined) return;
+  B.kilit = true;
+  var dogruMu = secilen === B.kart.word;
+  var dgler = document.querySelectorAll(".bot-secenek button");
+  if(dogruMu){
+    var p = botOlasiPuan();
+    B.turSen += p; B.sen.puan += p; B.sen.dogru++;
+    if(B.ipucu === 1){ B.sen.seri1++; if(B.sen.seri1 > B.sen.enSeri1) B.sen.enSeri1 = B.sen.seri1; }
+    else B.sen.seri1 = 0;
+    Ses.dogru();
+    if(dgler[ix]) dgler[ix].classList.add("dogruIsaret");
+    botKonfeti();
+    setTimeout(botSonrakiKart, Ayar.animasyon ? 700 : 150);
+  } else {
+    B.sen.yanlis++; B.sen.seri1 = 0;
+    Ses.yasak();
+    if(dgler[ix]) dgler[ix].classList.add("yanlisIsaret");
+    for(var i=0;i<dgler.length;i++)
+      if(B.secenekler[i] === B.kart.word) dgler[i].classList.add("dogruIsaret");
+    var kutu = el("botkutu"); if(kutu) kutu.classList.add("sallan");
+    setTimeout(botSonrakiKart, Ayar.animasyon ? 1400 : 250);
+  }
+  var gp = el("gpuan"); if(gp) gp.textContent = B.sen.puan;
+}
+function botPas(){
+  if(!B || B.evre !== "oyun" || B.kilit || B.pasKalan <= 0) return;
+  B.pasKalan--; B.sen.pas++; B.sen.seri1 = 0;
+  Ses.pas();
+  botSonrakiKart();
+}
+function botIpucu(){
+  if(!B || B.evre !== "oyun" || B.kilit) return;
+  if(B.ipucu >= B.kart.forbiddenWords.length) return;
+  B.ipucu++;
+  Ses.tik();
+  ciz();
+}
+function botSonrakiKart(){
+  if(!B || B.evre !== "oyun") return;
+  botKartCek();
+  ciz();
+}
+
+/* --- Bot turu (hızlı simülasyon) --- */
+function botSimSonuc(){
+  if(Math.random() < B.kisi.p){
+    var kp = B.kisi.kp;
+    return {dogru:true, puan: kp[0] + Math.floor(Math.random()*(kp[1]-kp[0]+1))};
+  }
+  return {dogru:false, puan:0};
+}
+function botSimBaslat(){
+  var n = Math.max(5, Math.min(10, Math.round(B.sure/12)));
+  var kartlar = [];
+  for(var i=0;i<n;i++){
+    if(B.di >= B.deste.length){ B.deste = karistir(B.deste); B.di = 0; }
+    kartlar.push(B.deste[B.di++]);
+  }
+  B.sim = {kartlar:kartlar, ix:0, puan:0, dogru:0, pas:0, durum:""};
+  B.evre = "sim";
+  git("botsim");
+  botSimAdim();
+}
+function botSimAdim(){
+  if(!B || !B.sim) return;
+  var s = B.sim;
+  if(s.ix >= s.kartlar.length){ botSimBitir(); return; }
+  s.durum = "dusun";
+  botSimCiz();
+  B.simId = setTimeout(function(){
+    if(!B || !B.sim) return;
+    var r = botSimSonuc();
+    if(r.dogru){ s.dogru++; s.puan += r.puan; s.durum = "dogru"; Ses.dogru(); }
+    else { s.pas++; s.durum = "pas"; Ses.pas(); }
+    botSimCiz();
+    B.simId = setTimeout(function(){
+      if(!B || !B.sim) return;
+      s.ix++;
+      botSimAdim();
+    }, 420);
+  }, 1200 + Math.random()*800);
+}
+function botSimCiz(){
+  var s = B.sim; if(!s) return;
+  var k = s.kartlar[Math.min(s.ix, s.kartlar.length-1)];
+  var e = el("simkart");
+  if(e){
+    var renk = s.durum === "dogru" ? "var(--dogru)" : (s.durum === "pas" ? "var(--pas)" : "var(--murekkep)");
+    var im = s.durum === "dogru" ? " ✓" : (s.durum === "pas" ? " →" : "");
+    e.innerHTML = '<div class="kelime" style="color:'+renk+'">'+ka(k.word)+im+'</div>';
+  }
+  var sp = el("simpuan"); if(sp) sp.textContent = s.puan;
+  var si = el("similerle"); if(si) si.textContent = Math.min(s.ix + (s.durum==="dusun"?1:0), s.kartlar.length) + "/" + s.kartlar.length;
+}
+function botSimAtla(){
+  if(!B || !B.sim) return;
+  if(B.simId){ clearTimeout(B.simId); B.simId = null; }
+  var s = B.sim;
+  if(s.durum === "dusun"){
+    var r = botSimSonuc();
+    if(r.dogru){ s.dogru++; s.puan += r.puan; } else s.pas++;
+    s.ix++;
+  }
+  while(s.ix < s.kartlar.length){
+    var r2 = botSimSonuc();
+    if(r2.dogru){ s.dogru++; s.puan += r2.puan; } else s.pas++;
+    s.ix++;
+  }
+  botSimBitir();
+}
+function botSimBitir(){
+  if(B.simId){ clearTimeout(B.simId); B.simId = null; }
+  var s = B.sim;
+  B.bot.puan += s.puan; B.bot.dogru += s.dogru; B.bot.pas += s.pas;
+  B.dokum.push({tur:B.tur, sen:B.turSen, bot:s.puan});
+  B.sim = null;
+  if(B.tur >= B.turSayisi){ botMacBitir(); return; }
+  B.tur++; B.evre = "devir-sen";
+  Ses.tur();
+  git("botdevir");
+}
+
+/* --- Maç sonu, rozetler, kayıt --- */
+function botMacBitir(){
+  botTemizle();
+  B.evre = "son";
+  var kazandi = B.sen.puan > B.bot.puan;
+  var berabere = B.sen.puan === B.bot.puan;
+
+  var ist = istatistikAl();
+  ist.bot = ist.bot || {oyun:0, kazanma:0, dogru:0, yanlis:0, seri:0, rozet:{}};
+  ist.bot.oyun++;
+  if(kazandi) ist.bot.kazanma++;
+  ist.bot.dogru += B.sen.dogru; ist.bot.yanlis += B.sen.yanlis;
+  if(B.sen.enSeri1 > ist.bot.seri) ist.bot.seri = B.sen.enSeri1;
+  var yeni = [];
+  if(kazandi && !ist.bot.rozet.ilk){ ist.bot.rozet.ilk = Date.now(); yeni.push("roz_ilk"); }
+  if(kazandi && B.zorluk === "alim" && !ist.bot.rozet.alim){ ist.bot.rozet.alim = Date.now(); yeni.push("roz_alim"); }
+  if(B.sen.enSeri1 >= 5 && !ist.bot.rozet.seri){ ist.bot.rozet.seri = Date.now(); yeni.push("roz_seri"); }
+  B.yeniRozet = yeni;
+  Depo.yaz(ANAHTAR.ist, ist);
+
+  /* Geçmiş: eski biçim korunur, mod+zorluk EK alan olarak eklenir */
+  var g = Depo.al(ANAHTAR.gecmis, []);
+  g.unshift({
+    tarih: Date.now(),
+    takimlar: [
+      {ad:T("bot_sen"), puan:B.sen.puan, sim:"🧑"},
+      {ad:botAdi(), puan:B.bot.puan, sim:B.kisi.em}
+    ],
+    kazanan: kazandi ? T("bot_sen") : (berabere ? "—" : botAdi()),
+    tur: B.turSayisi,
+    sure: Math.round((Date.now() - B.baslangic)/1000),
+    paket: BotKur.katlar.length,
+    mod:"bot", zorluk:B.zorluk
+  });
+  Depo.yaz(ANAHTAR.gecmis, g.slice(0,20));
+
+  if(kazandi) Ses.zafer(); else Ses.bitis();
+  git("botson");
+}
+
+/* --- Bot ekranları --- */
+function ekranBotKur(){
+  var h = '<div class="ekran aktif"><div class="ustbar">'+
+    '<button class="geri" data-act="git:ana" aria-label="'+ka(T("geri"))+'"><span>←</span></button>'+
+    '<h2>🤖 '+ka(T("bot"))+'</h2></div>';
+  h += '<p class="sessiz" style="margin-bottom:14px">'+ka(T("bot_alt"))+'</p>';
+
+  h += '<div class="kutu"><span class="etiket">'+ka(T("bot_zorluk"))+'</span>';
+  [["caylak"],["usta"],["alim"]].forEach(function(z){
+    var k = BOT_KISI[z[0]];
+    h += '<button class="cip bot-zorluk" aria-pressed="'+(BotKur.zorluk===z[0])+'" data-act="bot:zorluk:'+z[0]+'">'+
+      '<span style="font-size:1.5rem">'+k.em+'</span>'+
+      '<span style="display:block;text-align:start"><b>'+ka(T("bz_"+z[0]))+' · '+ka(k.ad[Ayar.dil]||k.ad.tr)+'</b><br>'+
+      '<small style="opacity:.75">'+ka(T("bz_"+z[0]+"_a"))+'</small></span></button>';
+  });
+  h += '</div>';
+
+  h += '<div class="kutu"><span class="etiket">'+ka(T("tur_sayisi"))+'</span>'+
+    cipler([[3,"3"],[5,"5"],[7,"7"]], BotKur.turSayisi, "bot:turs", true)+'</div>';
+  h += '<div class="kutu"><span class="etiket">'+ka(T("sure"))+'</span>'+
+    cipler([[60,"60 "+T("sn")],[90,"90 "+T("sn")],[120,"120 "+T("sn")]], BotKur.sure, "bot:sure", true)+'</div>';
+
+  h += '<div class="kutu"><span class="etiket">'+ka(T("kategoriler"))+'</span><div class="secenekler">';
+  KAT_SIRA.forEach(function(kt){
+    var s = BotKur.katlar.indexOf(kt) > -1;
+    h += '<button class="cip" style="flex:1 1 46%" aria-pressed="'+s+'" data-act="bot:kat:'+kt+'">'+
+      '<span>'+KAT_AD[kt].em+'</span><span class="tik">'+ka(KAT_AD[kt][Ayar.dil]||KAT_AD[kt].tr)+'</span></button>';
+  });
+  h += '</div><p class="sessiz" style="margin-top:8px"><b>'+
+    ka(T("hazir_kart",{n:havuzKur(Ayar.dil, BotKur.katlar).length}))+'</b></p></div>';
+
+  h += '<div class="taban"><button class="dg altin" data-act="bot:basla">'+ka(T("simdibasla"))+'</button></div>';
+  return h+'</div>';
+}
+
+function ekranBotDevir(){
+  var sen = B.evre === "devir-sen";
+  var h = '<div class="ekran aktif" id="ekran-devir">'+
+    '<div class="sira">'+ka(T("tur"))+' '+B.tur+'/'+B.turSayisi+'</div>'+
+    '<div class="devirsim">'+(sen ? B.kisi.em : "🤖")+'</div>'+
+    '<h2>'+ka(sen ? T("bot_senin_turun") : T("bot_bot_turu"))+'</h2>'+
+    '<p class="uyari">'+ka(sen ? T("bot_anlatiyor",{ad:botAdi()}) : T("bot_dusunuyor",{ad:botAdi()}))+'</p>'+
+    '<p style="opacity:.85;margin-bottom:18px">🧑 '+ka(T("bot_sen"))+' <b>'+B.sen.puan+'</b> — <b>'+B.bot.puan+'</b> '+ka(botAdi())+' '+B.kisi.em+'</p>'+
+    '<button class="dg altin" data-act="bot:turbasla">'+ka(sen ? T("hazirim") : T("basla"))+'</button>'+
+    '<button class="dg hayalet" style="color:#FFFCF6;margin-top:10px" data-act="bot:cik">'+ka(T("anamenu"))+'</button>';
+  return h+'</div>';
+}
+
+function ekranBotOyun(){
+  var k = B.kart;
+  var h = '<div class="ekran aktif" id="ekran-oyun">';
+  h += '<div class="oyunust"><div class="tkm"><b>🧑 '+ka(T("bot_sen"))+'</b>'+
+    '<span>'+ka(T("tur"))+' '+B.tur+'/'+B.turSayisi+'</span></div>'+
+    '<div class="sayac" id="sayac" role="timer" aria-live="off">'+suSaniye(Math.max(0, B.bitis - Date.now()))+'</div>'+
+    '<button class="duraklat" data-act="bot:cik" aria-label="'+ka(T("anamenu"))+'">✕</button></div>';
+  h += '<div class="gostergeler"><span>'+ka(T("puan"))+': <b id="gpuan">'+B.sen.puan+'</b></span>'+
+    '<span>'+ka(T("pas_kalan"))+': <b>'+B.pasKalan+'</b></span>'+
+    '<span>💡 '+ka(T("bot_olasi"))+': <b>'+botOlasiPuan()+'</b></span>'+
+    '</div><div class="ilerle"><i id="ilerle"></i></div>';
+
+  h += '<div class="kutu" id="botkutu" style="position:relative;overflow:hidden;margin-top:4px">';
+  h += '<div class="bot-balon"><div class="bav">'+B.kisi.em+'</div><div class="bic">'+
+    '<div class="bad">'+ka(botAdi())+'</div>'+
+    '<div class="bot-ipucular">'+
+    k.forbiddenWords.slice(0, B.ipucu).map(function(y){
+      return '<span>'+ka(T("bot_ipucu"))+': '+ka(y)+'</span>';
+    }).join("")+
+    '</div></div></div>';
+  h += '<button class="dg ikincil kucuk" data-act="bot:ipucu"'+
+    (B.ipucu >= k.forbiddenWords.length ? " disabled":"")+'>💡 '+ka(T("bot_ipucu_iste"))+' (−1)</button>';
+  h += '<p style="font-weight:700;margin:12px 0 2px">'+ka(T("bot_hangisi"))+'</p>';
+  h += '<div class="bot-secenek">'+
+    B.secenekler.map(function(s,i){
+      return '<button data-act="bot:sec:'+i+'">'+ka(s)+'</button>';
+    }).join("")+'</div>';
+  h += '</div>';
+
+  h += '<div class="islemler" style="margin-top:10px">'+
+    '<button class="eylem e-pas" data-act="bot:pas"'+(B.pasKalan<=0?" disabled":"")+'>'+
+    '<span class="em">→</span>'+ka(T("pas"))+' ('+B.pasKalan+')</button></div>';
+  return h+'</div>';
+}
+
+function ekranBotSim(){
+  var s = B.sim || {kartlar:[], ix:0, puan:0};
+  var h = '<div class="ekran aktif">';
+  h += '<div class="ustbar"><h2>🤖 '+ka(T("bot_bot_turu"))+'</h2>'+
+    '<span class="sessiz">'+ka(T("tur"))+' '+B.tur+'/'+B.turSayisi+'</span></div>';
+  h += '<div style="text-align:center;padding-top:8px">'+
+    '<div class="bot-avatar dusun">'+B.kisi.em+'</div>'+
+    '<h3>'+ka(botAdi())+'</h3>'+
+    '<p class="sessiz">'+ka(T("bot_dusunuyor",{ad:botAdi()}))+'</p></div>';
+  h += '<div class="simskor">'+
+    '<div class="mini"><b id="simpuan">'+s.puan+'</b><span>'+ka(T("turpuani"))+'</span></div>'+
+    '<div class="mini"><b id="similerle">'+Math.min(s.ix+1, s.kartlar.length)+'/'+s.kartlar.length+'</b><span>'+ka(T("kart"))+'</span></div>'+
+    '</div>';
+  h += '<div class="kartalan"><div class="kart gir" style="min-height:120px;display:flex;align-items:center;justify-content:center">'+
+    '<div class="kat" id="simkart"><div class="kelime">…</div></div></div></div>';
+  h += '<div class="taban"><button class="dg ikincil" data-act="bot:atla">⏭ '+ka(T("bot_atla"))+'</button></div>';
+  return h+'</div>';
+}
+
+function ekranBotSon(){
+  var kazandi = B.sen.puan > B.bot.puan, berabere = B.sen.puan === B.bot.puan;
+  var baslik = kazandi ? T("bot_kazandin") : (berabere ? T("bot_berabere") : T("bot_kaybetti",{ad:botAdi()}));
+  var h = '<div class="ekran aktif"><div class="kupa"><div class="em">'+(kazandi?"🏆":(berabere?"🤝":B.kisi.em))+'</div>'+
+    '<h2>'+ka(baslik)+'</h2></div>';
+
+  h += '<div class="kutu"><ol class="siralama">';
+  var sira = kazandi || berabere
+    ? [["🧑",T("bot_sen"),B.sen.puan],[B.kisi.em,botAdi(),B.bot.puan]]
+    : [[B.kisi.em,botAdi(),B.bot.puan],["🧑",T("bot_sen"),B.sen.puan]];
+  sira.forEach(function(t,i){
+    h += '<li class="'+(i===0?"bir":"")+'"><span class="no">'+(i+1)+'</span>'+
+      '<span class="ad">'+t[0]+' '+ka(t[1])+'</span><span class="pn">'+t[2]+'</span></li>';
+  });
+  h += '</ol></div>';
+
+  h += '<div class="kutu"><span class="etiket">'+ka(T("bot_dokum"))+'</span>'+
+    '<table class="tablo"><thead><tr><th>'+ka(T("tur"))+'</th><th>🧑 '+ka(T("bot_sen"))+'</th>'+
+    '<th>'+B.kisi.em+' '+ka(botAdi())+'</th></tr></thead><tbody>';
+  B.dokum.forEach(function(d){
+    h += '<tr><td>'+d.tur+'</td><td>'+d.sen+'</td><td>'+d.bot+'</td></tr>';
+  });
+  h += '</tbody></table></div>';
+
+  h += '<div class="kutu"><div class="rozetler">'+
+    '<div class="mini"><b>'+B.sen.dogru+'</b><span>'+ka(T("dogru"))+'</span></div>'+
+    '<div class="mini"><b>'+B.sen.yanlis+'</b><span>'+ka(T("yasak"))+'</span></div>'+
+    '<div class="mini"><b>'+B.sen.pas+'</b><span>'+ka(T("pas"))+'</span></div>'+
+    '<div class="mini"><b>'+B.sen.enSeri1+'</b><span>'+ka(T("bot_en_seri"))+'</span></div>'+
+    '</div></div>';
+
+  if(B.yeniRozet.length){
+    h += '<div class="kutu"><span class="etiket">🎖 '+ka(T("bot_rozetler"))+'</span><div class="secenekler">';
+    B.yeniRozet.forEach(function(r){
+      h += '<span class="cip" style="background:var(--altin);border-color:var(--altin-koyu);color:#3A2C0B">'+
+        '🎖 '+ka(T(r))+' — '+ka(T(r+"_a"))+'</span>';
+    });
+    h += '</div></div>';
+  }
+
+  h += '<div class="yigin">'+
+    '<button class="dg" data-act="bot:tekrar">'+ka(T("tekrar"))+'</button>'+
+    '<div class="satir"><button class="dg ikincil" data-act="bot:kurulum">🤖 '+ka(T("bot"))+'</button>'+
+    '<button class="dg ikincil" data-act="git:ana">'+ka(T("anamenu"))+'</button></div></div>';
+  return h+'</div>';
+}
+
+/* Test kancası (bot) */
+window.__BOT__ = {
+  al:function(){ return B; }, kur:BotKur, KISI:BOT_KISI,
+  baslat:botBaslat, cevap:botCevap, ipucu:botIpucu, pas:botPas, atla:botSimAtla
+};
+</script>
+<script>
 /* ---------------------------- Oyun sonu -------------------------------- */
 function kartIstatistigi(d){
   var s = {};
@@ -2283,7 +2792,26 @@ function ekranIstatistik(){
     '<button class="geri" data-act="git:ana" aria-label="'+ka(T("geri"))+'"><span>←</span></button>'+
     '<h2>'+ka(T("istatistik"))+'</h2></div>';
   var adlar = Object.keys(ist.takimlar || {});
-  if(!adlar.length && !(ist.oyun)) return h+'<div class="bosluk"><span class="em">📊</span>'+ka(T("ist_bos"))+'</div></div>';
+  var bot = ist.bot;
+  if(!adlar.length && !(ist.oyun) && !(bot && bot.oyun))
+    return h+'<div class="bosluk"><span class="em">📊</span>'+ka(T("ist_bos"))+'</div></div>';
+
+  if(bot && bot.oyun){
+    h += '<div class="kutu"><span class="etiket">🤖 '+ka(T("ist_bot"))+'</span><div class="rozetler">'+
+      '<div class="mini"><b>'+bot.oyun+'</b><span>'+ka(T("bot_mac"))+'</span></div>'+
+      '<div class="mini"><b>'+bot.kazanma+'</b><span>'+ka(T("bot_galibiyet"))+'</span></div>'+
+      '<div class="mini"><b>'+bot.dogru+'</b><span>'+ka(T("ist_dogru"))+'</span></div>'+
+      '<div class="mini"><b>'+bot.seri+'</b><span>'+ka(T("bot_en_seri"))+'</span></div>'+
+      '</div><div class="secenekler" style="margin-top:10px">';
+    [["ilk","roz_ilk"],["alim","roz_alim"],["seri","roz_seri"]].forEach(function(r){
+      var var_ = bot.rozet && bot.rozet[r[0]];
+      h += '<span class="cip" style="'+(var_
+        ? 'background:var(--altin);border-color:var(--altin-koyu);color:#3A2C0B'
+        : 'opacity:.45')+'" title="'+ka(T(r[1]+"_a"))+'">🎖 '+ka(T(r[1]))+'</span>';
+    });
+    h += '</div></div>';
+  }
+
   h += '<div class="kutu"><div class="rozetler">'+
     '<div class="mini"><b>'+(ist.oyun||0)+'</b><span>'+ka(T("ist_oyun"))+'</span></div>'+
     '<div class="mini"><b>'+adlar.length+'</b><span>'+ka(T("takimlar"))+'</span></div>'+
@@ -2325,7 +2853,8 @@ function ekranGecmis(){
   g.forEach(function(o,i){
     var t = new Date(o.tarih);
     h += '<div class="gecmis"><div class="tar">'+t.toLocaleDateString()+' · '+t.toLocaleTimeString().slice(0,5)+
-      ' · '+ka(T("tur"))+' '+o.tur+' · '+Math.round(o.sure/60)+' '+ka(T("sn"))+'</div>'+
+      ' · '+ka(T("tur"))+' '+o.tur+' · '+Math.round(o.sure/60)+' '+ka(T("sn"))+
+      (o.mod === "bot" ? ' · 🤖 '+ka(T("bz_"+o.zorluk)) : '')+'</div>'+
       '<b>🏆 '+ka(o.kazanan)+'</b><div class="sessiz">'+
       o.takimlar.map(function(x){return ka(x.sim+" "+x.ad+": "+x.puan);}).join(" · ")+'</div>'+
       '<button class="dg hayalet kucuk" data-act="gecmis:sil:'+i+'">'+ka(T("sil"))+'</button></div>';
@@ -2388,6 +2917,11 @@ function ciz(){
     case "istatistik": h = ekranIstatistik(); break;
     case "gecmis": h = ekranGecmis(); break;
     case "paketler": h = ekranPaketler(); break;
+    case "botkur": h = ekranBotKur(); break;
+    case "botdevir": h = ekranBotDevir(); break;
+    case "botoyun": h = ekranBotOyun(); break;
+    case "botsim": h = ekranBotSim(); break;
+    case "botson": h = ekranBotSon(); break;
     default: h = ekranAna();
   }
   UY.innerHTML = h;
@@ -2436,7 +2970,39 @@ function islemYap(grup, ne, deger){
       if(k){ A.d = k; A.kazananZorla = null;
         git(k.status === "playing" || k.status === "handover" ? "devir" : (k.status === "turn-result" ? "turozeti" : "devir")); } }
     else if(ne === "dil"){ dilModal(); }
+    else if(ne === "bot"){ git("botkur"); }
     else git(ne);
+    return;
+  }
+
+  if(grup === "bot"){
+    if(ne === "zorluk"){ BotKur.zorluk = deger; Ses.tik(); ciz(); return; }
+    if(ne === "turs"){ BotKur.turSayisi = +deger; Ses.tik(); ciz(); return; }
+    if(ne === "sure"){ BotKur.sure = +deger; Ses.tik(); ciz(); return; }
+    if(ne === "kat"){
+      var bi = BotKur.katlar.indexOf(deger);
+      if(bi > -1) BotKur.katlar.splice(bi,1); else BotKur.katlar.push(deger);
+      Ses.tik(); ciz(); return;
+    }
+    if(ne === "basla"){ botBaslat(); return; }
+    if(ne === "kurulum"){ botTemizle(); git("botkur"); return; }
+    if(ne === "turbasla"){
+      if(!B) return;
+      if(B.evre === "devir-sen") botTurBasla(); else if(B.evre === "devir-bot") botSimBaslat();
+      return;
+    }
+    if(ne === "ipucu"){ botIpucu(); return; }
+    if(ne === "sec"){ botCevap(+deger); return; }
+    if(ne === "pas"){ botPas(); return; }
+    if(ne === "atla"){ botSimAtla(); return; }
+    if(ne === "tekrar"){ botTemizle(); botBaslat(); return; }
+    if(ne === "cik"){
+      modalAc('<h3>'+ka(T("anamenu"))+'</h3><div class="yigin">'+
+        '<button class="dg" data-act="bot:cikevet">'+ka(T("evet"))+'</button>'+
+        '<button class="dg ikincil" data-act="modal:kapat">'+ka(T("vazgec"))+'</button></div>');
+      return;
+    }
+    if(ne === "cikevet"){ botTemizle(); B = null; modalKapat(); git("ana"); return; }
     return;
   }
 
