@@ -134,6 +134,7 @@
     <button class="up" id="upMik"></button>
     <button class="up" id="bozdurBtn" style="border-color:rgba(122,208,224,.5);background:rgba(122,208,224,.1)"></button>
   </div>
+  <button class="btn" id="devamKosuBtn" style="display:none;background:linear-gradient(180deg,#8de6a0,#4ec06e);box-shadow:0 5px 0 #2c7a44">▶ Devam Et</button>
   <button class="btn" id="baslaBtn">Maceraya Başla!</button>
   <button class="btn2" id="gardropBtn">🐱 Kediler &amp; Kostüm</button>
   <button class="btn2" id="nasilBtnG">❓ Nasıl Oynanır</button>
@@ -546,6 +547,7 @@ function guncelle(dt){
   } else kedi.kosuyor=false;
   if(kedi.invuln>0)kedi.invuln-=dt;
   for(const g2 in kedi.guc)if(kedi.guc[g2]>0)kedi.guc[g2]-=dt;
+  kosuS-=dt; if(kosuS<=0){ kosuS=3; kosuKaydet(); }
   /* eklenti toplama (asla kaybolmazlar) */
   const eklR=BIRIM()*0.055, eklR2=eklR*eklR;
   for(const e of eklentiler){
@@ -666,7 +668,33 @@ function guncelle(dt){
   sik(yazilar,tutOmur);
 }
 /* macera-sonu ödül işleme (normal bitişte de duraklatmadan menüye dönüşte de aynı akış) */
+/* ── koşu kaydı: yanlışlıkla çıkışta ilerleme kaybolmasın ── */
+let kosuS=0;
+function kosuKaydet(){
+  if(!run)return;
+  S.kosu={sure,xp,xpEsik,seviye,kp:kazanilanPati,kb:kazanilanBalik,
+    k:{x:kedi.x,y:kedi.y,hp:kedi.hp,maxHp:kedi.maxHp,hiz:kedi.hiz,hasar:kedi.hasar,
+       mik:kedi.mik,atisAra:kedi.atisAra,adet:kedi.adet,menzil:kedi.menzil,
+       yumakBoy:kedi.yumakBoy,patiCarp:kedi.patiCarp,guc:{...kedi.guc}}};
+  kaydet();
+}
+function kosuGeriYukle(){
+  const kk=S.kosu; if(!kk)return;
+  sure=kk.sure; xp=kk.xp; xpEsik=kk.xpEsik; seviye=kk.seviye;
+  kazanilanPati=kk.kp||0; kazanilanBalik=kk.kb||0;
+  Object.assign(kedi,kk.k); kedi.guc={...kk.k.guc};
+  kedi.invuln=2.5;               /* dönüşte kısa dokunulmazlık */
+  toast('▶ Kaldığın yerden devam! Sv '+seviye);
+}
+function devamBtnYaz(){
+  const el=document.getElementById('devamKosuBtn'), kk=S.kosu;
+  if(!kk){ el.style.display='none'; return; }
+  const dk=Math.floor(kk.sure/60), sn=Math.floor(kk.sure%60);
+  el.textContent='▶ Devam Et  ('+dk+':'+(sn<10?'0':'')+sn+' · Sv '+kk.seviye+')';
+  el.style.display='block';
+}
 function odulleriIsle(){
+  S.kosu=null;
   const p=kazanilanPati, b=kazanilanBalik;
   S.pati+=p; S.toplamPati+=p;
   S.balik+=b; S.toplamBalik+=b;
@@ -1327,7 +1355,13 @@ document.getElementById('sesBtn').addEventListener('click',()=>{
   S.ses=!S.ses; document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇'; kaydet();
 });
 document.getElementById('baslaBtn').addEventListener('click',()=>{
+  S.kosu=null; kaydet();
   audio(); spriteleriKur(); runBaslat(); durBtnGoster(true);
+  document.getElementById('giris').classList.add('gizli');
+  sonEtkilesim=performance.now()-2500;
+});
+document.getElementById('devamKosuBtn').addEventListener('click',()=>{
+  audio(); spriteleriKur(); runBaslat(); kosuGeriYukle(); durBtnGoster(true);
   document.getElementById('giris').classList.add('gizli');
   sonEtkilesim=performance.now()-2500;
 });
@@ -1337,7 +1371,7 @@ document.getElementById('tekrarBtn').addEventListener('click',()=>{
 });
 document.getElementById('menuBtn').addEventListener('click',()=>{
   document.getElementById('sonKart').classList.add('gizli');
-  magazaYaz(); girisHint();
+  magazaYaz(); girisHint(); devamBtnYaz();
   document.getElementById('giris').classList.remove('gizli');
 });
 document.getElementById('nasilBtnG').addEventListener('click',()=>
@@ -1377,8 +1411,10 @@ function dongu(ts){
 requestAnimationFrame(dongu);
 /* sekme/uygulama arkaya geçince otomatik duraklat */
 addEventListener('visibilitychange',()=>{
-  if(document.hidden){ kaydet(); duraklat(); }
+  if(document.hidden){ kosuKaydet(); kaydet(); duraklat(); }
 });
+addEventListener('pagehide',()=>{ kosuKaydet(); });
+devamBtnYaz();   /* açılışta yarım koşu varsa göster */
 /* test kancası */
 window.__C={get S(){return S},get kedi(){return kedi},get dusmanlar(){return dusmanlar},
   get baliklar(){return baliklar},get run(){return run},get sure(){return sure},
