@@ -1,0 +1,2672 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+<meta name="theme-color" content="#F5EFE3">
+<meta name="description" content="Dini Tabu - ayni telefondan cok takimli kelime oyunu. Reklamsiz, cevrim disi.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Dinî Tabu</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"Din%C3%AE%20Tabu","short_name":"Tabu","start_url":".","display":"standalone","background_color":"%23F5EFE3","theme_color":"%23F5EFE3","orientation":"portrait"}'>
+<style>
+/* ===================== TASARIM JETONLARI ===================== */
+:root{
+  --parsomen:#F5EFE3;
+  --parsomen-2:#EFE7D7;
+  --murekkep:#10402C;
+  --yesil:#2F6B4F;
+  --yesil-acik:#E4EFE8;
+  --altin:#C6A15B;
+  --altin-koyu:#9A7735;
+  --kart:#FFFCF6;
+  --dogru:#2E7D4F;
+  --pas:#C77D18;
+  --yasak:#B03A2E;
+  --bilgi:#3C6E91;
+  --golge:0 2px 4px rgba(16,64,44,.06), 0 10px 24px rgba(16,64,44,.10);
+  --golge-sm:0 1px 2px rgba(16,64,44,.08), 0 4px 10px rgba(16,64,44,.07);
+  --r:18px;
+  --r-lg:26px;
+  --disp:"Palatino Linotype","Book Antiqua",Palatino,Georgia,"Times New Roman",serif;
+  --ui:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1;
+  --hiz:1;
+}
+html[data-kontrast="1"]{
+  --parsomen:#FFFFFF; --parsomen-2:#F2F2F2; --murekkep:#000000; --yesil:#0B4A2F;
+  --altin:#7A5B12; --altin-koyu:#5A4209; --kart:#FFFFFF; --yesil-acik:#E8F1EC;
+  --dogru:#0B5D31; --pas:#8A5300; --yasak:#8C1D13; --golge:0 0 0 2px #000;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:var(--ui);
+  color:var(--murekkep);
+  background:var(--parsomen);
+  font-size:calc(16px * var(--fs));
+  line-height:1.45;
+  overscroll-behavior:none;
+  -webkit-font-smoothing:antialiased;
+}
+/* ince geometrik zemin — okunabilirligi bozmayacak yogunlukta */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:
+    repeating-linear-gradient(45deg,rgba(198,161,91,.10) 0 1px,transparent 1px 22px),
+    repeating-linear-gradient(-45deg,rgba(198,161,91,.10) 0 1px,transparent 1px 22px);
+}
+html[data-kontrast="1"] body::before{display:none}
+#uygulama{position:relative;z-index:1;min-height:100%;display:flex;flex-direction:column}
+.ekran{display:none;flex-direction:column;min-height:100dvh;padding:
+  max(14px,env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));}
+.ekran.aktif{display:flex}
+h1,h2,h3{font-family:var(--disp);font-weight:600;margin:0;letter-spacing:.01em}
+p{margin:.4em 0}
+.sessiz{color:#6B7B72;font-size:.86em;line-height:1.5}
+html[data-kontrast="1"] .sessiz{color:#333}
+
+/* ===================== DUGMELER ===================== */
+button{font-family:inherit;font-size:1rem;color:inherit;cursor:pointer;border:0;background:none}
+.dg{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  min-height:56px;padding:14px 18px;border-radius:14px;
+  background:var(--yesil);color:#FFFCF6;font-weight:650;font-size:1.02rem;
+  box-shadow:var(--golge-sm);width:100%;text-align:center;
+  transition:transform calc(.12s * var(--hiz)),filter .12s;
+}
+.dg:active{transform:scale(.98)}
+.dg.ikincil{background:var(--kart);color:var(--murekkep);border:1.5px solid rgba(16,64,44,.16)}
+.dg.altin{background:linear-gradient(180deg,#D8B776,#C6A15B);color:#3A2C0B;border:1px solid var(--altin-koyu)}
+.dg.hayalet{background:transparent;color:var(--yesil);box-shadow:none;min-height:48px}
+.dg[disabled]{opacity:.42;pointer-events:none}
+.dg.kucuk{min-height:44px;padding:10px 14px;font-size:.92rem;width:auto}
+.satir{display:flex;gap:10px}
+.satir>*{flex:1}
+.yigin{display:flex;flex-direction:column;gap:10px}
+
+/* ===================== BASLIK / UST BAR ===================== */
+.ustbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;min-height:44px}
+.ustbar h2{font-size:1.28rem;flex:1}
+.geri{width:44px;height:44px;border-radius:12px;background:var(--kart);box-shadow:var(--golge-sm);
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex:none}
+html[dir="rtl"] .geri span{display:inline-block;transform:scaleX(-1)}
+
+/* ===================== KUTU / LISTE ===================== */
+.kutu{background:var(--kart);border-radius:var(--r);padding:16px;box-shadow:var(--golge-sm);margin-bottom:12px}
+.kutu h3{font-size:1.05rem;margin-bottom:8px}
+.etiket{display:block;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--altin-koyu);margin-bottom:8px}
+.secenekler{display:flex;flex-wrap:wrap;gap:8px}
+.cip{
+  min-height:44px;padding:10px 14px;border-radius:12px;background:var(--kart);
+  border:1.5px solid rgba(16,64,44,.16);font-weight:600;font-size:.95rem;display:flex;align-items:center;gap:6px;
+}
+.cip[aria-pressed="true"]{background:var(--yesil);color:#FFFCF6;border-color:var(--yesil)}
+.cip[aria-pressed="true"] .tik::before{content:"✓ "}
+input[type="text"],input[type="number"],select,textarea{
+  font-family:inherit;font-size:1rem;width:100%;min-height:48px;padding:12px 14px;
+  border-radius:12px;border:1.5px solid rgba(16,64,44,.18);background:#fff;color:var(--murekkep);
+}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{
+  outline:3px solid var(--altin);outline-offset:2px}
+textarea{min-height:120px;font-family:var(--mono);font-size:.82rem}
+label{font-size:.9rem;font-weight:600}
+
+/* ===================== ANA EKRAN ===================== */
+.kapak{text-align:center;padding:26px 0 10px}
+.rozet{
+  width:96px;height:96px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;
+  background:var(--kart);box-shadow:var(--golge);position:relative;
+  clip-path:polygon(50% 0,71% 8.6%,80.7% 29.3%,100% 50%,80.7% 70.7%,71% 91.4%,50% 100%,29.3% 91.4%,19.3% 70.7%,0 50%,19.3% 29.3%,29.3% 8.6%);
+}
+.rozet b{font-family:var(--disp);font-size:2.1rem;color:var(--yesil)}
+.kapak h1{font-size:2.05rem;letter-spacing:.02em}
+.kapak .alt{font-size:.9rem;color:var(--altin-koyu);letter-spacing:.22em;text-transform:uppercase;margin-top:4px}
+.menu{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.menu .dg{justify-content:flex-start;padding-inline-start:20px}
+.menu .em{font-size:1.25rem;width:28px;text-align:center}
+.altmenu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.altmenu .dg{font-size:.95rem;min-height:52px}
+.dipnot{margin-top:auto;padding-top:18px;text-align:center;font-size:.76rem;color:#7A8A80}
+
+/* ===================== KURULUM ===================== */
+.adimlar{display:flex;gap:5px;margin-bottom:14px}
+.adimlar i{height:5px;flex:1;background:rgba(16,64,44,.13);border-radius:3px}
+.adimlar i.ok{background:var(--altin)}
+.adimlar i.simdi{background:var(--yesil)}
+.takimsatir{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.takimsatir .sim{width:52px;height:52px;flex:none;border-radius:14px;font-size:1.5rem;display:flex;
+  align-items:center;justify-content:center;box-shadow:var(--golge-sm);background:var(--kart);border:2px solid transparent}
+.takimsatir input{flex:1}
+.ozet{list-style:none;padding:0;margin:0}
+.ozet li{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px dashed rgba(16,64,44,.14)}
+.ozet li:last-child{border-bottom:0}
+.ozet b{font-weight:650;text-align:end}
+.taban{margin-top:auto;padding-top:14px;display:flex;gap:10px}
+.taban>*{flex:1}
+
+/* ===================== DEVIR (GIZLILIK) EKRANI ===================== */
+#ekran-devir{justify-content:center;align-items:center;text-align:center;background:var(--yesil);color:#FFFCF6}
+#ekran-devir .sira{font-size:.82rem;letter-spacing:.24em;text-transform:uppercase;opacity:.75}
+#ekran-devir h2{font-size:2rem;margin:8px 0 4px;color:#FFFCF6}
+#ekran-devir .uyari{max-width:22rem;opacity:.85;margin-bottom:26px}
+#ekran-devir .dg{max-width:22rem}
+.devirsim{font-size:3.4rem;margin-bottom:6px}
+.gerisayim{font-family:var(--disp);font-size:5.5rem;line-height:1;margin:10px 0 20px}
+
+/* ===================== OYUN EKRANI ===================== */
+#ekran-oyun{padding-top:max(10px,env(safe-area-inset-top))}
+.oyunust{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.oyunust .tkm{flex:1;min-width:0}
+.oyunust .tkm b{display:block;font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oyunust .tkm span{font-size:.78rem;color:#6B7B72}
+.sayac{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.5rem;font-weight:700;
+  padding:6px 12px;border-radius:12px;background:var(--kart);box-shadow:var(--golge-sm);transition:all .2s}
+.sayac.kritik{background:var(--yasak);color:#fff;font-size:1.9rem;animation:nabiz .9s infinite}
+@keyframes nabiz{50%{transform:scale(1.06)}}
+.duraklat{width:44px;height:44px;border-radius:12px;background:var(--kart);box-shadow:var(--golge-sm);
+  display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex:none}
+.gostergeler{display:flex;gap:8px;margin-bottom:10px;font-size:.82rem}
+.gostergeler span{background:var(--yesil-acik);border-radius:10px;padding:6px 10px;font-weight:650}
+.ilerle{height:6px;border-radius:4px;background:rgba(16,64,44,.12);overflow:hidden;margin-bottom:12px}
+.ilerle i{display:block;height:100%;background:var(--altin);width:100%;transition:width .3s linear}
+
+.kartalan{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0}
+.kart{
+  width:100%;max-width:30rem;background:var(--kart);border-radius:var(--r-lg);
+  box-shadow:var(--golge);padding:26px 20px 22px;text-align:center;position:relative;overflow:hidden;
+  border:1px solid rgba(198,161,91,.4);
+}
+/* imza: sekiz kollu yildiz filigrani */
+.kart::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.055;
+  background:
+   conic-gradient(from 0deg at 50% 42%, var(--yesil) 0 12.5%, transparent 0 25%, var(--yesil) 0 37.5%, transparent 0 50%, var(--yesil) 0 62.5%, transparent 0 75%, var(--yesil) 0 87.5%, transparent 0);
+  -webkit-mask-image:radial-gradient(circle at 50% 42%, #000 34%, transparent 70%);
+  mask-image:radial-gradient(circle at 50% 42%, #000 34%, transparent 70%);
+}
+.kart .kat{position:relative;z-index:1}
+.kart .rutbe{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--altin-koyu);font-weight:700}
+.kart .kelime{font-family:var(--disp);font-size:clamp(2.1rem,10vw,3.4rem);line-height:1.08;margin:10px 0 14px;word-break:break-word}
+.ayrac{display:flex;align-items:center;gap:10px;margin:0 auto 12px;max-width:16rem;color:var(--altin)}
+.ayrac i{flex:1;height:1px;background:currentColor;opacity:.6}
+.ayrac b{font-size:.9rem}
+.yasaklar{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.yasaklar li{font-size:clamp(1.02rem,4.6vw,1.28rem);font-weight:600;color:var(--yasak);letter-spacing:.01em}
+html[data-kontrast="1"] .yasaklar li{color:#8C1D13}
+.kart.gizli .kat{filter:blur(14px);opacity:.5}
+.kart.cik-sag{transform:translateX(115%) rotate(7deg);opacity:0;transition:transform calc(.28s*var(--hiz)) ease-in,opacity calc(.28s*var(--hiz))}
+.kart.cik-sol{transform:translateX(-115%) rotate(-7deg);opacity:0;transition:transform calc(.28s*var(--hiz)) ease-in,opacity calc(.28s*var(--hiz))}
+.kart.cik-alt{transform:translateY(60%);opacity:0;transition:transform calc(.28s*var(--hiz)) ease-in,opacity calc(.28s*var(--hiz))}
+.kart.gir{animation:gir calc(.3s*var(--hiz)) ease-out}
+@keyframes gir{from{transform:translateY(14px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+
+.islemler{display:grid;grid-template-columns:1fr;gap:9px;margin-top:14px}
+.islemler .ikili{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.eylem{min-height:62px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:9px;
+  font-weight:700;font-size:1.05rem;color:#FFFCF6;box-shadow:var(--golge-sm);transition:transform .1s}
+.eylem:active{transform:scale(.97)}
+.eylem .em{font-size:1.2rem}
+.eylem.e-dogru{background:var(--dogru);min-height:68px;font-size:1.15rem}
+.eylem.e-pas{background:var(--pas)}
+.eylem.e-yasak{background:var(--yasak)}
+.eylem[disabled]{opacity:.4;pointer-events:none}
+
+/* ===================== SONUC / TABLO ===================== */
+.tablo{width:100%;border-collapse:collapse;font-size:.94rem}
+.tablo th,.tablo td{text-align:start;padding:9px 6px;border-bottom:1px solid rgba(16,64,44,.1)}
+.tablo th{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;color:var(--altin-koyu)}
+.tablo td.sag{text-align:end;font-weight:700}
+.rozetler{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.mini{background:var(--yesil-acik);border-radius:14px;padding:11px 12px}
+.mini b{display:block;font-size:1.3rem;font-family:var(--disp)}
+.mini span{font-size:.76rem;color:#4A5D53}
+.siralama{list-style:none;padding:0;margin:0}
+.siralama li{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--kart);
+  box-shadow:var(--golge-sm);margin-bottom:9px}
+.siralama .no{width:30px;height:30px;border-radius:50%;background:var(--yesil-acik);display:flex;
+  align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex:none}
+.siralama li.bir .no{background:var(--altin);color:#3A2C0B}
+.siralama .ad{flex:1;font-weight:650;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.siralama .pn{font-family:var(--disp);font-size:1.4rem;font-weight:700}
+.kupa{text-align:center;padding:8px 0 4px}
+.kupa .em{font-size:3.2rem}
+.kupa h2{font-size:1.9rem;margin-top:4px}
+
+/* ===================== MODAL ===================== */
+.perde{position:fixed;inset:0;background:rgba(16,64,44,.55);display:none;align-items:center;justify-content:center;
+  padding:20px;z-index:50;backdrop-filter:blur(3px)}
+.perde.acik{display:flex}
+.modal{background:var(--kart);border-radius:var(--r-lg);padding:22px;max-width:26rem;width:100%;box-shadow:var(--golge);max-height:86dvh;overflow:auto}
+.modal h3{font-size:1.35rem;margin-bottom:6px}
+.modal .yigin{margin-top:16px}
+
+/* ===================== NASIL OYNANIR ===================== */
+.adim{display:flex;gap:14px;margin-bottom:16px}
+.adim .say{width:34px;height:34px;flex:none;border-radius:50%;background:var(--yesil);color:#FFFCF6;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem}
+.adim h3{font-size:1rem;margin-bottom:2px}
+.ornek{background:var(--yesil-acik);border-radius:14px;padding:14px;text-align:center;margin:12px 0}
+.ornek .k{font-family:var(--disp);font-size:1.7rem}
+.ornek .y{color:var(--yasak);font-weight:600;font-size:.92rem;margin-top:6px}
+.renkler{display:flex;gap:8px;flex-wrap:wrap}
+.renkler span{padding:7px 11px;border-radius:10px;color:#fff;font-size:.86rem;font-weight:650}
+
+/* ===================== ISTATISTIK / GECMIS ===================== */
+.bosluk{text-align:center;padding:34px 16px;color:#6B7B72}
+.bosluk .em{font-size:2.4rem;display:block;margin-bottom:8px}
+.gecmis{background:var(--kart);border-radius:var(--r);padding:14px;box-shadow:var(--golge-sm);margin-bottom:10px}
+.gecmis .tar{font-size:.76rem;color:#6B7B72}
+.gecmis b{font-size:1.02rem}
+.uyari-kutu{background:#FDF6E7;border:1px solid var(--altin);border-radius:14px;padding:12px 14px;font-size:.88rem;margin-bottom:12px}
+.kaydir{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.dil{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:640px){
+  .ekran{max-width:44rem;margin:0 auto;width:100%}
+  .rozetler{grid-template-columns:repeat(4,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+html[data-animasyon="0"] *{animation:none !important;transition:none !important}
+.gizle{display:none !important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div id="uygulama"></div>
+<div class="perde" id="perde" role="dialog" aria-modal="true"><div class="modal" id="modal"></div></div>
+<script>
+/* =========================================================================
+   DİNÎ TABU — tek dosya, çevrim dışı, bağımlılıksız
+   Bölüm 1: Dil (i18n)
+   ========================================================================= */
+"use strict";
+var DILLER = ["tr","en","ar","fr"];
+var DIL_ADI = {tr:"Türkçe", en:"English", ar:"العربية", fr:"Français"};
+var RTL = {ar:true};
+
+var S = {
+tr:{
+ ad:"Dinî Tabu", alt:"Anlat, bildir, kazan",
+ yeni:"Yeni Oyun", hizli:"Hızlı Oyun", devamet:"Yarım Oyuna Devam", paketler:"Kelime Paketleri",
+ nasil:"Nasıl Oynanır?", ayarlar:"Ayarlar", istatistik:"İstatistikler", gecmis:"Oyun Geçmişi",
+ geri:"Geri", ileri:"İleri", basla:"Başla", iptal:"İptal", kaydet:"Kaydet", sil:"Sil", kapat:"Kapat",
+ evet:"Evet", hayir:"Hayır", tamam:"Tamam", devam:"Devam Et", vazgec:"Vazgeç",
+ adim:"Adım", saniye:"saniye", sn:"sn", puan:"Puan", tur:"Tur", kart:"kart", kelime:"kelime",
+ a1:"Kaç takım oynayacak?", a1a:"Aynı telefonu 2–8 takım sırayla kullanabilir.",
+ a2:"Takımları tanıtın", a2a:"İsimleri değiştirebilir, simgeye dokunarak yenisini seçebilirsiniz.",
+ a3:"Kelime paketleri", a3a:"Bir veya birden fazla kategori seçin.",
+ a4:"Oyun modu", a4a:"Oyunun nasıl biteceğini belirler.",
+ a5:"Süre ve kart", a5a:"Her takımın sırası için süre ve kart sayısı.",
+ a6:"Pas hakkı", a6a:"Anlatıcı zor bir kelimeyi geçebilir.",
+ a7:"Ceza ve puanlama", a7a:"Yasaklı kelime söylendiğinde ne olsun?",
+ a8:"Oyun özeti", a8a:"Her şey hazır. Son bir kez kontrol edin.",
+ takim:"Takım", takimlar:"Takımlar", takimadi:"Takım adı", oyuncular:"Oyuncular (isteğe bağlı)",
+ oyuncu_ph:"Ali, Ayşe, Ömer",
+ tumu:"Tümünü seç", hicbiri:"Temizle", secili:"seçili",
+ mod_sureli:"Süreli", mod_sureli_a:"Süre bitene kadar kart anlatın",
+ mod_kart:"Kart sayılı", mod_kart_a:"Her sırada belirli sayıda kart",
+ mod_tur:"Tur bazlı", mod_tur_a:"Belirlenen tur sonunda biter",
+ mod_hedef:"Hedef puan", mod_hedef_a:"Hedefe ilk ulaşan kazanır",
+ sure:"Süre", turbasi_kart:"Tur başına kart", sinirsiz:"Sınırsız", ozel:"Özel",
+ tur_sayisi:"Tur sayısı", hedef_puan:"Hedef puan",
+ pas_yok:"Pas yok", pas_n:"Tur başına {n} pas", pas_sinirsiz:"Sınırsız pas",
+ ceza:"Ceza", ceza_eksi:"−1 puan", ceza_iptal:"Kart iptal", ceza_hakem:"Hakem karar verir", ceza_yok:"Ceza yok",
+ puanlama:"Puanlama", p_standart:"Standart (+1 / 0 / −1)", p_rahat:"Rahat (+1 / 0 / 0)",
+ p_rekabet:"Rekabetçi (+2 / 0 / −1)", p_zor:"Zor (+1 / −1 / −2)",
+ zorluk:"Zorluk", z_kolay:"Kolay", z_orta:"Orta", z_zor:"Zor",
+ z_cocuk:"Çocuk modu", z_cocuk_a:"Kolay kelimeler, 3 yasaklı kelime",
+ z_genel:"Herkes", z_uzman:"Uzman modu", z_uzman_a:"Zor kavramlar ağırlıklı",
+ simdibasla:"Şimdi Başla", kategori:"Kategori", kategoriler:"Kategoriler", kart_havuzu:"Kart havuzu",
+ sira_kimde:"Sıra", telefonu_al:"Anlatıcı telefonu alsın. Diğer oyuncular ekrana bakmasın.",
+ hazirim:"Hazırım, kartı göster", gerisayim_basla:"Başla!",
+ pas:"Pas", dogru:"Doğru", yasak:"Yasaklı", yasakli_kelimeler:"Yasaklı kelimeler",
+ anlat:"Anlat", pas_kalan:"Pas", sure_doldu:"Süre doldu!", son_kart_sayilmaz:"Açık kalan kart puanlanmaz.",
+ duraklatildi:"Oyun duraklatıldı", kart_gizli:"Kart gizlendi.",
+ oyunu_bitir:"Oyunu bitir", anamenu:"Ana menü", turozeti:"Tur özeti", turpuani:"Tur puanı",
+ toplampuan:"Toplam puan", oynanan:"Bu turda oynanan kartlar", sonuc:"Sonuç",
+ telefonu_ver:"Telefonu {ad} takımına ver", devam_sirasi:"Sıradaki takıma geç",
+ tebrikler:"Tebrikler!", kazandi:"{ad} kazandı", siralama:"Sıralama", beraberlik:"Beraberlik!",
+ beraberlik_a:"{n} takım eşit puanda. Nasıl bitirelim?", beraberlik_kabul:"Beraberliği kabul et",
+ altin_kart:"Altın Kart oyna", altin_kart_a:"30 saniye · pas yok · yasaklı kelimede kart iptal",
+ altin_tur:"Altın Kart", altin_kazan:"{ad} altın kartı aldı",
+ tekrar:"Aynı ayarlarla tekrar oyna", takim_degis:"Takımları değiştir", sonuc_paylas:"Sonucu paylaş",
+ kopyalandi:"Sonuç panoya kopyalandı", en_cok_dogru:"En çok doğru", en_az_pas:"En az pas",
+ en_az_yasak:"En az yasaklı", en_uzun_seri:"En uzun doğru serisi", en_zor_kart:"En zor kart",
+ en_cok_pas_kart:"En çok pas geçilen", yok:"—",
+ dil:"Dil", ses_efekt:"Ses efektleri", muzik:"Arka plan sesi", titresim:"Titreşim",
+ yazi_boyutu:"Yazı boyutu", kontrast:"Yüksek kontrast", animasyon:"Animasyonlar",
+ negatif:"Puan sıfırın altına düşebilsin", hakem_mod:"Hakem modu",
+ hakem_mod_a:"Yasaklı kelimede onay penceresi açılır", otomatik_duraklat:"Arka plana alınca duraklat",
+ kaydirma:"Kaydırma hareketleri", sifirla:"Verileri sıfırla", sifirla_onay:"Tüm istatistik, geçmiş ve ayarlar silinsin mi?",
+ kucuk:"Küçük", normal:"Normal", buyuk:"Büyük", cokbuyuk:"Çok büyük",
+ acik:"Açık", kapali:"Kapalı",
+ ist_oyun:"Oynanan oyun", ist_kazanma:"Kazanma", ist_dogru:"Toplam doğru", ist_pas:"Toplam pas",
+ ist_yasak:"Toplam yasaklı", ist_oran:"Doğruluk oranı", ist_enyuksek:"En yüksek puan",
+ ist_seri:"En uzun seri", ist_takim:"Takım istatistikleri", ist_kart:"Kart istatistikleri",
+ ist_bos:"Henüz oyun oynanmadı.", gecmis_bos:"Kayıtlı oyun yok.",
+ gosterim:"gösterim", bilinme:"bilinme oranı",
+ ozel_paket:"Özel paketim", kart_ekle:"Kart ekle", kart_duzenle:"Kartı düzenle",
+ ana_kelime:"Ana kelime", yasak_gir:"Yasaklı kelimeler (virgülle ayırın)",
+ en_az_3:"En az 3 yasaklı kelime yazın.", disa:"Dışa aktar (JSON)", ice:"İçe aktar (JSON)",
+ ice_ph:"JSON metnini buraya yapıştırın", ozel_bos:"Henüz kendi kartınızı eklemediniz.",
+ eklendi:"Kart eklendi", silindi:"Silindi", ice_ok:"{n} kart içe aktarıldı", ice_hata:"JSON okunamadı.",
+ n1:"Anlatıcı kartı görür", n1a:"Ekranda büyük yazan ana kelimeyi takım arkadaşlarına anlatır.",
+ n2:"Yasaklı kelimeler söylenemez", n2a:"Kartın altındaki kelimeleri ve türevlerini kullanmak yasaktır.",
+ n3:"Doğru bilinirse puan", n3a:"Takım kelimeyi bulunca “Doğru” düğmesine basılır ve yeni kart gelir.",
+ n4:"Zorlanınca pas", n4a:"Pas hakkı kadar kart atlanabilir. Hak bitince düğme kapanır.",
+ n5:"Süre bitince sıra değişir", n5a:"Telefon sonraki takıma verilir. Gizlilik ekranı kartı korur.",
+ n6:"En yüksek puan kazanır", n6a:"Eşitlik olursa Altın Kart turu oynanır.",
+ ornek_bas:"Örnek kart", renk_anlami:"Renkler ve anlamları",
+ saygi_baslik:"İçerik hakkında",
+ saygi:"Kartlar öğretici ve saygılı olacak şekilde hazırlanmıştır. Oyun bilgi tazeleme amaçlıdır; dinî hüküm veya fetva kaynağı değildir. Tartışmalı meseleler kart havuzuna alınmamıştır.",
+ gizlilik:"Veriler yalnızca bu cihazda saklanır. Hesap, internet veya reklam yoktur.",
+ havuz_bitti:"Kart havuzu tükendi", havuz_bitti_a:"Seçilen kategorilerdeki tüm kartlar oynandı. Desteyi yeniden karıştıralım mı?",
+ karistir:"Yeniden karıştır", bitir:"Oyunu bitir",
+ devam_soru:"Yarım kalan oyun bulundu", devam_soru_a:"Kaldığınız yerden devam etmek ister misiniz?",
+ yeniden:"Yeni oyun kur", cikis_onay:"Oyundan çıkılsın mı? İlerleme kaydedilir.",
+ yasak_onay:"Yasaklı kelime kullanıldı mı?", yasak_onay_evet:"Evet, ceza uygula", yasak_onay_hayir:"Hayır, oyuna dön",
+ en_az_1_kat:"En az bir kategori seçin.", kart_yetersiz:"Seçilen kategorilerde yeterli kart yok.",
+ hazir_kart:"{n} kart hazır", oyun_suresi:"Oyun süresi", kazanan:"Kazanan", paket:"Paket"
+},
+en:{
+ ad:"Faith Taboo", alt:"Describe, guess, win",
+ yeni:"New Game", hizli:"Quick Game", devamet:"Resume Saved Game", paketler:"Word Packs",
+ nasil:"How to Play", ayarlar:"Settings", istatistik:"Statistics", gecmis:"Game History",
+ geri:"Back", ileri:"Next", basla:"Start", iptal:"Cancel", kaydet:"Save", sil:"Delete", kapat:"Close",
+ evet:"Yes", hayir:"No", tamam:"OK", devam:"Resume", vazgec:"Never mind",
+ adim:"Step", saniye:"seconds", sn:"s", puan:"Score", tur:"Round", kart:"cards", kelime:"words",
+ a1:"How many teams?", a1a:"2–8 teams can share the same phone.",
+ a2:"Name the teams", a2a:"Edit names, tap the icon to change it.",
+ a3:"Word packs", a3a:"Pick one or more categories.",
+ a4:"Game mode", a4a:"This decides how the game ends.",
+ a5:"Time and cards", a5a:"Length of each team's turn.",
+ a6:"Passes", a6a:"Let the speaker skip a hard word.",
+ a7:"Penalty and scoring", a7a:"What happens on a forbidden word?",
+ a8:"Game summary", a8a:"All set. One last check.",
+ takim:"Team", takimlar:"Teams", takimadi:"Team name", oyuncular:"Players (optional)",
+ oyuncu_ph:"Sara, Yusuf, Amina",
+ tumu:"Select all", hicbiri:"Clear", secili:"selected",
+ mod_sureli:"Timed", mod_sureli_a:"Play until the clock runs out",
+ mod_kart:"Card count", mod_kart_a:"A fixed number of cards per turn",
+ mod_tur:"Rounds", mod_tur_a:"Ends after the chosen rounds",
+ mod_hedef:"Target score", mod_hedef_a:"First team to the target wins",
+ sure:"Turn time", turbasi_kart:"Cards per turn", sinirsiz:"Unlimited", ozel:"Custom",
+ tur_sayisi:"Number of rounds", hedef_puan:"Target score",
+ pas_yok:"No passes", pas_n:"{n} passes per turn", pas_sinirsiz:"Unlimited passes",
+ ceza:"Penalty", ceza_eksi:"−1 point", ceza_iptal:"Card cancelled", ceza_hakem:"Referee decides", ceza_yok:"No penalty",
+ puanlama:"Scoring", p_standart:"Standard (+1 / 0 / −1)", p_rahat:"Relaxed (+1 / 0 / 0)",
+ p_rekabet:"Competitive (+2 / 0 / −1)", p_zor:"Hard (+1 / −1 / −2)",
+ zorluk:"Difficulty", z_kolay:"Easy", z_orta:"Medium", z_zor:"Hard",
+ z_cocuk:"Kids mode", z_cocuk_a:"Easy words, 3 forbidden words",
+ z_genel:"Everyone", z_uzman:"Expert mode", z_uzman_a:"Mostly advanced concepts",
+ simdibasla:"Start Now", kategori:"Category", kategoriler:"Categories", kart_havuzu:"Card pool",
+ sira_kimde:"Up next", telefonu_al:"Speaker takes the phone. Everyone else looks away.",
+ hazirim:"I'm ready, show the card", gerisayim_basla:"Go!",
+ pas:"Pass", dogru:"Correct", yasak:"Forbidden", yasakli_kelimeler:"Forbidden words",
+ anlat:"Describe", pas_kalan:"Passes", sure_doldu:"Time's up!", son_kart_sayilmaz:"The open card scores nothing.",
+ duraklatildi:"Game paused", kart_gizli:"Card hidden.",
+ oyunu_bitir:"End game", anamenu:"Main menu", turozeti:"Turn summary", turpuani:"Turn score",
+ toplampuan:"Total score", oynanan:"Cards played this turn", sonuc:"Result",
+ telefonu_ver:"Hand the phone to {ad}", devam_sirasi:"Next team",
+ tebrikler:"Congratulations!", kazandi:"{ad} wins", siralama:"Standings", beraberlik:"It's a tie!",
+ beraberlik_a:"{n} teams are level. How should we finish?", beraberlik_kabul:"Accept the tie",
+ altin_kart:"Play the Golden Card", altin_kart_a:"30 seconds · no passes · forbidden word cancels the card",
+ altin_tur:"Golden Card", altin_kazan:"{ad} took the golden card",
+ tekrar:"Play again, same settings", takim_degis:"Change teams", sonuc_paylas:"Share result",
+ kopyalandi:"Result copied", en_cok_dogru:"Most correct", en_az_pas:"Fewest passes",
+ en_az_yasak:"Fewest forbidden", en_uzun_seri:"Longest correct streak", en_zor_kart:"Hardest card",
+ en_cok_pas_kart:"Most passed card", yok:"—",
+ dil:"Language", ses_efekt:"Sound effects", muzik:"Ambient sound", titresim:"Vibration",
+ yazi_boyutu:"Text size", kontrast:"High contrast", animasyon:"Animations",
+ negatif:"Allow scores below zero", hakem_mod:"Referee mode",
+ hakem_mod_a:"Ask for confirmation on a forbidden word", otomatik_duraklat:"Pause when app goes to background",
+ kaydirma:"Swipe gestures", sifirla:"Reset all data", sifirla_onay:"Delete all stats, history and settings?",
+ kucuk:"Small", normal:"Normal", buyuk:"Large", cokbuyuk:"Extra large",
+ acik:"On", kapali:"Off",
+ ist_oyun:"Games played", ist_kazanma:"Wins", ist_dogru:"Total correct", ist_pas:"Total passes",
+ ist_yasak:"Total forbidden", ist_oran:"Accuracy", ist_enyuksek:"Best score",
+ ist_seri:"Longest streak", ist_takim:"Team statistics", ist_kart:"Card statistics",
+ ist_bos:"No games played yet.", gecmis_bos:"No saved games.",
+ gosterim:"shown", bilinme:"guess rate",
+ ozel_paket:"My own pack", kart_ekle:"Add card", kart_duzenle:"Edit card",
+ ana_kelime:"Main word", yasak_gir:"Forbidden words (comma separated)",
+ en_az_3:"Write at least 3 forbidden words.", disa:"Export (JSON)", ice:"Import (JSON)",
+ ice_ph:"Paste JSON here", ozel_bos:"You haven't added any cards yet.",
+ eklendi:"Card added", silindi:"Deleted", ice_ok:"{n} cards imported", ice_hata:"Could not read the JSON.",
+ n1:"The speaker sees the card", n1a:"They describe the big word to their own team.",
+ n2:"Forbidden words are off limits", n2a:"The listed words and their variations cannot be said.",
+ n3:"A correct guess scores", n3a:"Tap Correct and the next card appears.",
+ n4:"Stuck? Pass", n4a:"Skip cards up to your pass limit. The button locks when they run out.",
+ n5:"Time up, phone moves on", n5a:"The privacy screen keeps the next card secret.",
+ n6:"Highest score wins", n6a:"A tie is settled with a Golden Card round.",
+ ornek_bas:"Sample card", renk_anlami:"What the colours mean",
+ saygi_baslik:"About the content",
+ saygi:"Cards are written to be respectful and educational. The game refreshes knowledge; it is not a source of religious rulings. Disputed matters are left out of the deck.",
+ gizlilik:"Everything stays on this device. No account, no internet, no ads.",
+ havuz_bitti:"Card pool is empty", havuz_bitti_a:"Every card in the chosen categories has been played. Reshuffle the deck?",
+ karistir:"Reshuffle", bitir:"End game",
+ devam_soru:"A saved game was found", devam_soru_a:"Would you like to pick up where you left off?",
+ yeniden:"Set up a new game", cikis_onay:"Leave the game? Progress is saved.",
+ yasak_onay:"Was a forbidden word used?", yasak_onay_evet:"Yes, apply the penalty", yasak_onay_hayir:"No, back to the game",
+ en_az_1_kat:"Pick at least one category.", kart_yetersiz:"Not enough cards in these categories.",
+ hazir_kart:"{n} cards ready", oyun_suresi:"Duration", kazanan:"Winner", paket:"Pack"
+},
+ar:{
+ ad:"تابو ديني", alt:"اشرح، خمّن، اربح",
+ yeni:"لعبة جديدة", hizli:"لعبة سريعة", devamet:"متابعة اللعبة المحفوظة", paketler:"حزم الكلمات",
+ nasil:"كيف تُلعب؟", ayarlar:"الإعدادات", istatistik:"الإحصائيات", gecmis:"سجل الألعاب",
+ geri:"رجوع", ileri:"التالي", basla:"ابدأ", iptal:"إلغاء", kaydet:"حفظ", sil:"حذف", kapat:"إغلاق",
+ evet:"نعم", hayir:"لا", tamam:"حسنًا", devam:"متابعة", vazgec:"تراجع",
+ adim:"خطوة", saniye:"ثانية", sn:"ث", puan:"النقاط", tur:"جولة", kart:"بطاقة", kelime:"كلمة",
+ a1:"كم فريقًا سيلعب؟", a1a:"يمكن لـ2 إلى 8 فرق تبادل الهاتف نفسه.",
+ a2:"عرّف بالفرق", a2a:"يمكن تغيير الأسماء والرمز بلمسة.",
+ a3:"حزم الكلمات", a3a:"اختر فئة واحدة أو أكثر.",
+ a4:"نمط اللعب", a4a:"يحدد كيف تنتهي اللعبة.",
+ a5:"الوقت والبطاقات", a5a:"مدة دور كل فريق.",
+ a6:"حق التمرير", a6a:"يستطيع الشارح تخطي كلمة صعبة.",
+ a7:"العقوبة والنقاط", a7a:"ماذا يحدث عند قول كلمة ممنوعة؟",
+ a8:"ملخص اللعبة", a8a:"كل شيء جاهز. راجع مرة أخيرة.",
+ takim:"فريق", takimlar:"الفرق", takimadi:"اسم الفريق", oyuncular:"اللاعبون (اختياري)",
+ oyuncu_ph:"سارة، يوسف، آمنة",
+ tumu:"تحديد الكل", hicbiri:"مسح", secili:"محدد",
+ mod_sureli:"بالوقت", mod_sureli_a:"العب حتى ينتهي الوقت",
+ mod_kart:"بعدد البطاقات", mod_kart_a:"عدد ثابت من البطاقات لكل دور",
+ mod_tur:"بالجولات", mod_tur_a:"تنتهي بعد الجولات المحددة",
+ mod_hedef:"نقاط الهدف", mod_hedef_a:"يفوز أول فريق يبلغ الهدف",
+ sure:"مدة الدور", turbasi_kart:"بطاقات لكل دور", sinirsiz:"بلا حد", ozel:"مخصص",
+ tur_sayisi:"عدد الجولات", hedef_puan:"نقاط الهدف",
+ pas_yok:"بلا تمرير", pas_n:"{n} تمرير لكل دور", pas_sinirsiz:"تمرير بلا حد",
+ ceza:"العقوبة", ceza_eksi:"−1 نقطة", ceza_iptal:"إلغاء البطاقة", ceza_hakem:"الحكم يقرر", ceza_yok:"بلا عقوبة",
+ puanlama:"النقاط", p_standart:"قياسي (+1 / 0 / −1)", p_rahat:"مريح (+1 / 0 / 0)",
+ p_rekabet:"تنافسي (+2 / 0 / −1)", p_zor:"صعب (+1 / −1 / −2)",
+ zorluk:"الصعوبة", z_kolay:"سهل", z_orta:"متوسط", z_zor:"صعب",
+ z_cocuk:"وضع الأطفال", z_cocuk_a:"كلمات سهلة و3 كلمات ممنوعة",
+ z_genel:"للجميع", z_uzman:"وضع الخبراء", z_uzman_a:"مفاهيم متقدمة غالبًا",
+ simdibasla:"ابدأ الآن", kategori:"الفئة", kategoriler:"الفئات", kart_havuzu:"مجموعة البطاقات",
+ sira_kimde:"الدور على", telefonu_al:"ليأخذ الشارح الهاتف. وليصرف الآخرون أنظارهم.",
+ hazirim:"جاهز، أظهر البطاقة", gerisayim_basla:"هيا!",
+ pas:"تمرير", dogru:"صحيح", yasak:"ممنوعة", yasakli_kelimeler:"الكلمات الممنوعة",
+ anlat:"اشرح", pas_kalan:"تمرير", sure_doldu:"انتهى الوقت!", son_kart_sayilmaz:"البطاقة المفتوحة لا تُحتسب.",
+ duraklatildi:"اللعبة متوقفة", kart_gizli:"البطاقة مخفية.",
+ oyunu_bitir:"إنهاء اللعبة", anamenu:"القائمة الرئيسية", turozeti:"ملخص الدور", turpuani:"نقاط الدور",
+ toplampuan:"مجموع النقاط", oynanan:"بطاقات هذا الدور", sonuc:"النتيجة",
+ telefonu_ver:"سلّم الهاتف إلى {ad}", devam_sirasi:"الفريق التالي",
+ tebrikler:"مبروك!", kazandi:"فاز {ad}", siralama:"الترتيب", beraberlik:"تعادل!",
+ beraberlik_a:"{n} فرق متساوية. كيف ننهي؟", beraberlik_kabul:"قبول التعادل",
+ altin_kart:"العب البطاقة الذهبية", altin_kart_a:"30 ثانية · بلا تمرير · الكلمة الممنوعة تلغي البطاقة",
+ altin_tur:"البطاقة الذهبية", altin_kazan:"{ad} أخذ البطاقة الذهبية",
+ tekrar:"العب مجددًا بالإعدادات نفسها", takim_degis:"تغيير الفرق", sonuc_paylas:"مشاركة النتيجة",
+ kopyalandi:"تم نسخ النتيجة", en_cok_dogru:"الأكثر إجابات صحيحة", en_az_pas:"الأقل تمريرًا",
+ en_az_yasak:"الأقل كلمات ممنوعة", en_uzun_seri:"أطول سلسلة صحيحة", en_zor_kart:"أصعب بطاقة",
+ en_cok_pas_kart:"الأكثر تمريرًا", yok:"—",
+ dil:"اللغة", ses_efekt:"المؤثرات الصوتية", muzik:"صوت الخلفية", titresim:"الاهتزاز",
+ yazi_boyutu:"حجم الخط", kontrast:"تباين عالٍ", animasyon:"الحركات",
+ negatif:"السماح بنقاط تحت الصفر", hakem_mod:"وضع الحكم",
+ hakem_mod_a:"طلب تأكيد عند الكلمة الممنوعة", otomatik_duraklat:"إيقاف مؤقت عند مغادرة التطبيق",
+ kaydirma:"إيماءات السحب", sifirla:"مسح كل البيانات", sifirla_onay:"حذف كل الإحصائيات والسجل والإعدادات؟",
+ kucuk:"صغير", normal:"عادي", buyuk:"كبير", cokbuyuk:"كبير جدًا",
+ acik:"مفعّل", kapali:"مغلق",
+ ist_oyun:"الألعاب الملعوبة", ist_kazanma:"مرات الفوز", ist_dogru:"مجموع الصحيح", ist_pas:"مجموع التمرير",
+ ist_yasak:"مجموع الممنوع", ist_oran:"نسبة الدقة", ist_enyuksek:"أعلى نتيجة",
+ ist_seri:"أطول سلسلة", ist_takim:"إحصائيات الفرق", ist_kart:"إحصائيات البطاقات",
+ ist_bos:"لم تُلعب أي لعبة بعد.", gecmis_bos:"لا توجد ألعاب محفوظة.",
+ gosterim:"ظهور", bilinme:"نسبة التخمين",
+ ozel_paket:"حزمتي الخاصة", kart_ekle:"إضافة بطاقة", kart_duzenle:"تعديل البطاقة",
+ ana_kelime:"الكلمة الرئيسية", yasak_gir:"الكلمات الممنوعة (افصل بفاصلة)",
+ en_az_3:"اكتب 3 كلمات ممنوعة على الأقل.", disa:"تصدير (JSON)", ice:"استيراد (JSON)",
+ ice_ph:"الصق نص JSON هنا", ozel_bos:"لم تضف بطاقات بعد.",
+ eklendi:"أُضيفت البطاقة", silindi:"حُذفت", ice_ok:"تم استيراد {n} بطاقة", ice_hata:"تعذّرت قراءة JSON.",
+ n1:"الشارح يرى البطاقة", n1a:"يشرح الكلمة الكبيرة لأعضاء فريقه.",
+ n2:"الكلمات الممنوعة لا تُقال", n2a:"يمنع استعمال الكلمات المكتوبة ومشتقاتها.",
+ n3:"التخمين الصحيح يمنح نقطة", n3a:"اضغط «صحيح» فتظهر بطاقة جديدة.",
+ n4:"إن صعبت، مرّر", n4a:"يمكن التخطي بقدر حق التمرير، ثم يُقفل الزر.",
+ n5:"ينتهي الوقت فينتقل الهاتف", n5a:"شاشة الخصوصية تحمي البطاقة التالية.",
+ n6:"صاحب أعلى نقاط يفوز", n6a:"عند التعادل تُلعب جولة البطاقة الذهبية.",
+ ornek_bas:"بطاقة نموذجية", renk_anlami:"معاني الألوان",
+ saygi_baslik:"عن المحتوى",
+ saygi:"أُعدّت البطاقات لتكون محترمة وتعليمية. اللعبة لتنشيط المعلومات وليست مصدرًا للأحكام الشرعية، وقد استُبعدت المسائل الخلافية.",
+ gizlilik:"تبقى البيانات على هذا الجهاز. بلا حساب ولا إنترنت ولا إعلانات.",
+ havuz_bitti:"نفدت البطاقات", havuz_bitti_a:"لُعبت كل بطاقات الفئات المختارة. هل نخلط المجموعة من جديد؟",
+ karistir:"إعادة الخلط", bitir:"إنهاء اللعبة",
+ devam_soru:"وُجدت لعبة محفوظة", devam_soru_a:"هل تريد المتابعة من حيث توقفت؟",
+ yeniden:"إعداد لعبة جديدة", cikis_onay:"مغادرة اللعبة؟ سيُحفظ التقدم.",
+ yasak_onay:"هل قيلت كلمة ممنوعة؟", yasak_onay_evet:"نعم، طبّق العقوبة", yasak_onay_hayir:"لا، عد للعبة",
+ en_az_1_kat:"اختر فئة واحدة على الأقل.", kart_yetersiz:"لا توجد بطاقات كافية في هذه الفئات.",
+ hazir_kart:"{n} بطاقة جاهزة", oyun_suresi:"المدة", kazanan:"الفائز", paket:"الحزمة"
+},
+fr:{
+ ad:"Tabou Religieux", alt:"Décris, devine, gagne",
+ yeni:"Nouvelle partie", hizli:"Partie rapide", devamet:"Reprendre la partie", paketler:"Paquets de mots",
+ nasil:"Comment jouer", ayarlar:"Réglages", istatistik:"Statistiques", gecmis:"Historique",
+ geri:"Retour", ileri:"Suivant", basla:"Commencer", iptal:"Annuler", kaydet:"Enregistrer", sil:"Supprimer", kapat:"Fermer",
+ evet:"Oui", hayir:"Non", tamam:"OK", devam:"Reprendre", vazgec:"Laisser tomber",
+ adim:"Étape", saniye:"secondes", sn:"s", puan:"Points", tur:"Manche", kart:"cartes", kelime:"mots",
+ a1:"Combien d'équipes ?", a1a:"De 2 à 8 équipes partagent le même téléphone.",
+ a2:"Présentez les équipes", a2a:"Modifiez les noms, touchez l'icône pour la changer.",
+ a3:"Paquets de mots", a3a:"Choisissez une ou plusieurs catégories.",
+ a4:"Mode de jeu", a4a:"Il détermine la fin de la partie.",
+ a5:"Temps et cartes", a5a:"Durée du tour de chaque équipe.",
+ a6:"Passes", a6a:"Le narrateur peut sauter un mot difficile.",
+ a7:"Pénalité et points", a7a:"Que se passe-t-il sur un mot interdit ?",
+ a8:"Résumé", a8a:"Tout est prêt. Une dernière vérification.",
+ takim:"Équipe", takimlar:"Équipes", takimadi:"Nom de l'équipe", oyuncular:"Joueurs (facultatif)",
+ oyuncu_ph:"Sara, Youssef, Amina",
+ tumu:"Tout choisir", hicbiri:"Effacer", secili:"choisi(s)",
+ mod_sureli:"Chronométré", mod_sureli_a:"Jouez jusqu'à la fin du temps",
+ mod_kart:"Nombre de cartes", mod_kart_a:"Un nombre fixe de cartes par tour",
+ mod_tur:"Manches", mod_tur_a:"Se termine après les manches choisies",
+ mod_hedef:"Score cible", mod_hedef_a:"La première équipe à l'atteindre gagne",
+ sure:"Durée du tour", turbasi_kart:"Cartes par tour", sinirsiz:"Illimité", ozel:"Personnalisé",
+ tur_sayisi:"Nombre de manches", hedef_puan:"Score cible",
+ pas_yok:"Aucune passe", pas_n:"{n} passes par tour", pas_sinirsiz:"Passes illimitées",
+ ceza:"Pénalité", ceza_eksi:"−1 point", ceza_iptal:"Carte annulée", ceza_hakem:"L'arbitre décide", ceza_yok:"Aucune pénalité",
+ puanlama:"Points", p_standart:"Standard (+1 / 0 / −1)", p_rahat:"Détendu (+1 / 0 / 0)",
+ p_rekabet:"Compétitif (+2 / 0 / −1)", p_zor:"Difficile (+1 / −1 / −2)",
+ zorluk:"Difficulté", z_kolay:"Facile", z_orta:"Moyen", z_zor:"Difficile",
+ z_cocuk:"Mode enfants", z_cocuk_a:"Mots faciles, 3 mots interdits",
+ z_genel:"Tout le monde", z_uzman:"Mode expert", z_uzman_a:"Surtout des notions avancées",
+ simdibasla:"Commencer", kategori:"Catégorie", kategoriler:"Catégories", kart_havuzu:"Pioche",
+ sira_kimde:"Au tour de", telefonu_al:"Le narrateur prend le téléphone. Les autres ne regardent pas.",
+ hazirim:"Prêt, montrer la carte", gerisayim_basla:"Partez !",
+ pas:"Passe", dogru:"Correct", yasak:"Interdit", yasakli_kelimeler:"Mots interdits",
+ anlat:"Décris", pas_kalan:"Passes", sure_doldu:"Temps écoulé !", son_kart_sayilmaz:"La carte ouverte ne compte pas.",
+ duraklatildi:"Partie en pause", kart_gizli:"Carte masquée.",
+ oyunu_bitir:"Terminer", anamenu:"Menu principal", turozeti:"Résumé du tour", turpuani:"Points du tour",
+ toplampuan:"Score total", oynanan:"Cartes jouées ce tour", sonuc:"Résultat",
+ telefonu_ver:"Passez le téléphone à {ad}", devam_sirasi:"Équipe suivante",
+ tebrikler:"Félicitations !", kazandi:"{ad} gagne", siralama:"Classement", beraberlik:"Égalité !",
+ beraberlik_a:"{n} équipes à égalité. Comment finir ?", beraberlik_kabul:"Accepter l'égalité",
+ altin_kart:"Jouer la Carte d'Or", altin_kart_a:"30 secondes · aucune passe · mot interdit annule la carte",
+ altin_tur:"Carte d'Or", altin_kazan:"{ad} remporte la carte d'or",
+ tekrar:"Rejouer, mêmes réglages", takim_degis:"Changer les équipes", sonuc_paylas:"Partager",
+ kopyalandi:"Résultat copié", en_cok_dogru:"Plus de bonnes réponses", en_az_pas:"Moins de passes",
+ en_az_yasak:"Moins de mots interdits", en_uzun_seri:"Plus longue série", en_zor_kart:"Carte la plus dure",
+ en_cok_pas_kart:"Carte la plus passée", yok:"—",
+ dil:"Langue", ses_efekt:"Effets sonores", muzik:"Son d'ambiance", titresim:"Vibration",
+ yazi_boyutu:"Taille du texte", kontrast:"Contraste élevé", animasyon:"Animations",
+ negatif:"Autoriser les scores négatifs", hakem_mod:"Mode arbitre",
+ hakem_mod_a:"Demande une confirmation sur un mot interdit", otomatik_duraklat:"Pause en arrière-plan",
+ kaydirma:"Gestes de balayage", sifirla:"Effacer les données", sifirla_onay:"Supprimer statistiques, historique et réglages ?",
+ kucuk:"Petit", normal:"Normal", buyuk:"Grand", cokbuyuk:"Très grand",
+ acik:"Activé", kapali:"Désactivé",
+ ist_oyun:"Parties jouées", ist_kazanma:"Victoires", ist_dogru:"Total correct", ist_pas:"Total passes",
+ ist_yasak:"Total interdits", ist_oran:"Précision", ist_enyuksek:"Meilleur score",
+ ist_seri:"Plus longue série", ist_takim:"Statistiques d'équipe", ist_kart:"Statistiques des cartes",
+ ist_bos:"Aucune partie jouée.", gecmis_bos:"Aucune partie enregistrée.",
+ gosterim:"apparitions", bilinme:"taux de réussite",
+ ozel_paket:"Mon paquet", kart_ekle:"Ajouter une carte", kart_duzenle:"Modifier la carte",
+ ana_kelime:"Mot principal", yasak_gir:"Mots interdits (séparés par des virgules)",
+ en_az_3:"Écrivez au moins 3 mots interdits.", disa:"Exporter (JSON)", ice:"Importer (JSON)",
+ ice_ph:"Collez le JSON ici", ozel_bos:"Vous n'avez pas encore ajouté de carte.",
+ eklendi:"Carte ajoutée", silindi:"Supprimée", ice_ok:"{n} cartes importées", ice_hata:"JSON illisible.",
+ n1:"Le narrateur voit la carte", n1a:"Il décrit le grand mot à son équipe.",
+ n2:"Les mots interdits sont bannis", n2a:"Les mots listés et leurs dérivés sont interdits.",
+ n3:"Une bonne réponse rapporte", n3a:"Touchez Correct, la carte suivante apparaît.",
+ n4:"Bloqué ? Passez", n4a:"Sautez des cartes selon vos passes. Le bouton se verrouille ensuite.",
+ n5:"Fin du temps, on change", n5a:"L'écran de confidentialité protège la carte suivante.",
+ n6:"Le meilleur score gagne", n6a:"En cas d'égalité, on joue la Carte d'Or.",
+ ornek_bas:"Exemple de carte", renk_anlami:"Sens des couleurs",
+ saygi_baslik:"À propos du contenu",
+ saygi:"Les cartes sont rédigées de façon respectueuse et éducative. Le jeu rafraîchit les connaissances ; il n'est pas une source d'avis religieux. Les sujets controversés sont exclus.",
+ gizlilik:"Tout reste sur cet appareil. Ni compte, ni internet, ni publicité.",
+ havuz_bitti:"Pioche épuisée", havuz_bitti_a:"Toutes les cartes des catégories choisies ont été jouées. On remélange ?",
+ karistir:"Remélanger", bitir:"Terminer",
+ devam_soru:"Partie sauvegardée trouvée", devam_soru_a:"Voulez-vous reprendre où vous en étiez ?",
+ yeniden:"Créer une partie", cikis_onay:"Quitter la partie ? La progression est gardée.",
+ yasak_onay:"Un mot interdit a-t-il été dit ?", yasak_onay_evet:"Oui, appliquer la pénalité", yasak_onay_hayir:"Non, revenir au jeu",
+ en_az_1_kat:"Choisissez au moins une catégorie.", kart_yetersiz:"Pas assez de cartes dans ces catégories.",
+ hazir_kart:"{n} cartes prêtes", oyun_suresi:"Durée", kazanan:"Vainqueur", paket:"Paquet"
+}
+};
+</script>
+<script>
+/* =========================================================================
+   Bölüm 2: Kart veri tabanı
+   Biçim: "Ana kelime|yasak1,yasak2,yasak3,yasak4,yasak5"
+   KATEGORI[dil][kategori] = {e:[kolay], m:[orta], h:[zor]}
+   ========================================================================= */
+var KAT_SIRA = ["temel","ibadet","peygamber","tarih","ramazan","ahlak","gunler","osmanli","zor"];
+var KAT_AD = {
+ temel:{tr:"Temel Dinî Bilgiler",en:"Basics of Faith",ar:"أساسيات الدين",fr:"Bases de la foi",em:"📖"},
+ ibadet:{tr:"İbadetler",en:"Worship",ar:"العبادات",fr:"Les actes d'adoration",em:"🕌"},
+ peygamber:{tr:"Peygamberler",en:"Prophets",ar:"الأنبياء",fr:"Les prophètes",em:"✨"},
+ tarih:{tr:"İslam Tarihi",en:"Islamic History",ar:"التاريخ الإسلامي",fr:"Histoire islamique",em:"🏛️"},
+ ramazan:{tr:"Ramazan",en:"Ramadan",ar:"رمضان",fr:"Ramadan",em:"🌙"},
+ ahlak:{tr:"Ahlak ve Değerler",en:"Character & Values",ar:"الأخلاق والقيم",fr:"Morale et valeurs",em:"🤍"},
+ gunler:{tr:"Dinî Gün ve Geceler",en:"Holy Days & Nights",ar:"الأيام والليالي المباركة",fr:"Jours et nuits sacrés",em:"🕯️"},
+ osmanli:{tr:"Osmanlı-İslam Kültürü",en:"Ottoman-Islamic Culture",ar:"الثقافة العثمانية",fr:"Culture ottomane",em:"🏺"},
+ zor:{tr:"Zor Kavramlar",en:"Advanced Concepts",ar:"مفاهيم متقدمة",fr:"Notions avancées",em:"🎓"},
+ ozel:{tr:"Özel paketim",en:"My own pack",ar:"حزمتي",fr:"Mon paquet",em:"⭐"}
+};
+
+var KARTLAR = {};
+
+/* ------------------------------- TÜRKÇE -------------------------------- */
+KARTLAR.tr = {
+temel:{
+e:["Namaz|Kılmak,Secde,Vakit,Cami,Rekât",
+"Oruç|Tutmak,İftar,Aç,Ramazan,Sahur",
+"Zekât|Para,Fakir,Vermek,Mal,Sadaka",
+"Hac|Mekke,Kâbe,Ziyaret,İhram,Tavaf",
+"Abdest|Su,Yıkamak,Namaz,Temizlik,El",
+"Dua|İstemek,El açmak,Yalvarmak,Âmin,Yakarış",
+"Ezan|Minare,Müezzin,Okumak,Namaz,Çağrı",
+"Cami|Namaz,Minare,İmam,Cemaat,Kubbe",
+"Kıble|Yön,Kâbe,Dönmek,Namaz,Mihrap",
+"Kur'an|Kitap,Ayet,Sure,Okumak,Vahiy",
+"Mushaf|Kur'an,Kitap,Sayfa,Cilt,Raf",
+"Sure|Kur'an,Ayet,Fatiha,Bölüm,Okumak",
+"Ayet|Kur'an,Sure,Cümle,Vahiy,Meal",
+"Besmele|Başlamak,Rahman,Söylemek,İş,Dua",
+"Selam|Vermek,Merhaba,Almak,Karşılaşmak,Barış",
+"Tesbih|Çekmek,Boncuk,Sayı,Zikir,Otuz üç",
+"Minare|Cami,Ezan,Yüksek,Şerefe,Müezzin",
+"İmam|Cami,Namaz,Öne geçmek,Cemaat,Hoca",
+"Müezzin|Ezan,Cami,Okumak,Ses,Minare",
+"Seccade|Namaz,Sermek,Halı,Yer,Kıble"],
+m:["Meal|Kur'an,Çeviri,Anlam,Türkçe,Tercüme",
+"Tefsir|Kur'an,Açıklama,Yorum,Âlim,Anlam",
+"Hadis|Peygamber,Söz,Rivayet,Kitap,Sünnet",
+"Sünnet|Peygamber,Uygulama,Farz değil,Örnek,Yol",
+"Farz|Zorunlu,Emir,Namaz,Terk,Görev",
+"Vacip|Farz,Zorunlu,Vitir,Kurban,Hüküm",
+"Helal|Serbest,Yenir,Caiz,İzin,Haram",
+"Haram|Yasak,Günah,Caiz değil,Men,Helal",
+"Sevap|Kazanmak,İyilik,Ödül,Amel,Günah",
+"Günah|Kötülük,İşlemek,Tövbe,Yasak,Sevap",
+"Tövbe|Pişmanlık,Af,Dönmek,Günah,Söz",
+"İman|İnanmak,Kalp,Şart,Tasdik,Küfür",
+"Kelime-i Şehadet|İnanmak,Söylemek,İman,Şahitlik,Müslüman",
+"Melek|Nurdan,Cebrail,Kanat,Görünmez,Vahiy"],
+h:["Ulûhiyet|Yaratıcı,Kudret,İnanç,Sıfat,Rablik"]
+},
+ibadet:{
+e:["Secde|Yere,Alın,Namaz,Eğilmek,Rükû",
+"Rükû|Eğilmek,Namaz,Bel,Secde,Ayakta",
+"Tekbir|Namaz,Başlangıç,Yüceltmek,Bayram,El kaldırmak",
+"Kıyam|Ayakta,Namaz,Durmak,Rükû,Başlangıç",
+"Cemaat|Toplu,Cami,İmam,Saf,Birlikte",
+"Saf|Dizilmek,Namaz,Sıra,Cemaat,Omuz",
+"Sela|Cuma,Okumak,Minare,Ses,Davet",
+"Hutbe|Cuma,İmam,Minber,Konuşma,Dinlemek",
+"Minber|Hutbe,Cami,Merdiven,Cuma,Çıkmak",
+"Mihrap|Cami,Kıble,Girinti,İmam,Ön",
+"Şadırvan|Abdest,Su,Cami,Musluk,Avlu",
+"Gusül|Yıkanmak,Boy abdesti,Su,Temizlik,Banyo",
+"Niyet|Kalp,Başlamak,İbadet,Karar,İçten",
+"Vitir|Yatsı,Namaz,Tek,Üç rekât,Vacip",
+"Sadaka|Vermek,Yardım,Para,Fakir,Hayır",
+"Kurban|Bayram,Kesmek,Koyun,Et,Dağıtmak",
+"Fatiha|Sure,İlk,Namaz,Okumak,Yedi",
+"Âmin|Dua,Sonra,Söylemek,Kabul,Fatiha",
+"Kamet|Namaz,Başlamak,Ezan,İmam,İkinci",
+"Cuma namazı|Hafta,Toplanmak,Hutbe,Öğle,Cami"],
+m:["Tahiyyat|Oturmak,Namaz,Okumak,Dua,Son",
+"Zikir|Anmak,Tesbih,Tekrar,Kalp,Söylemek",
+"Salavat|Peygamber,Getirmek,Dua,Söylemek,Selam",
+"İstiğfar|Af,Tövbe,Günah,Dilemek,Söylemek",
+"Nafile|Fazladan,Farz değil,İbadet,Gönüllü,Sünnet",
+"Teyemmüm|Toprak,Su yok,Abdest,El,Yüz",
+"Kunut|Vitir,Dua,Namaz,Okumak,Ayakta",
+"Kaza|Namaz,Sonradan,Kılmak,Kaçırmak,Telafi",
+"Cenaze namazı|Vefat,Cemaat,Ayakta,Tabut,Dua",
+"Umre|Mekke,Küçük hac,Tavaf,İhram,Ziyaret",
+"Tavaf|Kâbe,Dönmek,Yedi,Hac,Etraf",
+"Sa'y|Safa,Merve,Yürümek,Hac,Gidip gelmek",
+"İhram|Beyaz,Hac,Giymek,İki parça,Yasak",
+"Vakfe|Arafat,Durmak,Hac,Zaman,Şart",
+"Kelime-i Tevhid|Söylemek,İman,Birlemek,Şehadet,Zikir",
+"Sübhaneke|Namaz,Başlangıç,Dua,Okumak,İlk",
+"Kıraat|Okumak,Namaz,Kur'an,Sesli,Ayet",
+"Tesbihat|Namaz,Sonra,Otuz üç,Zikir,Cemaat"],
+h:["İtikâf|Cami,Kalmak,Ramazan,Son on gün,Yalnız",
+"Farz-ı kifâye|Yeterli,Toplum,Cenaze,Bir kişi,Sorumluluk"]
+},
+peygamber:{
+e:["Hz. Âdem|İlk,İnsan,Cennet,Havva,Yaratılış",
+"Hz. Nuh|Gemi,Tufan,Su,Hayvan,Çift",
+"Hz. İbrahim|Ateş,Put,Kâbe,İsmail,Halil",
+"Hz. Musa|Asa,Firavun,Deniz,Tur,Levha",
+"Hz. İsa|Meryem,Mucize,İncil,Beşik,Şifa",
+"Hz. Yusuf|Rüya,Kuyu,Mısır,Kardeş,Gömlek",
+"Hz. Yunus|Balık,Karın,Dua,Deniz,Kurtuluş",
+"Hz. Süleyman|Kuş,Karınca,Saltanat,Rüzgâr,Mühür",
+"Hz. Davud|Zebur,Ses,Demir,Zırh,Hükümdar",
+"Hz. Muhammed|Son peygamber,Mekke,Medine,Vahiy,Hira",
+"Hz. İsmail|İbrahim,Kurban,Zemzem,Kâbe,Oğul",
+"Hz. Yakub|Yusuf,Baba,Gözyaşı,Sabır,Kenan"],
+m:["Hz. Eyyüb|Sabır,Hastalık,Dert,İmtihan,Şifa",
+"Hz. İdris|Yazı,İlk,Terzi,İlim,Yükselmek",
+"Hz. Zekeriya|Yahya,Dua,Yaşlı,Çocuk,Mabet",
+"Hz. Yahya|Zekeriya,Oğul,Tebliğ,Genç,Çöl",
+"Hz. Harun|Musa,Kardeş,Konuşma,Yardımcı,Firavun",
+"Hz. Lut|Kavim,Şehir,Helak,Misafir,Uyarı",
+"Hz. Salih|Deve,Semud,Kaya,Mucize,Kavim",
+"Hz. Hud|Âd,Rüzgâr,Kavim,Uyarı,Helak",
+"Hz. Şuayb|Medyen,Ölçü,Tartı,Ticaret,Kavim",
+"Vahiy|Cebrail,Bildirmek,Peygamber,Kur'an,İnmek",
+"Mucize|Olağanüstü,Peygamber,İnandırmak,Asa,Şifa"],
+h:["Ulü'l-azm|Beş,Peygamber,Sabır,Şeriat,Büyük",
+"Nübüvvet|Peygamberlik,Görev,Vahiy,Makam,Tebliğ"]
+},
+tarih:{
+e:["Hicret|Mekke,Medine,Göç,Yolculuk,Takvim",
+"Bedir|Savaş,İlk,Zafer,Melek,Kuyu",
+"Uhud|Savaş,Dağ,Okçu,Hamza,Yenilgi",
+"Hendek|Savaş,Çukur,Selman,Kuşatma,Medine",
+"Ensar|Medine,Yardım,Ev sahibi,Muhacir,Kardeş",
+"Muhacir|Mekke,Göç,Medine,Terk,Ensar",
+"Medine|Şehir,Hicret,Ensar,Yesrib,Mescid",
+"Mekke|Kâbe,Doğum,Şehir,Fetih,Hac",
+"Kâbe|Mekke,Tavaf,Kıble,Hac,Siyah",
+"Zemzem|Su,Kuyu,Mekke,Hacer,İsmail",
+"Hira|Mağara,İlk vahiy,Dağ,Yalnızlık,Nur",
+"Cebrail|Melek,Vahiy,Getirmek,Kanat,Hira",
+"Hz. Ebubekir|İlk halife,Sıddık,Mağara,Dost,Kız",
+"Hz. Ömer|İkinci halife,Adalet,Fetih,Sert,Fâruk",
+"Hz. Osman|Üçüncü halife,Kur'an,Çoğaltmak,Zengin,Hayâ",
+"Hz. Ali|Dördüncü halife,Damat,Cesaret,İlim,Kılıç"],
+m:["Hudeybiye|Antlaşma,Barış,Mekke,Umre,Yıl",
+"Veda Hutbesi|Son,Arafat,Konuşma,Hac,Vasiyet",
+"Hz. Hatice|İlk eş,Tüccar,Destek,İlk iman,Zengin",
+"Hz. Bilal|Ezan,İlk müezzin,Köle,Ses,Sabır",
+"Hz. Hamza|Amca,Uhud,Şehit,Cesur,Aslan",
+"Hz. Meryem|İsa,Anne,İffet,Mabet,Hurma",
+"Mescid-i Nebevî|Medine,Peygamber,Yeşil kubbe,Cami,Ziyaret",
+"Mescid-i Aksâ|Kudüs,İlk kıble,Miraç,Cami,Filistin",
+"Mekke'nin Fethi|Şehir,Girmek,Af,Put,Zafer",
+"Ashâb-ı Kehf|Mağara,Uyku,Yedi,Köpek,Yıl",
+"Fil Vakası|Ebrehe,Kâbe,Kuş,Ordu,Yıl",
+"Sahabe|Arkadaş,Görmek,Peygamber,Nesil,İman",
+"Kudüs|Aksâ,Kutsal,Şehir,Filistin,Fetih",
+"Selâhaddin Eyyûbî|Kudüs,Fetih,Haçlı,Komutan,Merhamet",
+"Malazgirt|Alparslan,Zafer,Anadolu,Bizans,Kapı",
+"Endülüs|İspanya,Kurtuba,Medeniyet,Cami,Yıkılış"],
+h:["Tâbiîn|Sahabe,Sonra,Nesil,Görmek,İkinci",
+"Emevîler|Devlet,Şam,Halife,Hanedan,Dönem",
+"Abbâsîler|Bağdat,Devlet,İlim,Halife,Dönem"]
+},
+ramazan:{
+e:["Ramazan|Ay,Oruç,Teravih,Hilal,Bereket",
+"Davul|Sahur,Ses,Gece,Uyandırmak,Tokmak",
+"Hurma|İftar,Tatlı,Çekirdek,Meyve,Ağaç",
+"Pide|Fırın,Sıra,Ekmek,Susam,Sıcak",
+"Sahur|Oruç,Yemek,Gece,Kalkmak,Son",
+"İftar|Oruç,Açmak,Akşam,Ezan,Sofra",
+"Teravih|Ramazan,Yatsı,Cemaat,Yirmi,Gece",
+"Bayramlaşma|Ziyaret,Kucaklaşmak,Tebrik,Akraba,El öpmek",
+"İftar sofrası|Aile,Yemek,Ezan,Toplanmak,Akşam",
+"Bayram harçlığı|Çocuk,Para,Ziyaret,Cep,El öpmek",
+"Güllaç|Tatlı,Süt,Nişasta,Nar,Yaprak",
+"Zeytin|İftar,Siyah,Yeşil,Ağaç,Çekirdek",
+"Cami avlusu|Teravih,Kalabalık,Ayakkabı,Dış,Toplanmak",
+"Sofra duası|Yemek,Şükür,Âmin,El açmak,Sonra"],
+m:["Mahya|Minare,Işık,Yazı,Cami,Gece",
+"Mukabele|Kur'an,Karşılıklı,Okumak,Dinlemek,Cami",
+"İmsak|Sahur,Başlamak,Oruç,Vakit,Sabah",
+"İmsakiye|Takvim,Vakit,Cetvel,Duvar,Ramazan",
+"Fitre|Ramazan,Vermek,Bayram,Fakir,Baş",
+"Hayır çarşısı|Kermes,Yardım,Satmak,Bağış,Stant",
+"İftariye|Küçük,Tabak,Zeytin,Peynir,Başlangıç",
+"Bereket|Artmak,Bolluk,Rızık,Huzur,Kazanç",
+"Ramazan hilali|Gökyüzü,İnce,Başlangıç,Görmek,Ay",
+"Ramazan davulcusu|Uyandırmak,Mâni,Bahşiş,Sokak,Gece"],
+h:["Diş kirası|İftar,Misafir,Hediye,Osmanlı,Âdet"]
+},
+ahlak:{
+e:["Sabır|Dayanmak,Zorluk,Beklemek,Taşmamak,Eyyüb",
+"Şükür|Teşekkür,Nimet,Memnun,Kanaat,Hamd",
+"Tevazu|Alçakgönüllü,Kibir,Böbürlenmek,Sade,Küçülmek",
+"Merhamet|Acımak,Şefkat,Kalp,Yardım,Anne",
+"Adalet|Eşit,Hak,Hâkim,Terazi,Zulüm",
+"Emanet|Bırakmak,Güven,Geri vermek,Sorumluluk,Korumak",
+"Cömertlik|Vermek,Eli açık,Cimri,Paylaşmak,İkram",
+"Dürüstlük|Doğru,Yalan,Söz,Güven,Eğri",
+"Yalan|Söylemek,Doğru,Uydurmak,Dil,Günah",
+"Komşuluk|Yan,Ev,Hak,Ziyaret,Yardım",
+"Yardımlaşma|Beraber,El,İyilik,Destek,Zor gün",
+"İyilik|Yapmak,Hayır,Karşılık,Sevap,Güzel",
+"Affetmek|Bağışlamak,Kin,Kusur,Geçmek,Özür",
+"Öfke|Kızmak,Sinir,Yutmak,Sakin,Bağırmak",
+"Kibir|Büyüklenmek,Gurur,Tevazu,Burun,Şeytan",
+"Selamlaşmak|Karşılaşmak,Vermek,Almak,Merhaba,Barış",
+"İsraf|Boşa,Harcamak,Fazla,Su,Yemek",
+"Cimrilik|Vermemek,Para,Sıkı,Cömert,El"],
+m:["İhlas|Samimi,Gösteriş,Kalp,Niyet,Sadece",
+"Kanaat|Yetinmek,Az,Memnun,Hırs,Zengin",
+"Güzel ahlak|Davranış,Huy,Örnek,Peygamber,Karakter",
+"Gıybet|Arka,Konuşmak,Dedikodu,Kul hakkı,Ayıp",
+"Kul hakkı|Borç,Helallik,Almak,İnsan,Hesap",
+"Sıla-i rahim|Akraba,Ziyaret,Bağ,Koparmak,Gönül",
+"Ana baba hakkı|Anne,Baba,Saygı,Hizmet,Evlat",
+"Sadakat|Bağlılık,Söz,Vefa,Dost,İhanet",
+"Vefa|Unutmamak,Dost,Hatırlamak,Söz,Kadir",
+"Hoşgörü|Anlayış,Kabul,Farklı,Kızmamak,Sabır",
+"Sözünde durmak|Vaat,Yerine getirmek,Güven,Ahit,Bozmak",
+"Hayâ|Utanmak,Edep,Yüz,Örtmek,İman",
+"Edep|Terbiye,Görgü,Saygı,Davranış,Sofra",
+"Haset|Kıskanmak,Çekememek,Göz,Başkası,Nimet"],
+h:["Tefekkür|Düşünmek,Kâinat,Derin,Hikmet,Sessiz",
+"Tevekkül|Güvenmek,Bağlamak,Deve,Sonuç,Çalışmak",
+"Zühd|Dünya,Uzak,Az,Kalp,Sade"]
+},
+gunler:{
+e:["Ramazan Bayramı|Şeker,Üç gün,Ziyaret,Oruç,Harçlık",
+"Kurban Bayramı|Kesmek,Dört gün,Et,Dağıtmak,Hac",
+"Kadir Gecesi|Bin ay,Ramazan,Yirmi yedi,Kur'an,Gece",
+"Cuma|Hafta,Namaz,Hutbe,Toplanmak,Gün",
+"Kandil|Gece,Minare,Işık,Simit,Kutlamak",
+"Aşure|Tatlı,Kaynatmak,Kırk,Komşu,Muharrem",
+"Bayram sabahı|Namaz,Erken,Tebrik,Yeni elbise,Cami",
+"Bayram ziyareti|Akraba,El öpmek,Şeker,Kapı,Tebrik",
+"Arefe|Bayram,Önceki gün,Oruç,Hazırlık,Kurban",
+"Kurban kesimi|Bayram,Et,Üç pay,Niyet,Sabah"],
+m:["Miraç Gecesi|Yükselmek,Recep,Namaz,Aksâ,Yolculuk",
+"Berat Gecesi|Şaban,Af,On beş,Dua,Gece",
+"Mevlid Gecesi|Doğum,Rebîülevvel,Kandil,Kutlama,Peygamber",
+"Regaib Gecesi|Recep,İlk cuma,Kandil,Dua,Gece",
+"Muharrem|Ay,Aşure,Hicrî,Yıl başı,İlk",
+"Hicrî yılbaşı|Muharrem,Takvim,Hicret,Başlangıç,Yeni",
+"Üç Aylar|Recep,Şaban,Ramazan,Bereket,Dönem",
+"Şaban|Ay,Berat,Ramazan,Üç aylar,Oruç",
+"Bayram namazı|Sabah,Cemaat,Tekbir,Yılda iki,Bayram"],
+h:["Recep|Ay,Regaib,Miraç,Üç aylar,İlk"]
+},
+osmanli:{
+e:["Külliye|Cami,Etraf,Yapı,Medrese,Toplu",
+"Medrese|Okul,İlim,Talebe,Hoca,Avlu",
+"Vakıf|Bağış,Hayır,Kurmak,Mal,Süreklilik",
+"Hat sanatı|Yazı,Kalem,Mürekkep,Levha,Güzel",
+"Ebru|Su,Boya,Kâğıt,Desen,Tekne",
+"Çini|Mavi,İznik,Duvar,Desen,Karo",
+"Kubbe|Cami,Yuvarlak,Üst,Mimar,Örtmek",
+"Mimar Sinan|Yapı,Selimiye,Usta,Cami,Kubbe",
+"Şerbet|İçmek,Tatlı,Bayram,İkram,Gül",
+"Hâfız|Ezber,Kur'an,Okumak,Baştan sona,Cemiyet"],
+m:["Sebil|Su,Dağıtmak,Bina,Hayır,Bardak",
+"İmarethane|Aş,Yemek,Fakir,Dağıtmak,Kapı",
+"Sadaka taşı|Bırakmak,Almak,Gizli,Yardım,Sütun",
+"Muvakkithane|Saat,Vakit,Cami,Ayar,Namaz",
+"Selimiye|Edirne,Cami,Sinan,Minare,Şaheser",
+"Süleymaniye|İstanbul,Cami,Sinan,Tepe,Külliye",
+"Tezhip|Altın,Süsleme,Kenar,Sayfa,İnce",
+"Kürsü|Vaaz,Cami,Oturmak,Hoca,Yüksek"],
+h:["Hünkâr mahfili|Padişah,Cami,Yüksek,Özel,Bölüm",
+"Dergâh|Toplanmak,Zikir,Kapı,Tekke,Mürşit"]
+},
+zor:{
+e:["Fıkıh|İlim,Hüküm,Amel,Mezhep,Kitap",
+"Akaid|İnanç,Esas,İlim,İman,Konu"],
+m:["Nisap|Zekât,Sınır,Miktar,Zenginlik,Ölçü",
+"Mükellef|Sorumlu,Akıl,Bulûğ,Yükümlü,Kişi",
+"Mekruh|Hoş değil,Yapılmamak,Haram,Hüküm,Çirkin",
+"Mübah|Serbest,Sevap,Günah,Seçim,Hüküm",
+"Müstehap|Güzel,Yapılması,Sevap,Zorunlu,Tavsiye",
+"Tasavvuf|Kalp,Nefis,Terbiye,Mânevî,Yol"],
+h:["İcma|Görüş birliği,Âlim,Delil,Hüküm,Toplanmak",
+"Kıyas|Benzetmek,Hüküm,Delil,Yeni,Örnek",
+"Tevatür|Çok kişi,Haber,Kesinlik,Nakil,Yalan",
+"İçtihat|Âlim,Çaba,Hüküm,Delil,Yorum",
+"Sünnet-i müekkede|Kuvvetli,Terk,Sünnet,Namaz,Devam",
+"Farz-ı ayn|Herkes,Kişisel,Namaz,Zorunlu,Sorumluluk",
+"Şer'î delil|Kaynak,Kitap,Sünnet,Hüküm,Dayanak"]
+}
+};
+
+/* ------------------------------- ENGLISH ------------------------------- */
+KARTLAR.en = {
+temel:{
+e:["Prayer|Pray,Mosque,Five,Kneel,Mat",
+"Fasting|Ramadan,Hunger,Dawn,Sunset,Abstain",
+"Zakat|Charity,Wealth,Poor,Give,Percent",
+"Pilgrimage|Mecca,Kaaba,Journey,Ihram,Circle",
+"Ablution|Water,Wash,Prayer,Clean,Hands",
+"Mosque|Prayer,Minaret,Imam,Dome,Carpet",
+"Qibla|Direction,Kaaba,Face,Prayer,Compass",
+"Quran|Book,Verse,Chapter,Recite,Revelation",
+"Adhan|Call,Minaret,Muezzin,Prayer,Voice",
+"Prayer beads|Count,String,Remembrance,Thirty-three,Fingers"],
+m:["Hadith|Prophet,Saying,Report,Book,Tradition",
+"Sunnah|Prophet,Practice,Example,Path,Optional",
+"Halal|Permitted,Lawful,Eat,Allowed,Forbidden",
+"Haram|Forbidden,Sin,Unlawful,Ban,Allowed",
+"Repentance|Regret,Forgive,Return,Sin,Promise",
+"Faith|Believe,Heart,Trust,Pillar,Doubt",
+"Angel|Light,Gabriel,Wings,Unseen,Message",
+"Revelation|Gabriel,Prophet,Descend,Quran,Message"],
+h:["Tafsir|Quran,Explain,Commentary,Scholar,Meaning"]
+},
+ibadet:{
+e:["Prostration|Ground,Forehead,Prayer,Bow,Humble",
+"Sermon|Friday,Imam,Pulpit,Speech,Listen",
+"Pulpit|Sermon,Mosque,Steps,Friday,Climb",
+"Congregation|Together,Mosque,Imam,Rows,Line",
+"Charity|Give,Help,Money,Poor,Good",
+"Sacrifice|Feast,Meat,Share,Animal,Distribute",
+"Friday prayer|Week,Gather,Sermon,Noon,Mosque",
+"Fountain|Ablution,Water,Mosque,Tap,Courtyard"],
+m:["Umrah|Mecca,Lesser,Circle,Ihram,Visit",
+"Tawaf|Kaaba,Circle,Seven,Pilgrimage,Around",
+"Ihram|White,Pilgrimage,Wear,Two pieces,Restriction",
+"Remembrance|Repeat,Beads,Heart,Recall,Say",
+"Intention|Heart,Begin,Worship,Decide,Sincere",
+"Night prayer|Ramadan,Evening,Congregation,Twenty,Late"],
+h:["Retreat|Mosque,Stay,Ramadan,Last ten,Seclusion"]
+},
+peygamber:{
+e:["Adam|First,Human,Garden,Eve,Creation",
+"Noah|Ark,Flood,Water,Animals,Pairs",
+"Abraham|Fire,Idols,Kaaba,Ishmael,Friend",
+"Moses|Staff,Pharaoh,Sea,Mount,Tablets",
+"Jesus|Mary,Miracle,Gospel,Cradle,Healing",
+"Joseph|Dream,Well,Egypt,Brothers,Shirt",
+"Jonah|Fish,Belly,Prayer,Sea,Rescue",
+"Solomon|Birds,Ant,Kingdom,Wind,Ring",
+"David|Psalms,Voice,Iron,Armour,King",
+"Muhammad|Last prophet,Mecca,Medina,Revelation,Cave"],
+m:["Job|Patience,Illness,Trial,Test,Healing",
+"Ishmael|Abraham,Sacrifice,Zamzam,Kaaba,Son",
+"Zechariah|John,Prayer,Old,Child,Temple",
+"Aaron|Moses,Brother,Speech,Helper,Pharaoh",
+"Lot|People,City,Destroy,Guests,Warning"],
+h:["Prophethood|Mission,Revelation,Rank,Message,Chosen"]
+},
+tarih:{
+e:["Migration|Mecca,Medina,Move,Journey,Calendar",
+"Badr|Battle,First,Victory,Angels,Well",
+"Uhud|Battle,Mountain,Archers,Hamza,Defeat",
+"Medina|City,Migration,Helpers,Mosque,Yathrib",
+"Mecca|Kaaba,Birth,City,Conquest,Pilgrimage",
+"Kaaba|Mecca,Circle,Qibla,Pilgrimage,Black",
+"Zamzam|Water,Well,Mecca,Hagar,Ishmael",
+"Cave of Hira|First revelation,Mountain,Alone,Light,Retreat"],
+m:["Helpers|Medina,Support,Hosts,Migrants,Brotherhood",
+"Migrants|Mecca,Move,Medina,Leave,Helpers",
+"Farewell Sermon|Last,Arafat,Speech,Pilgrimage,Advice",
+"Companions|Friends,Saw,Prophet,Generation,Faith",
+"Al-Aqsa|Jerusalem,First qibla,Ascension,Mosque,Palestine",
+"Jerusalem|Aqsa,Holy,City,Palestine,Conquest",
+"Andalusia|Spain,Cordoba,Civilisation,Mosque,Fall"],
+h:["Successors|Companions,After,Generation,Second,Meet"]
+},
+ramazan:{
+e:["Ramadan|Month,Fast,Night prayer,Crescent,Blessing",
+"Dates|Break fast,Sweet,Stone,Fruit,Palm",
+"Predawn meal|Fast,Eat,Night,Wake,Last",
+"Breaking fast|Sunset,Open,Call,Table,Water",
+"Crescent|Sky,Thin,Start,See,Month",
+"Feast|Sweets,Visit,Three days,Children,Greeting"],
+m:["Blessing|Increase,Abundance,Provision,Peace,Grow",
+"Charity fund|Ramadan,Give,Feast,Poor,Head",
+"Lantern|Light,Street,Night,Ramadan,Hang"],
+h:["Night of Decree|Thousand months,Ramadan,Twenty-seven,Quran,Night"]
+},
+ahlak:{
+e:["Patience|Endure,Hardship,Wait,Calm,Job",
+"Gratitude|Thanks,Blessing,Content,Praise,Happy",
+"Humility|Modest,Pride,Boast,Simple,Small",
+"Mercy|Pity,Compassion,Heart,Help,Mother",
+"Justice|Equal,Right,Judge,Scales,Oppression",
+"Trust|Leave,Return,Responsibility,Safe,Keep",
+"Generosity|Give,Open hand,Stingy,Share,Host",
+"Honesty|True,Lie,Word,Trust,Straight",
+"Forgiving|Pardon,Grudge,Fault,Let go,Sorry",
+"Neighbour|Next,House,Right,Visit,Help"],
+m:["Sincerity|Genuine,Show off,Heart,Intention,Only",
+"Contentment|Enough,Little,Happy,Greed,Rich",
+"Backbiting|Behind,Talk,Gossip,Rights,Shame",
+"Kinship|Relatives,Visit,Bond,Cut,Heart",
+"Modesty|Shy,Manners,Face,Cover,Faith",
+"Envy|Jealous,Begrudge,Eye,Others,Blessing"],
+h:["Reflection|Think,Universe,Deep,Wisdom,Silent",
+"Reliance|Trust,Tie,Camel,Outcome,Effort"]
+},
+gunler:{
+e:["Eid al-Fitr|Sweets,Three days,Visit,Fast,Gift",
+"Eid al-Adha|Sacrifice,Four days,Meat,Share,Pilgrimage",
+"Friday|Week,Prayer,Sermon,Gather,Day",
+"Ashura|Sweet,Cook,Forty,Neighbour,Muharram",
+"Eid morning|Prayer,Early,Greeting,New clothes,Mosque"],
+m:["Night Journey|Ascension,Rajab,Prayer,Aqsa,Travel",
+"Muharram|Month,Ashura,Hijri,New year,First",
+"Hijri New Year|Muharram,Calendar,Migration,Start,New"],
+h:["Three Months|Rajab,Shaban,Ramadan,Blessing,Season"]
+},
+osmanli:{
+e:["Complex|Mosque,Around,Building,School,Together",
+"Madrasa|School,Knowledge,Student,Teacher,Courtyard",
+"Endowment|Donate,Charity,Found,Property,Lasting",
+"Calligraphy|Writing,Pen,Ink,Panel,Beautiful",
+"Marbling|Water,Paint,Paper,Pattern,Tray",
+"Tile|Blue,Iznik,Wall,Pattern,Square",
+"Dome|Mosque,Round,Top,Architect,Cover",
+"Sinan|Builder,Selimiye,Master,Mosque,Dome"],
+m:["Public fountain|Water,Give,Building,Charity,Cup",
+"Soup kitchen|Food,Poor,Serve,Door,Free",
+"Charity stone|Leave,Take,Secret,Help,Column"],
+h:["Lodge|Gather,Remembrance,Door,Guide,Retreat"]
+},
+zor:{
+e:["Jurisprudence|Knowledge,Ruling,Deed,School,Book"],
+m:["Threshold|Zakat,Limit,Amount,Wealth,Measure",
+"Accountable|Responsible,Sane,Adult,Bound,Person",
+"Disliked|Not liked,Avoid,Forbidden,Ruling,Ugly",
+"Permissible|Free,Reward,Sin,Choice,Ruling"],
+h:["Consensus|Agreement,Scholars,Proof,Ruling,Gather",
+"Analogy|Compare,Ruling,Proof,New,Example",
+"Independent reasoning|Scholar,Effort,Ruling,Proof,Interpret"]
+}
+};
+
+/* ------------------------------- العربية ------------------------------- */
+KARTLAR.ar = {
+temel:{
+e:["الصلاة|ركوع,سجود,مسجد,وقت,ركعة",
+"الصوم|رمضان,إمساك,إفطار,سحور,جوع",
+"الزكاة|مال,فقير,إعطاء,نصاب,صدقة",
+"الحج|مكة,الكعبة,إحرام,طواف,زيارة",
+"الوضوء|ماء,غسل,صلاة,طهارة,يد",
+"المسجد|صلاة,مئذنة,إمام,قبة,جماعة",
+"القبلة|اتجاه,الكعبة,صلاة,محراب,توجه",
+"القرآن|كتاب,آية,سورة,تلاوة,وحي",
+"الأذان|مئذنة,مؤذن,نداء,صلاة,صوت",
+"السبحة|عد,خرز,ذكر,ثلاثة وثلاثون,يد"],
+m:["الحديث|نبي,قول,رواية,سنة,كتاب",
+"السنة|نبي,فعل,اقتداء,طريق,نافلة",
+"الحلال|مباح,جائز,أكل,إذن,حرام",
+"الحرام|ممنوع,إثم,لا يجوز,منع,حلال",
+"التوبة|ندم,مغفرة,رجوع,ذنب,عهد",
+"الإيمان|تصديق,قلب,ركن,يقين,كفر",
+"الملائكة|نور,جبريل,جناح,غيب,وحي"],
+h:["التفسير|قرآن,شرح,عالم,معنى,بيان"]
+},
+ibadet:{
+e:["السجود|أرض,جبهة,صلاة,انحناء,خشوع",
+"الخطبة|جمعة,إمام,منبر,كلام,استماع",
+"المنبر|خطبة,مسجد,درج,جمعة,صعود",
+"الجماعة|اجتماع,مسجد,إمام,صف,معًا",
+"الصدقة|عطاء,مساعدة,مال,فقير,خير",
+"الأضحية|عيد,ذبح,لحم,توزيع,شاة",
+"صلاة الجمعة|أسبوع,اجتماع,خطبة,ظهر,مسجد"],
+m:["العمرة|مكة,طواف,إحرام,زيارة,أصغر",
+"الطواف|الكعبة,دوران,سبعة,حج,حول",
+"الإحرام|أبيض,حج,لبس,قطعتان,محظور",
+"الذكر|ترديد,سبحة,قلب,لسان,تسبيح",
+"النية|قلب,بداية,عبادة,عزم,إخلاص"],
+h:["الاعتكاف|مسجد,مكوث,رمضان,العشر,انقطاع"]
+},
+peygamber:{
+e:["آدم|أول,إنسان,جنة,حواء,خلق",
+"نوح|سفينة,طوفان,ماء,حيوان,زوجان",
+"إبراهيم|نار,أصنام,الكعبة,إسماعيل,خليل",
+"موسى|عصا,فرعون,بحر,طور,ألواح",
+"عيسى|مريم,معجزة,إنجيل,مهد,شفاء",
+"يوسف|رؤيا,بئر,مصر,إخوة,قميص",
+"يونس|حوت,بطن,دعاء,بحر,نجاة",
+"سليمان|طير,نملة,ملك,ريح,خاتم",
+"داود|زبور,صوت,حديد,درع,ملك",
+"محمد|خاتم,مكة,المدينة,وحي,حراء"],
+m:["أيوب|صبر,مرض,ابتلاء,اختبار,شفاء",
+"إسماعيل|إبراهيم,ذبح,زمزم,الكعبة,ابن",
+"زكريا|يحيى,دعاء,شيخ,ولد,محراب",
+"هارون|موسى,أخ,لسان,وزير,فرعون"],
+h:["النبوة|رسالة,وحي,مقام,تبليغ,اصطفاء"]
+},
+tarih:{
+e:["الهجرة|مكة,المدينة,انتقال,رحلة,تقويم",
+"بدر|غزوة,أولى,نصر,ملائكة,بئر",
+"أحد|غزوة,جبل,رماة,حمزة,هزيمة",
+"المدينة|مدينة,هجرة,أنصار,مسجد,يثرب",
+"مكة|الكعبة,مولد,مدينة,فتح,حج",
+"الكعبة|مكة,طواف,قبلة,حج,أسود",
+"زمزم|ماء,بئر,مكة,هاجر,إسماعيل",
+"غار حراء|وحي,جبل,خلوة,نور,أول"],
+m:["الأنصار|المدينة,نصرة,مضيف,مهاجر,أخوة",
+"المهاجرون|مكة,انتقال,المدينة,ترك,أنصار",
+"حجة الوداع|أخيرة,عرفات,خطبة,حج,وصية",
+"الصحابة|رفقة,رؤية,نبي,جيل,إيمان",
+"المسجد الأقصى|القدس,أولى القبلتين,إسراء,مسجد,فلسطين",
+"القدس|الأقصى,مقدس,مدينة,فلسطين,فتح"],
+h:["التابعون|صحابة,بعد,جيل,ثانٍ,لقاء"]
+},
+ramazan:{
+e:["رمضان|شهر,صوم,تراويح,هلال,بركة",
+"التمر|إفطار,حلو,نواة,ثمر,نخل",
+"السحور|صوم,طعام,ليل,قيام,آخر",
+"الإفطار|صوم,فتح,مغرب,أذان,مائدة",
+"التراويح|رمضان,عشاء,جماعة,عشرون,ليل",
+"العيد|حلوى,زيارة,ثلاثة أيام,أطفال,تهنئة"],
+m:["الإمساك|سحور,بداية,صوم,وقت,فجر",
+"البركة|زيادة,وفرة,رزق,سكينة,نماء",
+"زكاة الفطر|رمضان,إخراج,عيد,فقير,رأس"],
+h:["ليلة القدر|ألف شهر,رمضان,سبع وعشرون,قرآن,ليل"]
+},
+ahlak:{
+e:["الصبر|تحمل,شدة,انتظار,هدوء,أيوب",
+"الشكر|حمد,نعمة,رضا,قناعة,امتنان",
+"التواضع|بساطة,كبر,تفاخر,لين,خفض",
+"الرحمة|شفقة,عطف,قلب,مساعدة,أم",
+"العدل|إنصاف,حق,قاضٍ,ميزان,ظلم",
+"الأمانة|حفظ,ثقة,رد,مسؤولية,وديعة",
+"الكرم|عطاء,يد,بخل,مشاركة,ضيافة",
+"الصدق|حق,كذب,قول,ثقة,استقامة",
+"العفو|صفح,حقد,زلة,تجاوز,اعتذار",
+"الجار|بيت,حق,زيارة,مساعدة,قرب"],
+m:["الإخلاص|صدق,رياء,قلب,نية,وحده",
+"القناعة|كفاية,قليل,رضا,طمع,غنى",
+"الغيبة|خلف,كلام,نميمة,حق,عيب",
+"صلة الرحم|أقارب,زيارة,وصل,قطع,ود",
+"الحياء|خجل,أدب,وجه,ستر,إيمان"],
+h:["التفكر|تأمل,كون,عمق,حكمة,صمت",
+"التوكل|ثقة,عقل,ناقة,نتيجة,سعي"]
+},
+gunler:{
+e:["عيد الفطر|حلوى,ثلاثة أيام,زيارة,صوم,عيدية",
+"عيد الأضحى|ذبح,أربعة أيام,لحم,توزيع,حج",
+"الجمعة|أسبوع,صلاة,خطبة,اجتماع,يوم",
+"عاشوراء|حلوى,طبخ,أربعون,جار,محرم"],
+m:["ليلة الإسراء|معراج,رجب,صلاة,الأقصى,رحلة",
+"محرم|شهر,عاشوراء,هجري,رأس السنة,أول",
+"رأس السنة الهجرية|محرم,تقويم,هجرة,بداية,جديد"],
+h:["الأشهر الثلاثة|رجب,شعبان,رمضان,بركة,موسم"]
+},
+osmanli:{
+e:["المدرسة|تعليم,علم,طالب,معلم,فناء",
+"الوقف|تبرع,خير,إنشاء,مال,دوام",
+"الخط العربي|كتابة,قلم,حبر,لوحة,جمال",
+"القبة|مسجد,دائرة,أعلى,معماري,تغطية",
+"سنان|بناء,سليمية,معلم,مسجد,قبة",
+"القيشاني|أزرق,إزنيق,جدار,نقش,مربع"],
+m:["السبيل|ماء,توزيع,بناء,خير,كوب",
+"التكية|طعام,فقير,توزيع,باب,مجانًا",
+"حجر الصدقة|ترك,أخذ,سر,مساعدة,عمود"],
+h:["التذهيب|ذهب,زخرفة,حاشية,صفحة,دقة"]
+},
+zor:{
+e:["الفقه|علم,حكم,عمل,مذهب,كتاب"],
+m:["النصاب|زكاة,حد,مقدار,غنى,قياس",
+"المكلف|مسؤول,عقل,بلوغ,ملزم,شخص",
+"المكروه|غير محبوب,ترك,حرام,حكم,قبح",
+"المباح|جائز,ثواب,إثم,اختيار,حكم"],
+h:["الإجماع|اتفاق,علماء,دليل,حكم,مجمع",
+"القياس|تشبيه,حكم,دليل,جديد,مثال",
+"الاجتهاد|عالم,جهد,حكم,دليل,استنباط"]
+}
+};
+
+/* ------------------------------- FRANÇAIS ------------------------------ */
+KARTLAR.fr = {
+temel:{
+e:["Prière|Prier,Mosquée,Cinq,Incliner,Tapis",
+"Jeûne|Ramadan,Faim,Aube,Coucher,Abstenir",
+"Aumône|Charité,Richesse,Pauvre,Donner,Part",
+"Pèlerinage|La Mecque,Kaaba,Voyage,Ihram,Tourner",
+"Ablutions|Eau,Laver,Prière,Propre,Mains",
+"Mosquée|Prière,Minaret,Imam,Coupole,Tapis",
+"Qibla|Direction,Kaaba,Face,Prière,Boussole",
+"Coran|Livre,Verset,Sourate,Réciter,Révélation",
+"Appel à la prière|Minaret,Muezzin,Voix,Prière,Annonce",
+"Chapelet|Compter,Grains,Rappel,Trente-trois,Doigts"],
+m:["Hadith|Prophète,Parole,Récit,Livre,Tradition",
+"Sunna|Prophète,Pratique,Exemple,Voie,Facultatif",
+"Licite|Permis,Autorisé,Manger,Accord,Interdit",
+"Illicite|Interdit,Péché,Défendu,Refus,Permis",
+"Repentir|Regret,Pardon,Revenir,Péché,Promesse",
+"Foi|Croire,Cœur,Confiance,Pilier,Doute",
+"Ange|Lumière,Gabriel,Ailes,Invisible,Message"],
+h:["Exégèse|Coran,Expliquer,Commentaire,Savant,Sens"]
+},
+ibadet:{
+e:["Prosternation|Sol,Front,Prière,Incliner,Humilité",
+"Sermon|Vendredi,Imam,Chaire,Discours,Écouter",
+"Chaire|Sermon,Mosquée,Marches,Vendredi,Monter",
+"Assemblée|Ensemble,Mosquée,Imam,Rangs,Ligne",
+"Aumône libre|Donner,Aider,Argent,Pauvre,Bien",
+"Sacrifice|Fête,Viande,Partager,Bête,Distribuer",
+"Prière du vendredi|Semaine,Réunir,Sermon,Midi,Mosquée"],
+m:["Omra|La Mecque,Petit,Tourner,Ihram,Visite",
+"Circumambulation|Kaaba,Tourner,Sept,Pèlerinage,Autour",
+"Ihram|Blanc,Pèlerinage,Porter,Deux pièces,Interdit",
+"Rappel|Répéter,Chapelet,Cœur,Langue,Louange",
+"Intention|Cœur,Début,Adoration,Décider,Sincère"],
+h:["Retraite|Mosquée,Rester,Ramadan,Dix derniers,Isolement"]
+},
+peygamber:{
+e:["Adam|Premier,Humain,Jardin,Ève,Création",
+"Noé|Arche,Déluge,Eau,Animaux,Paires",
+"Abraham|Feu,Idoles,Kaaba,Ismaël,Ami",
+"Moïse|Bâton,Pharaon,Mer,Mont,Tables",
+"Jésus|Marie,Miracle,Évangile,Berceau,Guérison",
+"Joseph|Rêve,Puits,Égypte,Frères,Chemise",
+"Jonas|Poisson,Ventre,Prière,Mer,Salut",
+"Salomon|Oiseaux,Fourmi,Royaume,Vent,Anneau",
+"David|Psaumes,Voix,Fer,Armure,Roi",
+"Mahomet|Dernier,La Mecque,Médine,Révélation,Grotte"],
+m:["Job|Patience,Maladie,Épreuve,Test,Guérison",
+"Ismaël|Abraham,Sacrifice,Zamzam,Kaaba,Fils",
+"Zacharie|Jean,Prière,Vieux,Enfant,Temple",
+"Aaron|Moïse,Frère,Parole,Aide,Pharaon"],
+h:["Prophétie|Mission,Révélation,Rang,Message,Élu"]
+},
+tarih:{
+e:["Hégire|La Mecque,Médine,Départ,Voyage,Calendrier",
+"Badr|Bataille,Première,Victoire,Anges,Puits",
+"Ouhoud|Bataille,Montagne,Archers,Hamza,Défaite",
+"Médine|Ville,Hégire,Auxiliaires,Mosquée,Yathrib",
+"La Mecque|Kaaba,Naissance,Ville,Conquête,Pèlerinage",
+"Kaaba|La Mecque,Tourner,Qibla,Pèlerinage,Noir",
+"Zamzam|Eau,Puits,La Mecque,Hagar,Ismaël",
+"Grotte de Hira|Révélation,Montagne,Seul,Lumière,Retraite"],
+m:["Auxiliaires|Médine,Soutien,Hôtes,Émigrés,Fraternité",
+"Émigrés|La Mecque,Partir,Médine,Quitter,Auxiliaires",
+"Sermon d'adieu|Dernier,Arafat,Discours,Pèlerinage,Conseil",
+"Compagnons|Amis,Voir,Prophète,Génération,Foi",
+"Al-Aqsa|Jérusalem,Première qibla,Ascension,Mosquée,Palestine",
+"Andalousie|Espagne,Cordoue,Civilisation,Mosquée,Chute"],
+h:["Successeurs|Compagnons,Après,Génération,Deuxième,Rencontre"]
+},
+ramazan:{
+e:["Ramadan|Mois,Jeûne,Tarawih,Croissant,Bénédiction",
+"Dattes|Rupture,Sucré,Noyau,Fruit,Palmier",
+"Repas d'avant l'aube|Jeûne,Manger,Nuit,Lever,Dernier",
+"Rupture du jeûne|Coucher,Ouvrir,Appel,Table,Eau",
+"Croissant|Ciel,Fin,Début,Voir,Mois",
+"Fête|Sucreries,Visite,Trois jours,Enfants,Vœux"],
+m:["Bénédiction|Augmenter,Abondance,Subsistance,Paix,Croître",
+"Aumône de rupture|Ramadan,Donner,Fête,Pauvre,Personne"],
+h:["Nuit du Destin|Mille mois,Ramadan,Vingt-sept,Coran,Nuit"]
+},
+ahlak:{
+e:["Patience|Endurer,Épreuve,Attendre,Calme,Job",
+"Gratitude|Merci,Bienfait,Content,Louange,Heureux",
+"Humilité|Modeste,Orgueil,Vanter,Simple,Petit",
+"Miséricorde|Pitié,Compassion,Cœur,Aider,Mère",
+"Justice|Égal,Droit,Juge,Balance,Injustice",
+"Dépôt|Laisser,Rendre,Responsabilité,Sûr,Garder",
+"Générosité|Donner,Main ouverte,Avare,Partager,Accueil",
+"Honnêteté|Vrai,Mensonge,Parole,Confiance,Droit",
+"Pardon|Gracier,Rancune,Faute,Oublier,Excuse",
+"Voisin|À côté,Maison,Droit,Visite,Aide"],
+m:["Sincérité|Vrai,Paraître,Cœur,Intention,Seul",
+"Contentement|Suffire,Peu,Content,Avidité,Riche",
+"Médisance|Derrière,Parler,Ragot,Droit,Honte",
+"Liens familiaux|Parents,Visite,Lien,Couper,Affection",
+"Pudeur|Gêne,Bienséance,Visage,Couvrir,Foi"],
+h:["Méditation|Penser,Univers,Profond,Sagesse,Silence",
+"Confiance en Dieu|Se fier,Attacher,Chameau,Résultat,Effort"]
+},
+gunler:{
+e:["Aïd el-Fitr|Sucreries,Trois jours,Visite,Jeûne,Cadeau",
+"Aïd el-Adha|Sacrifice,Quatre jours,Viande,Partage,Pèlerinage",
+"Vendredi|Semaine,Prière,Sermon,Réunion,Jour",
+"Achoura|Dessert,Cuire,Quarante,Voisin,Mouharram"],
+m:["Voyage nocturne|Ascension,Rajab,Prière,Aqsa,Trajet",
+"Mouharram|Mois,Achoura,Hégirien,Nouvel an,Premier"],
+h:["Trois mois|Rajab,Chaabane,Ramadan,Bénédiction,Saison"]
+},
+osmanli:{
+e:["Complexe|Mosquée,Autour,Bâtiment,École,Ensemble",
+"Médersa|École,Savoir,Élève,Maître,Cour",
+"Fondation pieuse|Don,Charité,Créer,Bien,Durable",
+"Calligraphie|Écriture,Plume,Encre,Panneau,Beauté",
+"Ébru|Eau,Peinture,Papier,Motif,Bac",
+"Coupole|Mosquée,Rond,Sommet,Architecte,Couvrir",
+"Sinan|Bâtir,Selimiye,Maître,Mosquée,Coupole"],
+m:["Fontaine publique|Eau,Donner,Bâtiment,Charité,Gobelet",
+"Cuisine des pauvres|Nourriture,Pauvre,Servir,Porte,Gratuit",
+"Pierre d'aumône|Laisser,Prendre,Discret,Aide,Colonne"],
+h:["Enluminure|Or,Ornement,Bordure,Page,Finesse"]
+},
+zor:{
+e:["Jurisprudence|Science,Règle,Acte,École,Livre"],
+m:["Seuil|Aumône,Limite,Montant,Richesse,Mesure",
+"Responsable|Adulte,Raison,Puberté,Tenu,Personne",
+"Déconseillé|Peu aimé,Éviter,Interdit,Règle,Laid",
+"Permis|Libre,Récompense,Péché,Choix,Règle"],
+h:["Consensus|Accord,Savants,Preuve,Règle,Réunion",
+"Analogie|Comparer,Règle,Preuve,Nouveau,Exemple",
+"Effort d'interprétation|Savant,Effort,Règle,Preuve,Déduire"]
+}
+};
+</script>
+<script>
+/* =========================================================================
+   Bölüm 3: Depo, ayarlar, ses ve oyun motoru
+   ========================================================================= */
+
+/* --------- Depolama: localStorage engellenirse bellekte devam eder ------ */
+var Depo = (function(){
+  var bellek = {}, calisir = false;
+  try{ var k="__dt"; localStorage.setItem(k,"1"); localStorage.removeItem(k); calisir = true; }catch(e){ calisir = false; }
+  return {
+    calisir: calisir,
+    al: function(a, vars){
+      try{
+        var h = calisir ? localStorage.getItem(a) : bellek[a];
+        if(h===null||h===undefined) return vars;
+        return JSON.parse(h);
+      }catch(e){ return vars; }
+    },
+    yaz: function(a, d){
+      try{
+        var h = JSON.stringify(d);
+        if(calisir) localStorage.setItem(a,h); else bellek[a]=h;
+        return true;
+      }catch(e){ bellek[a]=JSON.stringify(d); return false; }
+    },
+    sil: function(a){ try{ if(calisir) localStorage.removeItem(a); }catch(e){} delete bellek[a]; }
+  };
+})();
+
+var ANAHTAR = {ayar:"dt_ayar_v1", oyun:"dt_oyun_v1", ist:"dt_ist_v1", gecmis:"dt_gecmis_v1", ozel:"dt_ozel_v1"};
+
+var VARSAYILAN_AYAR = {
+  dil:"tr", ses:true, muzik:false, titresim:true, yaziBoyutu:1, kontrast:false,
+  animasyon:true, kaydirma:true, negatif:true, hakemModu:false, otoDuraklat:true
+};
+var Ayar = Object.assign({}, VARSAYILAN_AYAR, Depo.al(ANAHTAR.ayar, {}));
+function ayarKaydet(){ Depo.yaz(ANAHTAR.ayar, Ayar); }
+function T(k, d){
+  var s = (S[Ayar.dil] && S[Ayar.dil][k]) || S.tr[k] || k;
+  if(d) for(var a in d) s = s.split("{"+a+"}").join(d[a]);
+  return s;
+}
+
+/* ------------------------------- Ses ----------------------------------- */
+var Ses = (function(){
+  var ctx = null;
+  function ac(){
+    if(!Ayar.ses) return null;
+    try{
+      if(!ctx){ var C = window.AudioContext || window.webkitAudioContext; if(!C) return null; ctx = new C(); }
+      if(ctx.state === "suspended") ctx.resume();
+      return ctx;
+    }catch(e){ return null; }
+  }
+  function ton(f, sure, tip, ses){
+    var c = ac(); if(!c) return;
+    try{
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = tip || "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(ses||0.12, c.currentTime+0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+sure);
+      o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+sure+0.02);
+    }catch(e){}
+  }
+  function tit(p){ try{ if(Ayar.titresim && navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+  return {
+    dogru:function(){ ton(660,.12,"sine"); setTimeout(function(){ton(880,.16,"sine");},95); tit(28); },
+    pas:function(){ ton(392,.14,"triangle"); tit(18); },
+    yasak:function(){ ton(180,.22,"square",.09); tit([40,60,40]); },
+    tik:function(){ ton(520,.06,"sine",.06); },
+    basla:function(){ ton(523,.12); setTimeout(function(){ton(659,.12);},120); setTimeout(function(){ton(784,.2);},240); tit(30); },
+    gerisayim:function(){ ton(880,.07,"sine",.08); tit(12); },
+    bitis:function(){ ton(392,.18,"sine"); setTimeout(function(){ton(294,.34,"sine");},170); tit([60,80,120]); },
+    zafer:function(){ [523,659,784,1046].forEach(function(f,i){ setTimeout(function(){ton(f,.24);}, i*140); }); tit([50,60,50,60,110]); },
+    tur:function(){ ton(587,.14); setTimeout(function(){ton(784,.18);},130); }
+  };
+})();
+
+/* --------------------------- Kart havuzu ------------------------------- */
+function ozelKartlar(){ return Depo.al(ANAHTAR.ozel, []); }
+
+function kartCoz(sat, dil, kat, zor, ix){
+  var p = sat.split("|");
+  var yas = p[1] ? p[1].split(",") : [];
+  return {
+    id: dil+"-"+kat+"-"+zor+"-"+ix,
+    word: p[0].trim(),
+    forbiddenWords: yas.map(function(x){return x.trim();}).filter(Boolean),
+    category: kat, difficulty: zor==="e"?"easy":(zor==="m"?"medium":"hard"),
+    ageGroup: zor==="e"?"children":"general", enabled:true, sourceStatus:"approved"
+  };
+}
+
+/** Seçilen dil + kategoriler için tüm kartları döndürür. */
+function havuzKur(dil, katlar){
+  var liste = [], veri = KARTLAR[dil] || KARTLAR.tr;
+  katlar.forEach(function(kat){
+    if(kat === "ozel"){
+      ozelKartlar().forEach(function(k,i){
+        if(k.enabled === false) return;
+        liste.push({id:"ozel-"+i, word:k.word, forbiddenWords:k.forbiddenWords, category:"ozel",
+          difficulty:k.difficulty||"medium", ageGroup:"general", enabled:true, sourceStatus:"draft"});
+      });
+      return;
+    }
+    var g = veri[kat]; if(!g) return;
+    ["e","m","h"].forEach(function(z){
+      (g[z]||[]).forEach(function(sat,i){ liste.push(kartCoz(sat, dil, kat, z, i)); });
+    });
+  });
+  return liste;
+}
+
+function karistir(a, rnd){
+  var d = a.slice(), r = rnd || Math.random;
+  for(var i=d.length-1;i>0;i--){ var j = Math.floor(r()*(i+1)); var t=d[i]; d[i]=d[j]; d[j]=t; }
+  return d;
+}
+
+/**
+ * Zorluk dağılımını (%50 kolay, %35 orta, %15 zor) tekrarlayan bir örüntüyle
+ * uygular; böylece her takıma benzer zorlukta kartlar düşer.
+ */
+var ORUNTU = ["easy","easy","medium","easy","medium","hard","easy","medium","easy","medium",
+              "easy","easy","medium","hard","easy","medium","easy","medium","easy","hard"];
+function desteKur(havuz, rnd){
+  var kova = {easy:[], medium:[], hard:[]};
+  karistir(havuz, rnd).forEach(function(k){ (kova[k.difficulty]||kova.medium).push(k); });
+  var deste = [], i = 0, toplam = havuz.length;
+  while(deste.length < toplam){
+    var istek = ORUNTU[i % ORUNTU.length]; i++;
+    var k = kova[istek].shift();
+    if(!k){
+      k = kova.easy.shift() || kova.medium.shift() || kova.hard.shift();
+      if(!k) break;
+    }
+    deste.push(k);
+  }
+  return deste;
+}
+
+/* ----------------------------- Oyun motoru ----------------------------- */
+var PUANLAMA = {
+  standart:{correct:1, pass:0, forbidden:-1},
+  rahat:{correct:1, pass:0, forbidden:0},
+  rekabet:{correct:2, pass:0, forbidden:-1},
+  zor:{correct:1, pass:-1, forbidden:-2}
+};
+
+var Motor = {
+  /** Yeni oyun durumu üretir. deste: kart nesneleri dizisi */
+  kur: function(ayarlar, takimlar, deste){
+    var t = takimlar.map(function(x,i){
+      return {id:x.id||("t"+i), name:x.name, playerNames:x.playerNames||[], icon:x.icon||"⭐",
+        color:x.color||"#2F6B4F", score:0, correctCount:0, passCount:0, forbiddenCount:0,
+        streak:0, bestStreak:0};
+    });
+    return {
+      id:"g"+Date.now(), status:"handover", teams:t, currentTeamIndex:0, currentRound:1,
+      deck:deste, deckIndex:0, currentCardId:null, remainingPasses:null,
+      turnStartedAt:null, turnEndsAt:null, playedCards:[], turnLog:[],
+      settings:ayarlar, lastActionAt:0, kilit:false, bitis:null, altin:null, baslangic:Date.now()
+    };
+  },
+
+  aktifTakim: function(d){ return d.teams[d.currentTeamIndex]; },
+
+  kartBul: function(d, id){
+    for(var i=0;i<d.deck.length;i++) if(d.deck[i].id===id) return d.deck[i];
+    return null;
+  },
+
+  /** Desteden yeni kart çeker; havuz bittiyse null döner. */
+  kartCek: function(d){
+    if(d.deckIndex >= d.deck.length){ d.currentCardId = null; return null; }
+    var k = d.deck[d.deckIndex++];
+    d.currentCardId = k.id;
+    return k;
+  },
+
+  turBasla: function(d, simdi){
+    simdi = simdi || Date.now();
+    d.remainingPasses = (d.settings.passLimit === null || d.settings.passLimit === undefined)
+      ? null : d.settings.passLimit;
+    d.turnStartedAt = simdi;
+    d.turnEndsAt = simdi + d.settings.turnDurationSeconds*1000;
+    d.turnLog = [];
+    d.status = "playing";
+    d.lastActionAt = 0;
+    d.teams[d.currentTeamIndex].streak = 0;
+    return Motor.kartCek(d);
+  },
+
+  kalanMs: function(d, simdi){
+    if(!d.turnEndsAt) return d.settings.turnDurationSeconds*1000;
+    return Math.max(0, d.turnEndsAt - (simdi || Date.now()));
+  },
+
+  /**
+   * Doğru / pas / yasaklı işlemini uygular.
+   * Dönen: {ok, sebep, puan, bittiTur, bittiOyun, havuzBitti}
+   */
+  islem: function(d, sonuc, simdi){
+    simdi = simdi || Date.now();
+    if(d.status !== "playing") return {ok:false, sebep:"durum"};
+    if(Motor.kalanMs(d, simdi) <= 0){ Motor.turBitir(d); return {ok:false, sebep:"sure", bittiTur:true}; }
+    if(simdi - d.lastActionAt < 280) return {ok:false, sebep:"cift"};
+    if(sonuc === "pass" && d.remainingPasses === 0) return {ok:false, sebep:"pasyok"};
+    if(!d.currentCardId) return {ok:false, sebep:"kartyok"};
+
+    var tk = d.teams[d.currentTeamIndex], p = d.settings.scoring, puan = 0;
+    if(sonuc === "correct"){ puan = p.correct; tk.correctCount++; tk.streak++;
+      if(tk.streak > tk.bestStreak) tk.bestStreak = tk.streak; }
+    else if(sonuc === "pass"){ puan = p.pass; tk.passCount++; tk.streak = 0;
+      if(d.remainingPasses !== null) d.remainingPasses--; }
+    else { tk.forbiddenCount++; tk.streak = 0;
+      puan = (d.settings.penalty === "cancel" || d.settings.penalty === "none") ? 0 : p.forbidden; }
+
+    tk.score += puan;
+    if(!d.settings.allowNegativeScore && tk.score < 0) tk.score = 0;
+
+    var kayit = {cardId:d.currentCardId, teamId:tk.id, roundNumber:d.currentRound, result:sonuc,
+      responseTimeMs: simdi - (d.lastActionAt || d.turnStartedAt || simdi), puan:puan};
+    d.playedCards.push(kayit); d.turnLog.push(kayit);
+    d.lastActionAt = simdi;
+
+    var yeni = Motor.kartCek(d);
+    var cvp = {ok:true, puan:puan, havuzBitti:!yeni};
+
+    var kartHedef = d.settings.cardsPerTurn;
+    if(kartHedef && d.turnLog.length >= kartHedef){ Motor.turBitir(d); cvp.bittiTur = true; }
+    if(d.settings.targetScore && tk.score >= d.settings.targetScore){
+      Motor.turBitir(d); cvp.bittiTur = true; cvp.bittiOyun = true; d.bitis = "hedef";
+    }
+    if(!yeni && !cvp.bittiTur){ Motor.turBitir(d); cvp.bittiTur = true; }
+    return cvp;
+  },
+
+  turBitir: function(d){
+    if(d.status === "playing"){ d.status = "turn-result"; d.currentCardId = null; }
+  },
+
+  /** Tur özetinden sonra sırayı ilerletir. */
+  sonraki: function(d){
+    d.currentTeamIndex++;
+    if(d.currentTeamIndex >= d.teams.length){ d.currentTeamIndex = 0; d.currentRound++; }
+    d.status = Motor.oyunBittiMi(d) ? "finished" : "handover";
+    return d.status;
+  },
+
+  oyunBittiMi: function(d){
+    if(d.bitis) return true;
+    if(d.settings.targetScore){
+      for(var i=0;i<d.teams.length;i++) if(d.teams[i].score >= d.settings.targetScore){ d.bitis = "hedef"; return true; }
+    }
+    if(d.settings.roundCount && d.currentRound > d.settings.roundCount){ d.bitis = "tur"; return true; }
+    if(d.deckIndex >= d.deck.length && d.currentCardId === null && d.status !== "playing"){
+      // havuz bittiyse ancak tur sırası başa döndüyse bitir
+      if(d.currentTeamIndex === 0 && d.deck.length > 0 && d.deckIndex >= d.deck.length){ d.bitis = "havuz"; return true; }
+    }
+    return false;
+  },
+
+  siralama: function(d){
+    return d.teams.slice().sort(function(a,b){
+      if(b.score !== a.score) return b.score - a.score;
+      if(b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;
+      return a.forbiddenCount - b.forbiddenCount;
+    });
+  },
+
+  /** Zirvede eşitlik varsa eşit takımları döndürür, yoksa boş dizi. */
+  esitler: function(d){
+    var s = Motor.siralama(d);
+    if(s.length < 2 || s[0].score !== s[1].score) return [];
+    return s.filter(function(t){ return t.score === s[0].score; });
+  },
+
+  turOzeti: function(d){
+    var o = {correct:0, pass:0, forbidden:0, puan:0};
+    d.turnLog.forEach(function(k){ o[k.result]++; o.puan += k.puan; });
+    return o;
+  },
+
+  desteYenile: function(d, rnd){
+    var oynanan = {};
+    d.playedCards.forEach(function(k){ oynanan[k.cardId] = true; });
+    d.deck = karistir(d.deck, rnd);
+    d.deckIndex = 0;
+    return d.deck.length;
+  }
+};
+
+/* ------------------------- İstatistik & geçmiş ------------------------- */
+function istatistikAl(){ return Depo.al(ANAHTAR.ist, {takimlar:{}, kartlar:{}, oyun:0}); }
+function istatistikKaydet(d){
+  var ist = istatistikAl();
+  ist.oyun = (ist.oyun||0) + 1;
+  var kazanan = Motor.siralama(d)[0];
+  d.teams.forEach(function(t){
+    var k = ist.takimlar[t.name] || {oyun:0, kazanma:0, dogru:0, pas:0, yasak:0, enYuksek:0, seri:0};
+    k.oyun++; if(kazanan && t.id === kazanan.id) k.kazanma++;
+    k.dogru += t.correctCount; k.pas += t.passCount; k.yasak += t.forbiddenCount;
+    if(t.score > k.enYuksek) k.enYuksek = t.score;
+    if(t.bestStreak > k.seri) k.seri = t.bestStreak;
+    ist.takimlar[t.name] = k;
+  });
+  d.playedCards.forEach(function(p){
+    var kart = Motor.kartBul(d, p.cardId); if(!kart) return;
+    var k = ist.kartlar[kart.word] || {gosterim:0, dogru:0, pas:0, yasak:0, sure:0};
+    k.gosterim++; k[p.result==="correct"?"dogru":(p.result==="pass"?"pas":"yasak")]++;
+    k.sure += Math.min(p.responseTimeMs||0, 120000);
+    ist.kartlar[kart.word] = k;
+  });
+  Depo.yaz(ANAHTAR.ist, ist);
+
+  var g = Depo.al(ANAHTAR.gecmis, []);
+  g.unshift({
+    tarih: Date.now(), takimlar: d.teams.map(function(t){ return {ad:t.name, puan:t.score, sim:t.icon}; }),
+    kazanan: kazanan ? kazanan.name : "", tur: d.currentRound-1,
+    sure: Math.round((Date.now() - (d.baslangic||Date.now()))/1000),
+    paket: (d.settings.categories||[]).length
+  });
+  Depo.yaz(ANAHTAR.gecmis, g.slice(0,20));
+}
+
+/* Test kancası */
+window.__MOTOR__ = {Motor:Motor, havuzKur:havuzKur, desteKur:desteKur, karistir:karistir,
+  Depo:Depo, PUANLAMA:PUANLAMA, KARTLAR:KARTLAR, KAT_SIRA:KAT_SIRA, S:S, T:T,
+  ayar:function(){return Ayar;}, ANAHTAR:ANAHTAR};
+</script>
+<script>
+/* =========================================================================
+   Bölüm 4: Arayüz
+   ========================================================================= */
+var TAKIM_ADI = {
+  tr:["Hilal","Yıldız","Çınar","Lale","Kubbe","Kandil","Sema","Nur"],
+  en:["Crescent","Star","Cedar","Tulip","Dome","Lantern","Sky","Light"],
+  ar:["الهلال","النجم","الأرز","اللالة","القبة","القنديل","السماء","النور"],
+  fr:["Croissant","Étoile","Cèdre","Tulipe","Coupole","Lanterne","Ciel","Lumière"]
+};
+var TAKIM_SIM = ["🌙","⭐","🌳","🌷","🕌","🕯️","☁️","💫"];
+var TAKIM_KALIP = {tr:"{a} Takımı", en:"Team {a}", ar:"فريق {a}", fr:"Équipe {a}"};
+var TAKIM_RENK = ["#2F6B4F","#C6A15B","#3C6E91","#8C5A9E","#B0692E","#4A7C59","#9A4C4C","#3E7C7B"];
+var SIMGELER = ["🌙","⭐","🌳","🌷","🕌","🕯️","☁️","💫","🌿","📿","🕊️","🌟","🏺","🔆","🫖","🧭"];
+
+var UY = document.getElementById("uygulama");
+var PERDE = document.getElementById("perde"), MODAL = document.getElementById("modal");
+
+var A = {                      // uygulama durumu
+  ekran:"ana", d:null, sayacId:null, sonSaniye:null, kilit:false,
+  gerisayim:0, duraklat:false, kalanDuraklat:0, altin:null, sonKurulum:null
+};
+var Kur = null;
+
+function ka(s){ return String(s===undefined||s===null?"":s)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function el(id){ return document.getElementById(id); }
+function suSaniye(ms){ var s = Math.ceil(ms/1000); var d = Math.floor(s/60), k = s%60;
+  return d+":"+(k<10?"0":"")+k; }
+
+function dilUygula(){
+  document.documentElement.lang = Ayar.dil;
+  document.documentElement.dir = RTL[Ayar.dil] ? "rtl" : "ltr";
+  document.documentElement.setAttribute("data-kontrast", Ayar.kontrast ? "1":"0");
+  document.documentElement.setAttribute("data-animasyon", Ayar.animasyon ? "1":"0");
+  document.documentElement.style.setProperty("--fs", Ayar.yaziBoyutu);
+  document.documentElement.style.setProperty("--hiz", Ayar.animasyon ? 1 : 0.001);
+  document.title = T("ad");
+}
+
+function git(ekran){ A.ekran = ekran; ciz(); window.scrollTo(0,0); }
+
+function modalAc(html){ MODAL.innerHTML = html; PERDE.classList.add("acik"); }
+function modalKapat(){ PERDE.classList.remove("acik"); MODAL.innerHTML = ""; }
+
+function bilgi(baslik, metin, eylem){
+  modalAc('<h3>'+ka(baslik)+'</h3><p class="sessiz">'+ka(metin)+'</p>'+
+    '<div class="yigin"><button class="dg" data-act="'+(eylem||"modal:kapat")+'">'+ka(T("tamam"))+'</button></div>');
+}
+
+/* --------------------------- Ana ekran --------------------------------- */
+function ekranAna(){
+  var kayitli = Depo.al(ANAHTAR.oyun, null);
+  var h = '<div class="ekran aktif" id="ekran-ana">';
+  h += '<div class="kapak"><div class="rozet"><b>ت</b></div>'+
+       '<h1>'+ka(T("ad"))+'</h1><div class="alt">'+ka(T("alt"))+'</div></div>';
+  h += '<div class="menu">';
+  if(kayitli && kayitli.status && kayitli.status !== "finished")
+    h += '<button class="dg altin" data-act="menu:devam"><span class="em">↻</span>'+ka(T("devamet"))+'</button>';
+  h += '<button class="dg" data-act="menu:yeni"><span class="em">✦</span>'+ka(T("yeni"))+'</button>'+
+       '<button class="dg ikincil" data-act="menu:hizli"><span class="em">⚡</span>'+ka(T("hizli"))+'</button>'+
+       '</div>';
+  h += '<div class="altmenu">'+
+    '<button class="dg ikincil" data-act="menu:nasil">'+ka(T("nasil"))+'</button>'+
+    '<button class="dg ikincil" data-act="menu:paketler">'+ka(T("paketler"))+'</button>'+
+    '<button class="dg ikincil" data-act="menu:istatistik">'+ka(T("istatistik"))+'</button>'+
+    '<button class="dg ikincil" data-act="menu:gecmis">'+ka(T("gecmis"))+'</button>'+
+    '<button class="dg ikincil" data-act="menu:ayarlar">'+ka(T("ayarlar"))+'</button>'+
+    '<button class="dg ikincil" data-act="menu:dil">'+ka(DIL_ADI[Ayar.dil])+'</button>'+
+    '</div>';
+  h += '<div class="dipnot">'+ka(T("gizlilik"))+'</div>';
+  return h+'</div>';
+}
+
+/* ------------------------- Nasıl oynanır ------------------------------- */
+function ekranNasil(){
+  var h = '<div class="ekran aktif"><div class="ustbar">'+
+    '<button class="geri" data-act="git:ana" aria-label="'+ka(T("geri"))+'"><span>←</span></button>'+
+    '<h2>'+ka(T("nasil"))+'</h2></div>';
+  var adimlar = [["n1","n1a"],["n2","n2a"],["n3","n3a"],["n4","n4a"],["n5","n5a"],["n6","n6a"]];
+  h += '<div class="kutu">';
+  adimlar.forEach(function(a,i){
+    h += '<div class="adim"><div class="say">'+(i+1)+'</div><div><h3>'+ka(T(a[0]))+'</h3>'+
+         '<p class="sessiz">'+ka(T(a[1]))+'</p></div></div>';
+  });
+  h += '</div>';
+
+  var ornek = (KARTLAR[Ayar.dil]||KARTLAR.tr).ibadet.e[0].split("|");
+  h += '<div class="kutu"><span class="etiket">'+ka(T("ornek_bas"))+'</span>'+
+    '<div class="ornek"><div class="k">'+ka(ornek[0])+'</div>'+
+    '<div class="y">'+ka(ornek[1].split(",").join(" · "))+'</div></div></div>';
+
+  h += '<div class="kutu"><span class="etiket">'+ka(T("renk_anlami"))+'</span><div class="renkler">'+
+    '<span style="background:var(--dogru)">✓ '+ka(T("dogru"))+'</span>'+
+    '<span style="background:var(--pas)">→ '+ka(T("pas"))+'</span>'+
+    '<span style="background:var(--yasak)">✕ '+ka(T("yasak"))+'</span></div></div>';
+
+  h += '<div class="kutu"><span class="etiket">'+ka(T("saygi_baslik"))+'</span>'+
+    '<p class="sessiz">'+ka(T("saygi"))+'</p></div>';
+  h += '<div class="taban"><button class="dg" data-act="menu:yeni">'+ka(T("yeni"))+'</button></div>';
+  return h+'</div>';
+}
+
+/* ----------------------------- Ayarlar --------------------------------- */
+function anahtarSatir(etiket, aktif, act, altmetin){
+  return '<div class="takimsatir" style="justify-content:space-between">'+
+    '<div style="flex:1"><label>'+ka(etiket)+'</label>'+
+    (altmetin?'<div class="sessiz">'+ka(altmetin)+'</div>':'')+'</div>'+
+    '<button class="cip" role="switch" aria-pressed="'+(aktif?"true":"false")+'" data-act="'+act+'">'+
+    ka(aktif?T("acik"):T("kapali"))+'</button></div>';
+}
+function ekranAyarlar(){
+  var h = '<div class="ekran aktif"><div class="ustbar">'+
+    '<button class="geri" data-act="git:ana" aria-label="'+ka(T("geri"))+'"><span>←</span></button>'+
+    '<h2>'+ka(T("ayarlar"))+'</h2></div>';
+
+  h += '<div class="kutu"><span class="etiket">'+ka(T("dil"))+'</span><div class="dil">';
+  DILLER.forEach(function(dl){
+    h += '<button class="cip" style="justify-content:center" aria-pressed="'+(Ayar.dil===dl)+'" data-act="ayar:dil:'+dl+'">'+ka(DIL_ADI[dl])+'</button>';
+  });
+  h += '</div></div>';
+
+  h += '<div class="kutu">'+
+    anahtarSatir(T("ses_efekt"), Ayar.ses, "ayar:tik:ses")+
+    anahtarSatir(T("titresim"), Ayar.titresim, "ayar:tik:titresim")+
+    anahtarSatir(T("kaydirma"), Ayar.kaydirma, "ayar:tik:kaydirma")+
+    anahtarSatir(T("animasyon"), Ayar.animasyon, "ayar:tik:animasyon")+
+    '</div>';
+
+  h += '<div class="kutu"><span class="etiket">'+ka(T("yazi_boyutu"))+'</span><div class="secenekler">';
+  [[0.9,"kucuk"],[1,"normal"],[1.15,"buyuk"],[1.3,"cokbuyuk"]].forEach(function(x){
+    h += '<button class="cip" aria-pressed="'+(Ayar.yaziBoyutu===x[0])+'" data-act="ayar:fs:'+x[0]+'">'+ka(T(x[1]))+'</button>';
+  });
+  h += '</div>'+ anahtarSatir(T("kontrast"), Ayar.kontrast, "ayar:tik:kontrast") +'</div>';
+
+  h += '<div class="kutu">'+
+    anahtarSatir(T("hakem_mod"), Ayar.hakemModu, "ayar:tik:hakemModu", T("hakem_mod_a"))+
+    anahtarSatir(T("otomatik_duraklat"), Ayar.otoDuraklat, "ayar:tik:otoDuraklat")+
+    anahtarSatir(T("negatif"), Ayar.negatif, "ayar:tik:negatif")+
+    '</div>';
+
+  h += '<div class="kutu"><p class="sessiz">'+ka(T("gizlilik"))+'</p>'+
+    '<button class="dg ikincil" data-act="ayar:sifirla">'+ka(T("sifirla"))+'</button></div>';
+  return h+'</div>';
+}
+</script>
+<script>
+/* ----------------------------- Kurulum --------------------------------- */
+function yeniKurulum(hizli){
+  var adlar = TAKIM_ADI[Ayar.dil] || TAKIM_ADI.tr;
+  var t = [];
+  var kalip = TAKIM_KALIP[Ayar.dil] || TAKIM_KALIP.tr;
+  for(var i=0;i<8;i++) t.push({id:"t"+i, name:kalip.replace("{a}", adlar[i]), icon:TAKIM_SIM[i],
+    color:TAKIM_RENK[i], playerNames:[]});
+  return {
+    adim:1, hizli:!!hizli, takimSayisi:2, takimlar:t,
+    katlar: hizli ? KAT_SIRA.slice() : ["temel","ibadet","peygamber","ahlak"],
+    yas:"general", mod:"round", sure:120, kartSayisi:3, turSayisi:6, hedef:30,
+    pas:2, ceza:"minus", puanlama:"standart"
+  };
+}
+
+function adimGosterge(){
+  var h = '<div class="adimlar">';
+  for(var i=1;i<=8;i++) h += '<i class="'+(i<Kur.adim?"ok":(i===Kur.adim?"simdi":""))+'"></i>';
+  return h+'</div>';
+}
+function cipler(secenekler, secili, act, tam){
+  var h = '<div class="secenekler">';
+  secenekler.forEach(function(o){
+    h += '<button class="cip"'+(tam?' style="flex:1 1 42%;justify-content:center"':'')+
+      ' aria-pressed="'+(String(secili)===String(o[0]))+'" data-act="'+act+':'+o[0]+'">'+ka(o[1])+'</button>';
+  });
+  return h+'</div>';
+}
+
+function kartSayisiHesap(){
+  var h = havuzKur(Ayar.dil, Kur.katlar);
+  if(Kur.yas === "children") h = h.filter(function(k){ return k.difficulty === "easy"; });
+  if(Kur.yas === "adult") h = h.filter(function(k){ return k.difficulty !== "easy"; });
+  return h.length;
+}
+
+function ekranKurulum(){
+  var h = '<div class="ekran aktif"><div class="ustbar">'+
+    '<button class="geri" data-act="kur:geri" aria-label="'+ka(T("geri"))+'"><span>←</span></button>'+
+    '<h2>'+ka(T("a"+Kur.adim))+'</h2></div>'+ adimGosterge();
+  h += '<p class="sessiz" style="margin-bottom:14px">'+ka(T("a"+Kur.adim+"a"))+'</p>';
+
+  if(Kur.adim === 1){
+    h += '<div class="kutu"><span class="etiket">'+ka(T("takimlar"))+'</span><div class="secenekler">';
+    for(var i=2;i<=8;i++)
+      h += '<button class="cip" style="min-width:56px;justify-content:center" aria-pressed="'+(Kur.takimSayisi===i)+'" data-act="kur:takimsayi:'+i+'">'+i+'</button>';
+    h += '</div></div>';
+  }
+
+  if(Kur.adim === 2){
+    h += '<div class="kutu">';
+    for(var j=0;j<Kur.takimSayisi;j++){
+      var t = Kur.takimlar[j];
+      h += '<div class="takimsatir">'+
+        '<button class="sim" data-act="kur:simge:'+j+'" style="border-color:'+t.color+'" aria-label="'+ka(T("takim"))+' '+(j+1)+'">'+t.icon+'</button>'+
+        '<input type="text" value="'+ka(t.name)+'" data-alan="ad" data-ix="'+j+'" maxlength="24" aria-label="'+ka(T("takimadi"))+'"></div>'+
+        '<input type="text" value="'+ka((t.playerNames||[]).join(", "))+'" data-alan="oyuncu" data-ix="'+j+'" placeholder="'+ka(T("oyuncu_ph"))+'" aria-label="'+ka(T("oyuncular"))+'" style="margin-bottom:14px">';
+    }
+    h += '</div>';
+  }
+
+  if(Kur.adim === 3){
+    h += '<div class="kutu"><span class="etiket">'+ka(T("kategoriler"))+'</span><div class="secenekler">';
+    KAT_SIRA.forEach(function(kt){
+      var s = Kur.katlar.indexOf(kt) > -1;
+      h += '<button class="cip" style="flex:1 1 46%" aria-pressed="'+s+'" data-act="kur:kat:'+kt+'">'+
+        '<span>'+KAT_AD[kt].em+'</span><span class="tik">'+ka(KAT_AD[kt][Ayar.dil]||KAT_AD[kt].tr)+'</span></button>';
+    });
+    if(ozelKartlar().length){
+      var so = Kur.katlar.indexOf("ozel") > -1;
+      h += '<button class="cip" style="flex:1 1 46%" aria-pressed="'+so+'" data-act="kur:kat:ozel"><span>⭐</span><span class="tik">'+ka(T("ozel_paket"))+'</span></button>';
+    }
+    h += '</div><div class="satir" style="margin-top:10px">'+
+      '<button class="dg hayalet kucuk" data-act="kur:kattumu">'+ka(T("tumu"))+'</button>'+
+      '<button class="dg hayalet kucuk" data-act="kur:kathic">'+ka(T("hicbiri"))+'</button></div></div>';
+    h += '<div class="kutu"><span class="etiket">'+ka(T("zorluk"))+'</span>'+
+      cipler([["children",T("z_cocuk")],["general",T("z_genel")],["adult",T("z_uzman")]], Kur.yas, "kur:yas", true)+
+      '<p class="sessiz" style="margin-top:8px">'+ka(Kur.yas==="children"?T("z_cocuk_a"):(Kur.yas==="adult"?T("z_uzman_a"):T("a3a")))+'</p>'+
+      '<p class="sessiz"><b>'+ka(T("hazir_kart",{n:kartSayisiHesap()}))+'</b></p></div>';
+  }
+
+  if(Kur.adim === 4){
+    var modlar = [["timed","mod_sureli"],["card-count","mod_kart"],["round","mod_tur"],["target-score","mod_hedef"]];
+    h += '<div class="kutu">';
+    modlar.forEach(function(m){
+      h += '<button class="cip" style="width:100%;justify-content:flex-start;margin-bottom:8px;min-height:56px" aria-pressed="'+(Kur.mod===m[0])+'" data-act="kur:mod:'+m[0]+'">'+
+        '<span style="display:block"><b>'+ka(T(m[1]))+'</b><br><small style="opacity:.75">'+ka(T(m[1]+"_a"))+'</small></span></button>';
+    });
+    h += '</div>';
+  }
+
+  if(Kur.adim === 5){
+    h += '<div class="kutu"><span class="etiket">'+ka(T("sure"))+'</span>'+
+      cipler([[30,"30 "+T("sn")],[45,"45 "+T("sn")],[60,"60 "+T("sn")],[90,"90 "+T("sn")],[120,"120 "+T("sn")],[180,"180 "+T("sn")]], Kur.sure, "kur:sure", true)+'</div>';
+    if(Kur.mod === "card-count" || Kur.mod === "timed")
+      h += '<div class="kutu"><span class="etiket">'+ka(T("turbasi_kart"))+'</span>'+
+        cipler([[3,"3"],[5,"5"],[7,"7"],[10,"10"],[0,T("sinirsiz")]], (Kur.kartSayisi||0), "kur:kart", true)+'</div>';
+    if(Kur.mod !== "target-score")
+      h += '<div class="kutu"><span class="etiket">'+ka(T("tur_sayisi"))+'</span>'+
+        cipler([[2,"2"],[4,"4"],[6,"6"],[8,"8"],[10,"10"]], Kur.turSayisi, "kur:turs", true)+'</div>';
+    if(Kur.mod === "round")
+      h += '<div class="kutu"><span class="etiket">'+ka(T("turbasi_kart"))+'</span>'+
+        cipler([[3,"3"],[5,"5"],[7,"7"],[0,T("sinirsiz")]], (Kur.kartSayisi||0), "kur:kart", true)+'</div>';
+    if(Kur.mod === "target-score")
+      h += '<div class="kutu"><span class="etiket">'+ka(T("hedef_puan"))+'</span>'+
+        cipler([[10,"10"],[20,"20"],[30,"30"],[50,"50"]], Kur.hedef, "kur:hedef", true)+'</div>';
+  }
+
+  if(Kur.adim === 6){
+    h += '<div class="kutu">'+cipler([[0,T("pas_yok")],[1,T("pas_n",{n:1})],[2,T("pas_n",{n:2})],
+      [3,T("pas_n",{n:3})],[-1,T("pas_sinirsiz")]], Kur.pas, "kur:pas", true)+'</div>';
+  }
+
+  if(Kur.adim === 7){
+    h += '<div class="kutu"><span class="etiket">'+ka(T("ceza"))+'</span>'+
+      cipler([["minus",T("ceza_eksi")],["cancel",T("ceza_iptal")],["none",T("ceza_yok")]], Kur.ceza, "kur:ceza", true)+'</div>';
+    h += '<div class="kutu"><span class="etiket">'+ka(T("puanlama"))+'</span>'+
+      cipler([["standart",T("p_standart")],["rahat",T("p_rahat")],["rekabet",T("p_rekabet")],["zor",T("p_zor")]], Kur.puanlama, "kur:puanlama", true)+'</div>';
+  }
+
+  if(Kur.adim === 8){
+    var kn = kartSayisiHesap();
+    var satir = function(a,b){ return '<li><span>'+ka(a)+'</span><b>'+ka(b)+'</b></li>'; };
+    h += '<div class="kutu"><ul class="ozet">'+
+      satir(T("takimlar"), Kur.takimlar.slice(0,Kur.takimSayisi).map(function(t){return t.icon+" "+t.name;}).join(" · "))+
+      satir(T("a4"), T({timed:"mod_sureli","card-count":"mod_kart",round:"mod_tur","target-score":"mod_hedef"}[Kur.mod]))+
+      satir(T("sure"), Kur.sure+" "+T("sn"))+
+      (Kur.mod!=="target-score"?satir(T("tur_sayisi"), Kur.turSayisi):"")+
+      (Kur.mod==="target-score"?satir(T("hedef_puan"), Kur.hedef):"")+
+      satir(T("turbasi_kart"), Kur.kartSayisi ? Kur.kartSayisi : T("sinirsiz"))+
+      satir(T("a6"), Kur.pas===-1?T("pas_sinirsiz"):(Kur.pas===0?T("pas_yok"):T("pas_n",{n:Kur.pas})))+
+      satir(T("ceza"), {minus:T("ceza_eksi"),cancel:T("ceza_iptal"),none:T("ceza_yok")}[Kur.ceza])+
+      satir(T("puanlama"), T({standart:"p_standart",rahat:"p_rahat",rekabet:"p_rekabet",zor:"p_zor"}[Kur.puanlama]))+
+      satir(T("kategoriler"), Kur.katlar.map(function(k){return (KAT_AD[k]||{})[Ayar.dil]||k;}).join(", "))+
+      satir(T("kart_havuzu"), T("hazir_kart",{n:kn}))+
+      '</ul></div>';
+    if(kn < Kur.takimSayisi*6) h += '<div class="uyari-kutu">'+ka(T("kart_yetersiz"))+'</div>';
+  }
+
+  h += '<div class="taban">';
+  if(Kur.adim > 1) h += '<button class="dg ikincil" data-act="kur:geri">'+ka(T("geri"))+'</button>';
+  var sonAdim = (Kur.adim===8) || (Kur.hizli && Kur.adim===2);
+  h += '<button class="dg" data-act="kur:ileri">'+ka(sonAdim?T("simdibasla"):T("ileri"))+'</button></div>';
+  return h+'</div>';
+}
+
+function kurulumOku(){
+  Array.prototype.forEach.call(document.querySelectorAll("[data-alan]"), function(g){
+    var ix = +g.getAttribute("data-ix");
+    if(g.getAttribute("data-alan") === "ad"){
+      var v = g.value.trim(); if(v) Kur.takimlar[ix].name = v;
+    } else {
+      Kur.takimlar[ix].playerNames = g.value.split(",").map(function(x){return x.trim();}).filter(Boolean);
+    }
+  });
+}
+
+function oyunuBaslat(){
+  var havuz = havuzKur(Ayar.dil, Kur.katlar);
+  if(Kur.yas === "children") havuz = havuz.filter(function(k){ return k.difficulty === "easy"; });
+  if(Kur.yas === "adult") havuz = havuz.filter(function(k){ return k.difficulty !== "easy"; });
+  if(!havuz.length){ bilgi(T("kart_yetersiz"), T("en_az_1_kat")); return; }
+  if(Kur.yas === "children") havuz = havuz.map(function(k){
+    return Object.assign({}, k, {forbiddenWords:k.forbiddenWords.slice(0,3)}); });
+
+  var deste = desteKur(havuz);
+  var ayarlar = {
+    teamCount: Kur.takimSayisi,
+    roundCount: Kur.mod === "target-score" ? null : Kur.turSayisi,
+    cardsPerTurn: Kur.kartSayisi ? Kur.kartSayisi : null,
+    turnDurationSeconds: Kur.sure,
+    passLimit: Kur.pas === -1 ? null : Kur.pas,
+    categories: Kur.katlar.slice(),
+    scoring: PUANLAMA[Kur.puanlama],
+    penalty: Kur.ceza,
+    allowNegativeScore: Ayar.negatif,
+    gameMode: Kur.mod,
+    targetScore: Kur.mod === "target-score" ? Kur.hedef : null,
+    yas: Kur.yas, dil: Ayar.dil
+  };
+  A.sonKurulum = JSON.parse(JSON.stringify(Kur));
+  A.d = Motor.kur(ayarlar, Kur.takimlar.slice(0, Kur.takimSayisi), deste);
+  oyunKaydet();
+  git("devir");
+}
+
+function oyunKaydet(){ if(A.d) Depo.yaz(ANAHTAR.oyun, A.d); }
+
+/* ------------------------- Devir (gizlilik) ---------------------------- */
+function ekranDevir(){
+  var t = Motor.aktifTakim(A.d);
+  var turBilgi = A.d.settings.roundCount ? (T("tur")+" "+A.d.currentRound+"/"+A.d.settings.roundCount)
+                                         : (T("tur")+" "+A.d.currentRound);
+  var h = '<div class="ekran aktif" id="ekran-devir">';
+  if(A.gerisayim !== 0){
+    h += '<div class="gerisayim" aria-live="assertive">'+ka(A.gerisayim>0?A.gerisayim:T("gerisayim_basla"))+'</div>';
+  } else {
+    h += '<div class="sira">'+ka(turBilgi)+'</div>'+
+      '<div class="devirsim">'+t.icon+'</div>'+
+      '<h2>'+ka(t.name)+'</h2>'+
+      '<p class="uyari">'+ka(T("telefonu_al"))+'</p>'+
+      '<button class="dg altin" data-act="oyun:hazir">'+ka(T("hazirim"))+'</button>'+
+      '<button class="dg hayalet" style="color:#FFFCF6;margin-top:10px" data-act="oyun:cik">'+ka(T("anamenu"))+'</button>';
+  }
+  return h+'</div>';
+}
+
+/* --------------------------- Oyun ekranı ------------------------------- */
+function kartHtml(){
+  var d = A.d, k = d.currentCardId ? Motor.kartBul(d, d.currentCardId) : null;
+  if(!k) return '<div class="kart" id="kart"><div class="kat"><div class="kelime">—</div></div></div>';
+  var kat = KAT_AD[k.category] || {};
+  return '<div class="kart gir" id="kart" role="group" aria-live="polite"><div class="kat">'+
+    '<div class="rutbe">'+ka((kat[Ayar.dil]||kat.tr||"")) +'</div>'+
+    '<div class="kelime">'+ka(k.word)+'</div>'+
+    '<div class="ayrac"><i></i><b>'+ka(T("yasakli_kelimeler"))+'</b><i></i></div>'+
+    '<ul class="yasaklar">'+k.forbiddenWords.map(function(y){return '<li>'+ka(y)+'</li>';}).join("")+'</ul>'+
+    '</div></div>';
+}
+
+function ekranOyun(){
+  var d = A.d, t = Motor.aktifTakim(d);
+  var pasMetin = d.remainingPasses === null ? "∞" : d.remainingPasses;
+  var turBilgi = d.settings.roundCount ? (d.currentRound+"/"+d.settings.roundCount) : d.currentRound;
+  var h = '<div class="ekran aktif" id="ekran-oyun">';
+  h += '<div class="oyunust"><div class="tkm"><b>'+t.icon+' '+ka(t.name)+'</b>'+
+    '<span>'+ka(T("tur"))+' '+ka(turBilgi)+'</span></div>'+
+    '<div class="sayac" id="sayac" role="timer" aria-live="off">'+suSaniye(Motor.kalanMs(d))+'</div>'+
+    '<button class="duraklat" data-act="oyun:duraklat" aria-label="'+ka(T("duraklatildi"))+'">❚❚</button></div>';
+  h += '<div class="gostergeler"><span>'+ka(T("puan"))+': <b id="gpuan">'+t.score+'</b></span>'+
+    '<span>'+ka(T("pas_kalan"))+': <b id="gpas">'+pasMetin+'</b></span>'+
+    (d.settings.cardsPerTurn?'<span>🃏 <b id="gkart">'+d.turnLog.length+'/'+d.settings.cardsPerTurn+'</b></span>':'')+
+    '</div><div class="ilerle"><i id="ilerle"></i></div>';
+  h += '<div class="kartalan" id="kartalan">'+kartHtml()+'</div>';
+  h += '<div class="islemler">'+
+    '<button class="eylem e-dogru" data-act="oyun:dogru"><span class="em">✓</span>'+ka(T("dogru"))+'</button>'+
+    '<div class="ikili">'+
+      '<button class="eylem e-pas" id="dgpas" data-act="oyun:pas"'+(d.remainingPasses===0?" disabled":"")+'><span class="em">→</span>'+ka(T("pas"))+'</button>'+
+      '<button class="eylem e-yasak" data-act="oyun:yasak"><span class="em">✕</span>'+ka(T("yasak"))+'</button>'+
+    '</div></div>';
+  return h+'</div>';
+}
+
+function gostergeGuncelle(){
+  var d = A.d, t = Motor.aktifTakim(d);
+  var p = el("gpuan"); if(p) p.textContent = t.score;
+  var q = el("gpas"); if(q) q.textContent = d.remainingPasses === null ? "∞" : d.remainingPasses;
+  var kk = el("gkart"); if(kk && d.settings.cardsPerTurn) kk.textContent = d.turnLog.length+"/"+d.settings.cardsPerTurn;
+  var dp = el("dgpas"); if(dp){ if(d.remainingPasses === 0) dp.setAttribute("disabled","disabled"); else dp.removeAttribute("disabled"); }
+}
+
+function sayacBasla(){
+  sayacDurdur();
+  A.sonSaniye = null;
+  A.sayacId = setInterval(sayacTik, 180);
+  sayacTik();
+}
+function sayacDurdur(){ if(A.sayacId){ clearInterval(A.sayacId); A.sayacId = null; } }
+function sayacTik(){
+  if(!A.d || A.d.status !== "playing" || A.duraklat) return;
+  var kalan = Motor.kalanMs(A.d), s = el("sayac"), ip = el("ilerle");
+  if(s){ s.textContent = suSaniye(kalan);
+    if(kalan <= 10000) s.classList.add("kritik"); else s.classList.remove("kritik"); }
+  if(ip) ip.style.width = Math.max(0, (kalan/(A.d.settings.turnDurationSeconds*1000))*100)+"%";
+  var sn = Math.ceil(kalan/1000);
+  if(sn !== A.sonSaniye){
+    if(sn <= 10 && sn > 0) Ses.gerisayim();
+    A.sonSaniye = sn;
+  }
+  if(kalan <= 0) sureDoldu();
+}
+
+function sureDoldu(){
+  sayacDurdur();
+  Motor.turBitir(A.d);
+  Ses.bitis();
+  oyunKaydet();
+  var kart = el("kart"); if(kart) kart.classList.add("gizli");
+  modalAc('<h3>'+ka(T("sure_doldu"))+'</h3><p class="sessiz">'+ka(T("son_kart_sayilmaz"))+'</p>'+
+    '<div class="yigin"><button class="dg" data-act="oyun:turozeti">'+ka(T("turozeti"))+'</button></div>');
+}
+
+function eylem(sonuc){
+  if(A.kilit || !A.d || A.d.status !== "playing") return;
+  if(sonuc === "forbidden" && Ayar.hakemModu){
+    modalAc('<h3>'+ka(T("yasak_onay"))+'</h3><div class="yigin">'+
+      '<button class="dg" style="background:var(--yasak)" data-act="oyun:yasakevet">'+ka(T("yasak_onay_evet"))+'</button>'+
+      '<button class="dg ikincil" data-act="modal:kapat">'+ka(T("yasak_onay_hayir"))+'</button></div>');
+    return;
+  }
+  eylemUygula(sonuc);
+}
+
+function eylemUygula(sonuc){
+  var r = Motor.islem(A.d, sonuc);
+  if(!r.ok){
+    if(r.sebep === "sure") sureDoldu();
+    return;
+  }
+  A.kilit = true;
+  if(sonuc === "correct") Ses.dogru(); else if(sonuc === "pass") Ses.pas(); else Ses.yasak();
+  var kart = el("kart");
+  if(kart) kart.classList.add(sonuc === "correct" ? "cik-sag" : (sonuc === "pass" ? "cik-alt" : "cik-sol"));
+  gostergeGuncelle();
+  oyunKaydet();
+  var bekle = Ayar.animasyon ? 290 : 60;
+  setTimeout(function(){
+    A.kilit = false;
+    if(A.d.status === "turn-result"){
+      sayacDurdur();
+      if(r.havuzBitti) havuzBittiSor(); else git("turozeti");
+      return;
+    }
+    var alan = el("kartalan"); if(alan) alan.innerHTML = kartHtml();
+  }, bekle);
+}
+
+function havuzBittiSor(){
+  modalAc('<h3>'+ka(T("havuz_bitti"))+'</h3><p class="sessiz">'+ka(T("havuz_bitti_a"))+'</p>'+
+    '<div class="yigin"><button class="dg" data-act="oyun:karistir">'+ka(T("karistir"))+'</button>'+
+    '<button class="dg ikincil" data-act="oyun:bitir">'+ka(T("bitir"))+'</button></div>');
+}
+
+/* ---------------------------- Tur özeti -------------------------------- */
+function ekranTurOzeti(){
+  var d = A.d, t = Motor.aktifTakim(d), o = Motor.turOzeti(d);
+  var sonraki = d.teams[(d.currentTeamIndex+1) % d.teams.length];
+  var h = '<div class="ekran aktif"><div class="ustbar"><h2>'+ka(T("turozeti"))+'</h2></div>';
+  h += '<div class="kutu"><h3>'+t.icon+' '+ka(t.name)+'</h3>'+
+    '<div class="rozetler" style="margin-top:10px">'+
+    '<div class="mini"><b>'+o.correct+'</b><span>'+ka(T("dogru"))+'</span></div>'+
+    '<div class="mini"><b>'+o.pass+'</b><span>'+ka(T("pas"))+'</span></div>'+
+    '<div class="mini"><b>'+o.forbidden+'</b><span>'+ka(T("yasak"))+'</span></div>'+
+    '<div class="mini"><b>'+(o.puan>0?"+":"")+o.puan+'</b><span>'+ka(T("turpuani"))+'</span></div>'+
+    '</div><p style="margin-top:12px"><b>'+ka(T("toplampuan"))+': '+t.score+'</b></p></div>';
+
+  if(d.turnLog.length){
+    h += '<div class="kutu"><span class="etiket">'+ka(T("oynanan"))+'</span><table class="tablo"><tbody>';
+    d.turnLog.forEach(function(p){
+      var k = Motor.kartBul(d, p.cardId);
+      var im = p.result === "correct" ? '<span style="color:var(--dogru)">✓</span>'
+             : p.result === "pass" ? '<span style="color:var(--pas)">→</span>'
+             : '<span style="color:var(--yasak)">✕</span>';
+      h += '<tr><td>'+ka(k?k.word:"—")+'</td><td class="sag">'+im+'</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+  var bitiyor = d.settings.roundCount && d.currentTeamIndex === d.teams.length-1 && d.currentRound >= d.settings.roundCount;
+  h += '<div class="taban"><button class="dg" data-act="oyun:sonraki">'+
+    ka(bitiyor || d.bitis ? T("siralama") : T("telefonu_ver",{ad:sonraki.name}))+'</button></div>';
+  return h+'</div>';
+}
+</script>
+<script>
+/* ---------------------------- Oyun sonu -------------------------------- */
+function kartIstatistigi(d){
+  var s = {};
+  d.playedCards.forEach(function(p){
+    var k = Motor.kartBul(d, p.cardId); if(!k) return;
+    var x = s[k.word] || (s[k.word] = {dogru:0, pas:0, yasak:0, top:0});
+    x.top++; x[p.result === "correct" ? "dogru" : (p.result === "pass" ? "pas" : "yasak")]++;
+  });
+  var enZor = null, enPas = null;
+  for(var w in s){
+    var x = s[w];
+    if(x.dogru === 0 && (!enZor || x.top > s[enZor].top)) enZor = w;
+    if(!enPas || x.pas > s[enPas].pas) enPas = w;
+  }
+  if(enPas && s[enPas].pas === 0) enPas = null;
+  return {enZor:enZor, enPas:enPas};
+}
+
+function ekranSon(){
+  var d = A.d, sira = Motor.siralama(d);
+  if(A.kazananZorla){
+    sira = sira.slice().sort(function(a,b){
+      if(a.id === A.kazananZorla) return -1; if(b.id === A.kazananZorla) return 1; return 0; });
+  }
+  var kaz = sira[0], ks = kartIstatistigi(d);
+  var enc = d.teams.slice().sort(function(a,b){return b.correctCount-a.correctCount;})[0];
+  var enp = d.teams.slice().sort(function(a,b){return a.passCount-b.passCount;})[0];
+  var eny = d.teams.slice().sort(function(a,b){return a.forbiddenCount-b.forbiddenCount;})[0];
+  var ens = d.teams.slice().sort(function(a,b){return b.bestStreak-a.bestStreak;})[0];
+
+  var h = '<div class="ekran aktif"><div class="kupa"><div class="em">🏆</div>'+
+    '<h2>'+ka(T("tebrikler"))+'</h2><p><b>'+ka(T("kazandi",{ad:kaz.icon+" "+kaz.name}))+'</b></p></div>';
+  h += '<div class="kutu"><span class="etiket">'+ka(T("siralama"))+'</span><ol class="siralama">';
+  sira.forEach(function(t,i){
+    h += '<li class="'+(i===0?"bir":"")+'"><span class="no">'+(i+1)+'</span>'+
+      '<span class="ad">'+t.icon+' '+ka(t.name)+'</span><span class="pn">'+t.score+'</span></li>';
+  });
+  h += '</ol></div>';
+  h += '<div class="kutu"><span class="etiket">'+ka(T("istatistik"))+'</span><table class="tablo"><tbody>'+
+    '<tr><td>'+ka(T("en_cok_dogru"))+'</td><td class="sag">'+ka(enc.name)+' ('+enc.correctCount+')</td></tr>'+
+    '<tr><td>'+ka(T("en_az_pas"))+'</td><td class="sag">'+ka(enp.name)+' ('+enp.passCount+')</td></tr>'+
+    '<tr><td>'+ka(T("en_az_yasak"))+'</td><td class="sag">'+ka(eny.name)+' ('+eny.forbiddenCount+')</td></tr>'+
+    '<tr><td>'+ka(T("en_uzun_seri"))+'</td><td class="sag">'+ka(ens.name)+' ('+ens.bestStreak+')</td></tr>'+
+    '<tr><td>'+ka(T("en_zor_kart"))+'</td><td class="sag">'+ka(ks.enZor||T("yok"))+'</td></tr>'+
+    '<tr><td>'+ka(T("en_cok_pas_kart"))+'</td><td class="sag">'+ka(ks.enPas||T("yok"))+'</td></tr>'+
+    '</tbody></table></div>';
+  h += '<div class="yigin">'+
+    '<button class="dg" data-act="son:tekrar">'+ka(T("tekrar"))+'</button>'+
+    '<button class="dg ikincil" data-act="son:takim">'+ka(T("takim_degis"))+'</button>'+
+    '<div class="satir"><button class="dg ikincil" data-act="son:paylas">'+ka(T("sonuc_paylas"))+'</button>'+
+    '<button class="dg ikincil" data-act="git:ana">'+ka(T("anamenu"))+'</button></div></div>';
+  return h+'</div>';
+}
+
+function beraberlikSor(){
+  var e = Motor.esitler(A.d);
+  if(e.length < 2) return false;
+  modalAc('<h3>'+ka(T("beraberlik"))+'</h3><p class="sessiz">'+ka(T("beraberlik_a",{n:e.length}))+'</p>'+
+    '<div class="yigin"><button class="dg altin" data-act="son:altin">'+ka(T("altin_kart"))+'</button>'+
+    '<p class="sessiz" style="text-align:center;margin:0">'+ka(T("altin_kart_a"))+'</p>'+
+    '<button class="dg ikincil" data-act="son:beraber">'+ka(T("beraberlik_kabul"))+'</button></div>');
+  return true;
+}
+
+/* --------------------------- Altın kart -------------------------------- */
+function altinBaslat(takimlar){
+  var kalanKart = A.d.deck.slice(A.d.deckIndex);
+  if(kalanKart.length < takimlar.length) kalanKart = karistir(A.d.deck);
+  A.altin = {takimlar:takimlar, i:0, sonuc:[], kartlar:kalanKart, evre:"devir", bitis:0, kart:null};
+  modalKapat(); git("altin");
+}
+function ekranAltin(){
+  var g = A.altin, t = g.takimlar[g.i];
+  if(g.evre === "devir"){
+    return '<div class="ekran aktif" id="ekran-devir"><div class="sira">'+ka(T("altin_tur"))+'</div>'+
+      '<div class="devirsim">'+t.icon+'</div><h2>'+ka(t.name)+'</h2>'+
+      '<p class="uyari">'+ka(T("altin_kart_a"))+'</p>'+
+      '<button class="dg altin" data-act="altin:basla">'+ka(T("hazirim"))+'</button></div>';
+  }
+  var k = g.kart;
+  return '<div class="ekran aktif"><div class="oyunust"><div class="tkm"><b>'+t.icon+' '+ka(t.name)+'</b>'+
+    '<span>'+ka(T("altin_tur"))+'</span></div><div class="sayac" id="sayac">0:30</div></div>'+
+    '<div class="kartalan"><div class="kart gir" id="kart"><div class="kat">'+
+    '<div class="rutbe">'+ka(T("altin_tur"))+'</div><div class="kelime">'+ka(k.word)+'</div>'+
+    '<div class="ayrac"><i></i><b>'+ka(T("yasakli_kelimeler"))+'</b><i></i></div>'+
+    '<ul class="yasaklar">'+k.forbiddenWords.map(function(y){return '<li>'+ka(y)+'</li>';}).join("")+'</ul>'+
+    '</div></div></div>'+
+    '<div class="islemler"><button class="eylem e-dogru" data-act="altin:dogru"><span class="em">✓</span>'+ka(T("dogru"))+'</button>'+
+    '<button class="eylem e-yasak" data-act="altin:yasak"><span class="em">✕</span>'+ka(T("yasak"))+'</button></div></div>';
+}
+function altinTik(){
+  var g = A.altin; if(!g || g.evre !== "oyun") return;
+  var kalan = Math.max(0, g.bitis - Date.now());
+  var s = el("sayac"); if(s){ s.textContent = suSaniye(kalan); if(kalan<=10000) s.classList.add("kritik"); }
+  if(kalan <= 0) altinSonuc(Infinity);
+}
+function altinSonuc(sure){
+  var g = A.altin; sayacDurdur();
+  g.sonuc.push({takim:g.takimlar[g.i], sure:sure});
+  g.i++;
+  if(g.i < g.takimlar.length){ g.evre = "devir"; ciz(); return; }
+  var enIyi = g.sonuc.slice().sort(function(a,b){ return a.sure - b.sure; });
+  var kazananlar = enIyi.filter(function(x){ return x.sure === enIyi[0].sure; });
+  if(enIyi[0].sure === Infinity || kazananlar.length > 1){
+    altinBaslat(kazananlar.map(function(x){ return x.takim; })); return;
+  }
+  A.kazananZorla = enIyi[0].takim.id;
+  Ses.zafer();
+  bilgi(T("altin_tur"), T("altin_kazan",{ad:enIyi[0].takim.name}), "son:altinbitti");
+}
+
+/* --------------------------- İstatistikler ----------------------------- */
+function ekranIstatistik(){
+  var ist = istatistikAl();
+  var h = '<div class="ekran aktif"><div class="ustbar">'+
+    '<button class="geri" data-act="git:ana" aria-label="'+ka(T("geri"))+'"><span>←</span></button>'+
+    '<h2>'+ka(T("istatistik"))+'</h2></div>';
+  var adlar = Object.keys(ist.takimlar || {});
+  if(!adlar.length && !(ist.oyun)) return h+'<div class="bosluk"><span class="em">📊</span>'+ka(T("ist_bos"))+'</div></div>';
+  h += '<div class="kutu"><div class="rozetler">'+
+    '<div class="mini"><b>'+(ist.oyun||0)+'</b><span>'+ka(T("ist_oyun"))+'</span></div>'+
+    '<div class="mini"><b>'+adlar.length+'</b><span>'+ka(T("takimlar"))+'</span></div>'+
+    '<div class="mini"><b>'+Object.keys(ist.kartlar||{}).length+'</b><span>'+ka(T("kart"))+'</span></div>'+
+    '<div class="mini"><b>'+adlar.reduce(function(a,n){return a+ist.takimlar[n].dogru;},0)+'</b><span>'+ka(T("ist_dogru"))+'</span></div>'+
+    '</div></div>';
+  h += '<div class="kutu"><span class="etiket">'+ka(T("ist_takim"))+'</span><div class="kaydir"><table class="tablo"><thead><tr>'+
+    '<th>'+ka(T("takim"))+'</th><th>'+ka(T("ist_oyun"))+'</th><th>'+ka(T("ist_kazanma"))+'</th>'+
+    '<th>'+ka(T("ist_dogru"))+'</th><th>'+ka(T("ist_oran"))+'</th><th>'+ka(T("ist_enyuksek"))+'</th></tr></thead><tbody>';
+  adlar.sort(function(a,b){ return ist.takimlar[b].kazanma - ist.takimlar[a].kazanma; }).forEach(function(n){
+    var k = ist.takimlar[n], top = k.dogru+k.pas+k.yasak;
+    h += '<tr><td>'+ka(n)+'</td><td>'+k.oyun+'</td><td>'+k.kazanma+'</td><td>'+k.dogru+'</td>'+
+      '<td>'+(top?Math.round(k.dogru/top*100):0)+'%</td><td>'+k.enYuksek+'</td></tr>';
+  });
+  h += '</tbody></table></div></div>';
+
+  var kw = Object.keys(ist.kartlar||{});
+  if(kw.length){
+    kw.sort(function(a,b){ return ist.kartlar[b].gosterim - ist.kartlar[a].gosterim; });
+    h += '<div class="kutu"><span class="etiket">'+ka(T("ist_kart"))+'</span><div class="kaydir"><table class="tablo"><thead><tr>'+
+      '<th>'+ka(T("kelime"))+'</th><th>'+ka(T("gosterim"))+'</th><th>'+ka(T("bilinme"))+'</th></tr></thead><tbody>';
+    kw.slice(0,25).forEach(function(w){
+      var k = ist.kartlar[w];
+      h += '<tr><td>'+ka(w)+'</td><td>'+k.gosterim+'</td><td>'+(k.gosterim?Math.round(k.dogru/k.gosterim*100):0)+'%</td></tr>';
+    });
+    h += '</tbody></table></div></div>';
+  }
+  h += '<div class="taban"><button class="dg ikincil" data-act="ayar:sifirla">'+ka(T("sifirla"))+'</button></div>';
+  return h+'</div>';
+}
+
+/* ------------------------------ Geçmiş --------------------------------- */
+function ekranGecmis(){
+  var g = Depo.al(ANAHTAR.gecmis, []);
+  var h = '<div class="ekran aktif"><div class="ustbar">'+
+    '<button class="geri" data-act="git:ana" aria-label="'+ka(T("geri"))+'"><span>←</span></button>'+
+    '<h2>'+ka(T("gecmis"))+'</h2></div>';
+  if(!g.length) return h+'<div class="bosluk"><span class="em">🗂️</span>'+ka(T("gecmis_bos"))+'</div></div>';
+  g.forEach(function(o,i){
+    var t = new Date(o.tarih);
+    h += '<div class="gecmis"><div class="tar">'+t.toLocaleDateString()+' · '+t.toLocaleTimeString().slice(0,5)+
+      ' · '+ka(T("tur"))+' '+o.tur+' · '+Math.round(o.sure/60)+' '+ka(T("sn"))+'</div>'+
+      '<b>🏆 '+ka(o.kazanan)+'</b><div class="sessiz">'+
+      o.takimlar.map(function(x){return ka(x.sim+" "+x.ad+": "+x.puan);}).join(" · ")+'</div>'+
+      '<button class="dg hayalet kucuk" data-act="gecmis:sil:'+i+'">'+ka(T("sil"))+'</button></div>';
+  });
+  return h+'</div>';
+}
+
+/* --------------------------- Özel paket -------------------------------- */
+function ekranPaketler(){
+  var oz = ozelKartlar();
+  var h = '<div class="ekran aktif"><div class="ustbar">'+
+    '<button class="geri" data-act="git:ana" aria-label="'+ka(T("geri"))+'"><span>←</span></button>'+
+    '<h2>'+ka(T("paketler"))+'</h2></div>';
+  h += '<div class="kutu"><span class="etiket">'+ka(T("kategoriler"))+'</span><table class="tablo"><tbody>';
+  KAT_SIRA.forEach(function(kt){
+    var n = havuzKur(Ayar.dil, [kt]).length;
+    h += '<tr><td>'+KAT_AD[kt].em+' '+ka(KAT_AD[kt][Ayar.dil]||KAT_AD[kt].tr)+'</td><td class="sag">'+n+'</td></tr>';
+  });
+  h += '<tr><td><b>'+ka(T("kart_havuzu"))+'</b></td><td class="sag">'+havuzKur(Ayar.dil, KAT_SIRA).length+'</td></tr>';
+  h += '</tbody></table></div>';
+
+  h += '<div class="kutu"><span class="etiket">'+ka(T("ozel_paket"))+'</span>';
+  if(!oz.length) h += '<p class="sessiz">'+ka(T("ozel_bos"))+'</p>';
+  else {
+    h += '<table class="tablo"><tbody>';
+    oz.forEach(function(k,i){
+      h += '<tr><td><b>'+ka(k.word)+'</b><div class="sessiz">'+ka(k.forbiddenWords.join(", "))+'</div></td>'+
+        '<td class="sag"><button class="dg hayalet kucuk" data-act="ozel:sil:'+i+'">'+ka(T("sil"))+'</button></td></tr>';
+    });
+    h += '</tbody></table>';
+  }
+  h += '<button class="dg" style="margin-top:12px" data-act="ozel:ekle">'+ka(T("kart_ekle"))+'</button>'+
+    '<div class="satir" style="margin-top:10px">'+
+    '<button class="dg ikincil kucuk" data-act="ozel:disa">'+ka(T("disa"))+'</button>'+
+    '<button class="dg ikincil kucuk" data-act="ozel:ice">'+ka(T("ice"))+'</button></div></div>';
+  return h+'</div>';
+}
+function ozelEkleModal(){
+  modalAc('<h3>'+ka(T("kart_ekle"))+'</h3>'+
+    '<label>'+ka(T("ana_kelime"))+'</label><input type="text" id="ozelKelime" maxlength="40">'+
+    '<label style="display:block;margin-top:10px">'+ka(T("yasak_gir"))+'</label>'+
+    '<input type="text" id="ozelYasak" placeholder="a, b, c">'+
+    '<div class="yigin"><button class="dg" data-act="ozel:kaydet">'+ka(T("kaydet"))+'</button>'+
+    '<button class="dg ikincil" data-act="modal:kapat">'+ka(T("iptal"))+'</button></div>');
+}
+
+/* ---------------------------- Çizim / yönlendirme ---------------------- */
+function ciz(){
+  var h = "";
+  switch(A.ekran){
+    case "ana": h = ekranAna(); break;
+    case "kurulum": h = ekranKurulum(); break;
+    case "devir": h = ekranDevir(); break;
+    case "oyun": h = ekranOyun(); break;
+    case "turozeti": h = ekranTurOzeti(); break;
+    case "son": h = ekranSon(); break;
+    case "altin": h = ekranAltin(); break;
+    case "nasil": h = ekranNasil(); break;
+    case "ayarlar": h = ekranAyarlar(); break;
+    case "istatistik": h = ekranIstatistik(); break;
+    case "gecmis": h = ekranGecmis(); break;
+    case "paketler": h = ekranPaketler(); break;
+    default: h = ekranAna();
+  }
+  UY.innerHTML = h;
+  if(A.ekran === "oyun") sayacBasla(); else if(A.ekran !== "altin") sayacDurdur();
+}
+
+function turBaslatGerisayim(){
+  A.gerisayim = 3; ciz();
+  var sayac = setInterval(function(){
+    A.gerisayim--;
+    if(A.gerisayim <= 0){
+      clearInterval(sayac); A.gerisayim = -1; ciz();
+      setTimeout(function(){ A.gerisayim = 0; Motor.turBasla(A.d); Ses.basla(); oyunKaydet(); git("oyun"); }, 480);
+    } else { Ses.tik(); ciz(); }
+  }, 750);
+}
+
+function oyunuBitirVeKaydet(){
+  sayacDurdur();
+  A.d.status = "finished";
+  Depo.sil(ANAHTAR.oyun);
+  istatistikKaydet(A.d);
+  A.kazananZorla = null;
+  git("son");
+  if(!beraberlikSor()) Ses.zafer();
+}
+
+/* ------------------------------ Olaylar -------------------------------- */
+document.addEventListener("click", function(ev){
+  var t = ev.target;
+  while(t && t !== document && !t.getAttribute) t = t.parentNode;
+  var dg = t && t.closest ? t.closest("[data-act]") : null;
+  if(!dg) return;
+  var p = dg.getAttribute("data-act").split(":");
+  islemYap(p[0], p[1], p[2], ev);
+});
+
+function islemYap(grup, ne, deger){
+  if(grup === "modal" ) { modalKapat(); return; }
+  if(grup === "git"){ modalKapat(); git(ne); return; }
+
+  if(grup === "menu"){
+    if(ne === "yeni"){ Kur = yeniKurulum(false); git("kurulum"); }
+    else if(ne === "hizli"){ Kur = yeniKurulum(true); Kur.adim = 2; git("kurulum"); }
+    else if(ne === "devam"){ var k = Depo.al(ANAHTAR.oyun, null);
+      if(k){ A.d = k; A.kazananZorla = null;
+        git(k.status === "playing" || k.status === "handover" ? "devir" : (k.status === "turn-result" ? "turozeti" : "devir")); } }
+    else if(ne === "dil"){ dilModal(); }
+    else git(ne);
+    return;
+  }
+
+  if(grup === "ayar"){
+    if(ne === "dil"){ Ayar.dil = deger; ayarKaydet(); dilUygula(); modalKapat(); ciz(); return; }
+    if(ne === "tik"){ Ayar[deger] = !Ayar[deger]; ayarKaydet(); dilUygula(); ciz(); return; }
+    if(ne === "fs"){ Ayar.yaziBoyutu = parseFloat(deger); ayarKaydet(); dilUygula(); ciz(); return; }
+    if(ne === "sifirla"){
+      modalAc('<h3>'+ka(T("sifirla"))+'</h3><p class="sessiz">'+ka(T("sifirla_onay"))+'</p><div class="yigin">'+
+        '<button class="dg" style="background:var(--yasak)" data-act="ayar:sifirlaevet">'+ka(T("evet"))+'</button>'+
+        '<button class="dg ikincil" data-act="modal:kapat">'+ka(T("vazgec"))+'</button></div>'); return;
+    }
+    if(ne === "sifirlaevet"){
+      [ANAHTAR.ist, ANAHTAR.gecmis, ANAHTAR.oyun, ANAHTAR.ozel].forEach(Depo.sil);
+      modalKapat(); git("ana"); return;
+    }
+  }
+
+  if(grup === "kur"){
+    if(ne === "ileri"){
+      if(Kur.adim === 2) kurulumOku();
+      if(Kur.adim === 3 && !Kur.katlar.length){ bilgi(T("kategoriler"), T("en_az_1_kat")); return; }
+      if(Kur.adim === 3 && kartSayisiHesap() < 4){ bilgi(T("kart_havuzu"), T("kart_yetersiz")); return; }
+      if(Kur.adim === 8 || (Kur.hizli && Kur.adim === 2)){ oyunuBaslat(); return; }
+      Kur.adim++; ciz(); return;
+    }
+    if(ne === "geri"){
+      if(Kur.adim === 2) kurulumOku();
+      if(Kur.adim === 1){ git("ana"); return; }
+      Kur.adim--; ciz(); return;
+    }
+    if(ne === "takimsayi"){ Kur.takimSayisi = +deger; }
+    if(ne === "kat"){ var i = Kur.katlar.indexOf(deger); if(i>-1) Kur.katlar.splice(i,1); else Kur.katlar.push(deger); }
+    if(ne === "kattumu"){ Kur.katlar = KAT_SIRA.slice(); }
+    if(ne === "kathic"){ Kur.katlar = []; }
+    if(ne === "yas"){ Kur.yas = deger; }
+    if(ne === "mod"){ Kur.mod = deger; if(deger === "round" && !Kur.kartSayisi) Kur.kartSayisi = 3; }
+    if(ne === "sure"){ Kur.sure = +deger; }
+    if(ne === "kart"){ Kur.kartSayisi = +deger || null; }
+    if(ne === "turs"){ Kur.turSayisi = +deger; }
+    if(ne === "hedef"){ Kur.hedef = +deger; }
+    if(ne === "pas"){ Kur.pas = +deger; }
+    if(ne === "ceza"){ Kur.ceza = deger; }
+    if(ne === "puanlama"){ Kur.puanlama = deger; }
+    if(ne === "simge"){ simgeModal(+deger); return; }
+    Ses.tik(); ciz(); return;
+  }
+
+  if(grup === "simge"){
+    Kur.takimlar[+ne].icon = SIMGELER[+deger];
+    modalKapat(); ciz(); return;
+  }
+
+  if(grup === "oyun"){
+    if(ne === "hazir"){ turBaslatGerisayim(); return; }
+    if(ne === "cik"){
+      modalAc('<h3>'+ka(T("anamenu"))+'</h3><p class="sessiz">'+ka(T("cikis_onay"))+'</p><div class="yigin">'+
+        '<button class="dg" data-act="oyun:cikevet">'+ka(T("evet"))+'</button>'+
+        '<button class="dg ikincil" data-act="modal:kapat">'+ka(T("vazgec"))+'</button></div>'); return;
+    }
+    if(ne === "cikevet"){ oyunKaydet(); modalKapat(); sayacDurdur(); git("ana"); return; }
+    if(ne === "dogru"){ eylem("correct"); return; }
+    if(ne === "pas"){ eylem("pass"); return; }
+    if(ne === "yasak"){ eylem("forbidden"); return; }
+    if(ne === "yasakevet"){ modalKapat(); eylemUygula("forbidden"); return; }
+    if(ne === "duraklat"){ duraklat(); return; }
+    if(ne === "devamet"){ duraklatKaldir(); return; }
+    if(ne === "turozeti"){ modalKapat(); git("turozeti"); return; }
+    if(ne === "karistir"){ Motor.desteYenile(A.d); modalKapat(); git("turozeti"); return; }
+    if(ne === "bitir"){ modalKapat(); oyunuBitirVeKaydet(); return; }
+    if(ne === "sonraki"){
+      var durum = Motor.sonraki(A.d);
+      oyunKaydet();
+      if(durum === "finished"){ oyunuBitirVeKaydet(); } else { Ses.tur(); git("devir"); }
+      return;
+    }
+  }
+
+  if(grup === "son"){
+    if(ne === "tekrar"){
+      if(A.sonKurulum){ Kur = A.sonKurulum; Kur.adim = 8; A.kazananZorla = null; oyunuBaslat(); }
+      else { Kur = yeniKurulum(false); git("kurulum"); }
+      return;
+    }
+    if(ne === "takim"){ if(!Kur) Kur = yeniKurulum(false); Kur.adim = 2; git("kurulum"); return; }
+    if(ne === "paylas"){ paylas(); return; }
+    if(ne === "altin"){ altinBaslat(Motor.esitler(A.d)); return; }
+    if(ne === "beraber"){ modalKapat(); Ses.zafer(); return; }
+    if(ne === "altinbitti"){ modalKapat(); git("son"); return; }
+  }
+
+  if(grup === "altin"){
+    if(ne === "basla"){
+      var g = A.altin;
+      g.kart = g.kartlar[(g.sonuc.length + g.i) % g.kartlar.length];
+      g.evre = "oyun"; g.bitis = Date.now() + 30000; g.basladi = Date.now();
+      ciz(); Ses.basla();
+      sayacDurdur(); A.sayacId = setInterval(altinTik, 180);
+      return;
+    }
+    if(ne === "dogru"){ Ses.dogru(); altinSonuc(Date.now() - A.altin.basladi); return; }
+    if(ne === "yasak"){ Ses.yasak(); altinSonuc(Infinity); return; }
+  }
+
+  if(grup === "gecmis" && ne === "sil"){
+    var gl = Depo.al(ANAHTAR.gecmis, []); gl.splice(+deger,1); Depo.yaz(ANAHTAR.gecmis, gl); ciz(); return;
+  }
+
+  if(grup === "ozel"){
+    if(ne === "ekle"){ ozelEkleModal(); return; }
+    if(ne === "kaydet"){
+      var w = (el("ozelKelime")||{}).value || "", y = (el("ozelYasak")||{}).value || "";
+      var yl = y.split(",").map(function(x){return x.trim();}).filter(Boolean);
+      if(!w.trim() || yl.length < 3){ bilgi(T("kart_ekle"), T("en_az_3")); return; }
+      var l = ozelKartlar();
+      l.push({word:w.trim(), forbiddenWords:yl, difficulty:"medium", enabled:true});
+      Depo.yaz(ANAHTAR.ozel, l); modalKapat(); ciz(); return;
+    }
+    if(ne === "sil"){ var lx = ozelKartlar(); lx.splice(+deger,1); Depo.yaz(ANAHTAR.ozel, lx); ciz(); return; }
+    if(ne === "disa"){
+      modalAc('<h3>'+ka(T("disa"))+'</h3><textarea readonly>'+ka(JSON.stringify(ozelKartlar()))+'</textarea>'+
+        '<div class="yigin"><button class="dg ikincil" data-act="modal:kapat">'+ka(T("kapat"))+'</button></div>'); return;
+    }
+    if(ne === "ice"){
+      modalAc('<h3>'+ka(T("ice"))+'</h3><textarea id="iceMetin" placeholder="'+ka(T("ice_ph"))+'"></textarea>'+
+        '<div class="yigin"><button class="dg" data-act="ozel:iceOk">'+ka(T("kaydet"))+'</button>'+
+        '<button class="dg ikincil" data-act="modal:kapat">'+ka(T("iptal"))+'</button></div>'); return;
+    }
+    if(ne === "iceOk"){
+      try{
+        var v = JSON.parse((el("iceMetin")||{}).value || "[]");
+        if(!Array.isArray(v)) throw 0;
+        var temiz = v.filter(function(k){ return k && k.word && Array.isArray(k.forbiddenWords) && k.forbiddenWords.length >= 3; });
+        var mevcut = ozelKartlar().concat(temiz);
+        Depo.yaz(ANAHTAR.ozel, mevcut);
+        modalKapat(); ciz(); bilgi(T("ice"), T("ice_ok",{n:temiz.length}));
+      }catch(e){ bilgi(T("ice"), T("ice_hata")); }
+      return;
+    }
+  }
+}
+
+function dilModal(){
+  var h = '<h3>'+ka(T("dil"))+'</h3><div class="yigin">';
+  DILLER.forEach(function(dl){ h += '<button class="dg '+(Ayar.dil===dl?"":"ikincil")+'" data-act="ayar:dil:'+dl+'">'+ka(DIL_ADI[dl])+'</button>'; });
+  modalAc(h+'<button class="dg hayalet" data-act="modal:kapat">'+ka(T("kapat"))+'</button></div>');
+}
+function simgeModal(ix){
+  var h = '<h3>'+ka(T("takim"))+' '+(ix+1)+'</h3><div class="secenekler">';
+  SIMGELER.forEach(function(s,i){ h += '<button class="cip" style="font-size:1.4rem;min-width:56px;justify-content:center" data-act="simge:'+ix+':'+i+'">'+s+'</button>'; });
+  modalAc(h+'</div><div class="yigin"><button class="dg ikincil" data-act="modal:kapat">'+ka(T("kapat"))+'</button></div>');
+}
+
+function duraklat(){
+  if(!A.d || A.d.status !== "playing" || A.duraklat) return;
+  A.duraklat = true; A.kalanDuraklat = Motor.kalanMs(A.d); sayacDurdur();
+  var kart = el("kart"); if(kart) kart.classList.add("gizli");
+  modalAc('<h3>'+ka(T("duraklatildi"))+'</h3><p class="sessiz">'+ka(T("kart_gizli"))+'</p><div class="yigin">'+
+    '<button class="dg" data-act="oyun:devamet">'+ka(T("devam"))+'</button>'+
+    '<button class="dg ikincil" data-act="oyun:bitir">'+ka(T("oyunu_bitir"))+'</button>'+
+    '<button class="dg ikincil" data-act="oyun:cik">'+ka(T("anamenu"))+'</button></div>');
+}
+function duraklatKaldir(){
+  if(!A.duraklat) return;
+  A.duraklat = false;
+  A.d.turnEndsAt = Date.now() + A.kalanDuraklat;
+  var kart = el("kart"); if(kart) kart.classList.remove("gizli");
+  modalKapat(); sayacBasla();
+}
+
+function paylas(){
+  var d = A.d, s = Motor.siralama(d);
+  var metin = T("ad")+" — "+T("siralama")+"\n"+
+    s.map(function(t,i){ return (i+1)+". "+t.icon+" "+t.name+" — "+t.score; }).join("\n");
+  if(navigator.share){ navigator.share({text:metin}).catch(function(){}); return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(metin).then(function(){ bilgi(T("sonuc_paylas"), T("kopyalandi")); },
+      function(){ paylasModal(metin); });
+    return;
+  }
+  paylasModal(metin);
+}
+function paylasModal(metin){
+  modalAc('<h3>'+ka(T("sonuc_paylas"))+'</h3><textarea readonly>'+ka(metin)+'</textarea>'+
+    '<div class="yigin"><button class="dg ikincil" data-act="modal:kapat">'+ka(T("kapat"))+'</button></div>');
+}
+
+/* ---------------------- Kaydırma hareketleri --------------------------- */
+(function(){
+  var x0 = null, y0 = null;
+  document.addEventListener("touchstart", function(e){
+    if(A.ekran !== "oyun" || !Ayar.kaydirma) return;
+    var k = e.target.closest ? e.target.closest("#kartalan") : null; if(!k) return;
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+  }, {passive:true});
+  document.addEventListener("touchend", function(e){
+    if(x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if(Math.abs(dx) < 60 && Math.abs(dy) < 60) return;
+    if(Math.abs(dx) > Math.abs(dy)) eylem(dx > 0 ? "correct" : "forbidden");
+    else if(dy > 0) eylem("pass");
+  }, {passive:true});
+})();
+
+document.addEventListener("visibilitychange", function(){
+  if(document.hidden && Ayar.otoDuraklat && A.d && A.d.status === "playing") duraklat();
+});
+document.addEventListener("keydown", function(e){
+  if(A.ekran !== "oyun") return;
+  if(e.key === "ArrowRight") eylem("correct");
+  else if(e.key === "ArrowLeft") eylem("forbidden");
+  else if(e.key === "ArrowDown") eylem("pass");
+});
+
+/* ------------------------------ Başlangıç ------------------------------ */
+function baslat(){
+  dilUygula();
+  git("ana");
+  var kayit = Depo.al(ANAHTAR.oyun, null);
+  if(kayit && kayit.status && kayit.status !== "finished" && kayit.teams){
+    modalAc('<h3>'+ka(T("devam_soru"))+'</h3><p class="sessiz">'+ka(T("devam_soru_a"))+'</p><div class="yigin">'+
+      '<button class="dg" data-act="menu:devam">'+ka(T("devamet"))+'</button>'+
+      '<button class="dg ikincil" data-act="modal:kapat">'+ka(T("yeniden"))+'</button></div>');
+  }
+}
+window.__UI__ = {A:A, git:git, ciz:ciz, islemYap:islemYap, yeniKurulum:yeniKurulum,
+  oyunuBaslat:function(){ oyunuBaslat(); }, kurAyarla:function(k){ Kur = k; }, kurAl:function(){ return Kur; },
+  eylem:eylem, eylemUygula:eylemUygula, T:T, Ayar:Ayar, dilUygula:dilUygula};
+baslat();
+</script>
+</body>
+</html>
