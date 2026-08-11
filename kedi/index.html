@@ -335,17 +335,17 @@ runBaslat(); run=false;
 
 /* düşman türleri (çocuk dostu yaramazlar) */
 const TURLER={
-  fare:{hp:2,hiz:0.085,hasar:1,pati:1,r:0.032},
-  tilki:{hp:5,hiz:0.065,hasar:1,pati:2,r:0.042},
-  robot:{hp:12,hiz:0.042,hasar:1,pati:4,r:0.05},
-  boss:{hp:120,hiz:0.035,hasar:1,pati:40,r:0.1}
+  fare:{hp:2,hiz:0.085,hasar:1,pati:1,r:0.032,balik:1},
+  tilki:{hp:5,hiz:0.065,hasar:1,pati:2,r:0.042,balik:2},
+  robot:{hp:12,hiz:0.042,hasar:1,pati:4,r:0.05,balik:4},
+  boss:{hp:120,hiz:0.035,hasar:1,pati:40,r:0.1,balik:12}
 };
 function dusmanYap(tur){
   const T=TURLER[tur];
   const a=Math.random()*6.283, d=Math.hypot(W,H)*0.62;
   const zorluk=1+sure/40;
   dusmanlar.push({tur,x:kedi.x+Math.cos(a)*d,y:kedi.y+Math.sin(a)*d,
-    hp:T.hp*zorluk,maxHp:T.hp*zorluk,hiz:T.hiz,hasar:T.hasar,pati:T.pati,
+    hp:T.hp*zorluk,maxHp:T.hp*zorluk,hiz:T.hiz,hasar:T.hasar,pati:T.pati,balik:T.balik,
     r:T.r,faz:Math.random()*6.28,flas:0,boss:tur==='boss'});
   if(tur==='boss'){ sesBoss(); toast('🤖 KOCA ROBOT GELİYOR!'); buzz([40,60,40]); }
 }
@@ -420,9 +420,10 @@ function mermiVur(m,d,yumakR){
     sesPuf();
     parca(d.x,d.y,d.boss?24:10,'#ffce54',true);
     kazanilanPati+=Math.round(d.pati*kedi.patiCarp);
-    const balikSayi=d.boss?8:1;
+    const balikSayi=d.balik||1;
+    const sacilim=28+balikSayi*9;   /* iri düşman daha geniş alana saçar */
     for(let i=0;i<balikSayi;i++)
-      baliklar.push({x:d.x+(Math.random()-0.5)*40,y:d.y+(Math.random()-0.5)*40,cek:false});
+      baliklar.push({x:d.x+(Math.random()-0.5)*sacilim,y:d.y+(Math.random()-0.5)*sacilim,cek:false});
     if(d.boss){ toast('🤖 devrildi! +🐾'+d.pati); buzz([25,40,25]); }
   }
   return true;
