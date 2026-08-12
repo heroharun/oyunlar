@@ -48,10 +48,12 @@
   .btn.alt{background:linear-gradient(180deg,#ffd166,#ff9f43);box-shadow:0 5px 0 #b3561e}
   .btn.alt:active{box-shadow:0 2px 0 #b3561e}
   .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-  #pauseBtn{position:fixed;top:10px;right:12px;z-index:5;font-size:16px;color:var(--dim);
+  #pauseBtn{position:fixed;top:10px;right:12px;z-index:5;font-size:18px;color:var(--dim);
     background:rgba(95,212,240,.08);border:1.5px solid rgba(95,212,240,.3);
-    border-radius:999px;padding:8px 14px;cursor:pointer;display:none}
-  #pauseBtn.show{display:block}
+    border-radius:50%;width:44px;height:44px;padding:0;line-height:1;
+    align-items:center;justify-content:center;cursor:pointer;display:none}
+  #pauseBtn.show{display:flex}
+  #hud{padding-right:60px}
 </style>
 
 <div id="wrap">
@@ -69,7 +71,7 @@
     <div class="b drop" id="bDrop">⤓</div>
   </div>
 </div>
-<button id="pauseBtn">⏸ durdur</button>
+<button id="pauseBtn" aria-label="Durdur" title="Durdur">⏸</button>
 
 <div class="card" id="intro">
   <h1>BLOK YAĞMURU</h1>
@@ -335,7 +337,7 @@ loop();
 
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
-#mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
+#mpNasilBtn{position:fixed;left:10px;top:64px;z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
   font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}

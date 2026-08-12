@@ -172,7 +172,7 @@ function updHud(){
 
 /* fırlatıcı kadrosu: usta hep var, garsonlar puanla katılır */
 const ATICILAR=[
-  {esik:0,  ad:'',                          px:()=>W*0.14, py:()=>H*0.24},
+  {esik:0,  ad:'',                          px:()=>Math.max(W*0.14,90), py:()=>Math.max(H*0.24,140)},
   {esik:12, ad:'garson1',  px:()=>W*0.86, py:()=>H*0.33},
   {esik:28, ad:'garson2', px:()=>W*0.12, py:()=>H*0.55}
 ];
@@ -290,7 +290,7 @@ function cizArka(){
     ctx.beginPath(); ctx.roundRect(x,H*0.93,44,4,2); ctx.fill(); }
 }
 function cizTava(){
-  const x=W*0.14, y=H*0.24, sal=Math.sin(tick*0.09)*0.1-(atisT<14?0.35:0);
+  const x=Math.max(W*0.14,90), y=Math.max(H*0.24,140), sal=Math.sin(tick*0.09)*0.1-(atisT<14?0.35:0);
   ctx.save(); ctx.translate(x,y); ctx.rotate(sal);
   ctx.fillStyle='#3a3f47';
   ctx.beginPath(); ctx.roundRect(-8,-12,86,14,7); ctx.fill();     /* sap */

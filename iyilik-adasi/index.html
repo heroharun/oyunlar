@@ -374,7 +374,7 @@ html[data-night="1"] .region{background:rgba(43,58,53,.9)}
 .colorpick.on{border-color:var(--text);transform:scale(1.1)}
 
 /* Onboarding */
-#onboard{background:linear-gradient(180deg,var(--sky),var(--cream) 70%);overflow-y:auto;padding:calc(18px + var(--pad-t)) 16px calc(24px + var(--pad-b))}
+#onboard{background:linear-gradient(180deg,var(--sky),var(--cream) 70%);overflow-y:auto;padding:calc(18px + var(--pad-t)) 16px calc(96px + var(--pad-b))}
 .ob-card{max-width:520px;margin:0 auto;background:var(--surface);border-radius:var(--r-xl);padding:20px;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
 .ob-card h2{font-size:1.4rem;color:var(--primary-dark);text-align:center}
 .ob-card>p.sub{text-align:center;color:var(--muted);font-size:.88rem;margin:6px 0 16px}
@@ -2535,7 +2535,7 @@ App.boot();
 
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
-#mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
+#mpNasilBtn{position:fixed;left:10px;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 64px);z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
   font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}

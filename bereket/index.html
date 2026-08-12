@@ -4274,10 +4274,8 @@ guvenli(()=>{
 function baslat(){
   const kayitliDil = guvenli(()=> localStorage.getItem("bereket_dil"), "dil-oku");
   if(kayitliDil && DILLER.some(d => d.kod === kayitliDil)) DIL = kayitliDil;
-  else{
-    const tarayici = (navigator.language || "tr").slice(0, 2);
-    if(DILLER.some(d => d.kod === tarayici)) DIL = tarayici;
-  }
+  /* MasalPark portalı Türkçe: kayıtlı tercih yoksa arayüz Türkçe açılır.
+     (Tarayıcı diline göre otomatik seçim kaldırıldı; dil çubuğundan seçim yapılabilir.) */
   dilUygula();
   baglantilar();
   menuCiz();
