@@ -199,6 +199,45 @@ body.gece summary{color:var(--altin-acik);}
 .kuyu-hucre{height:26px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;border-bottom:1px dashed rgba(255,255,255,.14);}
 .kuyu-agiz{width:170px;margin:0 auto;text-align:center;font-size:1.5rem;}
 @media(min-width:640px){ .gorunum{padding-top:24px;} h1{font-size:1.95rem;} }
+/* ---- Parlatma: fon, logo, ikon ailesi, yaş kartları (yalnız görsel) ---- */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% -12%,color-mix(in srgb,var(--altin) 12%,transparent),transparent 58%),
+    linear-gradient(158deg,var(--zemin2) 0%,var(--zemin) 42%,color-mix(in srgb,var(--zeytin) 8%,var(--zemin)) 100%);}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cg fill='none' stroke='%23C9A24B' stroke-opacity='.4' stroke-width='2'%3E%3Cpath d='M75 18 L86 64 L132 75 L86 86 L75 132 L64 86 L18 75 L64 64 Z'/%3E%3Ccircle cx='75' cy='75' r='11'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cpath d='M88 22 A50 50 0 1 0 88 118 A41 41 0 1 1 88 22 Z' fill='none' stroke='%23C9A24B' stroke-opacity='.38' stroke-width='2'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cpath d='M88 22 A50 50 0 1 0 88 118 A41 41 0 1 1 88 22 Z' fill='none' stroke='%23C9A24B' stroke-opacity='.38' stroke-width='2'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cg fill='none' stroke='%23C9A24B' stroke-opacity='.4' stroke-width='2'%3E%3Cpath d='M75 18 L86 64 L132 75 L86 86 L75 132 L64 86 L18 75 L64 64 Z'/%3E%3Ccircle cx='75' cy='75' r='11'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% 44%,transparent 60%,rgba(58,52,40,.09) 100%);
+  background-repeat:no-repeat;
+  background-position:-52px -52px, calc(100% + 46px) -46px, -46px calc(100% + 46px), calc(100% + 52px) calc(100% + 52px), center;}
+body.gece::after{background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cg fill='none' stroke='%23E2C067' stroke-opacity='.28' stroke-width='2'%3E%3Cpath d='M75 18 L86 64 L132 75 L86 86 L75 132 L64 86 L18 75 L64 64 Z'/%3E%3Ccircle cx='75' cy='75' r='11'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cpath d='M88 22 A50 50 0 1 0 88 118 A41 41 0 1 1 88 22 Z' fill='none' stroke='%23E2C067' stroke-opacity='.26' stroke-width='2'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cpath d='M88 22 A50 50 0 1 0 88 118 A41 41 0 1 1 88 22 Z' fill='none' stroke='%23E2C067' stroke-opacity='.26' stroke-width='2'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cg fill='none' stroke='%23E2C067' stroke-opacity='.28' stroke-width='2'%3E%3Cpath d='M75 18 L86 64 L132 75 L86 86 L75 132 L64 86 L18 75 L64 64 Z'/%3E%3Ccircle cx='75' cy='75' r='11'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% 44%,transparent 55%,rgba(0,0,0,.32) 100%);}
+#acilis{background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--zemin2) 62%,transparent),transparent 65%);}
+.logo-pusula{width:106px;height:106px;margin:0 auto 6px;filter:drop-shadow(0 5px 9px rgba(58,52,40,.28));}
+.logo-pusula svg{width:100%;height:100%;display:block;}
+.logo-pusula .ibre{animation:don 24s linear infinite;transform-box:fill-box;transform-origin:center;}
+body.az-anim .logo-pusula .ibre{animation:none;}
+.bikon{width:1.28em;height:1.28em;flex-shrink:0;}
+#yasSecim .sec{
+  background:linear-gradient(180deg,var(--kagit) 0%,color-mix(in srgb,var(--zemin2) 78%,var(--kagit)) 120%);
+  border-color:color-mix(in srgb,var(--altin) 45%,var(--zemin2));
+  box-shadow:0 4px 12px rgba(58,52,40,.14);
+  transition:transform .16s ease,box-shadow .16s ease;}
+#yasSecim .sec:hover{transform:translateY(-3px);box-shadow:0 9px 18px rgba(58,52,40,.2);}
+#yasSecim .sec:active{transform:translateY(0);box-shadow:0 3px 8px rgba(58,52,40,.16);}
+#yasSecim .sec.secili{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--zeytin) 12%,var(--kagit)) 0%,color-mix(in srgb,var(--zeytin) 20%,var(--kagit)) 120%);
+  border-color:var(--zeytin);box-shadow:0 5px 14px rgba(58,52,40,.18);}
+body.gece #yasSecim .sec{box-shadow:0 4px 12px rgba(0,0,0,.4);}
+.yas-rozet{width:48px;height:48px;flex-shrink:0;filter:drop-shadow(0 2px 3px rgba(58,52,40,.25));}
+body.kontrast::before,body.kontrast::after{display:none;}
 </style>
 </head>
 <body>
@@ -212,15 +251,39 @@ body.gece summary{color:var(--altin-acik);}
   <span class="motif" style="bottom:14%;left:14%;font-size:1.3rem;animation-delay:-5s;">✦</span>
   <span class="motif" style="bottom:20%;right:10%;font-size:1.5rem;animation-delay:-2s;">🌱</span>
   <div class="acilis-kutu">
-    <div class="pusula-buyuk">🧭</div>
+    <div class="logo-pusula" role="img" aria-label="Pusula">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <defs>
+          <radialGradient id="lgZemin" cx="50%" cy="36%" r="72%">
+            <stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#EFE0BC"/>
+          </radialGradient>
+          <linearGradient id="lgAltin" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#E7CE96"/><stop offset=".55" stop-color="#C9A24B"/><stop offset="1" stop-color="#8F6E2A"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="54" fill="url(#lgAltin)"/>
+        <circle cx="60" cy="60" r="48" fill="url(#lgZemin)" stroke="#8F6E2A" stroke-width="1.4"/>
+        <path d="M60 18 L66 54 L102 60 L66 66 L60 102 L54 66 L18 60 L54 54 Z" fill="#C9A24B" opacity=".3"/>
+        <path d="M60 32 L64 56 L88 60 L64 64 L60 88 L56 64 L32 60 L56 56 Z" fill="#C9A24B" opacity=".22" transform="rotate(45 60 60)"/>
+        <g stroke="#8F6E2A" stroke-width="2" stroke-linecap="round" opacity=".65">
+          <path d="M60 16.5v6M60 97.5v6M16.5 60h6M97.5 60h6"/>
+        </g>
+        <g class="ibre">
+          <path d="M60 24 L52 60 L68 60 Z" fill="#A6472F" stroke="#7C2F1E" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M60 96 L52 60 L68 60 Z" fill="#22385C" stroke="#16243C" stroke-width="1.2" stroke-linejoin="round"/>
+        </g>
+        <circle cx="60" cy="60" r="6.5" fill="url(#lgAltin)" stroke="#8F6E2A" stroke-width="1.4"/>
+        <path d="M97 10 L100 20 L110 23 L100 26 L97 36 L94 26 L84 23 L94 20 Z" fill="url(#lgAltin)" stroke="#8F6E2A" stroke-width="1.1" stroke-linejoin="round"/>
+      </svg>
+    </div>
     <h1 style="font-size:2.1rem;margin:6px 0 2px;">Hikmet Yolcuları</h1>
     <p class="anlati" style="margin-bottom:18px;">Peygamber kıssalarından hangi hikmetleri keşfedeceksin?</p>
 
     <div id="acilisAna">
-      <button class="btn altin tam" style="margin-bottom:10px;" data-act="yolculuga-basla">🗺️ Yolculuğa Başla</button>
-      <button class="btn tam gizli" style="margin-bottom:10px;" id="devamBtn" data-act="devam-et">▶️ Kaldığım Yerden Devam Et</button>
-      <button class="btn lacivert tam" style="margin-bottom:10px;" data-act="aile-modu">👨‍👩‍👧 Aile Modu</button>
-      <button class="btn cizgi tam" data-act="acilis-ayar">⚙️ Ayarlar</button>
+      <button class="btn altin tam" style="margin-bottom:10px;" data-act="yolculuga-basla"><svg class="bikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6.2v13.6l6-2.2 6 2.2 6-2.2V3.8l-6 2.2-6-2z"/><path d="M9 4v13.6M15 6.2v13.4"/></svg> Yolculuğa Başla</button>
+      <button class="btn tam gizli" style="margin-bottom:10px;" id="devamBtn" data-act="devam-et"><svg class="bikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M10 8.6v6.8l5.4-3.4z" fill="currentColor" stroke="none"/></svg> Kaldığım Yerden Devam Et</button>
+      <button class="btn lacivert tam" style="margin-bottom:10px;" data-act="aile-modu"><svg class="bikon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="8" cy="6.8" r="3"/><circle cx="16.6" cy="8" r="2.4"/><path d="M3.3 20v-3.4c0-2.4 2-4.2 4.7-4.2s4.7 1.8 4.7 4.2V20z"/><path d="M13.8 20v-2.9c0-1.9 1.3-3.3 2.8-3.3 1.6 0 2.9 1.4 2.9 3.3V20z"/></svg> Aile Modu</button>
+      <button class="btn cizgi tam" data-act="acilis-ayar"><svg class="bikon" viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M19.46 13c.05-.33.07-.66.07-1s-.02-.67-.07-1l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.3 7.3 0 0 0-1.73-1l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.49.42l-.38 2.65c-.63.26-1.2.6-1.73 1l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L4.51 11a8 8 0 0 0 0 2L2.4 14.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.61.22l2.49-1c.53.4 1.1.74 1.73 1l.38 2.65c.04.24.24.42.49.42h4a.5.5 0 0 0 .5-.42l.38-2.65a7.3 7.3 0 0 0 1.73-1l2.49 1c.22.1.48 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64zM11.96 15.4a3.4 3.4 0 1 1 0-6.8 3.4 3.4 0 0 1 0 6.8z"/></svg> Ayarlar</button>
     </div>
 
     <div id="acilisKurulum" class="gizli" style="text-align:left;">
@@ -888,12 +951,56 @@ const yasModlari = [
   { id:"11-13",ad:"11-13 yaş",ikon:"🧭", not:"Kavramlar, sebep-sonuç ve ayet referansları" },
   { id:"aile", ad:"Aile modu", ikon:"👨‍👩‍👧", not:"Birlikte okuma + ailece konuşma soruları" }
 ];
+/* Yaş rozetleri — çizilmiş SVG maskotlar (yalnız görsel) */
+const yasRozetler = {
+  "5-7": `<svg class="yas-rozet" viewBox="0 0 48 48" aria-hidden="true">
+    <defs><radialGradient id="yrz1" cx="50%" cy="34%" r="75%"><stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#F2E3BE"/></radialGradient></defs>
+    <circle cx="24" cy="24" r="22" fill="url(#yrz1)" stroke="#C9A24B" stroke-width="2"/>
+    <ellipse cx="24" cy="27" rx="11.5" ry="10.5" fill="#F8D45C" stroke="#C99A2E" stroke-width="1.3"/>
+    <path d="M20 14.5q1.5-3 4-1.5 1-2.5 3.4-1 .3 2.4-2 3z" fill="#F8D45C" stroke="#C99A2E" stroke-width="1"/>
+    <path d="M14.5 27q3.5-1 5.5 2.5-3.5 1.5-5.5-2.5z" fill="#EFC244" stroke="#C99A2E" stroke-width="1"/>
+    <circle cx="27.5" cy="24" r="1.6" fill="#3A3428"/>
+    <path d="M32.5 26.5 36 28l-3.5 1.5z" fill="#E8933A" stroke="#C06F1F" stroke-width=".8" stroke-linejoin="round"/>
+    <path d="M20.5 37.5v2.6M27.5 37.5v2.6" stroke="#C06F1F" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>`,
+  "8-10": `<svg class="yas-rozet" viewBox="0 0 48 48" aria-hidden="true">
+    <defs><radialGradient id="yrz2" cx="50%" cy="34%" r="75%"><stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#F2E3BE"/></radialGradient></defs>
+    <circle cx="24" cy="24" r="22" fill="url(#yrz2)" stroke="#C9A24B" stroke-width="2"/>
+    <path d="M15 15l3.5 4M33 15l-3.5 4" stroke="#6E5138" stroke-width="2.4" stroke-linecap="round"/>
+    <ellipse cx="24" cy="27" rx="12" ry="12.5" fill="#8A6A4F" stroke="#5F452F" stroke-width="1.3"/>
+    <ellipse cx="24" cy="31.5" rx="7.5" ry="7" fill="#D9BE93"/>
+    <path d="M19 33.5q2.5 1.6 5 0M21.5 36q2.5 1.6 5 0" stroke="#A8814F" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <circle cx="19.5" cy="24" r="4.6" fill="#FFFDF6" stroke="#5F452F" stroke-width="1.1"/>
+    <circle cx="28.5" cy="24" r="4.6" fill="#FFFDF6" stroke="#5F452F" stroke-width="1.1"/>
+    <circle cx="19.9" cy="24.4" r="1.9" fill="#3A3428"/><circle cx="28.1" cy="24.4" r="1.9" fill="#3A3428"/>
+    <path d="M24 27.5l-1.8 2.6h3.6z" fill="#E8B23A" stroke="#C08A1F" stroke-width=".8" stroke-linejoin="round"/>
+  </svg>`,
+  "11-13": `<svg class="yas-rozet" viewBox="0 0 48 48" aria-hidden="true">
+    <defs><radialGradient id="yrz3" cx="50%" cy="34%" r="75%"><stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#F2E3BE"/></radialGradient></defs>
+    <circle cx="24" cy="24" r="22" fill="url(#yrz3)" stroke="#C9A24B" stroke-width="2"/>
+    <circle cx="24" cy="24" r="15.5" fill="none" stroke="#C9A24B" stroke-width="2.2"/>
+    <path d="M24 10.5v2.6M24 34.9v2.6M10.5 24h2.6M34.9 24h2.6" stroke="#8F6E2A" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M24 12.5 20.4 24h7.2z" fill="#A6472F" stroke="#7C2F1E" stroke-width="1" stroke-linejoin="round"/>
+    <path d="M24 35.5 20.4 24h7.2z" fill="#22385C" stroke="#16243C" stroke-width="1" stroke-linejoin="round"/>
+    <circle cx="24" cy="24" r="3" fill="#C9A24B" stroke="#8F6E2A" stroke-width="1.1"/>
+  </svg>`,
+  "aile": `<svg class="yas-rozet" viewBox="0 0 48 48" aria-hidden="true">
+    <defs><radialGradient id="yrz4" cx="50%" cy="34%" r="75%"><stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#F2E3BE"/></radialGradient></defs>
+    <circle cx="24" cy="24" r="22" fill="url(#yrz4)" stroke="#C9A24B" stroke-width="2"/>
+    <circle cx="16.5" cy="17.5" r="4.4" fill="#5A6B3F"/>
+    <path d="M9.5 36v-6.2c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2V36z" fill="#5A6B3F"/>
+    <circle cx="30" cy="18.5" r="3.8" fill="#8A6A4F"/>
+    <path d="M24.4 36v-5.4c0-3.2 2.5-5.5 5.6-5.5s5.6 2.3 5.6 5.5V36z" fill="#8A6A4F"/>
+    <circle cx="37" cy="25.5" r="2.7" fill="#C9A24B"/>
+    <path d="M33 36v-3.6c0-2.3 1.8-3.9 4-3.9s4 1.6 4 3.9V36z" fill="#C9A24B"/>
+  </svg>`
+};
 function yasSecimCiz(){
   const kap = $("yasSecim"); kap.innerHTML="";
   yasModlari.forEach(m=>{
     const b = document.createElement("button");
     b.className = "sec" + (S.yasModu===m.id ? " secili":"");
-    b.innerHTML = `<span class="ikon">${m.ikon}</span><span><b>${m.ad}</b><br><span class="kucuk">${m.not}</span></span>`;
+    b.innerHTML = `${yasRozetler[m.id] || `<span class="ikon">${m.ikon}</span>`}<span><b>${m.ad}</b><br><span class="kucuk">${m.not}</span></span>`;
     b.onclick = ()=>{ S.yasModu = m.id; kaydet(); yasSecimCiz(); };
     kap.appendChild(b);
   });
