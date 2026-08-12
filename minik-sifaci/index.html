@@ -79,12 +79,22 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
 .doctor-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
 .doc{
-  background:#fff;border-radius:var(--r-sm);padding:10px 6px;text-align:center;
+  background:linear-gradient(180deg,#ffffff,#fdf6ff);border-radius:var(--r-sm);padding:10px 6px;text-align:center;
   box-shadow:var(--sh-sm);border:4px solid transparent;font-weight:800;font-size:13px;
   transition:transform .12s ease;
 }
-.doc svg{width:100%;height:auto;max-width:92px;display:block;margin:0 auto 4px}
+.doc svg{
+  width:100%;height:auto;max-width:88px;aspect-ratio:1;display:block;margin:0 auto 6px;
+  border-radius:50%;padding:5px;
+  background:radial-gradient(circle at 50% 28%,#ffffff 0%,#fdeef6 55%,#f6ddee 100%);
+  box-shadow:0 0 0 3px #fff, 0 0 0 6px rgba(255,143,177,.22), 0 0 14px rgba(255,143,177,.35),
+             0 5px 10px rgba(140,90,160,.18), inset 0 -4px 8px rgba(140,90,160,.10);
+}
 .doc[aria-pressed="true"]{border-color:var(--pink-d);background:#fff6fa;transform:translateY(-3px)}
+.doc[aria-pressed="true"] svg{
+  box-shadow:0 0 0 3px #fff, 0 0 0 6px rgba(255,143,177,.55), 0 0 20px rgba(255,143,177,.6),
+             0 5px 10px rgba(140,90,160,.2), inset 0 -4px 8px rgba(140,90,160,.1);
+}
 
 .notice{
   background:#fff;border-radius:var(--r-sm);padding:12px 14px;margin-top:14px;
@@ -118,8 +128,18 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   background:linear-gradient(180deg,var(--roomTop,#e8f6ff) 0%, var(--roomTop,#e8f6ff) 58%, var(--roomFloor,#ffeede) 58%, var(--roomFloor,#ffeede) 100%);
   box-shadow:var(--sh);border:3px solid #fff;overflow:hidden;min-height:210px;
 }
-.room .decor{position:absolute;font-size:26px;opacity:.95}
-.room .roomname{position:absolute;top:8px;left:12px;font-size:12px;font-weight:900;color:var(--ink2);background:rgba(255,255,255,.75);padding:3px 10px;border-radius:999px}
+.room:before{ /* sıcak ışık */
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:radial-gradient(120% 85% at 28% -6%, rgba(255,238,196,.5) 0%, rgba(255,238,196,0) 55%);
+}
+.room:after{ /* vinyet */
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:5;border-radius:inherit;
+  box-shadow:inset 0 -20px 34px rgba(140,90,160,.12), inset 0 0 46px rgba(140,90,160,.09);
+}
+.room-bg{position:absolute;inset:0;z-index:0;pointer-events:none}
+.room-bg svg{width:100%;height:100%;display:block}
+.room .decor{position:absolute;font-size:26px;opacity:.95;z-index:1;text-shadow:0 3px 4px rgba(75,51,87,.14)}
+.room .roomname{position:absolute;top:8px;left:12px;font-size:12px;font-weight:900;color:var(--ink2);background:rgba(255,255,255,.75);padding:3px 10px;border-radius:999px;z-index:4}
 .scene{display:flex;align-items:flex-end;justify-content:center;gap:6px;position:relative;z-index:2;padding-top:22px}
 .scene .doctor-fig{width:88px;flex:0 0 auto}
 .scene .patient-fig{width:132px;flex:0 0 auto;animation:enter .55s cubic-bezier(.2,1.3,.5,1)}
@@ -157,14 +177,25 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 @media(max-width:520px){.tools{grid-template-columns:repeat(4,1fr)}}
 @media(min-width:920px){.tools{grid-template-columns:repeat(3,1fr)}}
 .tool{
-  background:linear-gradient(180deg,#ffffff,#fbf5ff);border-radius:var(--r-sm);padding:8px 4px 6px;text-align:center;
-  box-shadow:var(--sh-sm);border:3px solid #fff;font-size:11px;font-weight:800;color:var(--ink2);
-  min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:transform .12s;
+  background:linear-gradient(180deg,#ffffff 0%,#faf3ff 62%,#f1e6f9 100%);border-radius:var(--r-sm);padding:8px 4px 6px;text-align:center;
+  box-shadow:0 3px 0 rgba(75,51,87,.09), 0 8px 16px rgba(140,90,160,.15), inset 0 1px 0 #fff;
+  border:3px solid #fff;font-size:11px;font-weight:800;color:var(--ink2);
+  min-height:78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:transform .12s, box-shadow .12s;
   line-height:1.15;
 }
-.tool .ico{font-size:26px;line-height:1}
-.tool .ico svg{width:28px;height:28px;display:block}
+.tool .ico{
+  font-size:22px;line-height:1;width:42px;height:42px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 30%, #ffffff 0%, #f3e9fa 62%, #e8daf2 100%);
+  box-shadow:inset 0 2px 5px rgba(140,90,160,.22), inset 0 -2px 3px rgba(255,255,255,.9), 0 1px 0 #fff;
+}
+.tool .ico svg{width:26px;height:26px;display:block}
 .tool:active{transform:translateY(3px) scale(.97)}
+.tool.sel{
+  border-color:var(--lav-d);
+  box-shadow:0 0 0 3px rgba(166,131,234,.32), 0 3px 0 rgba(75,51,87,.09), 0 8px 16px rgba(140,90,160,.18);
+}
+.tool.sel .ico{background:radial-gradient(circle at 50% 30%, #fff, #ece0fb 62%, #ddccf5 100%)}
 .tool.done{opacity:.45;background:#f4f8f4}
 .tool.bounce{animation:bounce .45s ease}
 @keyframes bounce{0%{transform:translateY(0)}35%{transform:translateY(-12px) scale(1.08)}70%{transform:translateY(0)}100%{transform:translateY(0)}}
@@ -173,11 +204,17 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(min-width:620px){.options{grid-template-columns:repeat(3,1fr)}}
 .option{
-  background:linear-gradient(180deg,#fff,#f4fbff);border-radius:var(--r-sm);padding:12px 8px;text-align:center;
-  box-shadow:var(--sh-sm);border:3px solid #fff;font-weight:800;font-size:14px;min-height:96px;
+  background:linear-gradient(180deg,#fff 0%,#f4fbff 62%,#e6f4fd 100%);border-radius:var(--r-sm);padding:12px 8px;text-align:center;
+  box-shadow:0 3px 0 rgba(75,51,87,.09), 0 8px 16px rgba(140,90,160,.14), inset 0 1px 0 #fff;
+  border:3px solid #fff;font-weight:800;font-size:14px;min-height:100px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;line-height:1.2;
 }
-.option .ico{font-size:30px}
+.option .ico{
+  font-size:26px;line-height:1;width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 30%, #ffffff 0%, #eaf4fb 62%, #dcecf8 100%);
+  box-shadow:inset 0 2px 5px rgba(92,180,230,.28), inset 0 -2px 3px rgba(255,255,255,.9), 0 1px 0 #fff;
+}
 .option.chosen{background:linear-gradient(180deg,#e9fff6,#cdf3e5);border-color:var(--mint-d);opacity:.75}
 .option:active{transform:translateY(3px)}
 
@@ -333,6 +370,56 @@ dialog.ask::backdrop{background:rgba(75,51,87,.45)}
   <div class="board">
     <div class="left">
       <div class="room" id="room">
+        <div class="room-bg" aria-hidden="true">
+          <svg viewBox="0 0 400 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="rbFade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff" stop-opacity=".65"/>
+                <stop offset="1" stop-color="#ffffff" stop-opacity=".25"/>
+              </linearGradient>
+              <linearGradient id="rbGlass" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#dff2ff" stop-opacity=".9"/>
+                <stop offset="1" stop-color="#ffffff" stop-opacity=".55"/>
+              </linearGradient>
+            </defs>
+            <!-- pencere -->
+            <g opacity=".8">
+              <rect x="286" y="16" width="92" height="74" rx="12" fill="url(#rbGlass)" stroke="#ffffff" stroke-width="5"/>
+              <path d="M332 18 v70 M288 53 h88" stroke="#ffffff" stroke-width="4"/>
+              <circle cx="306" cy="34" r="8" fill="#fff8d9" opacity=".9"/>
+              <path d="M352 40 q10 -8 20 0 M348 66 q8 -6 16 0" stroke="#c9e6f8" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M286 16 q-8 44 6 78 l10 0 q-12 -36 -4 -78 Z" fill="#ffd9e6" opacity=".55"/>
+              <path d="M378 16 q8 44 -6 78 l-10 0 q12 -36 4 -78 Z" fill="#ffd9e6" opacity=".55"/>
+            </g>
+            <!-- ilaç dolabı -->
+            <g opacity=".7">
+              <rect x="20" y="26" width="64" height="96" rx="10" fill="url(#rbFade)" stroke="#ffffff" stroke-width="4"/>
+              <path d="M24 58 h56 M24 90 h56" stroke="#ffffff" stroke-width="3"/>
+              <rect x="44" y="36" width="16" height="6" rx="3" fill="#ffb3c8" opacity=".8"/>
+              <rect x="49" y="31" width="6" height="16" rx="3" fill="#ffb3c8" opacity=".8"/>
+              <rect x="30" y="66" width="12" height="16" rx="4" fill="#bfe8f9" opacity=".8"/>
+              <rect x="48" y="64" width="10" height="18" rx="4" fill="#c8efdd" opacity=".8"/>
+              <rect x="64" y="68" width="12" height="14" rx="4" fill="#ffe9b3" opacity=".8"/>
+              <rect x="32" y="98" width="14" height="16" rx="4" fill="#e3d4fb" opacity=".7"/>
+              <rect x="54" y="100" width="18" height="14" rx="4" fill="#bfe8f9" opacity=".6"/>
+            </g>
+            <!-- muayene masası / tezgah -->
+            <g opacity=".65">
+              <rect x="104" y="96" width="86" height="12" rx="6" fill="#ffffff" opacity=".85"/>
+              <rect x="112" y="108" width="8" height="24" rx="4" fill="#ffffff" opacity=".6"/>
+              <rect x="174" y="108" width="8" height="24" rx="4" fill="#ffffff" opacity=".6"/>
+              <rect x="122" y="84" width="22" height="12" rx="5" fill="#c8efdd" opacity=".8"/>
+              <circle cx="162" cy="88" r="7" fill="#ffd6a8" opacity=".85"/>
+            </g>
+            <!-- posterler -->
+            <g opacity=".55">
+              <rect x="212" y="24" width="46" height="56" rx="8" fill="url(#rbFade)" stroke="#ffffff" stroke-width="3"/>
+              <path d="M235 40 q-9 -9 -16 0 q-6 8 16 22 q22 -14 16 -22 q-7 -9 -16 0" fill="#ffb3c8" opacity=".85"/>
+            </g>
+            <!-- zemin halısı -->
+            <ellipse cx="200" cy="206" rx="150" ry="16" fill="#ffffff" opacity=".35"/>
+          </svg>
+        </div>
         <span class="roomname" id="roomName">Başlangıç Kliniği</span>
         <div class="bed" aria-hidden="true"></div>
         <div class="scene">
@@ -543,9 +630,25 @@ function faceParts(mood) {
  * Hasta / doktor figürü çizer.
  * cfg: {skin, hair, cloth, scarf, mood, doctor, coat, stetho}
  */
+let figUid = 0;
 function figureSVG(cfg) {
   const f = faceParts(cfg.mood === undefined ? 1 : cfg.mood);
   const skin = cfg.skin, hair = cfg.hair, cloth = cfg.cloth;
+  const uid = 'fg' + (++figUid);
+  // hacim için ortak degrade tanımları (renkten bağımsız, opaklık temelli)
+  const defs = '<defs>' +
+    '<linearGradient id="' + uid + 'v" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#ffffff" stop-opacity=".42"/>' +
+      '<stop offset=".55" stop-color="#ffffff" stop-opacity="0"/>' +
+      '<stop offset="1" stop-color="#4b3357" stop-opacity=".12"/>' +
+    '</linearGradient>' +
+    '<radialGradient id="' + uid + 'h" cx=".4" cy=".3" r=".85">' +
+      '<stop offset="0" stop-color="#ffffff" stop-opacity=".32"/>' +
+      '<stop offset=".7" stop-color="#ffffff" stop-opacity="0"/>' +
+      '<stop offset="1" stop-color="#4b3357" stop-opacity=".08"/>' +
+    '</radialGradient>' +
+    '</defs>';
+  const groundShadow = '<ellipse cx="60" cy="157" rx="37" ry="5" fill="#4b3357" opacity=".14"/>';
   let head = '';
   if (cfg.scarf) {
     // başörtülü karakter
@@ -559,19 +662,25 @@ function figureSVG(cfg) {
              ? '<path d="M24 56 C18 24 40 6 60 6 C80 6 102 24 96 56 C96 40 82 32 60 32 C38 32 24 40 24 56 Z" fill="' + hair + '"/><path d="M24 52 q-6 34 4 46 q8 -12 6 -30 Z M96 52 q6 34 -4 46 q-8 -12 -6 -30 Z" fill="' + hair + '"/>'
              : '<path d="M24 54 C20 22 40 6 60 6 C80 6 100 22 96 54 C94 38 82 30 60 30 C38 30 26 38 24 54 Z" fill="' + hair + '"/>');
   }
+  const headShade = '<path d="M26 50 C26 20 42 10 60 10 C78 10 94 20 94 50 C94 80 78 92 60 92 C42 92 26 80 26 50 Z" fill="url(#' + uid + 'h)"/>';
+  const nose = '<path d="M60 58 q2.6 3.4 0 6.4" stroke="#4a3346" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".4"/>';
   const cheeks = '<circle cx="36" cy="62" r="7" fill="#ff9ab5" opacity=".35"/><circle cx="84" cy="62" r="7" fill="#ff9ab5" opacity=".35"/>';
   const eyes = '<circle cx="46" cy="54" r="' + f.eye + '" fill="#3a2b46"/><circle cx="74" cy="54" r="' + f.eye + '" fill="#3a2b46"/>' +
                '<circle cx="47.6" cy="52.4" r="1.6" fill="#fff"/><circle cx="75.6" cy="52.4" r="1.6" fill="#fff"/>';
   const brows = '<path d="' + f.brow + '" stroke="#4a3346" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
   const mouth = '<path d="' + f.mouth + '" stroke="#4a3346" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
+  const bodyPath = cfg.doctor
+    ? 'M28 148 C28 118 44 106 60 106 C76 106 92 118 92 148 L92 160 L28 160 Z'
+    : 'M28 150 C28 120 44 108 60 108 C76 108 92 120 92 150 L92 160 L28 160 Z';
+  const bodyShade = '<path d="' + bodyPath + '" fill="url(#' + uid + 'v)"/>';
   const body = cfg.doctor
-    ? '<path d="M28 148 C28 118 44 106 60 106 C76 106 92 118 92 148 L92 160 L28 160 Z" fill="#ffffff"/>' +
+    ? '<path d="' + bodyPath + '" fill="#ffffff"/>' +
       '<path d="M60 106 L48 130 L60 140 L72 130 Z" fill="' + (cfg.coat || '#aeddf9') + '"/>' +
       '<path d="M44 122 q16 26 32 0" stroke="' + (cfg.stetho || '#5cb4e6') + '" stroke-width="4" fill="none" stroke-linecap="round"/>' +
-      '<circle cx="76" cy="126" r="6" fill="' + (cfg.stetho || '#5cb4e6') + '"/>'
-    : '<path d="M28 150 C28 120 44 108 60 108 C76 108 92 120 92 150 L92 160 L28 160 Z" fill="' + cloth + '"/>';
+      '<circle cx="76" cy="126" r="6" fill="' + (cfg.stetho || '#5cb4e6') + '"/>' + bodyShade
+    : '<path d="' + bodyPath + '" fill="' + cloth + '"/>' + bodyShade;
   return '<svg viewBox="0 0 120 162" xmlns="http://www.w3.org/2000/svg" role="img">' +
-         body + head + cheeks + eyes + brows + mouth + '</svg>';
+         defs + groundShadow + body + head + headShade + cheeks + eyes + nose + brows + mouth + '</svg>';
 }
 
 /* Ana menüde seçilebilen doktor karakterleri */
@@ -2021,6 +2130,8 @@ function onToolPick(id, btn) {
   }
   SFX.tap();
   state.selectedTool = id;
+  $$('.tool.sel').forEach(function (x) { x.classList.remove('sel'); });
+  if (btn) btn.classList.add('sel');
   const step = p.examinationSteps[id];
   runMiniGame(step, function () {
     state.examsDone.push(id);

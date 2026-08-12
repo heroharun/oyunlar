@@ -35,6 +35,8 @@ html,body{height:100%;margin:0;padding:0}
 body{
   font-family:var(--f-govde); font-size:17px; line-height:1.45; color:var(--murekkep);
   background:
+    radial-gradient(ellipse at 50% 32%, rgba(58,43,63,0) 58%, rgba(58,43,63,.085) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='168' height='168' viewBox='0 0 168 168'%3E%3Cg fill='none' stroke='%233A2B3F' stroke-opacity='.045' stroke-width='2'%3E%3Crect x='16' y='22' width='60' height='40' rx='4'/%3E%3Cpath d='M16 24 L46 48 L76 24'/%3E%3Crect x='102' y='96' width='42' height='52' rx='3' stroke-dasharray='4 5'/%3E%3Crect x='109' y='103' width='28' height='28' rx='2'/%3E%3Cpath d='M24 118 q10-10 22 0 q10 8 20-2' /%3E%3Cpath d='M118 30 q6-12 16-6 q-2-10 8-10 M126 44 h22' stroke-opacity='.038'/%3E%3C/g%3E%3C/svg%3E"),
     radial-gradient(circle at 12% 6%, #FFF9EE 0%, transparent 45%),
     radial-gradient(circle at 88% 8%, #E6F4FF 0%, transparent 45%),
     linear-gradient(180deg,#FFF3E2 0%, #FDEBD8 55%, #EAF7EE 100%);
@@ -51,21 +53,33 @@ button{font-family:inherit;color:inherit;font-size:inherit;cursor:pointer;border
 
 /* ---------- ortak bileşenler ---------- */
 .btn{
+  position:relative;overflow:hidden;
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   min-height:52px;min-width:52px;padding:12px 20px;
   border-radius:16px;background:var(--kart);color:var(--murekkep);
   font-family:var(--f-baslik);font-size:18px;
-  box-shadow:var(--golge-kucuk); border:3px solid var(--cizgi);
+  box-shadow:var(--golge-kucuk), inset 0 2px 0 rgba(255,255,255,.55), inset 0 -3px 0 rgba(58,43,63,.10);
+  border:3px solid var(--cizgi);
   transition:transform .12s ease, box-shadow .12s ease;
 }
+.btn::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,0) 45%,rgba(58,43,63,.05));
+}
 .btn:hover{transform:translateY(-2px)}
-.btn:active{transform:translateY(2px);box-shadow:none}
+.btn:active{transform:translateY(2px);box-shadow:inset 0 2px 3px rgba(58,43,63,.12)}
 .btn.birincil{background:var(--kirmizi);color:#fff;border-color:var(--kirmizi-koyu)}
 .btn.sari{background:var(--sari);border-color:var(--sari-koyu)}
 .btn.yesil{background:var(--yesil);border-color:var(--yesil-koyu);color:#12371f}
 .btn.mavi{background:var(--mavi);border-color:var(--mavi-koyu);color:#0d3448}
 .btn.kucuk{min-height:44px;padding:8px 14px;font-size:16px;border-radius:13px}
 .btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+
+/* arayüz ikonları (inline SVG seti) */
+.bikon{display:inline-flex;width:22px;height:22px;flex:0 0 auto}
+.bikon svg{width:100%;height:100%;display:block}
+.btn.kucuk .bikon{width:19px;height:19px}
+.modal h2 .bikon{width:25px;height:25px;display:inline-block;vertical-align:-4px;margin-right:6px}
 
 /* pul kenarı — imza motifi */
 .pulkenar{
@@ -232,17 +246,24 @@ button{font-family:inherit;color:inherit;font-size:inherit;cursor:pointer;border
 .perde{position:fixed;inset:0;background:rgba(58,43,63,.5);display:flex;align-items:center;justify-content:center;
   padding:14px;z-index:60;animation:ac .2s ease}
 @keyframes ac{from{opacity:0}to{opacity:1}}
-.modal{background:var(--krem);border:4px solid var(--cizgi);border-radius:var(--r-buyuk);box-shadow:0 18px 50px rgba(58,43,63,.3);
-  max-width:640px;width:100%;max-height:88vh;overflow:auto;padding:18px}
+.modal{border:4px solid var(--cizgi);border-radius:var(--r-buyuk);box-shadow:0 18px 50px rgba(58,43,63,.3);
+  max-width:640px;width:100%;max-height:88vh;overflow:auto;padding:24px 18px 18px;
+  background:
+    repeating-linear-gradient(-45deg,var(--kirmizi) 0 13px,#FFF9EE 13px 26px,var(--mavi-koyu) 26px 39px,#FFF9EE 39px 52px) top/100% 9px no-repeat,
+    linear-gradient(180deg,#FFFAF0, var(--krem) 140px);}
 .modal h2{text-align:center;color:var(--kirmizi-koyu)}
 .modal-kapat{position:sticky;top:0;float:right;margin:-8px -6px 0 0}
 
 /* albüm & defter */
 .izgara-kart{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
-.pul-hucre{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;text-align:center;cursor:pointer}
-.pul-hucre.kilitli{opacity:.32;filter:grayscale(1)}
-.defter-satir{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:2px dashed var(--cizgi)}
-.defter-satir:last-child{border-bottom:none}
+.pul-hucre{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;text-align:center;cursor:pointer;
+  background:linear-gradient(180deg,#FFFFFF,#FFF7EA);border:2px solid var(--cizgi);border-radius:12px;
+  padding:8px 4px;box-shadow:0 2px 0 rgba(58,43,63,.07)}
+.pul-hucre.kilitli{opacity:.4;filter:grayscale(1)}
+.defter-satir{display:flex;gap:12px;align-items:center;padding:12px;margin-bottom:10px;
+  border:3px solid var(--cizgi);border-radius:16px;
+  background:linear-gradient(180deg,#FFFFFF,#FFF7EA);box-shadow:0 3px 0 rgba(58,43,63,.08)}
+.defter-satir:last-child{margin-bottom:0}
 .etiket{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-family:var(--f-baslik);
   background:var(--mavi);color:#0d3448;border:2px solid var(--mavi-koyu)}
 .etiket.nadir{background:var(--sari);border-color:var(--sari-koyu)}
@@ -257,8 +278,9 @@ button{font-family:inherit;color:inherit;font-size:inherit;cursor:pointer;border
 @keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 
 .dukkan-izgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-.dukkan-kart{background:#fff;border:3px solid var(--cizgi);border-radius:16px;padding:10px;text-align:center;font-size:14px}
-.dukkan-kart.alindi{background:#EAFBF0;border-color:var(--yesil-koyu)}
+.dukkan-kart{background:linear-gradient(180deg,#FFFFFF,#FFF7EA);border:3px solid var(--cizgi);border-radius:16px;padding:10px;
+  text-align:center;font-size:14px;box-shadow:0 3px 0 rgba(58,43,63,.08)}
+.dukkan-kart.alindi{background:linear-gradient(180deg,#F2FCF5,#E4F8EC);border-color:var(--yesil-koyu)}
 
 .mini-ipucu{background:#FFF6DA;border:3px dashed var(--sari-koyu);border-radius:14px;padding:10px 12px;margin:10px 0;font-size:16px}
 
@@ -307,16 +329,16 @@ button{font-family:inherit;color:inherit;font-size:inherit;cursor:pointer;border
       <div class="rozet-satiri" id="menuSayaclar"></div>
 
       <div class="menu-liste" id="menuListe">
-        <button class="btn birincil" data-act="basla">▶️ Oyuna Başla</button>
-        <button class="btn sari" data-act="serbest">✉️ Serbest Teslimat</button>
-        <button class="btn mavi" data-act="harita">🗺️ Kasaba Haritası</button>
-        <button class="btn" data-act="album">📔 Pul Albümüm</button>
-        <button class="btn" data-act="defter">👥 Karakter Defteri</button>
-        <button class="btn" data-act="dukkan">🎀 Postanemi Süsle</button>
-        <button class="btn" data-act="rozetler">🏅 Rozetlerim</button>
-        <button class="btn" data-act="nasil">❓ Nasıl Oynanır?</button>
+        <button class="btn birincil" data-act="basla"><span class="bikon" data-ikon="basla"></span> Oyuna Başla</button>
+        <button class="btn sari" data-act="serbest"><span class="bikon" data-ikon="zarf"></span> Serbest Teslimat</button>
+        <button class="btn mavi" data-act="harita"><span class="bikon" data-ikon="harita"></span> Kasaba Haritası</button>
+        <button class="btn" data-act="album"><span class="bikon" data-ikon="album"></span> Pul Albümüm</button>
+        <button class="btn" data-act="defter"><span class="bikon" data-ikon="defter"></span> Karakter Defteri</button>
+        <button class="btn" data-act="dukkan"><span class="bikon" data-ikon="kurdele"></span> Postanemi Süsle</button>
+        <button class="btn" data-act="rozetler"><span class="bikon" data-ikon="rozet"></span> Rozetlerim</button>
+        <button class="btn" data-act="nasil"><span class="bikon" data-ikon="soru"></span> Nasıl Oynanır?</button>
         <button class="btn" data-act="ses">🔊 Ses Açık</button>
-        <button class="btn" data-act="sifirla">♻️ Oyunu Sıfırla</button>
+        <button class="btn" data-act="sifirla"><span class="bikon" data-ikon="yenile"></span> Oyunu Sıfırla</button>
       </div>
       <p class="merkez" style="margin-top:14px;color:var(--murekkep-soft);font-size:14px">
         Reklamsız · üyeliksiz · internetsiz çalışır
@@ -327,13 +349,13 @@ button{font-family:inherit;color:inherit;font-size:inherit;cursor:pointer;border
   <!-- ================= OYUN ================= -->
   <section id="oyun" class="ekran" aria-label="Postane">
     <header class="ust-bar">
-      <button class="btn kucuk" data-act="menuye">🏠 Menü</button>
+      <button class="btn kucuk" data-act="menuye"><span class="bikon" data-ikon="ev"></span> Menü</button>
       <span class="sayac" id="sAltin">🪙 0</span>
       <span class="sayac" id="sYildiz">⭐ 0</span>
       <span class="sayac" id="sMutlu">💗 0</span>
       <span class="bosluk"></span>
       <span class="sayac" id="sBolum">📍 1. Bölge</span>
-      <button class="btn kucuk" data-act="ipucu">💡 İpucu</button>
+      <button class="btn kucuk" data-act="ipucu"><span class="bikon" data-ikon="ampul"></span> İpucu</button>
       <button class="btn kucuk" data-act="ses2">🔊</button>
     </header>
 
@@ -472,22 +494,32 @@ function svgKarakter(m, boy){
   }
   if(m.basortu) ust=`<path d="M20 46 q0-32 30-32 q30 0 30 32 q0 10-6 12 q-4-30-24-30 q-20 0-24 30 q-6-2-6-12Z" fill="${m.basortu}" stroke="${KONTUR}" stroke-width="2.4"/>
     <path d="M22 52 q-6 22 4 32 h48 q10-10 4-32 q-8 8-28 8 q-20 0-28-8Z" fill="${m.basortu}" stroke="${KONTUR}" stroke-width="2.4"/>`;
-  const govde=`<path d="M22 118 v-16 q0-18 28-20 q28 2 28 20 v16Z" fill="${kiy}" stroke="${KONTUR}" stroke-width="2.6"/>`;
+  const zeminGolge=`<ellipse cx="50" cy="121" rx="30" ry="4.6" fill="rgba(58,43,63,.16)"/>`;
+  const govde=`<path d="M22 118 v-16 q0-18 28-20 q28 2 28 20 v16Z" fill="${kiy}" stroke="${KONTUR}" stroke-width="2.6"/>
+    <path d="M27 116 v-13 q1-11 15-15 l2.6 4.4 q-13 4-13.6 11.6 v12Z" fill="#FFFFFF" opacity=".26"/>
+    <path d="M24 116.6 h52 v-4.6 h-52Z" fill="rgba(58,43,63,.10)"/>`;
+  const yanak = m.tur==='robot' ? '' : `<circle cx="35" cy="49" r="4" fill="#F08A7E" opacity=".38"/><circle cx="65" cy="49" r="4" fill="#F08A7E" opacity=".38"/>`;
   const aks = m.gozluk? `<circle cx="41" cy="40" r="9" fill="none" stroke="${KONTUR}" stroke-width="2"/><circle cx="59" cy="40" r="9" fill="none" stroke="${KONTUR}" stroke-width="2"/><path d="M50 40 h0" stroke="${KONTUR}" stroke-width="2"/><path d="M50 40 h0"/>`:'';
-  return sv(w,h,'0 0 100 128', kulak+govde+bas+ust+yuz(m.ifade||'mutlu')+aks);
+  return sv(w,h,'0 0 100 128', zeminGolge+kulak+govde+bas+yanak+ust+yuz(m.ifade||'mutlu')+aks);
 }
 
 /* ---------- Postacı Pati ---------- */
 function svgPati(ifade, boy){
   const h=boy||126, w=Math.round(h*0.83);
   return sv(w,h,'0 0 100 128',
-    `<ellipse cx="22" cy="44" rx="9" ry="17" fill="#C98A4B" stroke="${KONTUR}" stroke-width="2.4"/>
+    `<ellipse cx="50" cy="121" rx="31" ry="4.6" fill="rgba(58,43,63,.16)"/>
+     <ellipse cx="22" cy="44" rx="9" ry="17" fill="#C98A4B" stroke="${KONTUR}" stroke-width="2.4"/>
      <ellipse cx="78" cy="44" rx="9" ry="17" fill="#C98A4B" stroke="${KONTUR}" stroke-width="2.4"/>
      <path d="M22 118 v-16 q0-18 28-20 q28 2 28 20 v16Z" fill="#3D9AD1" stroke="${KONTUR}" stroke-width="2.6"/>
+     <path d="M27 116 v-13 q1-11 15-15 l2.6 4.4 q-13 4-13.6 11.6 v12Z" fill="#FFFFFF" opacity=".24"/>
+     <path d="M24 116.6 h52 v-4.6 h-52Z" fill="rgba(58,43,63,.10)"/>
      <path d="M40 84 l10 10 l10-10" fill="none" stroke="#FFF6E9" stroke-width="2.4"/>
      <rect x="60" y="98" width="26" height="20" rx="4" fill="#E2762B" stroke="${KONTUR}" stroke-width="2.4"/>
+     <path d="M63 116 l6.5-16 h3.4 l-6.5 16Z" fill="#FFFFFF" opacity=".22"/>
      <path d="M60 104 h26" stroke="${KONTUR}" stroke-width="1.8"/>
      <circle cx="50" cy="42" r="26" fill="#F0C88E" stroke="${KONTUR}" stroke-width="2.6"/>
+     <circle cx="31" cy="50" r="4.4" fill="#F08A7E" opacity=".4"/>
+     <circle cx="69" cy="50" r="4.4" fill="#F08A7E" opacity=".4"/>
      <ellipse cx="50" cy="52" rx="12" ry="9" fill="#FFF1DC" stroke="${KONTUR}" stroke-width="1.8"/>
      <ellipse cx="50" cy="47" rx="4.5" ry="3.4" fill="${KONTUR}"/>
      <path d="M20 32 h60 v-3 q0-15-30-15 q-30 0-30 15Z" fill="#E23E3E" stroke="${KONTUR}" stroke-width="2.4"/>
@@ -580,11 +612,19 @@ function svgEv(ev, boy){
     yildiz:`<path d="M12 38 l2.4 5.2 5.6.6 -4.2 3.9 1.2 5.6 -5-3 -5 3 1.2-5.6 -4.2-3.9 5.6-.6Z" fill="${ev.kutuRenk}" stroke="${KONTUR}" stroke-width="1.2"/>`,
     ucgen:`<path d="M12 38 l7 13 H5Z" fill="${ev.kutuRenk}" stroke="${KONTUR}" stroke-width="1.4"/>`}[ev.kutu] || '';
   return sv(s,s,'0 0 60 60',
-    `<path d="M14 28 L34 12 L54 28Z" fill="${ev.catiRenk}" stroke="${KONTUR}" stroke-width="2.2"/>
+    `<ellipse cx="34" cy="53.6" rx="20" ry="3.4" fill="rgba(58,43,63,.16)"/>
+     <path d="M14 28 L34 12 L54 28Z" fill="${ev.catiRenk}" stroke="${KONTUR}" stroke-width="2.2"/>
+     <path d="M17 27 L34 13.4 L39 17.4 L23.6 28Z" fill="#FFFFFF" opacity=".26"/>
+     <path d="M34 12 L54 28 L47 28 L32.5 13.4Z" fill="rgba(58,43,63,.10)"/>
      <rect x="18" y="28" width="32" height="24" rx="2" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="2.2"/>
+     <rect x="19" y="28.6" width="30" height="3.2" fill="rgba(58,43,63,.12)"/>
+     <rect x="19" y="46.6" width="30" height="4.6" fill="rgba(58,43,63,.06)"/>
      <rect x="29" y="38" width="10" height="14" rx="1.5" fill="${ev.kapiRenk}" stroke="${KONTUR}" stroke-width="1.8"/>
+     <path d="M30 52 l7-13 h1.6 l-7 13Z" fill="#FFFFFF" opacity=".18"/>
      <rect x="21" y="32" width="6" height="5" fill="#8ED2F5" stroke="${KONTUR}" stroke-width="1.2"/>
+     <path d="M21.6 37 l4.2-5 h1.3 l-4.2 5Z" fill="#FFFFFF" opacity=".6"/>
      <rect x="42" y="32" width="6" height="5" fill="#8ED2F5" stroke="${KONTUR}" stroke-width="1.2"/>
+     <path d="M42.6 37 l4.2-5 h1.3 l-4.2 5Z" fill="#FFFFFF" opacity=".6"/>
      <text x="44" y="49" font-size="9" font-family="Trebuchet MS" fill="${KONTUR}">${ev.no}</text>
      ${kutuSekil}`);
 }
@@ -592,15 +632,25 @@ function svgEv(ev, boy){
 function svgPostane(boy){
   const w=boy||200,h=Math.round((boy||200)*0.8);
   return sv(w,h,'0 0 200 160',
-    `<rect x="26" y="60" width="148" height="86" rx="8" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="3"/>
+    `<ellipse cx="100" cy="149" rx="86" ry="6" fill="rgba(58,43,63,.15)"/>
+     <rect x="26" y="60" width="148" height="86" rx="8" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="3"/>
+     <rect x="28" y="63" width="144" height="6" fill="rgba(58,43,63,.11)"/>
+     <rect x="28" y="132" width="144" height="12" rx="4" fill="rgba(58,43,63,.05)"/>
      <path d="M14 62 L100 16 L186 62Z" fill="#E23E3E" stroke="${KONTUR}" stroke-width="3"/>
+     <path d="M22 60 L100 18.5 L113 25.5 L38 61Z" fill="#FFFFFF" opacity=".2"/>
+     <path d="M100 16 L186 62 L166 62 L96 18.6Z" fill="rgba(58,43,63,.14)"/>
      <rect x="60" y="40" width="80" height="20" rx="6" fill="#FFC93C" stroke="${KONTUR}" stroke-width="2.6"/>
+     <path d="M62 44 q38-5 76 0 v-2 q-38-5-76 0Z" fill="#FFFFFF" opacity=".45"/>
      <text x="100" y="55" font-size="14" text-anchor="middle" font-family="Comic Sans MS,Trebuchet MS" fill="${KONTUR}">POSTANE</text>
      <rect x="82" y="98" width="36" height="48" rx="4" fill="#3D9AD1" stroke="${KONTUR}" stroke-width="2.6"/>
+     <path d="M86 146 l11-46 h4 l-11 46Z" fill="#FFFFFF" opacity=".16"/>
      <circle cx="112" cy="122" r="2.6" fill="#FFC93C"/>
      <rect x="40" y="82" width="28" height="24" rx="3" fill="#8ED2F5" stroke="${KONTUR}" stroke-width="2.4"/>
+     <path d="M44 106 l13-24 h5 l-13 24Z" fill="#FFFFFF" opacity=".5"/>
      <rect x="132" y="82" width="28" height="24" rx="3" fill="#8ED2F5" stroke="${KONTUR}" stroke-width="2.4"/>
+     <path d="M136 106 l13-24 h5 l-13 24Z" fill="#FFFFFF" opacity=".5"/>
      <rect x="16" y="104" width="20" height="30" rx="9" fill="#E23E3E" stroke="${KONTUR}" stroke-width="2.4"/>
+     <path d="M20 108 q0-2.4 2.6-2.6 v26 h-2.6Z" fill="#FFFFFF" opacity=".28"/>
      <path d="M18 114 h16" stroke="${KONTUR}" stroke-width="2"/>`);
 }
 
@@ -609,6 +659,59 @@ function svgBulut(o){
     `<g fill="#FFFFFF" stroke="#DCEBF5" stroke-width="2">
       <ellipse cx="44" cy="44" rx="30" ry="20"/><ellipse cx="76" cy="36" rx="26" ry="22"/><ellipse cx="104" cy="46" rx="24" ry="17"/>
      </g>`);
+}
+
+/* ---------- arayüz ikon seti — posta kırmızısı / krem, tek aile ---------- */
+const IKON = {
+  basla:`<circle cx="12" cy="12" r="10" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="1.6"/>
+    <path d="M9.6 7.8 L16.8 12 L9.6 16.2Z" fill="#E23E3E" stroke="${KONTUR}" stroke-width="1.3" stroke-linejoin="round"/>`,
+  zarf:`<rect x="2.5" y="5" width="19" height="14" rx="2.4" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="1.6"/>
+    <path d="M3.5 6.6 L12 13.4 L20.5 6.6" fill="none" stroke="#E23E3E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="15.6" y="7.4" width="3.6" height="3.6" rx=".6" fill="#FFC93C" stroke="${KONTUR}" stroke-width=".9"/>`,
+  harita:`<path d="M3 6.2 L8.7 4 L15.3 6.2 L21 4 V17.8 L15.3 20 L8.7 17.8 L3 20Z" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M8.7 4.4 V17.4 M15.3 6.6 V19.6" stroke="${KONTUR}" stroke-width="1.1" stroke-dasharray="2 1.8" opacity=".55"/>
+    <path d="M12 8 a3 3 0 0 1 3 3 q0 2-3 4.4 q-3-2.4-3-4.4 a3 3 0 0 1 3-3Z" fill="#E23E3E" stroke="${KONTUR}" stroke-width="1.1"/>
+    <circle cx="12" cy="11" r="1.1" fill="#FFF6E9"/>`,
+  album:`<rect x="3.5" y="3.5" width="17" height="17" rx="2.4" fill="#E23E3E" stroke="${KONTUR}" stroke-width="1.6"/>
+    <path d="M7.5 3.8 V20.2" stroke="#B92C2C" stroke-width="1.6"/>
+    <rect x="9.6" y="7" width="8.4" height="10" rx="1" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="1.1"/>
+    <path d="M10.4 8 h6.8 M10.4 16 h6.8 M10.4 8 v8 M17.2 8 v8" stroke="#E0A711" stroke-width=".9" stroke-dasharray="1 1.2"/>
+    <circle cx="13.8" cy="12" r="2" fill="#FFC93C" stroke="${KONTUR}" stroke-width=".9"/>`,
+  defter:`<rect x="4.5" y="3.5" width="15" height="17" rx="2.2" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="1.6"/>
+    <path d="M4.5 7.5 h15" stroke="#E23E3E" stroke-width="1.5"/>
+    <path d="M8 11.2 h8 M8 14.2 h8 M8 17.2 h5" stroke="${KONTUR}" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
+    <circle cx="7.6" cy="3.6" r="1.1" fill="#E23E3E" stroke="${KONTUR}" stroke-width=".8"/>
+    <circle cx="12" cy="3.6" r="1.1" fill="#E23E3E" stroke="${KONTUR}" stroke-width=".8"/>
+    <circle cx="16.4" cy="3.6" r="1.1" fill="#E23E3E" stroke="${KONTUR}" stroke-width=".8"/>`,
+  kurdele:`<path d="M10.4 13.5 L8.2 20.5 L12 18.3 L15.8 20.5 L13.6 13.5Z" fill="#FFC93C" stroke="${KONTUR}" stroke-width="1.3" stroke-linejoin="round"/>
+    <ellipse cx="7" cy="8.8" rx="4.9" ry="3.3" transform="rotate(-26 7 8.8)" fill="#E23E3E" stroke="${KONTUR}" stroke-width="1.4"/>
+    <ellipse cx="17" cy="8.8" rx="4.9" ry="3.3" transform="rotate(26 17 8.8)" fill="#E23E3E" stroke="${KONTUR}" stroke-width="1.4"/>
+    <circle cx="12" cy="10.6" r="2.7" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="1.4"/>`,
+  rozet:`<path d="M8.4 12.5 L6.4 21 L12 17.8 L17.6 21 L15.6 12.5Z" fill="#E23E3E" stroke="${KONTUR}" stroke-width="1.4" stroke-linejoin="round"/>
+    <circle cx="12" cy="9" r="6.2" fill="#FFC93C" stroke="${KONTUR}" stroke-width="1.6"/>
+    <circle cx="12" cy="9" r="3.6" fill="#FFF6E9" stroke="#E0A711" stroke-width="1.2"/>
+    <path d="M12 6.8 l.8 1.6 1.8.2 -1.3 1.2 .3 1.8 -1.6-.9 -1.6.9 .3-1.8 -1.3-1.2 1.8-.2Z" fill="#E23E3E"/>`,
+  soru:`<circle cx="12" cy="12" r="10" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="1.6"/>
+    <path d="M8.8 9.4 q0-3.4 3.2-3.4 q3.2 0 3.2 3 q0 1.8-1.8 2.7 q-1.4.7-1.4 2.3" fill="none" stroke="#E23E3E" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="12" cy="17.6" r="1.5" fill="#E23E3E"/>`,
+  yenile:`<circle cx="12" cy="12" r="10" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="1.6"/>
+    <path d="M7.2 13.6 a5 5 0 0 0 9.3 1.4 M16.8 10.4 a5 5 0 0 0-9.3-1.4" fill="none" stroke="#E23E3E" stroke-width="2" stroke-linecap="round"/>
+    <path d="M6.4 10.2 L7.5 9 L9 10.6Z M17.6 13.8 L16.5 15 L15 13.4Z" fill="#E23E3E" stroke="#E23E3E" stroke-width="1" stroke-linejoin="round"/>`,
+  ev:`<path d="M3.4 11.5 L12 4 L20.6 11.5" fill="none" stroke="#E23E3E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M5.6 11 V20 h12.8 V11" fill="#FFF6E9" stroke="${KONTUR}" stroke-width="1.6" stroke-linejoin="round"/>
+    <rect x="10" y="14" width="4" height="6" rx=".8" fill="#E23E3E" stroke="${KONTUR}" stroke-width="1.1"/>`,
+  ampul:`<path d="M12 3 a6 6 0 0 1 3.4 11 q-.9.7-.9 2 h-5 q0-1.3-.9-2 A6 6 0 0 1 12 3Z" fill="#FFC93C" stroke="${KONTUR}" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M9.8 17.8 h4.4 M10.2 19.8 h3.6" stroke="${KONTUR}" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M10.2 8.4 q.6-1.6 2.2-1.8" fill="none" stroke="#FFF6E9" stroke-width="1.4" stroke-linecap="round"/>`
+};
+function ikonSvg(id, boy){
+  const s = boy||22;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${IKON[id]||''}</svg>`;
+}
+function ikonlariDoldur(kok){
+  (kok||document).querySelectorAll('.bikon[data-ikon]').forEach(e=>{
+    if(!e.firstChild) e.innerHTML = ikonSvg(e.dataset.ikon);
+  });
 }
 /* ==========================================================================
    2) VERİ — kasaba, pullar, müşteriler, araçlar, görevler
@@ -2270,7 +2373,7 @@ function albumAc(){
           ${a?svgPul(p,64):`<div style="width:64px;height:80px;border-radius:6px;background:#EFE6D6;display:flex;align-items:center;justify-content:center;font-size:26px">🔒</div>`}
           <span>${a?p.ad:'???'}</span></div>`;}).join('')}</div>`;
   }).join('');
-  const m = modalAc(`Pul Albümüm · ${Object.keys(D.pulAcik).length}/${PULLAR.length}`, govde);
+  const m = modalAc(`<span class="bikon">${ikonSvg('album')}</span>Pul Albümüm · ${Object.keys(D.pulAcik).length}/${PULLAR.length}`, govde);
   m.addEventListener('click', e=>{
     const h = e.target.closest('[data-pul]'); if(!h) return;
     const p = PUL_BUL(h.dataset.pul), a = D.pulAcik[p.id];
@@ -2298,7 +2401,7 @@ function defterAc(){
         ${tanis?`<p style="margin:4px 0 0;font-size:14px;color:var(--murekkep-soft)">“${m.tesekkur}”</p>`:''}
       </div></div>`;
   }).join('');
-  modalAc(`Karakter Defteri · ${(D.tanisilan||[]).length}/${MUSTERILER.length}`, govde);
+  modalAc(`<span class="bikon">${ikonSvg('defter')}</span>Karakter Defteri · ${(D.tanisilan||[]).length}/${MUSTERILER.length}`, govde);
 }
 
 /* ---- dükkân ---- */
@@ -2311,7 +2414,7 @@ function dukkanAc(){
         ${alindi?'<div class="etiket">Postanede ✓</div>':
           `<button class="btn kucuk ${D.altin>=s.fiyat?'sari':''}" data-sus="${s.id}" ${D.altin<s.fiyat?'disabled':''}>🪙 ${s.fiyat}</button>`}
       </div>`;}).join('')}</div>`;
-  const m = modalAc('Postanemi Süsle', govde);
+  const m = modalAc(`<span class="bikon">${ikonSvg('kurdele')}</span>Postanemi Süsle`, govde);
   m.addEventListener('click', e=>{
     const b = e.target.closest('[data-sus]'); if(!b) return;
     const s = SUSLER.find(x=>x.id===b.dataset.sus);
@@ -2328,12 +2431,12 @@ function rozetlerAc(){
       return `<div class="dukkan-kart ${v?'alindi':''}" style="${v?'':'opacity:.5'}">
         <div style="font-size:34px">${v?r.ikon:'🔒'}</div><div><b>${r.ad}</b></div>
         <div style="font-size:12px;color:var(--murekkep-soft)">${r.aciklama}</div></div>`;}).join('')}</div>`;
-  modalAc(`Rozetlerim · ${D.rozet.length}/${ROZETLER.length}`, govde);
+  modalAc(`<span class="bikon">${ikonSvg('rozet')}</span>Rozetlerim · ${D.rozet.length}/${ROZETLER.length}`, govde);
 }
 
 /* ---- kasaba haritası (görüntüleme) ---- */
 function haritaAc(secimIcin){
-  const m = modalAc(secimIcin?'Nereye göndereceksin?':'Kasaba Haritası',
+  const m = modalAc(`<span class="bikon">${ikonSvg('harita')}</span>`+(secimIcin?'Nereye göndereceksin?':'Kasaba Haritası'),
     `<p class="merkez">${secimIcin?'Bir eve dokun.':'Bir yere dokunursan orayı tanıtırım.'}</p><div id="haritaYuva" class="harita-sar"></div><div id="haritaBilgi" class="merkez"></div>`);
   const g = haritaCiz({yereTikla:(y,el)=>{
     if(secimIcin){
@@ -2352,7 +2455,7 @@ function haritaAc(secimIcin){
 
 /* ---- serbest teslimat ---- */
 function serbestAc(){
-  const m = modalAc('Serbest Teslimat',
+  const m = modalAc(`<span class="bikon">${ikonSvg('zarf')}</span>Serbest Teslimat`,
     `<p class="merkez">Görev yok, süre yok. Ne göndermek istersin?</p>
      <div class="satir">
        <button class="btn sari" data-serbest="mektup">✉️ Mektup hazırla</button>
@@ -2381,7 +2484,7 @@ function nasilAc(zorunlu){
     ${adimlar.map((a,i)=>`<div class="defter-satir"><div style="font-size:30px">${a[0]}</div>
       <div><b>${i+1}. ${a[1]}</b><br><span style="font-size:15px;color:var(--murekkep-soft)">${a[2]}</span></div></div>`).join('')}
     <div class="satir"><button class="btn birincil" data-act="${zorunlu?'ogreticiBitir':'modalKapat'}">${zorunlu?'Hadi başlayalım!':'Anladım'}</button></div>`;
-  const m = modalAc('Nasıl Oynanır?', govde, {zorunlu:!!zorunlu});
+  const m = modalAc(`<span class="bikon">${ikonSvg('soru')}</span>Nasıl Oynanır?`, govde, {zorunlu:!!zorunlu});
   if(zorunlu){
     m.querySelector('[data-act="ogreticiBitir"]').onclick = ()=>{
       D.ogreticiGorulen = true; kaydet(); modalKapat(); oyunaBasla();
@@ -2477,6 +2580,7 @@ TEST.tablolar = {PULLAR,MUSTERILER,GOREVLER,EVLER,ARACLAR,KUTULAR,KORUMALAR,ZARF
 function baslat(){
   yukle(); araclariAc();
   D.tanisilan = D.tanisilan || [];
+  ikonlariDoldur();
   menuCiz(); barGuncelle(); ekranAc('menu');
   patiSoyle('Hoş geldin Minik Postacı! Kasabamızda herkes senden haber bekliyor. Mektupları hazırlayalım, paketleri ayıralım ve doğru adreslere ulaştıralım!','mutlu');
   kaydet();

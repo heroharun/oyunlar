@@ -32,7 +32,9 @@ html,body{margin:0;padding:0}
 body{
   background:
     radial-gradient(120% 80% at 50% -10%, #1b2547 0%, rgba(27,37,71,0) 60%),
+    linear-gradient(165deg, #101632 0%, var(--gece) 45%, #191330 100%),
     var(--gece);
+  background-attachment:fixed;
   color:var(--metin);
   font-family:var(--sans);
   font-size:16px;
@@ -46,6 +48,19 @@ body::before{
   background-image:
     repeating-linear-gradient(45deg, rgba(216,178,94,.035) 0 1px, transparent 1px 26px),
     repeating-linear-gradient(-45deg, rgba(216,178,94,.035) 0 1px, transparent 1px 26px);
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(1.5px 1.5px at 8% 12%, rgba(243,224,170,.5), transparent 100%),
+    radial-gradient(1px 1px at 16% 6%, rgba(243,224,170,.35), transparent 100%),
+    radial-gradient(1.5px 1.5px at 90% 8%, rgba(243,224,170,.45), transparent 100%),
+    radial-gradient(1px 1px at 82% 16%, rgba(243,224,170,.3), transparent 100%),
+    radial-gradient(1px 1px at 95% 30%, rgba(243,224,170,.28), transparent 100%),
+    radial-gradient(1.5px 1.5px at 5% 88%, rgba(243,224,170,.3), transparent 100%),
+    radial-gradient(1px 1px at 12% 94%, rgba(243,224,170,.25), transparent 100%),
+    radial-gradient(1.5px 1.5px at 93% 92%, rgba(243,224,170,.3), transparent 100%),
+    radial-gradient(140% 100% at 50% 50%, transparent 62%, rgba(5,8,18,.42) 100%);
 }
 .sarma{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:0 14px}
 h1,h2,h3{font-family:var(--serif);font-weight:600;margin:0 0 8px;letter-spacing:.01em}
@@ -134,17 +149,30 @@ button{font-family:inherit;font-size:1rem;color:inherit;cursor:pointer;border:no
 @keyframes parla{0%{background:#3a4a22}100%{background:var(--katman)}}
 
 /* yıldız dağıtımı */
-.dagit{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--cizgi)}
-.dagit:last-child{border-bottom:none}
+#dagit-liste.kart{background:none;border:none;box-shadow:none;padding:0}
+.dagit{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;margin:8px 0;
+  background:linear-gradient(180deg,var(--panel),var(--katman));
+  border:1px solid var(--cizgi);border-radius:12px;
+  box-shadow:0 6px 16px rgba(0,0,0,.28), inset 0 1px 0 rgba(243,224,170,.05);
+}
+.dagit .ik{flex:0 0 auto;width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 35%, #2a3663, #161e35);
+  border:1px solid rgba(216,178,94,.3);border-radius:50%;font-size:.95rem}
+.dagit .ik svg{width:18px;height:18px;display:block}
 .dagit .ad{flex:1}
 .dagit .ad small{display:block;color:var(--soluk);font-size:.75rem;line-height:1.25}
 .dagit .say{width:36px;text-align:center;font-family:var(--serif);font-size:1.15rem;color:var(--altin-ac)}
 .yk{
-  width:34px;height:34px;border-radius:9px;border:1px solid var(--cizgi);
-  background:var(--panel2);font-size:1.2rem;line-height:1;display:flex;
+  width:36px;height:36px;border-radius:50%;border:1px solid rgba(216,178,94,.45);
+  background:linear-gradient(180deg,#2c3a66,var(--panel2));color:var(--altin-ac);
+  font-size:1.25rem;line-height:1;display:flex;
   align-items:center;justify-content:center;flex:0 0 auto;
+  box-shadow:0 3px 8px rgba(0,0,0,.35), inset 0 1px 0 rgba(243,224,170,.12);
+  transition:transform .1s ease, box-shadow .1s ease;
 }
-.yk:disabled{opacity:.3}
+.yk:active:not(:disabled){transform:translateY(1px) scale(.94);box-shadow:0 1px 3px rgba(0,0,0,.35), inset 0 2px 5px rgba(0,0,0,.35)}
+.yk:disabled{opacity:.3;box-shadow:none}
 
 /* itibar / gruplar */
 .grup{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:.85rem}
@@ -237,8 +265,13 @@ button{font-family:inherit;font-size:1rem;color:inherit;cursor:pointer;border:no
 .alt button.aktif{color:var(--altin-ac);background:var(--panel)}
 
 /* çeşitli */
-.giris{text-align:center;padding:34px 6px 10px}
+.giris-sahne{margin:14px 0 -20px;position:relative}
+.giris-sahne svg{display:block;width:100%;height:auto;border-radius:14px;
+  border:1px solid rgba(216,178,94,.28);
+  box-shadow:0 12px 34px rgba(0,0,0,.4), inset 0 0 40px rgba(11,16,34,.4)}
+.giris{text-align:center;padding:24px 6px 10px}
 .giris .hilal{font-size:3rem;line-height:1;filter:drop-shadow(0 0 18px rgba(216,178,94,.45))}
+.gozustu svg{width:15px;height:15px;vertical-align:-2px;margin-right:6px;opacity:.9}
 .giris .alt-baslik{color:var(--soluk);font-size:.95rem;margin-top:4px}
 .giris .soru{font-family:var(--serif);font-style:italic;color:var(--altin);margin:18px auto 0;max-width:420px}
 .ayrac{height:1px;background:linear-gradient(90deg,transparent,var(--cizgi),transparent);margin:18px 0}
@@ -323,14 +356,61 @@ body:has(#alt-bar.gizli){padding-bottom:0}
 
   <!-- ================= GİRİŞ ================= -->
   <section id="ekran-giris">
+    <div class="giris-sahne" aria-hidden="true">
+      <svg viewBox="0 0 720 210" role="img" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="gs-gok" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#131b3a"/>
+            <stop offset=".62" stop-color="#182042"/>
+            <stop offset="1" stop-color="#221a3e"/>
+          </linearGradient>
+          <radialGradient id="gs-ay" cx=".5" cy=".5" r=".5">
+            <stop offset="0" stop-color="#f3e0aa" stop-opacity=".55"/>
+            <stop offset="1" stop-color="#f3e0aa" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="720" height="210" fill="url(#gs-gok)"/>
+        <g fill="#f3e0aa">
+          <circle cx="60" cy="40" r="1.6" opacity=".7"/><circle cx="120" cy="88" r="1.1" opacity=".45"/>
+          <circle cx="200" cy="30" r="1.3" opacity=".6"/><circle cx="262" cy="70" r="1" opacity=".4"/>
+          <circle cx="330" cy="26" r="1.5" opacity=".65"/><circle cx="410" cy="58" r="1.1" opacity=".45"/>
+          <circle cx="470" cy="24" r="1.2" opacity=".55"/><circle cx="620" cy="34" r="1.5" opacity=".6"/>
+          <circle cx="668" cy="80" r="1" opacity=".4"/><circle cx="90" cy="130" r="1" opacity=".3"/>
+          <circle cx="700" cy="120" r="1.1" opacity=".35"/><circle cx="170" cy="55" r="1" opacity=".35"/>
+          <path d="M540 46l2.2 5.8 5.8 2.2-5.8 2.2-2.2 5.8-2.2-5.8-5.8-2.2 5.8-2.2z" opacity=".75"/>
+          <path d="M250 100l1.6 4.2 4.2 1.6-4.2 1.6-1.6 4.2-1.6-4.2-4.2-1.6 4.2-1.6z" opacity=".5"/>
+        </g>
+        <circle cx="560" cy="70" r="46" fill="url(#gs-ay)"/>
+        <path d="M560 40a30 30 0 1 0 14 56.6 24 24 0 1 1-14-45.4 24 24 0 0 1 0-11.2z" fill="#e9cf8f" opacity=".92"/>
+        <g fill="#0d1226" opacity=".95">
+          <rect x="118" y="118" width="7" height="92"/>
+          <path d="M114 122h15l-7.5-26z"/>
+          <rect x="112" y="150" width="19" height="6"/>
+          <rect x="596" y="126" width="7" height="84"/>
+          <path d="M592 130h15l-7.5-24z"/>
+          <rect x="590" y="156" width="19" height="6"/>
+          <path d="M258 210v-34c0-14 9-24 22-30-3-4-3-9 0-12 2 3 6 3 8 0 3 3 3 8 0 12 13 6 22 16 22 30v34z"/>
+          <path d="M405 210v-30c0-12 8-21 19-26-2.6-3.5-2.6-8 0-10.5 1.8 2.6 5.2 2.6 7 0 2.6 2.5 2.6 7 0 10.5 11 5 19 14 19 26v30z"/>
+          <path d="M232 210v-22h256v22z"/>
+          <path d="M160 210v-18h60v18zM496 210v-18h64v18z"/>
+        </g>
+        <g stroke="#d8b25e" stroke-width="1" opacity=".7">
+          <line x1="121.5" y1="118" x2="121.5" y2="106"/>
+          <line x1="599.5" y1="126" x2="599.5" y2="114"/>
+        </g>
+        <circle cx="121.5" cy="104" r="2" fill="#d8b25e" opacity=".8"/>
+        <circle cx="599.5" cy="112" r="2" fill="#d8b25e" opacity=".8"/>
+        <path d="M283 138l3-6 3 6zM426.5 148l2.6-5 2.6 5z" fill="#d8b25e" opacity=".65"/>
+        <rect x="0" y="0" width="720" height="210" fill="none" stroke="rgba(216,178,94,.25)"/>
+      </svg>
+    </div>
     <div class="giris">
-      <div class="hilal">🌙</div>
       <h1>Nûr Tahtı</h1>
       <div class="alt-baslik">Bir Prensesin Yetişmesi</div>
       <p class="soru">“Tahtı kazanacak mısın, yoksa tahta layık biri mi olacaksın?”</p>
     </div>
     <div class="kart altin">
-      <div class="gozustu">Oyun hakkında</div>
+      <div class="gozustu"><svg viewBox="0 0 24 24" fill="none" stroke="#d8b25e" stroke-width="1.7" aria-hidden="true"><path d="M14 3a9 9 0 1 0 7 14.5A11 11 0 0 1 14 3z"/></svg>Oyun hakkında</div>
       <p>Yedi yaşında saraya alınan bir prensesi on iki yıl boyunca yetiştiriyorsun. Her mevsim onun neyi öğreneceğine, kiminle vakit geçireceğine ve zor bir anda ne yapacağına karar veriyorsun.</p>
       <p>Kılıç kullanmayı öğrenebilir. Ama asıl mesele, ne zaman kılıç çekmeyeceğini bilmesi.</p>
       <p class="kucuk-not">Ücretsiz · Reklamsız · Kayıt yok · Çevrimdışı çalışır. İlerlemen yalnızca bu cihazda saklanır.</p>
@@ -338,7 +418,7 @@ body:has(#alt-bar.gizli){padding-bottom:0}
     <button class="dugme ana" data-act="yeni">Yeni bir prenses yetiştir</button>
     <button class="dugme gizli" id="dugme-devam" data-act="devam">Kayıtlı oyuna devam et</button>
     <div class="kart">
-      <div class="gozustu">Bu oyunda ne var</div>
+      <div class="gozustu"><svg viewBox="0 0 24 24" fill="none" stroke="#d8b25e" stroke-width="1.7" aria-hidden="true"><path d="M12 2.5l2.5 6.5 6.5 2.5-6.5 2.5-2.5 6.5-2.5-6.5L3 11.5l6.5-2.5z"/></svg>Bu oyunda ne var</div>
       <p class="kucuk-not">Hikmet Medresesi ve Fen İlimleri Akademisi dersleri · Hilal Muhafızları eğitimi · kılıç düellosu · okçuluk · diplomasi · gizli halk görevleri · saray siyaseti · 20 hikâye bölümü · 7 farklı final.</p>
     </div>
   </section>
@@ -1741,11 +1821,16 @@ function kalanYildiz(){
   let t=0; for(const k in dagitim.oz) t+=dagitim.oz[k];
   return BASLANGIC_YILDIZ - t;
 }
+const DAGIT_SVG = {
+  iman:'<svg viewBox="0 0 24 24" fill="none" stroke="#d8b25e" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M14 3a9 9 0 1 0 7 14.5A11 11 0 0 1 14 3z" fill="rgba(216,178,94,.15)"/></svg>',
+  akil:'<svg viewBox="0 0 24 24" fill="none" stroke="#d8b25e" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 5.5C10.5 4 8 3.5 4 3.8v14.4c4-.3 6.5.2 8 1.6 1.5-1.4 4-1.9 8-1.6V3.8c-4-.3-6.5.2-8 1.7z" fill="rgba(216,178,94,.15)"/><path d="M12 5.5v14.3"/></svg>',
+  guc:'<svg viewBox="0 0 24 24" fill="none" stroke="#d8b25e" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5l2.4 6.3 6.6 2.5-6.6 2.5-2.4 6.3-2.4-6.3-6.6-2.5 6.6-2.5z" fill="rgba(216,178,94,.15)"/></svg>'
+};
 function dagitimCiz(){
   const kalan = kalanYildiz();
   $("#kalan-yildiz").textContent = kalan;
   $("#dagit-liste").innerHTML = OZ.map(o=>
-    '<div class="dagit"><span class="ik">'+o.ik+'</span>'+
+    '<div class="dagit"><span class="ik">'+(DAGIT_SVG[o.k]||o.ik)+'</span>'+
     '<span class="ad">'+o.ad+'<small>'+o.not+'</small></span>'+
     '<button class="yk" data-act="yildiz" data-k="'+o.k+'" data-y="-1"'+(dagitim.oz[o.k]<=0?" disabled":"")+'>−</button>'+
     '<span class="say">'+dagitim.oz[o.k]+'</span>'+

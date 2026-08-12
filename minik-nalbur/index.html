@@ -404,10 +404,50 @@ p{margin:0;line-height:1.45;}
 .baslik-satir{display:flex;align-items:center;gap:10px;}
 .baslik-satir h2{flex:1;}
 .liste-metin{display:flex;flex-direction:column;gap:10px;font-size:clamp(14px,3.5vw,17px);}
-.adim{display:flex;gap:10px;align-items:center;background:#fff;border-radius:16px;padding:12px;box-shadow:var(--golge-yumusak);}
+.adim{
+  display:flex;gap:10px;align-items:center;border-radius:16px;padding:12px;
+  background:linear-gradient(180deg,#FFFFFF,#FFF6E5);
+  border:1px solid rgba(201,138,75,.18);
+  box-shadow:0 4px 0 #EAD9BE, 0 10px 18px rgba(62,42,30,.08);
+}
 .adim .no{
-  flex:0 0 34px;height:34px;border-radius:50%;background:var(--sari);
+  flex:0 0 34px;height:34px;border-radius:50%;
+  background:linear-gradient(180deg,#FFD976,var(--sari));
+  box-shadow:inset 0 -2px 0 rgba(201,138,18,.4);
   display:flex;align-items:center;justify-content:center;font-family:var(--font-baslik);
+}
+.adim-ikon{
+  margin-left:auto;flex:0 0 40px;width:40px;height:40px;border-radius:12px;
+  background:#FFF1D2;display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 0 0 2px rgba(201,138,75,.25);
+}
+.adim-ikon .si{width:24px;height:24px;}
+
+/* inline SVG ikonlar (altın degradeli) */
+.si{width:1.05em;height:1.05em;vertical-align:-.14em;display:inline-block;flex:none;}
+
+/* Nasıl Oynanır & Öğretici — bilgi kartları: degrade + başlık şeridi */
+.liste-metin .kart{
+  padding:0;overflow:hidden;
+  background:linear-gradient(180deg,#FFFFFF,#FFF8EC);
+  border:1px solid rgba(201,138,75,.18);
+  box-shadow:0 6px 0 #EAD9BE, var(--golge-yumusak);
+}
+.liste-metin .kart h3{
+  margin:0;padding:10px 16px;
+  background:linear-gradient(90deg,var(--sari),#FFD976 60%,#FFE9A8);
+  box-shadow:inset 0 -3px 0 rgba(201,138,18,.28);
+}
+.liste-metin .kart p{padding:12px 16px;}
+
+/* atölye hissi: asılı alet silüetleri + raf çizgisi + vinyet */
+#ekranNasil,#ekranOgretici{
+  padding:12px 10px;
+  border-radius:var(--yuvarlak);
+  background:
+    radial-gradient(130% 95% at 50% 42%, transparent 58%, rgba(62,42,30,.08) 100%),
+    linear-gradient(transparent 0, transparent 58px, rgba(154,101,52,.30) 58px, rgba(154,101,52,.30) 62px, rgba(255,255,255,.35) 62px, rgba(255,255,255,.35) 63px, transparent 63px),
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='220'%20height='60'%20viewBox='0%200%20220%2060'%3E%3Cg%20fill='%233E2A1E'%20fill-opacity='.09'%3E%3Crect%20x='12'%20y='6'%20width='26'%20height='10'%20rx='3'/%3E%3Crect%20x='22'%20y='14'%20width='6'%20height='38'%20rx='3'/%3E%3Ccircle%20cx='95'%20cy='13'%20r='9'/%3E%3Crect%20x='91.5'%20y='17'%20width='7'%20height='36'%20rx='3'/%3E%3Crect%20x='158'%20y='5'%20width='11'%20height='21'%20rx='5'/%3E%3Crect%20x='162'%20y='26'%20width='3.4'%20height='27'%20rx='1.5'/%3E%3C/g%3E%3C/svg%3E") repeat-x 14px 4px / 220px 60px;
 }
 
 /* ==========================================================================
@@ -440,6 +480,55 @@ p{margin:0;line-height:1.45;}
 </style>
 </head>
 <body>
+
+<!-- ====================== SVG İKON SETİ (altın degradeli) ====================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gAltin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE9A0"/><stop offset="55%" stop-color="#FFC542"/><stop offset="100%" stop-color="#E9A81F"/>
+    </linearGradient>
+    <radialGradient id="ustaTen" cx="50%" cy="36%" r="72%">
+      <stop offset="0%" stop-color="#FBD9AF"/><stop offset="100%" stop-color="#EEBB88"/>
+    </radialGradient>
+    <linearGradient id="ustaSapka" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFA662"/><stop offset="100%" stop-color="#F07E2E"/>
+    </linearGradient>
+    <linearGradient id="ustaGovde" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".24"/><stop offset="100%" stop-color="#12233A" stop-opacity=".22"/>
+    </linearGradient>
+    <symbol id="ikYildiz" viewBox="0 0 24 24">
+      <path d="M12 2.2l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.1l-5.9 3.1 1.2-6.5L2.5 9.1l6.6-.9z" fill="url(#gAltin)" stroke="#C98A12" stroke-width="1.1" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="ikPara" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" fill="url(#gAltin)" stroke="#C98A12" stroke-width="1.4"/>
+      <circle cx="12" cy="12" r="6.8" fill="none" stroke="#C98A12" stroke-width="1" opacity=".6"/>
+      <path d="M12 7.6l1.3 2.7 3 .4-2.2 2.1.6 2.9-2.7-1.4-2.7 1.4.6-2.9-2.2-2.1 3-.4z" fill="#C98A12" opacity=".85"/>
+    </symbol>
+    <symbol id="ikKutlama" viewBox="0 0 24 24">
+      <path d="M4 20.5L8.6 8.8l6.6 6.6z" fill="url(#gAltin)" stroke="#C98A12" stroke-width="1" stroke-linejoin="round"/>
+      <path d="M4 20.5l4.3-1.3-3-3z" fill="#E9A81F"/>
+      <path d="M15 9.3q2.6-2.9 5.8-2.6" stroke="#FFC542" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M14.2 4.6q.6-1.6 2-2.1" stroke="#FF8A3D" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <circle cx="18.4" cy="4.2" r="1.5" fill="#4FC3F7"/>
+      <circle cx="21" cy="11.6" r="1.4" fill="#5CD68C"/>
+      <circle cx="12.6" cy="6.9" r="1.2" fill="#F2645A"/>
+    </symbol>
+    <symbol id="ikKonus" viewBox="0 0 24 24">
+      <path d="M5 4h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="#4FC3F7" stroke="#2196C9" stroke-width="1.4" stroke-linejoin="round"/>
+      <circle cx="8.5" cy="9.5" r="1.3" fill="#fff"/><circle cx="12" cy="9.5" r="1.3" fill="#fff"/><circle cx="15.5" cy="9.5" r="1.3" fill="#fff"/>
+    </symbol>
+    <symbol id="ikDokun" viewBox="0 0 24 24">
+      <circle cx="11.5" cy="7.5" r="4.6" fill="none" stroke="#FF8A3D" stroke-width="1.6" stroke-dasharray="3 2.2"/>
+      <path d="M11.5 5.9A1.6 1.6 0 0 1 13.1 7.5v6l2.9.8c1.2.3 2 1.4 2 2.6l-.4 2.1a2.6 2.6 0 0 1-2.6 2.1h-3.2c-.8 0-1.6-.4-2.1-1l-2.9-3.5 1.1-1c.5-.5 1.3-.5 1.8-.1l.2.2V7.5a1.6 1.6 0 0 1 1.6-1.6z" fill="#F7CFA6" stroke="#C98A4B" stroke-width="1.2" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="ikDukkanS" viewBox="0 0 24 24">
+      <rect x="4" y="9.5" width="16" height="10.5" rx="1.5" fill="#FFF0CC" stroke="#C98A4B" stroke-width="1.3"/>
+      <path d="M3 5.5h18l-1.5 4.5h-15z" fill="#FF8A3D" stroke="#E4762C" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M7.8 5.5L7 10M12 5.5V10M16.2 5.5l.8 4.5" stroke="#fff" stroke-width="1.3"/>
+      <rect x="10" y="13" width="4" height="7" rx="1" fill="#C98A4B"/>
+    </symbol>
+  </defs>
+</svg>
 
 <div id="app">
 
@@ -475,10 +564,10 @@ p{margin:0;line-height:1.45;}
       <h2>Nasıl Oynanır?</h2>
     </div>
     <div class="liste-metin">
-      <div class="adim"><div class="no">1</div><div>Müşteriyi dinle. Konuşma balonunda ne istediğini anlatır.</div></div>
-      <div class="adim"><div class="no">2</div><div>Raftaki doğru ürüne dokun.</div></div>
-      <div class="adim"><div class="no">3</div><div>Yıldız ve altın kazan.</div></div>
-      <div class="adim"><div class="no">4</div><div>Altınlarınla dükkânını güzelleştir.</div></div>
+      <div class="adim"><div class="no">1</div><div>Müşteriyi dinle. Konuşma balonunda ne istediğini anlatır.</div><span class="adim-ikon"><svg class="si"><use href="#ikKonus"/></svg></span></div>
+      <div class="adim"><div class="no">2</div><div>Raftaki doğru ürüne dokun.</div><span class="adim-ikon"><svg class="si"><use href="#ikDokun"/></svg></span></div>
+      <div class="adim"><div class="no">3</div><div>Yıldız ve altın kazan.</div><span class="adim-ikon"><svg class="si"><use href="#ikYildiz"/></svg></span></div>
+      <div class="adim"><div class="no">4</div><div>Altınlarınla dükkânını güzelleştir.</div><span class="adim-ikon"><svg class="si"><use href="#ikDukkanS"/></svg></span></div>
       <div class="kart">
         <h3>Yanlış seçersem ne olur?</h3>
         <p>Hiçbir şey kaybetmezsin! Usta Mert sana küçük bir ipucu verir ve tekrar denersin. 😊</p>
@@ -506,7 +595,7 @@ p{margin:0;line-height:1.45;}
     <div class="baslik-satir">
       <button class="ikon-btn" data-act="menu" aria-label="Ana menüye dön">⬅️</button>
       <h2>Bölüm Seç</h2>
-      <span class="sayac">⭐ <b id="bolumYildiz">0</b></span>
+      <span class="sayac"><svg class="si"><use href="#ikYildiz"/></svg> <b id="bolumYildiz">0</b></span>
     </div>
     <div class="izgara" id="bolumIzgara"></div>
   </section>
@@ -518,19 +607,19 @@ p{margin:0;line-height:1.45;}
       <div class="usta-balon">Hoş geldin Minik Usta! Müşterilerimizin sorunlarını dinle, doğru ürünü bul ve mahallemizi güzelleştir. Yanlış seçim yaparsan üzülme, birlikte yeniden deneriz!</div>
     </div>
     <div class="liste-metin">
-      <div class="adim"><div class="no">1</div><div>Müşteriyi dinle 👂</div></div>
-      <div class="adim"><div class="no">2</div><div>Doğru ürünü seç 👆</div></div>
-      <div class="adim"><div class="no">3</div><div>Yıldız ve altın kazan ⭐🪙</div></div>
-      <div class="adim"><div class="no">4</div><div>Dükkânını güzelleştir 🏪</div></div>
+      <div class="adim"><div class="no">1</div><div>Müşteriyi dinle 👂</div><span class="adim-ikon"><svg class="si"><use href="#ikKonus"/></svg></span></div>
+      <div class="adim"><div class="no">2</div><div>Doğru ürünü seç 👆</div><span class="adim-ikon"><svg class="si"><use href="#ikDokun"/></svg></span></div>
+      <div class="adim"><div class="no">3</div><div>Yıldız ve altın kazan ⭐🪙</div><span class="adim-ikon"><svg class="si"><use href="#ikYildiz"/></svg></span></div>
+      <div class="adim"><div class="no">4</div><div>Dükkânını güzelleştir 🏪</div><span class="adim-ikon"><svg class="si"><use href="#ikDukkanS"/></svg></span></div>
     </div>
-    <button class="btn turuncu buyuk" data-act="ogreticiBitti" aria-label="Öğreticiyi bitir ve başla">Anladım, Başlayalım! 🎉</button>
+    <button class="btn turuncu buyuk" data-act="ogreticiBitti" aria-label="Öğreticiyi bitir ve başla">Anladım, Başlayalım! <svg class="si"><use href="#ikKutlama"/></svg></button>
   </section>
 
   <!-- ====================== OYUN ====================== -->
   <section class="screen" id="ekranOyun">
     <div class="ust">
-      <span class="sayac">🪙 <b id="altinSayac">0</b></span>
-      <span class="sayac">⭐ <b id="yildizSayac">0</b></span>
+      <span class="sayac"><svg class="si"><use href="#ikPara"/></svg> <b id="altinSayac">0</b></span>
+      <span class="sayac"><svg class="si"><use href="#ikYildiz"/></svg> <b id="yildizSayac">0</b></span>
       <span class="bolum-etiket" id="bolumEtiket">Bölüm 1 · 1/5</span>
       <span class="rozetci">
         <button class="ikon-btn" data-act="ipucu" aria-label="İpucu al">💡</button>
@@ -563,8 +652,8 @@ p{margin:0;line-height:1.45;}
   <!-- ====================== MİNİ OYUN ====================== -->
   <section class="screen" id="ekranMini">
     <div class="ust">
-      <span class="sayac">🪙 <b id="altinSayacMini">0</b></span>
-      <span class="sayac">⭐ <b id="yildizSayacMini">0</b></span>
+      <span class="sayac"><svg class="si"><use href="#ikPara"/></svg> <b id="altinSayacMini">0</b></span>
+      <span class="sayac"><svg class="si"><use href="#ikYildiz"/></svg> <b id="yildizSayacMini">0</b></span>
       <span class="rozetci">
         <button class="ikon-btn" data-act="ses" aria-label="Sesi aç veya kapat">🔊</button>
         <button class="ikon-btn" data-act="menu" aria-label="Ana menüye dön">🏠</button>
@@ -579,7 +668,7 @@ p{margin:0;line-height:1.45;}
     <div class="baslik-satir">
       <button class="ikon-btn" data-act="geriDukkan" aria-label="Geri dön">⬅️</button>
       <h2>Dükkânım</h2>
-      <span class="sayac">🪙 <b id="altinSayacDukkan">0</b></span>
+      <span class="sayac"><svg class="si"><use href="#ikPara"/></svg> <b id="altinSayacDukkan">0</b></span>
     </div>
     <p style="font-size:14px;color:var(--metin-soft)">Bu süsler oyunu kolaylaştırmaz, sadece dükkânını güzelleştirir. 🎀</p>
     <div class="izgara" id="dukkanIzgara"></div>
@@ -588,12 +677,12 @@ p{margin:0;line-height:1.45;}
   <!-- ====================== BÖLÜM SONU ====================== -->
   <section class="screen kaydir" id="ekranSon">
     <div class="kart" style="text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center">
-      <div style="font-size:56px">🎉</div>
+      <div><svg class="si" style="width:64px;height:64px"><use href="#ikKutlama"/></svg></div>
       <h2 id="sonBaslik">Bölüm Tamamlandı!</h2>
       <p id="sonMetin">Harika iş çıkardın Minik Usta!</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-        <span class="sayac">🪙 <b id="sonAltin">0</b></span>
-        <span class="sayac">⭐ <b id="sonYildiz">0</b></span>
+        <span class="sayac"><svg class="si"><use href="#ikPara"/></svg> <b id="sonAltin">0</b></span>
+        <span class="sayac"><svg class="si"><use href="#ikYildiz"/></svg> <b id="sonYildiz">0</b></span>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;width:min(380px,90%)">
         <button class="btn turuncu buyuk" data-act="sonrakiBolum" id="sonrakiBtn">Sonraki Bölüm ▶</button>
@@ -642,18 +731,34 @@ const SVG = {
 };
 
 const USTA_SVG = `
-<svg class="usta" viewBox="0 0 100 124" role="img" aria-label="Usta Mert">
+<svg class="usta" viewBox="0 0 100 130" role="img" aria-label="Usta Mert">
+  <ellipse cx="50" cy="125.5" rx="33" ry="4.2" fill="#3E2A1E" opacity=".18"/>
   <path d="M20 124q0-40 30-42 30 2 30 42z" fill="var(--onluk)"/>
-  <rect x="38" y="92" width="24" height="14" rx="5" fill="#ffffff" opacity=".85"/>
+  <path d="M20 124q0-40 30-42 30 2 30 42z" fill="url(#ustaGovde)"/>
+  <g transform="rotate(-16 62 100)">
+    <rect x="60" y="88" width="5" height="12" rx="2.4" fill="#FF8A3D"/>
+    <rect x="61.4" y="98" width="2.2" height="7" fill="#B9C3CC"/>
+  </g>
+  <rect x="36" y="100" width="28" height="17" rx="7" fill="#ffffff" opacity=".9"/>
+  <rect x="36" y="100" width="28" height="5" rx="2.5" fill="#3E2A1E" opacity=".16"/>
   <rect x="43" y="66" width="14" height="14" fill="#EFBE93"/>
-  <circle cx="50" cy="48" r="27" fill="#F7CFA6"/>
-  <path d="M23 40a27 27 0 0 1 54 0z" fill="#FF8A3D"/>
+  <circle cx="23.5" cy="52" r="4.6" fill="#EEBB88"/>
+  <circle cx="76.5" cy="52" r="4.6" fill="#EEBB88"/>
+  <circle cx="50" cy="48" r="27" fill="url(#ustaTen)"/>
+  <path d="M23 40a27 27 0 0 1 54 0z" fill="url(#ustaSapka)"/>
   <rect x="18" y="37" width="64" height="9" rx="4.5" fill="#E4762C"/>
-  <circle cx="40" cy="52" r="3.6" fill="#3E2A1E"/>
-  <circle cx="60" cy="52" r="3.6" fill="#3E2A1E"/>
-  <path d="M41 62q9 9 18 0" stroke="#3E2A1E" stroke-width="3.4" fill="none" stroke-linecap="round"/>
-  <circle cx="31" cy="58" r="4" fill="#F2A6A0" opacity=".7"/>
-  <circle cx="69" cy="58" r="4" fill="#F2A6A0" opacity=".7"/>
+  <circle cx="50" cy="26.5" r="3.4" fill="#E4762C"/>
+  <path d="M34 48.5q5.5-2.8 11 0" stroke="#7A5231" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <path d="M55 48.5q5.5-2.8 11 0" stroke="#7A5231" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <circle cx="40" cy="53" r="3.6" fill="#3E2A1E"/>
+  <circle cx="60" cy="53" r="3.6" fill="#3E2A1E"/>
+  <circle cx="41.3" cy="51.8" r="1.2" fill="#ffffff"/>
+  <circle cx="61.3" cy="51.8" r="1.2" fill="#ffffff"/>
+  <ellipse cx="50" cy="58" rx="3.1" ry="2.5" fill="#E8A874"/>
+  <path d="M50 61.5Q43 57 36.5 61.5Q40 66.5 50 64Q60 66.5 63.5 61.5Q57 57 50 61.5Z" fill="#7A5231"/>
+  <path d="M43 66.5q7 5.5 14 0" stroke="#3E2A1E" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+  <circle cx="30.5" cy="59.5" r="4" fill="#F2A6A0" opacity=".65"/>
+  <circle cx="69.5" cy="59.5" r="4" fill="#F2A6A0" opacity=".65"/>
 </svg>`;
 
 /* ==========================================================================
@@ -1151,7 +1256,7 @@ function bilgiGoster(id) {
      <div class="aciklama">${g.bilgi}</div>
      ${g.uyari ? `<div class="uyari">${g.uyari}</div>` : ""}
      <div style="display:flex;gap:8px;align-items:center;font-family:var(--font-baslik)">
-       <span class="sayac">+10 🪙</span><span class="sayac">+1 ⭐</span>
+       <span class="sayac">+10 <svg class="si"><use href="#ikPara"></use></svg></span><span class="sayac">+1 <svg class="si"><use href="#ikYildiz"></use></svg></span>
      </div>
      <button class="btn yesil buyuk" data-act="devam" aria-label="Sonraki müşteriye geç">Sonraki Müşteri ▶</button>`;
   kart.classList.remove("gizli");

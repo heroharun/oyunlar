@@ -257,6 +257,42 @@ button{font-family:var(--font-baslik); cursor:pointer}
 .geri-satir{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap}
 .bilgi-serit{background:var(--mavi); border:3px solid var(--murekkep); border-radius:18px; padding:10px; margin-bottom:12px; font-size:15px}
 
+/* ---------- İnce konturlu pastel ikonlar ---------- */
+.ikn{display:inline-flex;width:21px;height:21px;flex:0 0 auto;vertical-align:-4px}
+.ikn svg{width:100%;height:100%;display:block}
+.ikn.buyuk{width:27px;height:27px;vertical-align:-5px}
+
+/* ---------- Müşteri rozeti (ışımalı çerçeve + kontak gölge) ---------- */
+.musteri-gorsel{
+  position:relative; display:inline-flex; align-items:flex-end; justify-content:center;
+  padding:8px 9px 3px; border-radius:26px;
+  background:radial-gradient(circle at 50% 26%,#fffdf7 0%,#ffe9f3 58%,#efe3ff 100%);
+  border:2px solid rgba(74,54,82,.20);
+  box-shadow:0 3px 0 rgba(74,54,82,.08), inset 0 0 16px rgba(255,255,255,.85);
+}
+.musteri-gorsel:after{content:""; position:absolute; left:16%; right:16%; bottom:4px; height:9px;
+  border-radius:50%; background:rgba(74,54,82,.16); filter:blur(3px)}
+.musteri-gorsel svg{position:relative; z-index:1; filter:drop-shadow(0 3px 3px rgba(74,54,82,.16))}
+.lila-kutu>span svg{filter:drop-shadow(0 2px 3px rgba(74,54,82,.16))}
+
+/* ---------- Menü fonu: degrade sera + silik raf/saksı/sarmaşık, vinyet ---------- */
+#menu{position:relative; z-index:0}
+#menu:before{content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% -4%, rgba(255,255,255,.85) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(180deg,#fde9f3 0%,#f4edff 46%,#e6f5e8 100%);
+}
+#menu:after{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background-image:
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 140'><g stroke='%235f9a68' stroke-width='4' fill='none' stroke-linecap='round' opacity='.18'><path d='M30 0 Q44 46 26 92 Q20 116 30 138'/><path d='M110 0 Q102 34 114 70'/><path d='M182 0 Q194 40 178 84 Q172 104 180 122'/></g><g fill='%236fae78' opacity='.18'><ellipse cx='20' cy='38' rx='11' ry='5' transform='rotate(-30 20 38)'/><ellipse cx='44' cy='70' rx='11' ry='5' transform='rotate(26 44 70)'/><ellipse cx='18' cy='104' rx='10' ry='5' transform='rotate(-24 18 104)'/><ellipse cx='102' cy='26' rx='10' ry='5' transform='rotate(-26 102 26)'/><ellipse cx='122' cy='54' rx='10' ry='5' transform='rotate(24 122 54)'/><ellipse cx='172' cy='32' rx='11' ry='5' transform='rotate(-28 172 32)'/><ellipse cx='192' cy='64' rx='10' ry='5' transform='rotate(26 192 64)'/><ellipse cx='170' cy='96' rx='10' ry='5' transform='rotate(-22 170 96)'/></g></svg>"),
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 230'><g opacity='.14'><rect x='10' y='86' width='280' height='13' rx='6' fill='%23a97c52'/><path d='M52 46 h58 l-8 40 h-42 Z' fill='%23c9855c'/><circle cx='81' cy='26' r='22' fill='%23e07a9e'/><circle cx='58' cy='36' r='13' fill='%23d688b8'/><circle cx='104' cy='36' r='13' fill='%23e8949e'/><path d='M170 52 h46 l-6 34 h-34 Z' fill='%23b3764f'/><circle cx='193' cy='32' r='17' fill='%23e8b64d'/><rect x='10' y='206' width='280' height='13' rx='6' fill='%23a97c52'/><path d='M40 166 h52 l-7 40 h-38 Z' fill='%23b3764f'/><circle cx='66' cy='146' r='19' fill='%237ea3d8'/><path d='M150 172 h58 l-8 34 h-42 Z' fill='%23c9855c'/><circle cx='165' cy='152' r='13' fill='%23a586d8'/><circle cx='192' cy='146' r='15' fill='%23e07a9e'/></g></svg>"),
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 230'><g opacity='.14'><rect x='10' y='86' width='280' height='13' rx='6' fill='%23a97c52'/><path d='M52 46 h58 l-8 40 h-42 Z' fill='%23c9855c'/><circle cx='81' cy='26' r='22' fill='%23a586d8'/><circle cx='58' cy='36' r='13' fill='%23e07a9e'/><circle cx='104' cy='36' r='13' fill='%237ea3d8'/><path d='M170 52 h46 l-6 34 h-34 Z' fill='%23b3764f'/><circle cx='193' cy='32' r='17' fill='%23e8949e'/><rect x='10' y='206' width='280' height='13' rx='6' fill='%23a97c52'/><path d='M40 166 h52 l-7 40 h-38 Z' fill='%23c9855c'/><circle cx='66' cy='146' r='19' fill='%23e8b64d'/><path d='M150 172 h58 l-8 34 h-42 Z' fill='%23b3764f'/><circle cx='165' cy='152' r='13' fill='%23e07a9e'/><circle cx='192' cy='146' r='15' fill='%237ea3d8'/></g></svg>"),
+    radial-gradient(ellipse at 50% 42%, rgba(74,54,82,0) 60%, rgba(74,54,82,.10) 100%);
+  background-repeat:repeat-x,no-repeat,no-repeat,no-repeat;
+  background-position:top center, left -30px bottom, right -30px bottom, center;
+  background-size:200px auto, min(300px,40vw) auto, min(300px,40vw) auto, cover;
+}
+
 @media (prefers-reduced-motion: reduce){
   *,*:before,*:after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
 }
@@ -294,14 +330,14 @@ button{font-family:var(--font-baslik); cursor:pointer}
     <p class="lila-soz"><b>Çiçekçi Lila:</b> Merhaba Minik Çiçekçi! Müşterilerimizi dinleyelim, en güzel çiçekleri seçelim ve rengârenk buketler hazırlayalım!</p>
   </div>
   <nav class="menu-butonlar">
-    <button class="btn p" data-git="oyun">🌷 Oyuna Başla</button>
-    <button class="btn m" data-git="serbest">🎨 Serbest Buket Tasarla</button>
-    <button class="btn y" data-git="album">📖 Çiçek Albümüm</button>
-    <button class="btn s" data-git="rozet">🏅 Rozetlerim</button>
-    <button class="btn b" data-git="dukkan">🏠 Dükkânımı Süsle</button>
-    <button class="btn" data-git="nasil">❓ Nasıl Oynanır?</button>
-    <button class="btn" data-act="ses" id="menuSesBtn">🔊 Ses Açık</button>
-    <button class="btn" data-act="sifirla">♻️ Oyunu Sıfırla</button>
+    <button class="btn p" data-git="oyun"><span class="ikn" data-ikon="cicek"></span> Oyuna Başla</button>
+    <button class="btn m" data-git="serbest"><span class="ikn" data-ikon="palet"></span> Serbest Buket Tasarla</button>
+    <button class="btn y" data-git="album"><span class="ikn" data-ikon="kitap"></span> Çiçek Albümüm</button>
+    <button class="btn s" data-git="rozet"><span class="ikn" data-ikon="madalya"></span> Rozetlerim</button>
+    <button class="btn b" data-git="dukkan"><span class="ikn" data-ikon="ev"></span> Dükkânımı Süsle</button>
+    <button class="btn" data-git="nasil"><span class="ikn" data-ikon="soru"></span> Nasıl Oynanır?</button>
+    <button class="btn" data-act="ses" id="menuSesBtn"><span class="ikn" data-ikon="ses"></span> Ses Açık</button>
+    <button class="btn" data-act="sifirla"><span class="ikn" data-ikon="yenile"></span> Oyunu Sıfırla</button>
   </nav>
   <p class="kucuk-not" style="margin-top:14px">Reklamsız · Ücretsiz · İnternetsiz oynanır · Kişisel bilgi istemez</p>
 </main>
@@ -310,15 +346,15 @@ button{font-family:var(--font-baslik); cursor:pointer}
 <main id="oyun" class="ekran" aria-label="Oyun ekranı">
   <div class="ustbar">
     <div class="sayaclar">
-      <span class="sayac bolum">🎬 <span id="ustBolum">Bölüm 1</span> · <span id="ustMusteri">1/5</span></span>
-      <span class="sayac">🪙 <span class="rakam" id="ustAltin">0</span></span>
-      <span class="sayac yildiz">⭐ <span class="rakam" id="ustYildiz">0</span></span>
-      <span class="sayac kalp">💖 <span class="rakam" id="ustMutluluk">0</span></span>
+      <span class="sayac bolum"><span class="ikn" data-ikon="klaket"></span> <span id="ustBolum">Bölüm 1</span> · <span id="ustMusteri">1/5</span></span>
+      <span class="sayac"><span class="ikn" data-ikon="altin"></span> <span class="rakam" id="ustAltin">0</span></span>
+      <span class="sayac yildiz"><span class="ikn" data-ikon="yildiz"></span> <span class="rakam" id="ustYildiz">0</span></span>
+      <span class="sayac kalp"><span class="ikn" data-ikon="kalp"></span> <span class="rakam" id="ustMutluluk">0</span></span>
     </div>
     <div class="ustbar-arac">
-      <button class="btn kucuk" data-act="ipucu">💡 İpucu</button>
-      <button class="btn kucuk" data-act="ses" id="oyunSesBtn" aria-label="Sesi aç veya kapat">🔊</button>
-      <button class="btn kucuk" data-git="menu">🏠 Menü</button>
+      <button class="btn kucuk" data-act="ipucu"><span class="ikn" data-ikon="ampul"></span> İpucu</button>
+      <button class="btn kucuk" data-act="ses" id="oyunSesBtn" aria-label="Sesi aç veya kapat"><span class="ikn" data-ikon="ses"></span></button>
+      <button class="btn kucuk" data-git="menu"><span class="ikn" data-ikon="ev"></span> Menü</button>
     </div>
   </div>
 
@@ -378,7 +414,7 @@ button{font-family:var(--font-baslik); cursor:pointer}
 <!-- ---------- SERBEST TASARIM ---------- -->
 <main id="serbest" class="ekran" aria-label="Serbest buket tasarlama">
   <div class="geri-satir">
-    <button class="btn kucuk" data-git="menu">🏠 Ana Menü</button>
+    <button class="btn kucuk" data-git="menu"><span class="ikn" data-ikon="ev"></span> Ana Menü</button>
     <button class="btn kucuk s" data-act="rastgeleBuket">🎲 Rastgele Buket</button>
     <button class="btn kucuk" data-act="temizle">🧹 Yeniden Düzenle</button>
     <button class="btn kucuk m" data-act="buketAdiVer">🏷️ Buketime İsim Ver</button>
@@ -410,26 +446,26 @@ button{font-family:var(--font-baslik); cursor:pointer}
 
 <!-- ---------- ALBÜM ---------- -->
 <main id="album" class="ekran" aria-label="Çiçek albümü">
-  <div class="geri-satir"><button class="btn kucuk" data-git="menu">🏠 Ana Menü</button></div>
-  <h2>📖 Çiçek Albümüm <span class="kucuk-not" id="albumSayac"></span></h2>
+  <div class="geri-satir"><button class="btn kucuk" data-git="menu"><span class="ikn" data-ikon="ev"></span> Ana Menü</button></div>
+  <h2><span class="ikn buyuk" data-ikon="kitap"></span> Çiçek Albümüm <span class="kucuk-not" id="albumSayac"></span></h2>
   <div class="bilgi-serit">🌼 Gerçek çiçekleri koklamak ve incelemek çok eğlencelidir. Bilmediğin bitkilere dokunmadan önce bir büyüğüne danışmayı unutma.</div>
   <div class="izgara" id="albumIzgara"></div>
 </main>
 
 <!-- ---------- ROZETLER ---------- -->
 <main id="rozet" class="ekran" aria-label="Rozetler">
-  <div class="geri-satir"><button class="btn kucuk" data-git="menu">🏠 Ana Menü</button></div>
-  <h2>🏅 Rozetlerim <span class="kucuk-not" id="rozetSayac"></span></h2>
+  <div class="geri-satir"><button class="btn kucuk" data-git="menu"><span class="ikn" data-ikon="ev"></span> Ana Menü</button></div>
+  <h2><span class="ikn buyuk" data-ikon="madalya"></span> Rozetlerim <span class="kucuk-not" id="rozetSayac"></span></h2>
   <div class="izgara genis" id="rozetIzgara"></div>
 </main>
 
 <!-- ---------- DÜKKÂN ---------- -->
 <main id="dukkan" class="ekran" aria-label="Dükkânımı süsle">
   <div class="geri-satir">
-    <button class="btn kucuk" data-git="menu">🏠 Ana Menü</button>
-    <span class="sayac">🪙 <span class="rakam" id="dukkanAltin">0</span> altın</span>
+    <button class="btn kucuk" data-git="menu"><span class="ikn" data-ikon="ev"></span> Ana Menü</button>
+    <span class="sayac"><span class="ikn" data-ikon="altin"></span> <span class="rakam" id="dukkanAltin">0</span> altın</span>
   </div>
-  <h2>🏠 Dükkânımı Süsle</h2>
+  <h2><span class="ikn buyuk" data-ikon="ev"></span> Dükkânımı Süsle</h2>
   <div class="dukkan-sahne" id="dukkanSahne"></div>
   <p class="kucuk-not">Süslemeler yalnızca dükkânını güzelleştirir, oyunu kolaylaştırmaz.</p>
   <div class="izgara genis" id="dukkanIzgara"></div>
@@ -437,8 +473,8 @@ button{font-family:var(--font-baslik); cursor:pointer}
 
 <!-- ---------- NASIL OYNANIR ---------- -->
 <main id="nasil" class="ekran" aria-label="Nasıl oynanır">
-  <div class="geri-satir"><button class="btn kucuk" data-git="menu">🏠 Ana Menü</button></div>
-  <h2>❓ Nasıl Oynanır?</h2>
+  <div class="geri-satir"><button class="btn kucuk" data-git="menu"><span class="ikn" data-ikon="ev"></span> Ana Menü</button></div>
+  <h2><span class="ikn buyuk" data-ikon="soru"></span> Nasıl Oynanır?</h2>
   <div class="panel" id="nasilIcerik"></div>
 </main>
 
@@ -498,6 +534,29 @@ function sap(renk,uzun){
        + P("M2,32 C16,26 21,39 4,40",r,'rgba(74,54,82,.28)');
 }
 function tac(ic,olcek,kaydir){ return '<g transform="translate(0,'+(kaydir||-8)+') scale('+(olcek||0.8)+')">'+ic+'</g>'; }
+
+/* Arayüz ikonları — aynı ailede pastel dolgu + ince kontur (görsel; oyun verisine dokunmaz) */
+function ikn(ic){ return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="#4a3652" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+ic+'</svg>'; }
+var IKON={
+  cicek: ikn('<path d="M12 12.5V20" stroke="#5aa85f" stroke-width="2"/><path d="M12 17.5c-2.6.3-4.6-1-5.2-3.1 2.5-.5 4.4.7 5.2 3.1Z" fill="#9ed4a5" stroke-width="1.2"/><path d="M6.6 4.6c-.2 4.4 1.9 8 5.4 8s5.6-3.6 5.4-8c-1.5 1.5-3 .1-5.4 2.6-2.4-2.5-3.9-1.1-5.4-2.6Z" fill="#ff9ec4"/>'),
+  palet: ikn('<path d="M12 3.2a8.8 8.8 0 1 0 .5 17.6c1.7 0 2.1-1.2 1.4-2.3-.7-1.3.3-2.7 1.8-2.7h1.9c1.8 0 2.9-1.2 2.9-3C20.5 7.3 16.7 3.2 12 3.2Z" fill="#fff2c2"/><circle cx="8.2" cy="9" r="1.4" fill="#ff9ec4" stroke="none"/><circle cx="12.6" cy="6.8" r="1.4" fill="#a68cff" stroke="none"/><circle cx="16.4" cy="9.6" r="1.4" fill="#6fb6f2" stroke="none"/><circle cx="7.6" cy="13.6" r="1.4" fill="#6fc47a" stroke="none"/>'),
+  kitap: ikn('<path d="M12 5.6C10 4.3 7.3 4.3 4.6 5.5V18.6c2.7-1.2 5.4-1.2 7.4 0Z" fill="#d9ecff"/><path d="M12 5.6c2-1.3 4.7-1.3 7.4-.1V18.6c-2.7-1.2-5.4-1.2-7.4 0Z" fill="#a9d8ff"/>'),
+  madalya: ikn('<path d="M8.2 3.2h3l1 4.6-3.4.7Z" fill="#6fb6f2" stroke-width="1.2"/><path d="M15.8 3.2h-3l-1 4.6 3.4.7Z" fill="#ff9ec4" stroke-width="1.2"/><circle cx="12" cy="14.4" r="5.8" fill="#ffcf4d"/><circle cx="12" cy="14.4" r="3" fill="#fff2c2" stroke-width="1"/>'),
+  ev: ikn('<path d="M5.6 10.6v8.8h12.8v-8.8Z" fill="#fff2c2"/><path d="M3.6 11.2 12 4.2l8.4 7" stroke-width="1.8"/><rect x="10" y="14" width="4" height="5.4" rx="1" fill="#ff9ec4" stroke-width="1.2"/>'),
+  soru: ikn('<circle cx="12" cy="12" r="8.8" fill="#e4dbff"/><path d="M9.6 9.6c0-1.6 1.1-2.6 2.5-2.6s2.4 1 2.4 2.2c0 2-2.3 2.1-2.3 3.9" stroke-width="1.8"/><circle cx="12.2" cy="16.5" r="1.1" fill="#4a3652" stroke="none"/>'),
+  ses: ikn('<path d="M4.5 10v4h2.8l4 3.4V6.6l-4 3.4Z" fill="#a68cff"/><path d="M14.4 9.7a3.6 3.6 0 0 1 0 4.6M16.8 7.6a6.6 6.6 0 0 1 0 8.8" stroke-width="1.6"/>'),
+  sesKapali: ikn('<path d="M4.5 10v4h2.8l4 3.4V6.6l-4 3.4Z" fill="#e4dbff"/><path d="m14.6 9.7 4.8 4.6M19.4 9.7l-4.8 4.6" stroke-width="1.8"/>'),
+  yenile: ikn('<circle cx="12" cy="12" r="9.3" fill="#d8f3d8" stroke="none"/><path d="M6.6 12a5.4 5.4 0 0 1 9.3-3.7M16.2 5.4v3.2H13M17.4 12a5.4 5.4 0 0 1-9.3 3.7M7.8 18.6v-3.2H11" stroke-width="1.7"/>'),
+  klaket: ikn('<rect x="4" y="10" width="16" height="8.6" rx="2" fill="#d9ecff"/><path d="m4.4 10 1-4.4 14.4 2-.7 2.4Z" fill="#a68cff"/><path d="m8.4 6.2 1 2.6M12.3 6.7l1 2.6M16.2 7.2l1 2.6" stroke-width="1.2"/>'),
+  altin: ikn('<circle cx="12" cy="12" r="8.4" fill="#ffcf4d"/><circle cx="12" cy="12" r="5.2" fill="#ffe08a" stroke="#d99b12" stroke-width="1.2"/><path d="M12 9.4v5.2M9.9 10.9c1.4-1 2.8-1 4.2 0" stroke="#b9820f" stroke-width="1.3"/>'),
+  yildiz: ikn('<path d="m12 3.6 2.4 5 5.4.7-4 3.8 1 5.4L12 15.9l-4.8 2.6 1-5.4-4-3.8 5.4-.7Z" fill="#ffcf4d"/>'),
+  kalp: ikn('<path d="M12 20s-7-4.6-7-9.8a3.9 3.9 0 0 1 7-2.4 3.9 3.9 0 0 1 7 2.4C19 15.4 12 20 12 20Z" fill="#ff9ec4"/>'),
+  ampul: ikn('<path d="M12 3.6a5.4 5.4 0 0 0-3 9.9c.8.6 1.1 1.4 1.1 2.3h3.8c0-.9.3-1.7 1.1-2.3a5.4 5.4 0 0 0-3-9.9Z" fill="#fff2c2"/><path d="M10.2 18.4h3.6M10.9 20.4h2.2" stroke-width="1.4"/>')
+};
+function ikonBas(){
+  var e=document.querySelectorAll('.ikn[data-ikon]'),i;
+  for(i=0;i<e.length;i++) e[i].innerHTML=IKON[e[i].getAttribute('data-ikon')]||'';
+}
 
 /* ============================================================
    2) ÇİÇEK ÇİZİMLERİ (30 farklı biçim)
@@ -1271,9 +1330,9 @@ function ustbarGuncelle(){
   document.getElementById('ustAltin').textContent=durum.altin;
   document.getElementById('ustYildiz').textContent=durum.yildiz;
   document.getElementById('ustMutluluk').textContent=durum.mutluMusteri;
-  var s=durum.ses?'🔊':'🔇';
-  document.getElementById('oyunSesBtn').textContent=s;
-  document.getElementById('menuSesBtn').textContent=s+' Ses '+(durum.ses?'Açık':'Kapalı');
+  var s='<span class="ikn">'+IKON[durum.ses?'ses':'sesKapali']+'</span>';
+  document.getElementById('oyunSesBtn').innerHTML=s;
+  document.getElementById('menuSesBtn').innerHTML=s+' Ses '+(durum.ses?'Açık':'Kapalı');
 }
 function lilaSoyle(metin,ifade){
   document.getElementById('lilaSoz').textContent=metin;
@@ -1876,7 +1935,7 @@ function menuCiz(){
   for(i=0;i<ornek.length;i++) h+='<span>'+svgKutu(CICEKLER[ornek[i]].ciz(),46)+'</span>';
   document.getElementById('menuCicekler').innerHTML=h;
   document.getElementById('menuLila').innerHTML=lilaCiz('mutlu',64);
-  document.getElementById('menuSesBtn').textContent=(durum.ses?'🔊':'🔇')+' Ses '+(durum.ses?'Açık':'Kapalı');
+  document.getElementById('menuSesBtn').innerHTML='<span class="ikn">'+IKON[durum.ses?'ses':'sesKapali']+'</span> Ses '+(durum.ses?'Açık':'Kapalı');
 }
 
 /* ============================================================
@@ -1961,6 +2020,7 @@ function klavye(e){
    ============================================================ */
 function baslat(){
   efektKatman=document.getElementById('efekt-katman');
+  ikonBas();
   yukle();
   document.addEventListener('click',tiklama);
   document.addEventListener('keydown',klavye);
