@@ -4,43 +4,113 @@
 <title>2048 — Birleştir, Büyüt</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
-  :root{ --bg:#faf3e8; --board:#b5a48f; --empty:#c9bba6; --ink:#6b5d4f; --lite:#f9f4ec; }
+  :root{ --bgA:#fdf6ea; --bgB:#f7dbbd; --ink:#6b5d4f; }
+  body[data-stage="1"]{--bgA:#fdf4e2;--bgB:#f8d2ab}
+  body[data-stage="2"]{--bgA:#fdf1d9;--bgB:#f8ca9d}
+  body[data-stage="3"]{--bgA:#feeecf;--bgB:#f7bf8e}
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;overflow:hidden;background:#faf3e8;color:#6b5d4f;
+  html,body{height:100%;overflow:hidden;color:#6b5d4f;
     font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
-  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
-    padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
+  body{background:radial-gradient(130% 100% at 50% -5%, var(--bgA) 0%, var(--bgB) 100%)}
+  /* dekoratif ışık lekeleri + vinyet */
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;
+    background:
+      radial-gradient(220px 140px at 10% 4%, rgba(255,255,255,.55), transparent 70%),
+      radial-gradient(260px 170px at 92% 98%, rgba(233,150,62,.18), transparent 70%),
+      radial-gradient(180px 120px at 92% 3%, rgba(233,150,62,.14), transparent 70%),
+      radial-gradient(220px 150px at 6% 97%, rgba(255,255,255,.5), transparent 70%)}
+  body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:5;
+    background:radial-gradient(85% 68% at 50% 44%, transparent 60%, rgba(122,72,24,.15) 100%)}
+  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));
+    position:relative;z-index:1}
   #hud{width:min(92vw,440px);display:flex;justify-content:space-between;align-items:center}
-  h1{font-size:34px;font-weight:900;color:#8a6d4e}
+  h1{font-size:38px;font-weight:900;letter-spacing:.01em;
+    background:linear-gradient(180deg,#c59457 0%,#7c5730 55%,#9a6c3a 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 1px 0 rgba(255,250,235,.8)) drop-shadow(0 3px 4px rgba(120,70,20,.28))}
   .scores{display:flex;gap:8px}
-  .sbox{background:#b5a48f;color:#fff;border-radius:10px;padding:6px 14px;text-align:center;min-width:70px}
-  .sbox .label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;opacity:.8;font-weight:700}
-  .sbox .value{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
-  #grid{width:min(92vw,440px);aspect-ratio:1;background:#b5a48f;border-radius:14px;
+  .sbox{background:linear-gradient(180deg,#c2ab8e 0%,#a38a6a 100%);color:#fff;border-radius:12px;
+    padding:7px 14px;text-align:center;min-width:70px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(75,48,20,.28),0 3px 7px rgba(120,70,20,.22)}
+  .sbox .label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+    color:rgba(255,248,235,.85)}
+  .sbox .value{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;
+    text-shadow:0 1px 2px rgba(60,35,10,.4)}
+  /* ahşap tepsi */
+  #grid{width:min(92vw,440px);aspect-ratio:1;border-radius:12px;
+    background:linear-gradient(180deg,#9c7146 0%,#8a5f36 100%);
+    box-shadow:inset 0 5px 12px rgba(50,25,5,.38),inset 0 -1px 0 rgba(255,222,175,.28);
     display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px;position:relative}
-  .slot{background:#c9bba6;border-radius:8px}
+  #grid::before{content:'';position:absolute;inset:-11px;border-radius:22px;z-index:-1;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cpath d='M0 22q35 9 70 0t70 5M0 62q30-10 64 0t76-4M0 104q40 8 72 0t68 6' fill='none' stroke='%23412a10' stroke-opacity='.13' stroke-width='3'/%3E%3C/svg%3E"),
+      linear-gradient(165deg,#cd9457 0%,#a06c37 45%,#8a5a2c 75%,#7c4d22 100%);
+    box-shadow:0 12px 28px rgba(110,60,15,.38),0 3px 8px rgba(110,60,15,.25),
+      inset 0 2px 0 rgba(255,236,200,.55),inset 0 -3px 0 rgba(58,30,6,.45)}
+  .slot{background:linear-gradient(180deg,#8a5f34 0%,#9a6f44 100%);border-radius:9px;
+    box-shadow:inset 0 3px 7px rgba(48,24,4,.38),inset 0 -1px 0 rgba(255,226,180,.22)}
+  /* 3D şeker/karamel taşları */
   .tile{position:absolute;display:flex;align-items:center;justify-content:center;
-    border-radius:8px;font-weight:900;transition:left .12s ease,top .12s ease;will-change:left,top}
-  .tile.new{animation:popin .18s ease}
-  .tile.merged{animation:pulse .2s ease}
-  @keyframes popin{0%{transform:scale(.4)}100%{transform:scale(1)}}
-  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}
-  .hint{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a8977f}
+    border-radius:9px;font-weight:900;transition:left .12s ease,top .12s ease;will-change:left,top;
+    --glow:0 0 0 rgba(0,0,0,0);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.45),inset 0 -4px 0 rgba(0,0,0,.17),
+      0 3px 6px rgba(110,60,20,.3),var(--glow);
+    text-shadow:0 1px 0 rgba(255,255,255,.3),0 2px 3px rgba(90,45,10,.28)}
+  .v2{background:linear-gradient(180deg,#fcf3e0,#efddbd);color:#6b5d4f}
+  .v4{background:linear-gradient(180deg,#f9e9c6,#ecd39e);color:#6b5d4f}
+  .v2,.v4{text-shadow:0 1px 0 rgba(255,255,255,.65),0 2px 2px rgba(140,90,40,.18)}
+  .v8{background:linear-gradient(180deg,#ffc084,#f29a4e);color:#fff}
+  .v16{background:linear-gradient(180deg,#ffab72,#f08039);color:#fff}
+  .v32{background:linear-gradient(180deg,#ff9a6b,#ee683a);color:#fff}
+  .v64{background:linear-gradient(180deg,#ff8557,#e94d24);color:#fff}
+  .v128{background:linear-gradient(180deg,#ffe28a,#f1b93d);color:#fff}
+  .v256{background:linear-gradient(180deg,#ffdc72,#efb02c);color:#fff}
+  .v512{background:linear-gradient(180deg,#ffd558,#eca51d);color:#fff}
+  .v1024{background:linear-gradient(180deg,#ffcf40,#e8990f);color:#fff}
+  .v2048{background:linear-gradient(180deg,#ffc722,#e58e02);color:#fff}
+  .vx{background:linear-gradient(180deg,#6a6152,#3c3a32);color:#ffe9a8}
+  .v128,.v256{--glow:0 0 14px rgba(255,205,80,.45)}
+  .v512,.v1024{--glow:0 0 18px rgba(255,195,50,.55)}
+  .v2048,.vx{--glow:0 0 24px rgba(255,185,30,.65)}
+  .tile.new{animation:popin .22s cubic-bezier(.3,1.4,.6,1)}
+  .tile.merged{animation:pulse .25s ease}
+  .tile.merged::after{content:'';position:absolute;inset:-14px;pointer-events:none;
+    background:
+      radial-gradient(circle at 16% 20%, rgba(255,255,255,.95) 0 2px, transparent 3.5px),
+      radial-gradient(circle at 85% 28%, rgba(255,240,180,.95) 0 2.5px, transparent 4px),
+      radial-gradient(circle at 72% 88%, rgba(255,255,255,.9) 0 2px, transparent 3.5px),
+      radial-gradient(circle at 20% 82%, rgba(255,225,140,.9) 0 2px, transparent 3.5px),
+      radial-gradient(circle at 50% 6%, rgba(255,255,255,.85) 0 1.6px, transparent 3px);
+    animation:sparkle .5s ease forwards}
+  @keyframes popin{0%{transform:scale(.3)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.22)}100%{transform:scale(1)}}
+  @keyframes sparkle{0%{opacity:0;transform:scale(.5)}30%{opacity:1}100%{opacity:0;transform:scale(1.35)}}
+  .hint{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#97805e}
   #newBtn{font:inherit;font-weight:800;font-size:13px;letter-spacing:.06em;color:#fff;
-    background:#8a6d4e;border:none;border-radius:999px;padding:10px 20px;cursor:pointer}
-  #newBtn:active{transform:translateY(2px)}
+    display:inline-flex;align-items:center;gap:8px;
+    background:linear-gradient(180deg,#f2a44e,#e0872a);border:none;border-radius:999px;
+    padding:10px 20px;cursor:pointer;text-shadow:0 1px 2px rgba(130,70,10,.35);
+    box-shadow:0 4px 0 #a8641e,inset 0 1px 0 rgba(255,255,255,.45),0 6px 12px rgba(160,90,20,.25)}
+  #newBtn svg{display:block}
+  #newBtn:active{transform:translateY(3px);box-shadow:0 1px 0 #a8641e,inset 0 1px 0 rgba(255,255,255,.45)}
   .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:14px;text-align:center;background:rgba(250,243,232,.94);
+    justify-content:center;gap:14px;text-align:center;background:rgba(252,241,225,.93);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
     transition:opacity .3s;padding:24px;z-index:10}
   .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .card.hidden .btn{pointer-events:none}
-  .card h2{font-size:clamp(38px,10vw,72px);font-weight:900;color:#8a6d4e}
-  .card p{max-width:34ch;color:#a8977f;font-size:15px;line-height:1.5}
+  .card h2{font-size:clamp(38px,10vw,72px);font-weight:900;
+    background:linear-gradient(180deg,#c59457,#7c5730 60%,#9a6c3a);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 1px 0 rgba(255,250,235,.8)) drop-shadow(0 3px 4px rgba(120,70,20,.28))}
+  .card p{max-width:34ch;color:#96805f;font-size:15px;line-height:1.5}
   .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
-    color:#fff;background:#e8963e;border:none;border-radius:999px;padding:14px 36px;cursor:pointer;
-    box-shadow:0 5px 0 #a8641e}
-  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a8641e}
+    color:#fff;background:linear-gradient(180deg,#f2a44e,#df862a);border:none;border-radius:999px;
+    padding:14px 36px;cursor:pointer;text-shadow:0 1px 2px rgba(130,70,10,.35);
+    box-shadow:0 5px 0 #a8641e,inset 0 1px 0 rgba(255,255,255,.45),0 8px 16px rgba(160,90,20,.25)}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a8641e,inset 0 1px 0 rgba(255,255,255,.45)}
   .btn:focus-visible{outline:3px solid #6b5d4f;outline-offset:3px}
 </style>
 
@@ -55,7 +125,7 @@
   <div id="grid"></div>
   <div style="display:flex;align-items:center;gap:14px">
     <span class="hint" id="ctlHint"></span>
-    <button id="newBtn">✚ Yeni Oyun</button>
+    <button id="newBtn"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v13M1.5 8h13" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/></svg>Yeni Oyun</button>
   </div>
 </div>
 
@@ -63,7 +133,7 @@
   <h2 id="endTitle"></h2>
   <p id="endMsg"></p>
   <button class="btn" id="retryBtn">Yeni Oyun</button>
-  <button class="btn" id="goOnBtn" style="background:#8a6d4e;box-shadow:0 5px 0 #5f4a33;display:none">Devam Et</button>
+  <button class="btn" id="goOnBtn" style="background:linear-gradient(180deg,#a3835f,#7c5e3d);box-shadow:0 5px 0 #5f4a33,inset 0 1px 0 rgba(255,255,255,.35),0 8px 16px rgba(110,70,25,.25);display:none">Devam Et</button>
 </div>
 
 <script>
@@ -74,9 +144,7 @@ try{ best=+localStorage.getItem('g2048_best')||0; }catch(e){}
 const IS_TOUCH=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
 document.getElementById('ctlHint').textContent=IS_TOUCH?'kaydırarak oyna':'ok tuşlarıyla oyna';
 
-const COLS_BG={2:'#efe6d9',4:'#ece0c8',8:'#f2b179',16:'#f59563',32:'#f67c5f',64:'#f65e3b',
-  128:'#edcf72',256:'#edcc61',512:'#edc850',1024:'#edc53f',2048:'#edc22e'};
-const COLS_FG={2:'#6b5d4f',4:'#6b5d4f'};
+/* görsel: taş renkleri CSS sınıflarında (.v2 … .v2048, .vx) */
 
 for(let i=0;i<16;i++){ const s=document.createElement('div'); s.className='slot'; gridEl.appendChild(s); }
 
@@ -89,9 +157,8 @@ function slotPos(i){
 function makeTileEl(v,i,anim){
   const {x,y,size}=slotPos(i);
   const el=document.createElement('div');
-  el.className='tile'+(anim?' '+anim:'');
+  el.className='tile '+(v<=2048?'v'+v:'vx')+(anim?' '+anim:'');
   el.style.cssText=`left:${x}px;top:${y}px;width:${size}px;height:${size}px;
-    background:${COLS_BG[v]||'#3c3a32'};color:${COLS_FG[v]||'#f9f4ec'};
     font-size:${v<128?size*0.42:v<1024?size*0.34:size*0.27}px`;
   el.textContent=v;
   gridEl.appendChild(el);
@@ -108,6 +175,9 @@ addEventListener('resize',redrawAll);
 function updHud(){
   document.getElementById('scoreEl').textContent=score;
   document.getElementById('bestEl').textContent=best;
+  /* görsel: en büyük taşa göre sahne sıcaklığı */
+  const m=Math.max(2,...cells);
+  document.body.dataset.stage=m>=1024?3:m>=256?2:m>=64?1:0;
 }
 function save(){
   try{ localStorage.setItem('g2048_save',JSON.stringify({cells,score,won,keptGoing})); }catch(e){}
@@ -216,22 +286,29 @@ updHud();
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
 #mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
-  width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
-  background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
-  font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}
+  width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,236,200,.65);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;padding:0;
+  background:linear-gradient(180deg,#94764f 0%,#6d5236 100%);
+  font-family:system-ui,sans-serif;transition:opacity .4s;
+  box-shadow:0 4px 12px rgba(90,50,10,.4),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(50,30,8,.35)}
+#mpNasilBtn svg{display:block}
 #mpNasilBtn.mpGizli{opacity:0;pointer-events:none}
 #mpNasilKap{position:fixed;inset:0;z-index:2147483001;display:none;align-items:center;justify-content:center;
   background:rgba(10,12,26,.82);padding:20px}
 #mpNasilKap.mpAcik{display:flex}
-#mpNasilKart{background:#fff;color:#26283a;border-radius:20px;max-width:420px;width:100%;
+#mpNasilKart{background:linear-gradient(180deg,#fffaf0,#fdf1de);color:#5b4a37;border-radius:20px;
+  max-width:420px;width:100%;
   padding:22px 20px;font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
-  box-shadow:0 18px 50px rgba(0,0,0,.4);max-height:82vh;overflow-y:auto}
-#mpNasilKart h2{font-size:20px;font-weight:900;margin:0 0 12px;color:#1a1c30}
+  box-shadow:0 18px 50px rgba(40,20,0,.45),inset 0 1px 0 rgba(255,255,255,.8);
+  max-height:82vh;overflow-y:auto}
+#mpNasilKart h2{font-size:20px;font-weight:900;margin:0 0 12px;color:#6d4f2c}
 #mpNasilKart p{font-size:14.5px;line-height:1.75;white-space:pre-line;margin:0 0 16px}
 #mpNasilKart button{font:inherit;font-weight:800;font-size:15px;width:100%;padding:13px;
-  border:none;border-radius:999px;background:#1a1c30;color:#ffc94d;cursor:pointer}
+  border:none;border-radius:999px;background:linear-gradient(180deg,#f2a44e,#df862a);color:#fff;
+  cursor:pointer;text-shadow:0 1px 2px rgba(130,70,10,.35);
+  box-shadow:0 4px 0 #a8641e,inset 0 1px 0 rgba(255,255,255,.45)}
 </style>
-<button id="mpNasilBtn" aria-label="Nasıl oynanır">?</button>
+<button id="mpNasilBtn" aria-label="Nasıl oynanır"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="#ffe6b3" stroke-width="2.6" stroke-linecap="round"><path d="M8.5 9.1a3.5 3.5 0 1 1 5 3.4c-1 .5-1.5 1.2-1.5 2.3"/><circle cx="12" cy="18.7" r="1.5" fill="#ffe6b3" stroke="none"/></svg></button>
 <div id="mpNasilKap" role="dialog" aria-modal="true">
   <div id="mpNasilKart">
     <h2>❓ NASIL OYNANIR — 2048</h2>

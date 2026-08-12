@@ -4,46 +4,132 @@
 <title>PİYANO KAROLARI — Melodiyi Yakala</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
-  :root{ --bg:#f7f4ef; --ink:#26222e; --dim:#8f8a9c; --tile:#26222e; --gold:#e8963e; }
+  :root{ --bg:#0b0a1e; --ink:#f5efff; --dim:#a99fc4; --tile:#12101f; --gold:#f0b542; --gold2:#ffdf8e; }
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
     font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
   canvas{display:block;width:100%;height:100%}
-  #hud{position:fixed;top:0;left:0;right:0;text-align:center;padding:14px;pointer-events:none}
-  .value{font-size:38px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--ink);
-    text-shadow:0 2px 0 rgba(232,150,62,.3)}
+  #hud{position:fixed;top:0;left:0;right:0;text-align:center;padding:14px;pointer-events:none;z-index:5}
+  .value{font-size:38px;font-weight:900;font-variant-numeric:tabular-nums;color:#fff;
+    text-shadow:0 0 18px rgba(240,181,66,.55),0 2px 4px rgba(0,0,0,.6)}
   .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:14px;text-align:center;background:rgba(247,244,239,.96);
-    transition:opacity .3s;padding:24px;z-index:10}
+    justify-content:center;gap:16px;text-align:center;
+    background:
+      radial-gradient(120% 70% at 50% -10%, rgba(122,72,255,.34), transparent 60%),
+      radial-gradient(90% 55% at 50% 110%, rgba(240,181,66,.16), transparent 62%),
+      linear-gradient(180deg, rgba(11,9,32,.96), rgba(22,14,49,.96) 55%, rgba(13,10,34,.97));
+    transition:opacity .3s;padding:24px;z-index:10;overflow:hidden}
   .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .card.hidden .btn{pointer-events:none}
-  .card h1{font-size:clamp(36px,10vw,74px);font-weight:900;line-height:.97;color:var(--ink)}
-  .card h1 span{color:var(--gold)}
-  .card p{max-width:34ch;color:var(--dim);font-size:15px;line-height:1.5}
-  .card .big{font-size:34px;font-weight:800;color:var(--gold)}
-  .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.08em;text-transform:uppercase;
-    color:#fff;background:linear-gradient(180deg,#3a3546,#26222e);border:none;border-radius:999px;
-    padding:14px 40px;cursor:pointer;box-shadow:0 5px 0 #0f0d14}
-  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #0f0d14}
-  .btn:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-  .hint{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .card h1{font-size:clamp(36px,10vw,74px);font-weight:900;line-height:.99;color:#fff;
+    font-family:Georgia,"Times New Roman",serif;letter-spacing:.01em;position:relative;
+    text-shadow:0 0 26px rgba(122,72,255,.5),0 3px 10px rgba(0,0,0,.55)}
+  .card h1 span{background:linear-gradient(180deg,#ffe9ad 5%,var(--gold) 55%,#c07f1c 95%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 2px 8px rgba(240,181,66,.45))}
+  .card p{max-width:34ch;color:var(--dim);font-size:15px;line-height:1.55;position:relative}
+  .card .big{font-size:40px;font-weight:900;color:var(--gold2);position:relative;
+    font-family:Georgia,serif;text-shadow:0 0 22px rgba(240,181,66,.55),0 2px 6px rgba(0,0,0,.6)}
+  .btn{font:inherit;font-weight:800;font-size:17px;letter-spacing:.09em;text-transform:uppercase;
+    color:#241503;background:linear-gradient(180deg,#ffe49a,var(--gold) 52%,#d8952a);
+    border:none;border-radius:999px;padding:15px 46px;cursor:pointer;position:relative;
+    box-shadow:0 6px 0 #8a5c12,0 12px 34px rgba(240,181,66,.4),inset 0 1px 0 rgba(255,255,255,.75)}
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8a5c12,0 6px 18px rgba(240,181,66,.3)}
+  .btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+  .hint{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);
+    text-shadow:0 0 12px rgba(240,181,66,.4);position:relative}
+  /* — sahne dekoru: menü mini piyano + spot ışıkları — */
+  .stageArt{position:relative;width:min(64vw,250px);margin-bottom:2px;filter:drop-shadow(0 14px 26px rgba(0,0,0,.55))}
+  .spot{position:absolute;top:-6%;width:38%;height:64%;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,236,180,.16),transparent 78%);
+    clip-path:polygon(38% 0,62% 0,100% 100%,0 100%)}
+  .spot.s1{left:2%;transform:rotate(14deg)} .spot.s2{right:2%;transform:rotate(-14deg)}
+  .spot.s3{left:31%;width:44%;background:linear-gradient(180deg,rgba(200,170,255,.15),transparent 80%)}
+  /* süzülen notalar */
+  .fnote{position:absolute;color:var(--gold2);opacity:0;pointer-events:none;
+    animation:floatUp 7s linear infinite;filter:drop-shadow(0 0 8px rgba(240,181,66,.5))}
+  .fnote svg{display:block}
+  @keyframes floatUp{
+    0%{transform:translateY(30px) rotate(-8deg);opacity:0}
+    12%{opacity:.75} 70%{opacity:.55}
+    100%{transform:translateY(-46vh) rotate(10deg);opacity:0}}
+  .scoreKart{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(240,181,66,.4);
+    border-radius:22px;padding:18px 34px 20px;display:flex;flex-direction:column;gap:8px;align-items:center;
+    box-shadow:0 10px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(4px)}
+  .endIco{position:relative;filter:drop-shadow(0 0 14px rgba(240,181,66,.5))}
+  @media (prefers-reduced-motion:reduce){ .fnote{animation:none;opacity:.4} }
 </style>
 
 <canvas id="cv"></canvas>
 <div id="hud"><div class="value" id="scoreEl">0</div></div>
 
 <div class="card" id="intro">
+  <i class="spot s1"></i><i class="spot s2"></i><i class="spot s3"></i>
+  <span class="fnote" style="left:12%;bottom:18%;animation-delay:0s"><svg width="22" height="26" viewBox="0 0 22 26" fill="currentColor"><ellipse cx="6" cy="21" rx="5" ry="4"/><rect x="9.4" y="2" width="2.6" height="19" rx="1.3"/><path d="M9.4 2h2.6c1 3.4 4.6 3.8 6.4 6.6 1.1 1.8.8 3.8.2 4.8-.2-2.8-2.3-4.4-4.8-5.2-1.6-.5-3.4-1.1-4.4-2.6z"/></svg></span>
+  <span class="fnote" style="left:78%;bottom:10%;animation-delay:2.3s"><svg width="16" height="20" viewBox="0 0 22 26" fill="currentColor"><ellipse cx="6" cy="21" rx="5" ry="4"/><rect x="9.4" y="2" width="2.6" height="19" rx="1.3"/><path d="M9.4 2h2.6c1 3.4 4.6 3.8 6.4 6.6 1.1 1.8.8 3.8.2 4.8-.2-2.8-2.3-4.4-4.8-5.2-1.6-.5-3.4-1.1-4.4-2.6z"/></svg></span>
+  <span class="fnote" style="left:30%;bottom:6%;animation-delay:4.1s"><svg width="14" height="18" viewBox="0 0 22 26" fill="currentColor"><ellipse cx="6" cy="21" rx="5" ry="4"/><rect x="9.4" y="2" width="2.6" height="19" rx="1.3"/></svg></span>
+  <span class="fnote" style="left:60%;bottom:22%;animation-delay:5.4s"><svg width="18" height="22" viewBox="0 0 22 26" fill="currentColor"><ellipse cx="6" cy="21" rx="5" ry="4"/><rect x="9.4" y="2" width="2.6" height="19" rx="1.3"/><path d="M9.4 2h2.6c1 3.4 4.6 3.8 6.4 6.6 1.1 1.8.8 3.8.2 4.8-.2-2.8-2.3-4.4-4.8-5.2-1.6-.5-3.4-1.1-4.4-2.6z"/></svg></span>
+  <svg class="stageArt" viewBox="0 0 240 130" aria-hidden="true">
+    <defs>
+      <linearGradient id="pBody" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#403a5e"/><stop offset=".45" stop-color="#211c3a"/><stop offset="1" stop-color="#0e0c20"/>
+      </linearGradient>
+      <linearGradient id="pLid" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#564d85"/><stop offset="1" stop-color="#191430"/>
+      </linearGradient>
+      <linearGradient id="pGlowL" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f0b542" stop-opacity=".55"/><stop offset="1" stop-color="#f0b542" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="120" cy="121" rx="98" ry="8" fill="#000" opacity=".5"/>
+    <path d="M52 38 L188 18 L188 30 L52 50 Z" fill="url(#pLid)"/>
+    <path d="M52 38 L188 18 L190 20 L54 40 Z" fill="#8f83c9" opacity=".6"/>
+    <rect x="48" y="46" width="144" height="52" rx="7" fill="url(#pBody)"/>
+    <rect x="48" y="46" width="144" height="5" rx="2.5" fill="#7d71b5" opacity=".55"/>
+    <rect x="55" y="76" width="130" height="18" rx="3" fill="#f7f2e6"/>
+    <g fill="#161226">
+      <rect x="63" y="76" width="5" height="11" rx="1"/><rect x="76" y="76" width="5" height="11" rx="1"/>
+      <rect x="95" y="76" width="5" height="11" rx="1"/><rect x="108" y="76" width="5" height="11" rx="1"/><rect x="121" y="76" width="5" height="11" rx="1"/>
+      <rect x="140" y="76" width="5" height="11" rx="1"/><rect x="153" y="76" width="5" height="11" rx="1"/>
+      <rect x="172" y="76" width="5" height="11" rx="1"/>
+    </g>
+    <g stroke="#0e0c20" stroke-width="1" opacity=".35">
+      <line x1="72" y1="87" x2="72" y2="94"/><line x1="89" y1="76" x2="89" y2="94"/><line x1="104" y1="87" x2="104" y2="94"/>
+      <line x1="117" y1="87" x2="117" y2="94"/><line x1="134" y1="76" x2="134" y2="94"/><line x1="149" y1="87" x2="149" y2="94"/>
+      <line x1="166" y1="76" x2="166" y2="94"/><line x1="181" y1="87" x2="181" y2="94"/>
+    </g>
+    <rect x="56" y="98" width="8" height="24" rx="2" fill="#0e0c20"/>
+    <rect x="176" y="98" width="8" height="24" rx="2" fill="#0e0c20"/>
+    <rect x="55" y="74" width="130" height="3" rx="1.5" fill="url(#pGlowL)"/>
+  </svg>
   <h1>PİYANO <span>KAROLARI</span></h1>
-  <p>Siyah karolara dokun, beyazlara dokunma! Karolar gittikçe hızlanır — melodi senin parmaklarında. 🎵</p>
+  <p>Siyah karolara dokun, beyazlara dokunma! Karolar gittikçe hızlanır — melodi senin parmaklarında.
+  <svg width="15" height="18" viewBox="0 0 22 26" fill="#f0b542" style="vertical-align:-3px"><ellipse cx="6" cy="21" rx="5" ry="4"/><rect x="9.4" y="2" width="2.6" height="19" rx="1.3"/><path d="M9.4 2h2.6c1 3.4 4.6 3.8 6.4 6.6 1.1 1.8.8 3.8.2 4.8-.2-2.8-2.3-4.4-4.8-5.2-1.6-.5-3.4-1.1-4.4-2.6z"/></svg></p>
   <button class="btn" id="startBtn">Çal!</button>
   <span class="hint" id="bestIntro"></span>
 </div>
 
 <div class="card hidden" id="endcard">
-  <h1 id="endTitle">Ters Nota! 🎹</h1>
-  <div class="big" id="endScore"></div>
-  <p id="endMsg"></p>
+  <i class="spot s1"></i><i class="spot s2"></i>
+  <span class="fnote" style="left:16%;bottom:14%;animation-delay:.8s"><svg width="18" height="22" viewBox="0 0 22 26" fill="currentColor"><ellipse cx="6" cy="21" rx="5" ry="4"/><rect x="9.4" y="2" width="2.6" height="19" rx="1.3"/><path d="M9.4 2h2.6c1 3.4 4.6 3.8 6.4 6.6 1.1 1.8.8 3.8.2 4.8-.2-2.8-2.3-4.4-4.8-5.2-1.6-.5-3.4-1.1-4.4-2.6z"/></svg></span>
+  <span class="fnote" style="left:74%;bottom:8%;animation-delay:3.2s"><svg width="15" height="19" viewBox="0 0 22 26" fill="currentColor"><ellipse cx="6" cy="21" rx="5" ry="4"/><rect x="9.4" y="2" width="2.6" height="19" rx="1.3"/></svg></span>
+  <svg class="endIco" width="64" height="46" viewBox="0 0 96 68" aria-hidden="true">
+    <rect x="4" y="6" width="88" height="56" rx="8" fill="#1c1733" stroke="#f0b542" stroke-width="2"/>
+    <rect x="12" y="14" width="72" height="40" rx="4" fill="#f7f2e6"/>
+    <g fill="#161226">
+      <rect x="20" y="14" width="7" height="24" rx="1.5"/><rect x="35" y="14" width="7" height="24" rx="1.5"/>
+      <rect x="54" y="14" width="7" height="24" rx="1.5"/><rect x="69" y="14" width="7" height="24" rx="1.5"/>
+    </g>
+    <g stroke="#161226" stroke-width="1.5" opacity=".4">
+      <line x1="30" y1="14" x2="30" y2="54"/><line x1="48" y1="14" x2="48" y2="54"/><line x1="64" y1="14" x2="64" y2="54"/>
+    </g>
+  </svg>
+  <h1 id="endTitle">Ters Nota!</h1>
+  <div class="scoreKart">
+    <div class="big" id="endScore"></div>
+    <p id="endMsg"></p>
+  </div>
   <button class="btn" id="retryBtn">Tekrar Çal</button>
 </div>
 
@@ -53,8 +139,8 @@ const COLS=4;
 const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
 function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
-  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
-addEventListener('resize',resize); resize();
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); vBgKey=''; }
+addEventListener('resize',resize);
 
 let AC=null;
 const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
@@ -112,8 +198,8 @@ function gameOver(t,msg){
   flashRed=t;
   const nb=score>best; if(nb){ best=score; try{localStorage.setItem('piyano_best',best);}catch(e){} }
   document.getElementById('endScore').textContent=score+' nota';
-  document.getElementById('endMsg').textContent=(nb?'YENİ REKOR! 🏆 ':'Rekor: '+best+' · ')+msg;
-  document.getElementById('endTitle').textContent='Ters Nota! 🎹';
+  document.getElementById('endMsg').textContent=(nb?'YENİ REKOR! ':'Rekor: '+best+' · ')+msg;
+  document.getElementById('endTitle').textContent='Ters Nota!';
   setTimeout(()=>document.getElementById('endcard').classList.remove('hidden'),400);
 }
 function tapAt(x,y){
@@ -130,6 +216,7 @@ function tapAt(x,y){
      bir sonraki sıradaysa (1.15 sıra payı) kabul — hızlı ardışık dokunuşlar haksız yanmasın */
   if(target && lowest && target.y > lowest.y - ROW()*1.15){
     target.hit=true; target.hitAt=performance.now(); score++; updHud(); note(); buzz(5);
+    vGlow=Math.min(1,vGlow+0.34);   // görsel: kenar ışıması
   } else {
     /* çift dokunuş affı: aynı şeritte az önce (300ms) vurulmuş karo varsa
        bu, parmağın sekmesidir — sessizce yok say */
@@ -147,27 +234,166 @@ addEventListener('touchstart',e=>{
 },{passive:true});
 addEventListener('mousedown',e=>{ if(!e.target.closest('.card')){ audio(); tapAt(e.clientX,e.clientY); } });
 
+/* ————— GÖRSEL KATMAN ————— */
+let vGlow=0, vBgKey='', vBg=null, vParts=[], vLast=performance.now();
+function vInitParts(){
+  vParts=[];
+  for(let i=0;i<12;i++) vParts.push({
+    x:Math.random(), y:Math.random(), s:9+Math.random()*13,
+    v:0.014+Math.random()*0.022, a:0.05+Math.random()*0.09,
+    ph:Math.random()*6.28, sw:0.008+Math.random()*0.014 });
+}
+vInitParts();
+function vRound(x,y,w,h,r){
+  ctx.beginPath();
+  if(ctx.roundRect){ ctx.roundRect(x,y,w,h,r); }
+  else{ ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+        ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+}
+function vNote(x,y,size,alpha,color){
+  ctx.save(); ctx.globalAlpha=alpha; ctx.fillStyle=color;
+  ctx.translate(x,y); ctx.scale(size/22,size/22);
+  ctx.beginPath(); ctx.ellipse(6,21,5,4,-0.25,0,6.29); ctx.fill();
+  ctx.fillRect(9.4,2,2.6,19);
+  ctx.beginPath(); ctx.moveTo(9.4,2); ctx.lineTo(12,2);
+  ctx.quadraticCurveTo(14,7,18.4,9.4); ctx.quadraticCurveTo(19.6,11.5,19,14);
+  ctx.quadraticCurveTo(17.4,10.6,13.2,9.2); ctx.quadraticCurveTo(10.6,8.4,9.4,6.4);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
 function draw(){
-  ctx.fillStyle='#f7f4ef'; ctx.fillRect(0,0,W,H);
-  // şerit çizgileri
-  ctx.strokeStyle='rgba(38,34,46,.15)'; ctx.lineWidth=2;
-  for(let i=1;i<COLS;i++){ ctx.beginPath(); ctx.moveTo(W/COLS*i,0); ctx.lineTo(W/COLS*i,H); ctx.stroke(); }
-  const rw=W/COLS, rh=ROW();
+  const now=performance.now(), dt=Math.min(0.05,(now-vLast)/1000); vLast=now;
+
+  /* gece konseri fonu */
+  const key=W+'x'+H;
+  if(vBgKey!==key){
+    vBg=ctx.createLinearGradient(0,0,0,H);
+    vBg.addColorStop(0,'#0a0920'); vBg.addColorStop(0.45,'#171034');
+    vBg.addColorStop(0.8,'#241546'); vBg.addColorStop(1,'#170f33');
+    vBgKey=key;
+  }
+  ctx.fillStyle=vBg; ctx.fillRect(0,0,W,H);
+
+  /* sahne spotları: yukarıdan yumuşak ışık konileri (katmanlı kenar yumuşatma) */
+  for(let i=0;i<3;i++){
+    const cx=W*(0.22+i*0.28), hh=H*0.62;
+    const warm=i===1?'200,170,255':'255,232,170';
+    for(let l=0;l<3;l++){
+      const topW=W*(0.05+l*0.02), botW=W*(0.22+l*0.06);
+      const g=ctx.createLinearGradient(0,0,0,hh);
+      g.addColorStop(0,'rgba('+warm+',0.030)'); g.addColorStop(1,'rgba('+warm+',0)');
+      ctx.fillStyle=g; ctx.beginPath();
+      ctx.moveTo(cx-topW,0); ctx.lineTo(cx+topW,0);
+      ctx.lineTo(cx+botW,hh); ctx.lineTo(cx-botW,hh); ctx.closePath(); ctx.fill();
+    }
+  }
+
+  /* süzülen nota parçacıkları */
+  for(const p of vParts){
+    p.y-=p.v*dt; p.ph+=dt*0.8;
+    if(p.y<-0.05){ p.y=1.05; p.x=Math.random(); }
+    const px=(p.x+Math.sin(p.ph)*p.sw)*W;
+    vNote(px,p.y*H,p.s,p.a,'#e8d9a8');
+  }
+
+  /* zeminde piyano klavyesi silüeti + yansıma */
+  const kh=Math.max(26,H*0.055), ky=H-kh;
+  const kg=ctx.createLinearGradient(0,ky,0,H);
+  kg.addColorStop(0,'rgba(245,240,225,0.13)'); kg.addColorStop(1,'rgba(245,240,225,0.03)');
+  ctx.fillStyle=kg; ctx.fillRect(0,ky,W,kh);
+  const nk=Math.max(10,Math.round(W/34));
+  ctx.strokeStyle='rgba(10,8,24,0.5)'; ctx.lineWidth=1;
+  for(let i=1;i<nk;i++){ const kx=W/nk*i;
+    ctx.beginPath(); ctx.moveTo(kx,ky); ctx.lineTo(kx,H); ctx.stroke();
+    if(i%7!==3&&i%7!==0) { ctx.fillStyle='rgba(12,10,28,0.55)'; ctx.fillRect(kx-W/nk*0.16,ky,W/nk*0.32,kh*0.6); }
+  }
+  const rg=ctx.createLinearGradient(0,ky-kh*0.9,0,ky);
+  rg.addColorStop(0,'rgba(240,181,66,0)'); rg.addColorStop(1,'rgba(240,181,66,0.10)');
+  ctx.fillStyle=rg; ctx.fillRect(0,ky-kh*0.9,W,kh*0.9);
+
+  /* şerit ayraçları: ince altın çizgiler */
+  ctx.strokeStyle='rgba(240,181,66,0.30)'; ctx.lineWidth=1;
+  for(let i=1;i<COLS;i++){ const lx=W/COLS*i;
+    ctx.beginPath(); ctx.moveTo(lx,0); ctx.lineTo(lx,H); ctx.stroke();
+    ctx.strokeStyle='rgba(240,181,66,0.30)';
+  }
+
+  const rw=W/COLS, rh=ROW(), pad=Math.max(4,rw*0.045), rad=Math.max(6,rw*0.07);
   for(const t of tiles){
     const x=t.lane*rw;
     if(t.hit){
-      ctx.fillStyle='rgba(232,150,62,.25)';
-      ctx.fillRect(x+3,t.y+3,rw-6,rh-6);
+      /* vurulan karo: altın ışıma + yükselen nota + halka dalgası */
+      const age=t.hitAt?(now-t.hitAt):999;
+      if(age<520){
+        const k=age/520, inv=1-k;
+        const cx=x+rw/2, cy=t.y+rh/2;
+        ctx.save();
+        const gg=ctx.createRadialGradient(cx,cy,4,cx,cy,rw*0.62);
+        gg.addColorStop(0,'rgba(255,222,140,'+(0.5*inv)+')');
+        gg.addColorStop(1,'rgba(240,181,66,0)');
+        ctx.fillStyle=gg;
+        vRound(x+pad,t.y+pad,rw-pad*2,rh-pad*2,rad); ctx.fill();
+        /* içe çökmüş tuş gövdesi */
+        ctx.globalAlpha=0.5*inv;
+        ctx.fillStyle='rgba(240,181,66,0.4)';
+        vRound(x+pad+3,t.y+pad+3,rw-pad*2-6,rh-pad*2-6,rad*0.8); ctx.fill();
+        /* halka dalgası */
+        ctx.globalAlpha=inv*0.8;
+        ctx.strokeStyle='#ffe1a0'; ctx.lineWidth=2.5*inv+0.5;
+        ctx.beginPath(); ctx.arc(cx,cy,rw*0.16+k*rw*0.55,0,6.29); ctx.stroke();
+        /* yükselen nota glifi */
+        vNote(cx-8,cy-rh*0.1-k*rh*0.7,20+k*8,inv,'#ffe9b8');
+        ctx.restore();
+      }
       continue;
     }
-    ctx.fillStyle='#26222e';
-    ctx.fillRect(x+3,t.y+3,rw-6,rh-6);
-    ctx.fillStyle='rgba(255,255,255,.08)';
-    ctx.fillRect(x+3,t.y+3,rw-6,rh*0.25);
+    /* iniş izi (motion trail) */
+    const tg=ctx.createLinearGradient(0,t.y-rh*0.55,0,t.y+pad);
+    tg.addColorStop(0,'rgba(90,70,160,0)'); tg.addColorStop(1,'rgba(90,70,160,0.28)');
+    ctx.fillStyle=tg; ctx.fillRect(x+pad+2,t.y-rh*0.55,rw-pad*2-4,rh*0.55);
+    /* siyah lake tuş: gövde gölgesi */
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.55)'; ctx.shadowBlur=12; ctx.shadowOffsetY=5;
+    const bg=ctx.createLinearGradient(0,t.y,0,t.y+rh);
+    bg.addColorStop(0,'#3d3a52'); bg.addColorStop(0.16,'#232033');
+    bg.addColorStop(0.7,'#100e1d'); bg.addColorStop(1,'#080714');
+    ctx.fillStyle=bg;
+    vRound(x+pad,t.y+pad,rw-pad*2,rh-pad*2,rad); ctx.fill();
+    ctx.restore();
+    /* üst kenarda ince beyaz highlight */
+    const hg=ctx.createLinearGradient(0,t.y+pad,0,t.y+pad+rh*0.16);
+    hg.addColorStop(0,'rgba(255,255,255,0.5)'); hg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=hg;
+    vRound(x+pad+2,t.y+pad+1.5,rw-pad*2-4,rh*0.15,rad*0.8); ctx.fill();
+    /* yan parlak lake yansıması */
+    ctx.fillStyle='rgba(150,140,210,0.10)';
+    ctx.fillRect(x+pad+3,t.y+pad+rh*0.12,Math.max(2,rw*0.045),rh-pad*2-rh*0.16);
+    /* orta nota işareti — hangi karoya basılacağı belli olsun */
+    vNote(x+rw/2-7,t.y+rh*0.42,17,0.28,'#c9b8ff');
   }
+
+  /* ıskalanan / yanlış karo: kırmızı titreme */
   if(flashRed&&state==='over'){
-    ctx.fillStyle='rgba(232,74,95,.55)';
-    ctx.fillRect(flashRed.lane*rw+3,flashRed.y+3,rw-6,rh-6);
+    const sh=Math.sin(now/26)*5;
+    ctx.save();
+    ctx.shadowColor='rgba(255,70,90,0.8)'; ctx.shadowBlur=22;
+    const fg=ctx.createLinearGradient(0,flashRed.y,0,flashRed.y+rh);
+    fg.addColorStop(0,'rgba(255,105,120,0.85)'); fg.addColorStop(1,'rgba(190,30,55,0.85)');
+    ctx.fillStyle=fg;
+    vRound(flashRed.lane*rw+pad+sh,flashRed.y+pad,rw-pad*2,rh-pad*2,rad); ctx.fill();
+    ctx.restore();
+  }
+
+  /* combo kenar ışıması */
+  if(vGlow>0.02){
+    const gw=W*0.075*(0.5+vGlow*0.5), ga=vGlow*0.16;
+    let eg=ctx.createLinearGradient(0,0,gw,0);
+    eg.addColorStop(0,'rgba(240,181,66,'+ga+')'); eg.addColorStop(1,'rgba(240,181,66,0)');
+    ctx.fillStyle=eg; ctx.fillRect(0,0,gw,H);
+    eg=ctx.createLinearGradient(W,0,W-gw,0);
+    eg.addColorStop(0,'rgba(240,181,66,'+ga+')'); eg.addColorStop(1,'rgba(240,181,66,0)');
+    ctx.fillStyle=eg; ctx.fillRect(W-gw,0,gw,H);
+    vGlow=Math.max(0,vGlow-dt*0.55);
   }
 }
 function loop(){ if(state==='play') physics(); draw(); requestAnimationFrame(loop); }
@@ -179,7 +405,7 @@ tap(document.getElementById('startBtn'),()=>{ try{audio();}catch(e){}
   document.getElementById('intro').classList.add('hidden'); });
 tap(document.getElementById('retryBtn'),()=>{ flashRed=null; reset(); state='play';
   document.getElementById('endcard').classList.add('hidden'); });
-reset(); loop();
+resize(); reset(); loop();
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
 
