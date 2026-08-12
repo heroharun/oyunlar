@@ -14,6 +14,7 @@
 <body>
 
 <div class="grid-bg" aria-hidden="true"></div>
+<div class="embers" aria-hidden="true"></div>
 <div class="vignette" id="alarmVignette" aria-hidden="true"></div>
 
 <main id="app">
@@ -21,6 +22,14 @@
   <!-- ══════════ 1. AÇILIŞ ══════════ -->
   <section class="screen is-active" id="screen-title" aria-label="Açılış ekranı">
     <div class="title-wrap">
+      <svg class="emblem emblem-lg" viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+        <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M32 43 C25.5 35 25.5 28 32 19 C38.5 28 38.5 35 32 43 Z"/>
+          <path d="M27.5 29 C19 29.5 10.5 24.5 6 15 C14 20.5 21.5 21 26.5 23.5"/>
+          <path d="M36.5 29 C45 29.5 53.5 24.5 58 15 C50 20.5 42.5 21 37.5 23.5"/>
+          <path d="M32 19 C31 13.5 32.5 9 36 5.5"/>
+        </g>
+      </svg>
       <p class="eyebrow">Kurgusal Operasyon Dosyası · A-01/04</p>
       <h1 class="logo">
         <span class="logo-sm">MİT</span>
@@ -47,6 +56,13 @@
   <!-- ══════════ 2. AJAN KAYDI ══════════ -->
   <section class="screen" id="screen-name" aria-label="Ajan kaydı">
     <div class="panel panel-narrow">
+      <svg class="emblem" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+        <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M38 9 C26 10.5 14 21 11 37 C27 35 37.5 23 39.5 11 Z"/>
+          <path d="M12 36 C20 27 29 18 37 11"/>
+          <path d="M20 28 L26 29.5 M25 23 L31 24.5 M30 18 L35 19"/>
+        </g>
+      </svg>
       <p class="eyebrow">Kayıt</p>
       <h2 class="h2">Kod adını gir</h2>
       <p class="muted">Sadece kod adı. Gerçek ad, telefon veya e-posta isteme yok, saklama yok.</p>
@@ -64,6 +80,12 @@
   <!-- ══════════ 3. BRİFİNG ══════════ -->
   <section class="screen" id="screen-brief" aria-label="Görev brifingi">
     <div class="panel panel-narrow">
+      <svg class="emblem" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+        <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M24 6 C27 13 33 16 33 25 A9 9 0 0 1 15 25 C15 19 19 16 19 10 C21.5 13.5 23 14 24 6 Z"/>
+          <path d="M24 33 A4.5 4.5 0 0 1 19.5 28.5 C19.5 25.5 22 24 22.5 21 C24.5 24 28.5 24.5 28.5 28.5"/>
+        </g>
+      </svg>
       <p class="eyebrow">Görev brifingi · <span id="briefName">—</span></p>
       <pre class="typer" id="briefText" aria-live="polite"></pre>
       <div class="btn-row">
@@ -78,7 +100,7 @@
 
     <header class="hud">
       <div class="hud-left">
-        <span class="hud-mission">ANKA PROTOKOLÜ</span>
+        <span class="hud-mission"><svg class="emblem-hud" viewBox="0 0 64 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M32 43 C25.5 35 25.5 28 32 19 C38.5 28 38.5 35 32 43 Z"/><path d="M27.5 29 C19 29.5 10.5 24.5 6 15 C14 20.5 21.5 21 26.5 23.5"/><path d="M36.5 29 C45 29.5 53.5 24.5 58 15 C50 20.5 42.5 21 37.5 23.5"/></g></svg>ANKA PROTOKOLÜ</span>
         <span class="hud-agent" id="hudAgent">—</span>
       </div>
       <div class="hud-right">
