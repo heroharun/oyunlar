@@ -4,43 +4,84 @@
 <title>MAYIN TARLASI — Dikkatli Bas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
-  :root{ --bg:#232b33; --cell:#3a4652; --cell2:#43505d; --open:#1b2229; --ink:#e8eef4; --dim:#8fa3b5; --flag:#ff6b6b; }
+  :root{ --ink:#3d2b1f; --cream:#fff8e7; --soil:#8a5a33; --soilD:#66431f;
+    --flag:#e63946; --grassInk:#2c5312; --dim:#7a6a3f; }
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  html,body{height:100%;overflow:hidden;color:var(--ink);
+    background:
+      radial-gradient(circle at 82% -6%, rgba(255,244,179,.95) 0%, rgba(255,244,179,0) 36%),
+      linear-gradient(180deg,#8ed4f7 0%,#c8ecff 40%,#a8dc6d 58%,#6db83c 100%);
     font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
     padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
   #hud{width:min(94vw,460px);display:flex;justify-content:space-between;align-items:center}
-  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
-  .value{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+  #hud>div{background:linear-gradient(180deg,#fffdf4,var(--cream));border:2px solid #ead9a8;
+    border-radius:14px;padding:4px 13px;min-width:72px;
+    box-shadow:0 3px 0 rgba(122,84,32,.3),0 5px 8px rgba(60,90,20,.18),inset 0 1px 0 #fff}
+  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#a3762e;font-weight:800}
+  .value{font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--ink)}
   #modeBtn{font:inherit;font-size:14px;font-weight:800;letter-spacing:.05em;color:var(--ink);
-    background:var(--cell);border:2px solid rgba(232,238,244,.2);border-radius:12px;
-    padding:10px 16px;cursor:pointer}
-  #modeBtn.flag{background:#5c3038;border-color:var(--flag);color:#ffb3b3}
-  #board{display:grid;gap:3px;background:#1b2229;padding:6px;border-radius:12px;touch-action:manipulation}
-  .c{display:flex;align-items:center;justify-content:center;border-radius:5px;
-    background:linear-gradient(180deg,var(--cell2),var(--cell));font-weight:800;cursor:pointer}
-  .c.open{background:var(--open);box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
-  .c.boom{background:#8f2f2f}
-  .n1{color:#6fb6ff}.n2{color:#7ee08a}.n3{color:#ff8f7a}.n4{color:#c9a2ff}
-  .n5{color:#ffc93c}.n6{color:#6fe0d4}.n7{color:#f5a3d0}.n8{color:#cfd8e0}
-  .hint{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:center}
+    background:linear-gradient(180deg,#fffdf4,#f4e6bd);border:2px solid #d9b871;border-radius:14px;
+    padding:10px 16px;cursor:pointer;box-shadow:0 3px 0 #c49a4f,0 6px 10px rgba(60,90,20,.2)}
+  #modeBtn:active{transform:translateY(2px);box-shadow:0 1px 0 #c49a4f}
+  #modeBtn.flag{background:linear-gradient(180deg,#ffecec,#ffd3d3);border-color:var(--flag);
+    color:#c92a2a;box-shadow:0 3px 0 #d16a6a,0 6px 10px rgba(120,30,20,.2)}
+  #board{display:grid;gap:3px;padding:6px;border-radius:14px;touch-action:manipulation;
+    background:linear-gradient(180deg,#a5743f,var(--soil));
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.28),inset 0 -3px 6px rgba(0,0,0,.28),
+      0 6px 0 var(--soilD),0 14px 22px rgba(40,75,12,.35)}
+  .c{position:relative;display:flex;align-items:center;justify-content:center;border-radius:6px;
+    background:linear-gradient(180deg,#b9e886,#94d356);font-weight:800;cursor:pointer;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 0 rgba(64,120,26,.45)}
+  .c.alt{background:linear-gradient(180deg,#a2d967,#7cc23e)}
+  .c.open{background:linear-gradient(180deg,#f6e6c1,#eed8a6);
+    box-shadow:inset 0 2px 4px rgba(111,68,35,.35),inset 0 -1px 0 rgba(255,255,255,.55)}
+  .c.open.alt{background:linear-gradient(180deg,#f1dfb4,#e8d09a)}
+  .c.boom{background:radial-gradient(circle at 50% 45%,#ffe2b0 0%,#ffb27a 45%,#f4845f 100%)}
+  .c.boom::before{content:'';position:absolute;inset:-45%;border-radius:50%;z-index:2;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,255,255,.95) 0%,rgba(255,233,200,.85) 35%,
+      rgba(210,175,138,.55) 58%,rgba(210,175,138,0) 72%);
+    animation:puff .9s ease-out both}
+  @keyframes puff{0%{transform:scale(.2);opacity:0}25%{opacity:1}100%{transform:scale(1.3);opacity:0}}
+  .c.flg::after{content:'';position:absolute;inset:6%;pointer-events:none;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cellipse cx='12.5' cy='21.6' rx='6.5' ry='1.5' fill='rgba(61,43,31,.3)'/%3E%3Crect x='7.6' y='3' width='2' height='18.4' rx='1' fill='%238a5a33'/%3E%3Cpath d='M9.6 3.4c3-1.4 5.6 1.6 9-.2v6.6c-3.4 1.8-6-1.2-9 .2z' fill='%23e63946'/%3E%3Cpath d='M9.6 3.4c3-1.4 5.6 1.6 9-.2v1.8c-3.4 1.8-6-1.2-9 .2z' fill='%23ff6b6b'/%3E%3C/svg%3E") center/contain no-repeat;
+    animation:flagpop .25s ease-out}
+  @keyframes flagpop{0%{transform:scale(.3)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+  @keyframes pop{0%{transform:scale(.4) rotate(-8deg);opacity:0}
+    70%{transform:scale(1.12) rotate(2deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+  .n1{color:#1c7ed6}.n2{color:#2f9e44}.n3{color:#e03131}.n4{color:#7048e8}
+  .n5{color:#e8590c}.n6{color:#0ca678}.n7{color:#d6336c}.n8{color:#5f574f}
+  .hint{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--grassInk);
+    text-align:center;font-weight:700;text-shadow:0 1px 0 rgba(255,255,255,.4)}
   .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:14px;text-align:center;background:rgba(35,43,51,.95);
+    justify-content:center;gap:14px;text-align:center;
+    background:
+      radial-gradient(circle at 84% 9%, #fff3ae 0%, #ffd93b 6.5%, rgba(255,217,59,0) 16%),
+      linear-gradient(180deg,#8ed4f7 0%,#cdeeff 46%,#a8dc6d 62%,#61ad33 100%);
     transition:opacity .3s;padding:24px;z-index:10}
+  .card>*{position:relative;z-index:2}
   .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .card.hidden .btn{pointer-events:none}
-  .card h1{font-size:clamp(34px,9vw,66px);font-weight:900;line-height:1;
-    background:linear-gradient(180deg,#e8eef4,#8fa3b5);
-    -webkit-background-clip:text;background-clip:text;color:transparent}
-  .card p{max-width:36ch;color:var(--dim);font-size:14px;line-height:1.55}
+  .card h1{font-size:clamp(34px,9vw,66px);font-weight:900;line-height:1.05;letter-spacing:.02em;
+    background:linear-gradient(180deg,#ffb703 0%,#fb8500 55%,#e2610a 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 2px 0 rgba(255,255,255,.8)) drop-shadow(0 6px 8px rgba(90,50,10,.35))}
+  .card p{max-width:36ch;color:#53431f;font-size:14px;line-height:1.55;
+    background:rgba(255,248,231,.8);border-radius:14px;padding:10px 14px;
+    box-shadow:0 2px 6px rgba(60,90,20,.15)}
   .btn{font:inherit;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;
-    color:#232b33;background:linear-gradient(180deg,#e8eef4,#b8c6d2);border:none;border-radius:999px;
-    padding:13px 32px;cursor:pointer;box-shadow:0 5px 0 #708294}
-  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #708294}
-  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+    color:#6b3a08;background:linear-gradient(180deg,#ffe259,#ffb020);border:none;border-radius:999px;
+    padding:13px 32px;cursor:pointer;text-shadow:0 1px 0 rgba(255,255,255,.5);
+    box-shadow:0 5px 0 #d98a12,0 9px 14px rgba(90,50,10,.25)}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #d98a12}
+  .btn:focus-visible{outline:3px solid #6b3a08;outline-offset:3px}
   .diffrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .scene{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;
+    pointer-events:none;z-index:1}
+  .scene svg{width:min(92vw,430px);height:auto;display:block;animation:bob 3.2s ease-in-out infinite alternate}
+  @keyframes bob{from{transform:translateY(0)}to{transform:translateY(5px)}}
+  @media(max-height:640px){.scene svg{width:min(70vw,300px)}}
   @media(max-width:360px){.btn{padding:12px 20px;font-size:14px}}
 </style>
 
@@ -55,6 +96,40 @@
 </div>
 
 <div class="card" id="intro">
+  <div class="scene" aria-hidden="true"><svg viewBox="0 0 360 190" xmlns="http://www.w3.org/2000/svg">
+    <g fill="rgba(255,255,255,.85)">
+      <ellipse cx="60" cy="30" rx="26" ry="11"/><ellipse cx="82" cy="22" rx="17" ry="8"/>
+      <ellipse cx="298" cy="48" rx="22" ry="9"/><ellipse cx="282" cy="41" rx="13" ry="6"/>
+    </g>
+    <path d="M0 150Q90 118 180 138Q270 158 360 132L360 190L0 190Z" fill="#61ad33"/>
+    <path d="M0 162Q120 140 220 156Q300 168 360 154L360 190L0 190Z" fill="#4f9628"/>
+    <g stroke="#3c7b1c" stroke-width="3" stroke-linecap="round">
+      <line x1="46" y1="152" x2="46" y2="132"/><line x1="316" y1="148" x2="316" y2="128"/>
+    </g>
+    <circle cx="46" cy="128" r="7" fill="#ff8fa3"/><circle cx="46" cy="128" r="3" fill="#ffd23f"/>
+    <circle cx="316" cy="124" r="7" fill="#ffd23f"/><circle cx="316" cy="124" r="3" fill="#ff8fa3"/>
+    <line x1="86" y1="150" x2="86" y2="112" stroke="#8a5a33" stroke-width="4" stroke-linecap="round"/>
+    <path d="M88 112c8-4 14 4 24-1v16c-10 5-16-3-24 1z" fill="#e63946"/>
+    <ellipse cx="196" cy="158" rx="86" ry="26" fill="#6f4423"/>
+    <ellipse cx="196" cy="152" rx="76" ry="22" fill="#8a5a33"/>
+    <ellipse cx="196" cy="148" rx="64" ry="17" fill="#9c6b3e"/>
+    <circle cx="162" cy="82" r="9" fill="#6b4a35"/><circle cx="230" cy="82" r="9" fill="#6b4a35"/>
+    <ellipse cx="196" cy="112" rx="46" ry="42" fill="#6b4a35"/>
+    <ellipse cx="196" cy="123" rx="31" ry="27" fill="#8a6650"/>
+    <path d="M176 104q6-7 12 0" stroke="#2e1d12" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M204 104q6-7 12 0" stroke="#2e1d12" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="196" cy="118" rx="8" ry="6" fill="#e77c8e"/>
+    <path d="M188 128q8 7 16 0" stroke="#2e1d12" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <g stroke="#d9c1a8" stroke-width="2" stroke-linecap="round">
+      <line x1="172" y1="116" x2="154" y2="112"/><line x1="172" y1="122" x2="154" y2="125"/>
+      <line x1="220" y1="116" x2="238" y2="112"/><line x1="220" y1="122" x2="238" y2="125"/>
+    </g>
+    <ellipse cx="164" cy="147" rx="12" ry="8" fill="#5a3c2a"/>
+    <line x1="226" y1="146" x2="248" y2="118" stroke="#8a5a33" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="256" cy="106" r="19" fill="rgba(190,230,255,.5)" stroke="#f2b134" stroke-width="6"/>
+    <path d="M247 100q4-7 12-7" stroke="rgba(255,255,255,.9)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <ellipse cx="234" cy="150" rx="12" ry="8" fill="#5a3c2a"/>
+  </svg></div>
   <h1>MAYIN TARLASI</h1>
   <p>Sayılar komşu mayın adedini söyler. Mayınsız tüm kareleri aç. İlk dokunuş her zaman güvenli. Oyun kaydedilir — dilediğin an dön.</p>
   <button class="btn" id="contBtn" style="display:none">Devam Et</button>
@@ -74,6 +149,9 @@
     <button class="btn" data-d="2">Zor</button>
   </div>
 </div>
+<script>/* görsel katman: bitiş kartına da aynı bahçe sahnesi */
+document.getElementById('endcard').insertAdjacentHTML('afterbegin',
+  document.querySelector('#intro .scene').outerHTML);</script>
 
 <script>
 'use strict';
@@ -99,7 +177,7 @@ function buildBoard(){
   boardEl.style.gridAutoRows=cellPx+'px';
   for(let i=0;i<W2*H2;i++){
     const d=document.createElement('div');
-    d.className='c'; d.dataset.i=i;
+    d.className='c'+((((i%W2)+((i/W2)|0))%2)?' alt':''); d.dataset.i=i;
     d.style.fontSize=cellPx*0.5+'px';
     boardEl.appendChild(d);
   }
@@ -129,8 +207,9 @@ function render(){
     d.classList.toggle('open',openArr.has(i));
     if(openArr.has(i)){
       const n=countAround(i);
-      d.textContent=n||''; d.className='c open'+(n?' n'+n:'');
-    } else d.textContent=flags.has(i)?'🚩':'';
+      d.textContent=n||'';
+      d.className='c open'+(n?' n'+n:'')+((((i%W2)+((i/W2)|0))%2)?' alt':'');
+    } else { d.textContent=''; d.classList.toggle('flg',flags.has(i)); }
   }
 }
 function openCell(i){
@@ -139,14 +218,18 @@ function openCell(i){
     clearInterval(timer); timer=setInterval(()=>{ if(state==='play'&&!document.hidden){ secs++; updHud();
       if(secs%8===0)save(); } },1000); }
   if(mines.has(i)){ boom(i); return; }
-  const stack=[i];
+  const stack=[i], opened=[];
   while(stack.length){
     const c=stack.pop();
     if(openArr.has(c)) continue;
-    openArr.add(c); flags.delete(c);
+    openArr.add(c); flags.delete(c); opened.push(c);
     if(countAround(c)===0) for(const n of neighbors(c)) if(!openArr.has(n)) stack.push(n);
   }
   render(); updHud(); save();
+  /* görsel: açılma pop'u + zincirleme dalga */
+  opened.forEach((c,k)=>{ const el=boardEl.children[c];
+    el.style.animation='none'; void el.offsetWidth;
+    el.style.animation='pop .28s '+Math.min(k*16,420)+'ms both'; });
   if(openArr.size===W2*H2-M) winGame();
 }
 function toggleFlag(i){
@@ -243,8 +326,8 @@ addEventListener('resize',()=>{ if(W2){ buildBoard(); render(); } });
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
 #mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
-  width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
-  background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
+  width:46px;height:46px;border-radius:50%;border:2px solid #d9b871;cursor:pointer;
+  background:rgba(255,248,231,.92);color:#a05a12;font-size:22px;font-weight:900;
   font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}
 #mpNasilBtn.mpGizli{opacity:0;pointer-events:none}
 #mpNasilKap{position:fixed;inset:0;z-index:2147483001;display:none;align-items:center;justify-content:center;

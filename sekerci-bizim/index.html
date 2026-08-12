@@ -4,45 +4,172 @@
 <title>ŞEKERCİ BİZİM — Çınar Kuruyemiş</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
-  :root{ --bg:#fdf6ec; --ink:#5a4028; --dim:#b89b78; --gold:#e8963e; --green:#7cb356; }
+  :root{ --bg:#fdf6ec; --ink:#5a4028; --dim:#a3855f; --gold:#e8963e; --green:#7cb356; }
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  html,body{height:100%;overflow:hidden;background:#f8e7cd;color:var(--ink);
     font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
-    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;
-    background-image:radial-gradient(circle at 15% 8%,rgba(232,150,62,.1),transparent 40%),
-      radial-gradient(circle at 85% 92%,rgba(124,179,86,.1),transparent 40%)}
-  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:8px;
+    -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+  /* ---- şekerci dükkânı sahnesi ---- */
+  #scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+    background:
+      repeating-linear-gradient(90deg,rgba(232,150,62,.05) 0 20px,rgba(232,150,62,0) 20px 40px),
+      linear-gradient(180deg,#fbeed6 0%,#f6dfba 60%,#f0d5a8 100%)}
+  #counter{position:absolute;left:0;right:0;bottom:0;height:34%;
+    background:
+      repeating-linear-gradient(90deg,rgba(40,15,0,.12) 0 2px,rgba(255,255,255,0) 2px 70px),
+      repeating-linear-gradient(180deg,rgba(255,220,170,.06) 0 3px,rgba(255,220,170,0) 3px 26px),
+      linear-gradient(180deg,#a06a3a 0%,#7d4d24 55%,#623a18 100%)}
+  #counter::before{content:'';position:absolute;left:0;right:0;top:0;height:10px;
+    background:linear-gradient(180deg,#c68d55,#8f5c2d);box-shadow:0 3px 8px rgba(50,20,0,.4)}
+  #shopSvg{position:absolute;top:0;left:0;width:100%;height:44%;min-height:210px}
+  #vin{position:fixed;inset:0;z-index:3;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 42%,rgba(255,200,120,.10) 0%,rgba(255,180,90,0) 42%,rgba(70,32,6,.30) 100%)}
+  #wrap{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;gap:8px;
     padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
-  #hud{width:min(94vw,440px);display:flex;justify-content:space-between;align-items:center}
+  #hud{width:min(94vw,440px);display:flex;justify-content:space-between;align-items:stretch;gap:8px}
+  #hud>div{flex:1;background:linear-gradient(180deg,rgba(255,252,246,.78),rgba(255,241,219,.6));
+    backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+    border:1px solid rgba(255,255,255,.75);border-radius:14px;padding:6px 10px;
+    box-shadow:0 4px 12px rgba(90,50,15,.22),inset 0 1px 0 rgba(255,255,255,.9)}
   .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
-  .value{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums}
-  #lvlbar{width:min(94vw,440px);height:12px;background:#f0e2cc;border-radius:99px;overflow:hidden}
+  .value{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;text-shadow:0 1px 0 #fff}
+  #lvlbar{width:min(94vw,440px);height:12px;background:rgba(74,42,16,.35);border-radius:99px;overflow:hidden;
+    box-shadow:inset 0 2px 4px rgba(40,18,0,.35),0 1px 0 rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.4)}
   #lvlfill{height:100%;width:0%;border-radius:99px;transition:width .3s;
-    background:linear-gradient(90deg,#7cb356,#e8963e)}
+    background:linear-gradient(90deg,#7cb356,#e8963e,#ff6f91);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.45)}
   #board{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%}
-  canvas{display:block;border-radius:18px;background:#fffdf8;box-shadow:0 8px 30px rgba(90,64,40,.15)}
+  canvas{display:block;border-radius:18px;
+    background:linear-gradient(180deg,#5f3c20,#472a10);
+    box-shadow:0 12px 36px rgba(55,25,0,.5),inset 0 0 0 3px rgba(255,215,160,.22),inset 0 3px 20px rgba(0,0,0,.4)}
   #comboTxt{position:fixed;top:16%;left:50%;transform:translateX(-50%);font-size:26px;font-weight:900;
     color:var(--gold);opacity:0;pointer-events:none;text-shadow:0 0 14px rgba(232,150,62,.6);white-space:nowrap}
   #comboTxt.pop{animation:cp .8s ease-out}
   @keyframes cp{0%{opacity:0;transform:translateX(-50%) scale(.5)}
     18%{opacity:1;transform:translateX(-50%) scale(1.1)}80%{opacity:1}100%{opacity:0}}
   .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:14px;text-align:center;background:rgba(253,246,236,.96);
+    justify-content:center;gap:14px;text-align:center;
+    background:
+      radial-gradient(circle at 12% 18%,rgba(255,111,145,.16),transparent 26%),
+      radial-gradient(circle at 88% 14%,rgba(124,179,86,.16),transparent 26%),
+      radial-gradient(circle at 16% 84%,rgba(140,95,184,.14),transparent 26%),
+      radial-gradient(circle at 86% 82%,rgba(232,150,62,.18),transparent 28%),
+      radial-gradient(rgba(232,150,62,.12) 2.4px,transparent 2.6px),
+      repeating-linear-gradient(45deg,#fdf3e2 0 26px,#fae9d0 26px 52px);
+    background-size:auto,auto,auto,auto,34px 34px,auto;
     transition:opacity .3s;padding:24px;z-index:10}
   .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .card.hidden .btn{pointer-events:none}
   .card h1{font-size:clamp(34px,9vw,66px);font-weight:900;line-height:1;
-    background:linear-gradient(180deg,#e8963e,#7cb356);
-    -webkit-background-clip:text;background-clip:text;color:transparent;transform:rotate(-2deg)}
+    background:linear-gradient(180deg,#ff6f91 0%,#e8963e 52%,#7cb356 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;transform:rotate(-2deg);
+    filter:drop-shadow(0 3px 0 rgba(120,70,20,.28)) drop-shadow(0 8px 14px rgba(120,60,10,.18))}
   .card .marka{font-size:14px;font-weight:800;letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
-  .card p{max-width:34ch;color:var(--dim);font-size:15px;line-height:1.5}
+  .card p{max-width:34ch;color:#8a6b45;font-size:15px;line-height:1.5}
+  .card .menuArt{width:min(58vw,240px);height:auto;filter:drop-shadow(0 6px 10px rgba(120,60,10,.25))}
   .btn{font:inherit;font-weight:800;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
-    color:#fff;background:linear-gradient(180deg,#e8963e,#c9762a);border:none;border-radius:999px;
-    padding:14px 38px;cursor:pointer;box-shadow:0 5px 0 #8f5218}
+    color:#fff;text-shadow:0 1px 2px rgba(140,50,20,.5);
+    background:linear-gradient(180deg,#ffb35c 0%,#f0883a 45%,#d96f24 100%);
+    border:2px solid rgba(255,255,255,.55);border-radius:999px;
+    padding:14px 38px;cursor:pointer;
+    box-shadow:0 5px 0 #8f5218,0 10px 20px rgba(150,80,20,.35),inset 0 2px 0 rgba(255,255,255,.6)}
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #8f5218}
   .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 </style>
 
+<div id="scene" aria-hidden="true">
+  <div id="counter"></div>
+  <svg id="shopSvg" viewBox="0 0 440 240" preserveAspectRatio="xMidYMin slice">
+    <defs>
+      <linearGradient id="gWood" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#b57a44"/><stop offset=".5" stop-color="#8f5c2d"/><stop offset="1" stop-color="#6e421c"/>
+      </linearGradient>
+      <linearGradient id="gGlass" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffffff" stop-opacity=".35"/><stop offset="1" stop-color="#cfe4ef" stop-opacity=".18"/>
+      </linearGradient>
+      <radialGradient id="gLamp" cx=".5" cy=".2" r=".8">
+        <stop offset="0" stop-color="#ffd98a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <!-- sıcak lamba ışığı -->
+    <ellipse cx="220" cy="30" rx="260" ry="150" fill="url(#gLamp)"/>
+    <!-- tente -->
+    <g>
+      <rect x="-4" y="0" width="448" height="26" fill="#d9503f"/>
+      <g fill="#fdf1de">
+        <rect x="28" y="0" width="32" height="26"/><rect x="92" y="0" width="32" height="26"/>
+        <rect x="156" y="0" width="32" height="26"/><rect x="220" y="0" width="32" height="26"/>
+        <rect x="284" y="0" width="32" height="26"/><rect x="348" y="0" width="32" height="26"/><rect x="412" y="0" width="32" height="26"/>
+      </g>
+      <g>
+        <path d="M-4 26 a16 14 0 0 0 32 0 z" fill="#c23f30"/><path d="M28 26 a16 14 0 0 0 32 0 z" fill="#f4e4c8"/>
+        <path d="M60 26 a16 14 0 0 0 32 0 z" fill="#c23f30"/><path d="M92 26 a16 14 0 0 0 32 0 z" fill="#f4e4c8"/>
+        <path d="M124 26 a16 14 0 0 0 32 0 z" fill="#c23f30"/><path d="M156 26 a16 14 0 0 0 32 0 z" fill="#f4e4c8"/>
+        <path d="M188 26 a16 14 0 0 0 32 0 z" fill="#c23f30"/><path d="M220 26 a16 14 0 0 0 32 0 z" fill="#f4e4c8"/>
+        <path d="M252 26 a16 14 0 0 0 32 0 z" fill="#c23f30"/><path d="M284 26 a16 14 0 0 0 32 0 z" fill="#f4e4c8"/>
+        <path d="M316 26 a16 14 0 0 0 32 0 z" fill="#c23f30"/><path d="M348 26 a16 14 0 0 0 32 0 z" fill="#f4e4c8"/>
+        <path d="M380 26 a16 14 0 0 0 32 0 z" fill="#c23f30"/><path d="M412 26 a16 14 0 0 0 32 0 z" fill="#f4e4c8"/>
+      </g>
+      <rect x="-4" y="24" width="448" height="3" fill="rgba(80,20,10,.35)"/>
+    </g>
+    <!-- raf + kavanozlar -->
+    <g>
+      <rect x="-4" y="196" width="448" height="14" rx="3" fill="url(#gWood)"/>
+      <rect x="-4" y="208" width="448" height="5" fill="rgba(50,20,0,.35)"/>
+      <!-- kavanoz şablonu: gövde, şekerler, kapak, parlama -->
+      <g transform="translate(30,128)">
+        <rect x="0" y="14" width="52" height="56" rx="12" fill="#f8dede"/>
+        <circle cx="14" cy="52" r="8" fill="#e85d75"/><circle cx="30" cy="58" r="8" fill="#ff8fa3"/>
+        <circle cx="42" cy="48" r="8" fill="#d9364f"/><circle cx="22" cy="38" r="8" fill="#ff6f91"/><circle cx="38" cy="32" r="7" fill="#e85d75"/>
+        <rect x="0" y="14" width="52" height="56" rx="12" fill="url(#gGlass)"/>
+        <rect x="10" y="0" width="32" height="16" rx="5" fill="#b5763f"/><rect x="10" y="2" width="32" height="4" rx="2" fill="rgba(255,255,255,.3)"/>
+        <rect x="6" y="20" width="7" height="44" rx="3.5" fill="rgba(255,255,255,.5)"/>
+      </g>
+      <g transform="translate(110,140)">
+        <rect x="0" y="12" width="46" height="46" rx="10" fill="#dff0dc"/>
+        <circle cx="13" cy="44" r="7" fill="#7cb356"/><circle cx="28" cy="48" r="7" fill="#a4d47f"/>
+        <circle cx="36" cy="36" r="7" fill="#5e9440"/><circle cx="18" cy="30" r="7" fill="#8fc963"/>
+        <rect x="0" y="12" width="46" height="46" rx="10" fill="url(#gGlass)"/>
+        <rect x="9" y="0" width="28" height="14" rx="5" fill="#a3672f"/>
+        <rect x="5" y="18" width="6" height="34" rx="3" fill="rgba(255,255,255,.5)"/>
+      </g>
+      <g transform="translate(180,122)">
+        <rect x="0" y="16" width="58" height="60" rx="13" fill="#fdeccb"/>
+        <circle cx="15" cy="58" r="9" fill="#e8963e"/><circle cx="33" cy="63" r="9" fill="#ffb35c"/>
+        <circle cx="46" cy="50" r="9" fill="#d97b1e"/><circle cx="24" cy="42" r="9" fill="#f0a94e"/><circle cx="42" cy="33" r="8" fill="#e8963e"/>
+        <rect x="0" y="16" width="58" height="60" rx="13" fill="url(#gGlass)"/>
+        <rect x="12" y="0" width="34" height="18" rx="6" fill="#b5763f"/><rect x="12" y="2" width="34" height="5" rx="2.5" fill="rgba(255,255,255,.3)"/>
+        <rect x="7" y="22" width="8" height="48" rx="4" fill="rgba(255,255,255,.5)"/>
+      </g>
+      <g transform="translate(262,138)">
+        <rect x="0" y="12" width="48" height="48" rx="11" fill="#e8ddf2"/>
+        <circle cx="14" cy="46" r="7.5" fill="#8c5fb8"/><circle cx="30" cy="50" r="7.5" fill="#b184dd"/>
+        <circle cx="37" cy="37" r="7.5" fill="#6e46a0"/><circle cx="19" cy="31" r="7.5" fill="#9d6fcb"/>
+        <rect x="0" y="12" width="48" height="48" rx="11" fill="url(#gGlass)"/>
+        <rect x="10" y="0" width="28" height="14" rx="5" fill="#a3672f"/>
+        <rect x="5" y="18" width="6" height="36" rx="3" fill="rgba(255,255,255,.5)"/>
+      </g>
+      <g transform="translate(334,126)">
+        <rect x="0" y="14" width="54" height="58" rx="12" fill="#fff3d6"/>
+        <circle cx="15" cy="56" r="8.5" fill="#e8c93e"/><circle cx="31" cy="61" r="8.5" fill="#f5da5e"/>
+        <circle cx="42" cy="47" r="8.5" fill="#cfae1f"/><circle cx="22" cy="40" r="8.5" fill="#eed34f"/><circle cx="39" cy="31" r="8" fill="#e8c93e"/>
+        <rect x="0" y="14" width="54" height="58" rx="12" fill="url(#gGlass)"/>
+        <rect x="11" y="0" width="32" height="16" rx="5" fill="#b5763f"/><rect x="11" y="2" width="32" height="4" rx="2" fill="rgba(255,255,255,.3)"/>
+        <rect x="6" y="20" width="7" height="46" rx="3.5" fill="rgba(255,255,255,.5)"/>
+      </g>
+      <!-- asılı tabela -->
+      <g transform="translate(150,64)">
+        <line x1="35" y1="-38" x2="42" y2="22" stroke="#8f5c2d" stroke-width="3"/>
+        <line x1="105" y1="-38" x2="98" y2="22" stroke="#8f5c2d" stroke-width="3"/>
+        <rect x="14" y="20" width="112" height="34" rx="9" fill="url(#gWood)" stroke="#5a3413" stroke-width="2.5"/>
+        <rect x="19" y="24" width="102" height="26" rx="6" fill="none" stroke="rgba(255,225,170,.55)" stroke-width="1.5"/>
+        <text x="70" y="42" text-anchor="middle" font-family="Avenir Next,Trebuchet MS,sans-serif"
+          font-size="13" font-weight="900" letter-spacing="1.5" fill="#ffe2ad">ŞEKERCİ</text>
+      </g>
+    </g>
+  </svg>
+</div>
+<div id="vin" aria-hidden="true"></div>
 <div id="wrap">
   <div id="hud">
     <div><div class="label">Seviye</div><div class="value" id="lvlEl">1</div></div>
@@ -55,6 +182,47 @@
 <div id="comboTxt"></div>
 
 <div class="card" id="intro">
+  <svg class="menuArt" viewBox="0 0 240 110" aria-hidden="true">
+    <defs>
+      <radialGradient id="mLoli" cx=".35" cy=".3" r=".9">
+        <stop offset="0" stop-color="#ffc2d1"/><stop offset=".55" stop-color="#ff6f91"/><stop offset="1" stop-color="#d9364f"/>
+      </radialGradient>
+      <radialGradient id="mCandy1" cx=".35" cy=".3" r=".9">
+        <stop offset="0" stop-color="#c9e08a"/><stop offset="1" stop-color="#7fa03e"/>
+      </radialGradient>
+      <radialGradient id="mCandy2" cx=".35" cy=".3" r=".9">
+        <stop offset="0" stop-color="#ffd98a"/><stop offset="1" stop-color="#d97b1e"/>
+      </radialGradient>
+    </defs>
+    <!-- lolipop -->
+    <g transform="translate(120,44)">
+      <rect x="-3.5" y="28" width="7" height="38" rx="3.5" fill="#f3e3c8" stroke="#cbb18a" stroke-width="1.5"/>
+      <circle r="34" fill="url(#mLoli)" stroke="#a52238" stroke-width="3"/>
+      <path d="M0 0 m2 0 a4 4 0 0 1 -6 3 a9 9 0 0 1 10 -9 a15 15 0 0 1 -2 22 a21 21 0 0 1 -22 -14 a26 26 0 0 1 24 -18 a30 30 0 0 1 18 26"
+        fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" opacity=".85"/>
+      <ellipse cx="-13" cy="-15" rx="9" ry="5.5" fill="#ffffff" opacity=".65" transform="rotate(-32 -13 -15)"/>
+    </g>
+    <!-- sarılı şeker: sol -->
+    <g transform="translate(48,78) rotate(-16)">
+      <path d="M-18 0 l-13 -10 l3 10 l-3 10 z" fill="#5e9440"/>
+      <path d="M18 0 l13 -10 l-3 10 l3 10 z" fill="#5e9440"/>
+      <ellipse rx="19" ry="14" fill="url(#mCandy1)" stroke="#4c6b2a" stroke-width="2.5"/>
+      <ellipse cx="-6" cy="-5" rx="7" ry="4" fill="#fff" opacity=".55"/>
+    </g>
+    <!-- sarılı şeker: sağ -->
+    <g transform="translate(192,80) rotate(14)">
+      <path d="M-18 0 l-13 -10 l3 10 l-3 10 z" fill="#b5761c"/>
+      <path d="M18 0 l13 -10 l-3 10 l3 10 z" fill="#b5761c"/>
+      <ellipse rx="19" ry="14" fill="url(#mCandy2)" stroke="#8f5a10" stroke-width="2.5"/>
+      <ellipse cx="-6" cy="-5" rx="7" ry="4" fill="#fff" opacity=".55"/>
+    </g>
+    <!-- parıltılar -->
+    <g fill="#e8963e" opacity=".8">
+      <path d="M30 22 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 z"/>
+      <path d="M208 18 l2.4 5.6 l5.6 2.4 l-5.6 2.4 l-2.4 5.6 l-2.4 -5.6 l-5.6 -2.4 l5.6 -2.4 z" fill="#ff6f91"/>
+      <path d="M170 8 l1.8 4.2 l4.2 1.8 l-4.2 1.8 l-1.8 4.2 l-1.8 -4.2 l-4.2 -1.8 l4.2 -1.8 z" fill="#7cb356"/>
+    </g>
+  </svg>
   <h1>ŞEKERCİ BİZİM</h1>
   <div class="marka">— Çınar Kuruyemiş —</div>
   <p>Yan yana iki kuruyemişi kaydırıp yer değiştir, 3'lü sıra yap, tezgâhı boşalt! Hamle limiti yok, oyun hiç bitmiyor — sadece sen ve rekorun. 🥜</p>
@@ -74,8 +242,93 @@ function resize(){
   CELL=Math.floor(Math.min(b.clientWidth*0.94,b.clientHeight*0.98,460)/N);
   cv.style.width=cv.style.height=CELL*N+'px';
   cv.width=cv.height=CELL*N*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+  makeSprites();
 }
 addEventListener('resize',resize);
+
+/* ---- özel çizim şeker taşları (sprite önbelleği) ---- */
+let sprites=[];
+function rr(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r);
+  g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function powder(g,cx,cy,rad,n,col){ let s=13+n; g.fillStyle=col;
+  for(let i=0;i<n;i++){ s=(s*16807)%2147483647; const a=(s%628)/100;
+    s=(s*16807)%2147483647; const d=rad*0.85*((s%97)/97);
+    s=(s*16807)%2147483647; const pr=rad*(0.03+0.03*((s%89)/89));
+    g.beginPath(); g.arc(cx+Math.cos(a)*d, cy+Math.sin(a)*d*0.85, pr, 0, 6.29); g.fill(); } }
+function gloss(g,x,y,rx,ry,rot){ g.save(); g.translate(x,y); g.rotate(rot);
+  g.fillStyle='rgba(255,255,255,.55)'; g.beginPath(); g.ellipse(0,0,rx,ry,0,0,6.29); g.fill(); g.restore(); }
+function drawCandy(g,t,S){
+  const cx=S/2, cy=S*0.47, r=S*0.355, LW=Math.max(1,S*0.02);
+  const edge='rgba(88,45,18,.45)';
+  g.clearRect(0,0,S,S);
+  // alt gölge
+  g.fillStyle='rgba(30,12,0,.32)';
+  g.beginPath(); g.ellipse(cx,S*0.875,r*0.92,r*0.24,0,0,6.29); g.fill();
+  if(t===0||t===2){ /* lokum küpleri: fıstıklı & gül */
+    const w=r*1.95,h=r*1.85,x=cx-w/2,y=cy-h/2,rad=S*0.12;
+    const cols=t===0?['#d3e69a','#a4c45f','#79993a']:['#f0b7e0','#c77bc4','#94519e'];
+    const gr=g.createRadialGradient(cx-w*0.22,y+h*0.26,r*0.2,cx,cy,r*1.55);
+    gr.addColorStop(0,cols[0]); gr.addColorStop(.55,cols[1]); gr.addColorStop(1,cols[2]);
+    rr(g,x,y,w,h,rad); g.fillStyle=gr; g.fill();
+    g.lineWidth=LW; g.strokeStyle=edge; g.stroke();
+    gloss(g,cx-w*0.17,y+h*0.26,w*0.24,h*0.12,-0.35);
+    powder(g,cx,cy,r,24,'rgba(255,255,255,.8)');
+    if(t===0){ g.fillStyle='#48632a';
+      g.beginPath(); g.ellipse(cx+w*0.16,cy+h*0.12,S*0.055,S*0.036,0.6,0,6.29); g.fill();
+      g.beginPath(); g.ellipse(cx-w*0.2,cy+h*0.2,S*0.045,S*0.03,-0.4,0,6.29); g.fill(); }
+  } else if(t===1||t===5){ /* toplar: çikolata & ballı draje */
+    const cols=t===1?['#b07a4e','#7a4a2a','#452510']:['#ffe0a0','#efa94a','#a8621a'];
+    const gr=g.createRadialGradient(cx-r*0.35,cy-r*0.42,r*0.14,cx,cy,r*1.18);
+    gr.addColorStop(0,cols[0]); gr.addColorStop(.62,cols[1]); gr.addColorStop(1,cols[2]);
+    g.beginPath(); g.arc(cx,cy,r,0,6.29); g.fillStyle=gr; g.fill();
+    g.lineWidth=LW; g.strokeStyle=edge; g.stroke();
+    g.save(); g.beginPath(); g.arc(cx,cy,r*0.96,0,6.29); g.clip();
+    if(t===1){ g.strokeStyle='rgba(255,236,214,.6)'; g.lineWidth=S*0.028;
+      for(let i=-1;i<=1;i++){ g.beginPath();
+        g.moveTo(cx-r,cy+i*r*0.42-r*0.12);
+        g.quadraticCurveTo(cx,cy+i*r*0.42+r*0.22,cx+r,cy+i*r*0.42-r*0.06); g.stroke(); }
+    } else { g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=S*0.03;
+      g.beginPath(); g.ellipse(cx,cy+r*0.1,r*0.85,r*0.34,0,0,6.29); g.stroke(); }
+    g.restore();
+    gloss(g,cx-r*0.34,cy-r*0.4,r*0.32,r*0.18,-0.5);
+  } else if(t===3){ /* meyve jölesi dilimi */
+    const gr=g.createRadialGradient(cx-r*0.3,cy-r*0.3,r*0.1,cx,cy,r*1.2);
+    gr.addColorStop(0,'#ffc98f'); gr.addColorStop(.55,'#ff9f5f'); gr.addColorStop(1,'#e0702a');
+    g.beginPath(); g.arc(cx,cy,r,0,6.29); g.fillStyle=gr; g.fill();
+    g.lineWidth=LW; g.strokeStyle=edge; g.stroke();
+    g.strokeStyle='rgba(255,240,215,.85)'; g.lineWidth=S*0.035;
+    g.beginPath(); g.arc(cx,cy,r*0.82,0,6.29); g.stroke();
+    g.strokeStyle='rgba(255,246,225,.75)'; g.lineWidth=S*0.022;
+    for(let i=0;i<8;i++){ const a=i*Math.PI/4+0.39;
+      g.beginPath(); g.moveTo(cx+Math.cos(a)*r*0.16,cy+Math.sin(a)*r*0.16);
+      g.lineTo(cx+Math.cos(a)*r*0.72,cy+Math.sin(a)*r*0.72); g.stroke(); }
+    g.fillStyle='rgba(255,250,235,.85)';
+    g.beginPath(); g.arc(cx,cy,r*0.12,0,6.29); g.fill();
+    gloss(g,cx-r*0.32,cy-r*0.4,r*0.3,r*0.16,-0.5);
+    powder(g,cx,cy,r,10,'rgba(255,255,255,.5)');
+  } else { /* akide şekeri: faset damla */
+    const p=[[cx,cy-r*1.08],[cx+r*0.88,cy-r*0.1],[cx+r*0.5,cy+r*0.85],[cx-r*0.5,cy+r*0.85],[cx-r*0.88,cy-r*0.1]];
+    const gr=g.createRadialGradient(cx-r*0.3,cy-r*0.35,r*0.12,cx,cy,r*1.3);
+    gr.addColorStop(0,'#fff0a8'); gr.addColorStop(.55,'#eec93e'); gr.addColorStop(1,'#bf9410');
+    g.beginPath(); g.moveTo(p[0][0],p[0][1]);
+    for(let i=1;i<p.length;i++) g.lineTo(p[i][0],p[i][1]);
+    g.closePath(); g.fillStyle=gr; g.fill();
+    g.lineWidth=LW; g.strokeStyle=edge; g.stroke();
+    g.strokeStyle='rgba(255,248,210,.6)'; g.lineWidth=Math.max(1,S*0.016);
+    for(const q of p){ g.beginPath(); g.moveTo(cx,cy+r*0.05); g.lineTo(q[0],q[1]); g.stroke(); }
+    gloss(g,cx-r*0.28,cy-r*0.42,r*0.26,r*0.15,-0.6);
+    powder(g,cx,cy,r*0.9,8,'rgba(255,255,255,.55)');
+  }
+}
+function makeSprites(){
+  const S=Math.max(24,Math.round(CELL*DPR));
+  sprites=[];
+  for(let t=0;t<EMO.length;t++){
+    const c=document.createElement('canvas'); c.width=c.height=S;
+    drawCandy(c.getContext('2d'),t,S);
+    sprites.push(c);
+  }
+}
 
 let AC=null;
 const audio=()=>{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); return AC; };
@@ -137,9 +390,16 @@ async function clearAndFall(){
     score+=m.length*10*chain;
     if(score>best){ best=score; try{localStorage.setItem('sekerci_best',best);}catch(e){} }
     for(const c of m){
-      for(let i=0;i<6;i++) particles.push({x:(c.x+.5)*CELL,y:(c.y+.5)*CELL,
-        vx:(Math.random()-.5)*5,vy:-Math.random()*4,life:1,
-        col:COLS[grid[c.y][c.x]]||'#e8963e',size:Math.random()*5+3});
+      const px=(c.x+.5)*CELL, py=(c.y+.5)*CELL, cc=COLS[grid[c.y][c.x]]||'#e8963e';
+      for(let i=0;i<7;i++) particles.push({x:px,y:py,
+        vx:(Math.random()-.5)*5.5,vy:-Math.random()*4.5,life:1,
+        col:cc,size:Math.random()*4.5+2.5});
+      for(let i=0;i<3;i++) particles.push({x:px,y:py,shape:'star',
+        vx:(Math.random()-.5)*3.5,vy:-Math.random()*3-1,life:1,
+        rot:Math.random()*6.28,vr:(Math.random()-.5)*0.5,
+        col:i?'#fff6dc':'#ffffff',size:Math.random()*3+2.5});
+      particles.push({x:px,y:py,shape:'ring',vx:0,vy:0,life:1,
+        col:'rgba(255,240,200,1)',size:CELL*0.18});
       grid[c.y][c.x]=-1;
     }
     blip(400+chain*90,0.12,0.18); buzz(10);
@@ -212,19 +472,45 @@ addEventListener('mouseup',()=>{ selC=null; startP=null; });
 function draw(){
   tick++;
   ctx.clearRect(0,0,N*CELL,N*CELL);
-  for(let y=0;y<N;y++)for(let x=0;x<N;x++)
-    if((x+y)%2===0){ ctx.fillStyle='#fbf3e4'; ctx.fillRect(x*CELL,y*CELL,CELL,CELL); }
-  ctx.textAlign='center'; ctx.textBaseline='middle';
+  // yuva damalı zemin (koyu panel üstünde)
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    ctx.fillStyle=(x+y)%2===0?'rgba(255,235,205,.09)':'rgba(0,0,0,.14)';
+    ctx.fillRect(x*CELL,y*CELL,CELL,CELL);
+  }
+  // panel üst iç ışık
+  const lg=ctx.createLinearGradient(0,0,0,N*CELL);
+  lg.addColorStop(0,'rgba(255,215,150,.10)'); lg.addColorStop(.25,'rgba(255,215,150,0)');
+  lg.addColorStop(.85,'rgba(0,0,0,0)'); lg.addColorStop(1,'rgba(0,0,0,.18)');
+  ctx.fillStyle=lg; ctx.fillRect(0,0,N*CELL,N*CELL);
   for(let y=0;y<N;y++)for(let x=0;x<N;x++){
     const v=grid?.[y]?.[x]; if(v===undefined||v<0) continue;
     if(offsetY[y][x]<0) offsetY[y][x]=Math.min(0,offsetY[y][x]+CELL*0.16);
     const sel=selC&&selC.x===x&&selC.y===y;
-    ctx.font=(CELL*0.66)+'px system-ui';
-    ctx.fillText(EMO[v],(x+.5)*CELL,(y+.5)*CELL+offsetY[y][x]+(sel?Math.sin(tick*0.3)*2:0));
+    const dy=offsetY[y][x]+(sel?Math.sin(tick*0.3)*2:0);
+    if(sel){ const gg=ctx.createRadialGradient((x+.5)*CELL,(y+.5)*CELL+dy,CELL*0.1,(x+.5)*CELL,(y+.5)*CELL+dy,CELL*0.62);
+      gg.addColorStop(0,'rgba(255,235,170,.55)'); gg.addColorStop(1,'rgba(255,235,170,0)');
+      ctx.fillStyle=gg; ctx.beginPath(); ctx.arc((x+.5)*CELL,(y+.5)*CELL+dy,CELL*0.62,0,6.29); ctx.fill(); }
+    const sp=sprites[v];
+    if(sp) ctx.drawImage(sp,x*CELL,y*CELL+dy,CELL,CELL);
   }
-  for(const p of particles){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.2; p.life-=0.04;
-    ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.col;
-    ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(0.01,p.size*p.life),0,6.28); ctx.fill(); }
+  for(const p of particles){
+    p.x+=p.vx; p.y+=p.vy; p.life-=0.04;
+    ctx.globalAlpha=Math.max(0,p.life);
+    if(p.shape==='ring'){ p.size+=CELL*0.045;
+      ctx.strokeStyle=p.col; ctx.lineWidth=Math.max(0.5,3*p.life);
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,6.28); ctx.stroke();
+    } else if(p.shape==='star'){ p.vy+=0.12; p.rot+=p.vr;
+      const s=Math.max(0.01,p.size*p.life*1.7);
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle=p.col; ctx.beginPath();
+      for(let k=0;k<8;k++){ const rr2=k%2?s*0.4:s, a=k*Math.PI/4;
+        k?ctx.lineTo(Math.cos(a)*rr2,Math.sin(a)*rr2):ctx.moveTo(s,0); }
+      ctx.closePath(); ctx.fill(); ctx.restore();
+    } else { p.vy+=0.2;
+      ctx.fillStyle=p.col;
+      ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(0.01,p.size*p.life),0,6.28); ctx.fill();
+    }
+  }
   ctx.globalAlpha=1;
   particles=particles.filter(p=>p.life>0);
   requestAnimationFrame(draw);

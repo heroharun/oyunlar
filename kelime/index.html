@@ -4,56 +4,147 @@
 <title>KELİME AVI — 5 Harf, 6 Hak</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
-  :root{ --bg:#1c1b22; --ink:#f2eff7; --dim:#8d8a99; --tile:#2c2a35; --border:#44414f;
-    --green:#4fa85a; --yellow:#c9a237; --gray:#3a3843; }
+  :root{ --bg:#10152b; --ink:#f3ecdd; --dim:#9b93a9; --tile:#1b2036; --border:#3b4059;
+    --green:#2ea15c; --yellow:#cf9f2c; --gray:#343748; --gold:#e9b458;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; }
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  html,body{height:100%;overflow:hidden;color:var(--ink);
     font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;
+  body{background:
+    radial-gradient(120% 70% at 50% -12%, rgba(93,63,133,.38) 0%, rgba(93,63,133,0) 60%),
+    radial-gradient(110% 55% at 50% 112%, rgba(122,74,38,.34) 0%, rgba(122,74,38,0) 62%),
+    linear-gradient(180deg,#0d1226 0%, #171531 52%, #251a26 100%) fixed}
+  /* — sahne: dev harfler, kitap silüeti, vinyet — */
+  #scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  #scene .bigL{position:absolute;font-family:var(--serif);font-weight:700;color:#efe3ff;
+    opacity:.045;line-height:1;user-select:none}
+  #scene .bigL:nth-child(1){font-size:46vh;top:-6vh;left:-4vw;transform:rotate(-8deg)}
+  #scene .bigL:nth-child(2){font-size:34vh;top:24vh;right:-3vw;transform:rotate(10deg)}
+  #scene .bigL:nth-child(3){font-size:30vh;bottom:-4vh;left:8vw;transform:rotate(6deg);color:#ffd9a0;opacity:.04}
+  #scene svg{position:absolute;bottom:-2px;right:4vw;width:180px;opacity:.055;color:#ffe6bd}
+  #scene::after{content:'';position:absolute;inset:0;
+    background:radial-gradient(125% 92% at 50% 38%, transparent 52%, rgba(4,5,13,.62) 100%)}
+  #wrap{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;
     padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));gap:6px}
-  header{width:100%;text-align:center;padding:4px 0;border-bottom:1px solid var(--border)}
-  header h1{font-size:22px;font-weight:900;letter-spacing:.12em}
-  header h1 span{color:var(--green)}
-  #stats{font-size:11px;color:var(--dim);letter-spacing:.08em}
-  #grid{flex:1;display:flex;flex-direction:column;gap:5px;justify-content:center}
-  .row{display:flex;gap:5px}
-  .tile{width:min(15vw,58px);height:min(15vw,58px);border:2px solid var(--border);border-radius:6px;
-    display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;
-    text-transform:uppercase;background:var(--tile);transition:transform .1s}
-  .tile.fill{border-color:var(--dim);animation:pop .12s ease}
-  .tile.g{background:var(--green);border-color:var(--green)}
-  .tile.y{background:var(--yellow);border-color:var(--yellow)}
-  .tile.x{background:var(--gray);border-color:var(--gray);color:var(--dim)}
-  @keyframes pop{50%{transform:scale(1.08)}}
+  header{width:100%;text-align:center;padding:4px 46px 7px;position:relative}
+  header::after{content:'';position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:min(320px,78%);height:1px;
+    background:linear-gradient(90deg,transparent,rgba(233,180,88,.55),transparent)}
+  header h1{font-family:var(--serif);font-size:clamp(20px,6.4vw,27px);font-weight:700;letter-spacing:.16em;
+    text-shadow:0 2px 14px rgba(0,0,0,.5)}
+  header h1::before,header h1::after{content:'✦';font-size:.5em;color:var(--gold);
+    vertical-align:.35em;margin:0 .6em;opacity:.8}
+  header h1 span{color:var(--gold)}
+  #stats{font-size:11px;color:var(--dim);letter-spacing:.09em;margin-top:2px}
+  #grid{flex:1;display:flex;flex-direction:column;gap:6px;justify-content:center;perspective:700px}
+  .row{display:flex;gap:6px}
+  .tile{width:min(15vw,58px);height:min(15vw,58px);border:1.5px solid var(--border);border-radius:9px;
+    display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:900;
+    font-family:var(--serif);text-transform:uppercase;
+    background:linear-gradient(180deg,#20263f,#151a2e);
+    box-shadow:inset 0 2px 7px rgba(0,0,0,.5),inset 0 -1px 0 rgba(255,255,255,.045);
+    transition:transform .1s}
+  .tile.fill{border-color:rgba(233,180,88,.75);animation:pop .13s ease;
+    box-shadow:inset 0 2px 6px rgba(0,0,0,.35),0 0 12px rgba(233,180,88,.16)}
+  .tile.g{background:linear-gradient(160deg,#46c473,#1e8a4a);border-color:#63d98c;color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.35);box-shadow:0 3px 12px rgba(30,138,74,.42),inset 0 1px 0 rgba(255,255,255,.25)}
+  .tile.y{background:linear-gradient(160deg,#eec14a,#b3831c);border-color:#f4d178;color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.35);box-shadow:0 3px 12px rgba(179,131,28,.4),inset 0 1px 0 rgba(255,255,255,.28)}
+  .tile.x{background:linear-gradient(160deg,#3b3e52,#282a3a);border-color:#454960;color:#8b8fa4;
+    box-shadow:inset 0 2px 5px rgba(0,0,0,.35)}
+  .tile.rv{animation:flipIn .5s both}
+  @keyframes flipIn{0%{transform:rotateX(-92deg)}62%{transform:rotateX(14deg)}100%{transform:rotateX(0)}}
+  .tile.wv{animation:wave .65s ease both}
+  @keyframes wave{35%{transform:translateY(-11px) scale(1.07);
+    box-shadow:0 10px 24px rgba(70,196,115,.55),0 0 20px rgba(233,180,88,.5)}}
+  @keyframes pop{50%{transform:scale(1.09)}}
   .row.shake{animation:shake .4s}
   @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}
     60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-  #kb{display:flex;flex-direction:column;gap:5px;width:100%;max-width:520px;padding-bottom:4px}
+  #kb{display:flex;flex-direction:column;gap:6px;width:100%;max-width:520px;padding-bottom:4px}
   .krow{display:flex;gap:4px;justify-content:center}
-  .key{flex:1;max-width:44px;height:52px;border-radius:6px;background:#4a4757;color:var(--ink);
+  .key{flex:1;max-width:44px;height:54px;border-radius:10px;color:var(--ink);
+    background:linear-gradient(180deg,#575371,#3e3b54);
+    box-shadow:0 3px 0 #262438,inset 0 1px 0 rgba(255,255,255,.13);
     font:inherit;font-size:15px;font-weight:800;text-transform:uppercase;border:none;cursor:pointer;
-    display:flex;align-items:center;justify-content:center}
-  .key.wide{max-width:72px;flex:1.6;font-size:13px}
-  .key:active{background:#5d5a6d}
-  .key.g{background:var(--green)} .key.y{background:var(--yellow)} .key.x{background:#2a2833;color:var(--dim)}
-  #toast{position:fixed;top:14%;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);
-    font-weight:800;padding:10px 20px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+    display:flex;align-items:center;justify-content:center;transition:transform .05s,box-shadow .05s}
+  .key:active{transform:translateY(2px);box-shadow:0 1px 0 #262438,inset 0 1px 0 rgba(255,255,255,.08)}
+  .key.wide{max-width:74px;flex:1.6;font-size:13px;flex-direction:column;gap:1px;
+    background:linear-gradient(180deg,#7c6236,#54401f);color:#ffe0a3;
+    box-shadow:0 3px 0 #33270f,inset 0 1px 0 rgba(255,255,255,.18)}
+  .key.wide:active{box-shadow:0 1px 0 #33270f}
+  .key.wide span{font-size:9.5px;letter-spacing:.06em}
+  .key.wide svg{display:block}
+  .key.g{background:linear-gradient(180deg,#46c473,#1e8a4a);color:#fff;box-shadow:0 3px 0 #12522c,inset 0 1px 0 rgba(255,255,255,.22)}
+  .key.y{background:linear-gradient(180deg,#eec14a,#b3831c);color:#fff;box-shadow:0 3px 0 #6d4e0e,inset 0 1px 0 rgba(255,255,255,.25)}
+  .key.x{background:linear-gradient(180deg,#2c2e3f,#222331);color:#6e7188;box-shadow:0 3px 0 #15161f}
+  #toast{position:fixed;top:14%;left:50%;transform:translateX(-50%);background:var(--gold);color:#241a10;
+    font-weight:800;padding:10px 20px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s;
+    box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:20}
   #toast.show{opacity:1}
   .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:14px;text-align:center;background:rgba(28,27,34,.95);
-    transition:opacity .3s;padding:24px;z-index:10}
+    justify-content:center;text-align:center;background:rgba(9,11,23,.72);
+    -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+    transition:opacity .3s;padding:20px;z-index:10}
   .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .card.hidden .btn{pointer-events:none}
-  .card h2{font-size:clamp(34px,9vw,60px);font-weight:900}
-  .card .word{font-size:30px;font-weight:900;letter-spacing:.2em;color:var(--green);text-transform:uppercase}
-  .card p{max-width:36ch;color:var(--dim);font-size:14px;line-height:1.5}
+  .panel{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;gap:13px;
+    background:linear-gradient(168deg,#242946 0%,#171a2d 100%);
+    border:1px solid rgba(233,180,88,.28);border-radius:22px;padding:28px 22px 26px;
+    box-shadow:0 26px 60px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.07);
+    animation:cardIn .45s cubic-bezier(.2,1.25,.35,1) both}
+  .card.hidden .panel{animation:none}
+  @keyframes cardIn{0%{transform:translateY(26px) scale(.9);opacity:0}}
+  .card h2{font-family:var(--serif);font-size:clamp(30px,8vw,46px);font-weight:700;letter-spacing:.04em}
+  .card .word{font-family:var(--serif);font-size:29px;font-weight:700;letter-spacing:.22em;
+    color:var(--gold);text-transform:uppercase;text-shadow:0 0 18px rgba(233,180,88,.35)}
+  .card p{max-width:36ch;color:var(--dim);font-size:14px;line-height:1.55}
   .btn{font:inherit;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;
-    color:#fff;background:var(--green);border:none;border-radius:999px;padding:13px 34px;cursor:pointer;
-    box-shadow:0 5px 0 #2e6b38}
-  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #2e6b38}
+    color:#fff;background:linear-gradient(180deg,#46c473,#1e8a4a);border:none;border-radius:999px;
+    padding:13px 34px;cursor:pointer;box-shadow:0 5px 0 #12522c,inset 0 1px 0 rgba(255,255,255,.25)}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #12522c}
   .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  /* — karşılama kartı — */
+  #welcome .eyebrow{font-size:10.5px;font-weight:800;letter-spacing:.34em;color:var(--gold);
+    text-transform:uppercase}
+  #welcome h2 span{color:var(--gold)}
+  #welcome .wline{width:64px;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(233,180,88,.7),transparent)}
+  #wStats{display:flex;gap:8px;width:100%;justify-content:center}
+  #wStats div{flex:1;max-width:92px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;padding:9px 4px 7px}
+  #wStats b{display:block;font-family:var(--serif);font-size:21px;color:var(--gold)}
+  #wStats small{font-size:9.5px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+  /* — konfeti — */
+  .kf{position:fixed;top:-14px;width:9px;height:14px;border-radius:2px;z-index:30;pointer-events:none;
+    animation:kfall 2.6s linear both}
+  @keyframes kfall{0%{transform:translateY(-4vh) rotate(0)}
+    100%{transform:translateY(108vh) rotate(660deg);opacity:.6}}
+  @media (max-width:360px){
+    #stats{font-size:9.5px;letter-spacing:.03em}
+    header{padding:4px 40px 6px}}
+  @media (max-height:620px){
+    .tile{width:min(12.5vw,46px);height:min(12.5vw,46px);font-size:22px;border-radius:8px}
+    #grid{gap:5px}.row{gap:5px}
+    .key{height:45px}
+    header h1{font-size:clamp(18px,5.6vw,22px)}}
+  @media (prefers-reduced-motion:reduce){
+    .tile.rv,.tile.wv,.row.shake,.panel,.kf,.tile.fill{animation:none!important}}
 </style>
+
+<div id="scene" aria-hidden="true">
+  <div class="bigL">K</div><div class="bigL">A</div><div class="bigL">E</div>
+  <svg viewBox="0 0 120 70" fill="currentColor" aria-hidden="true">
+    <rect x="6" y="52" width="108" height="8" rx="2"/>
+    <rect x="14" y="20" width="10" height="30" rx="2"/>
+    <rect x="27" y="14" width="12" height="36" rx="2"/>
+    <rect x="42" y="24" width="9" height="26" rx="2" transform="rotate(9 46 37)"/>
+    <rect x="58" y="18" width="11" height="32" rx="2"/>
+    <rect x="72" y="26" width="9" height="24" rx="2"/>
+    <rect x="84" y="12" width="13" height="38" rx="2" transform="rotate(-7 90 31)"/>
+  </svg>
+</div>
 
 <div id="wrap">
   <header>
@@ -66,10 +157,27 @@
 <div id="toast"></div>
 
 <div class="card hidden" id="endcard">
-  <h2 id="endTitle"></h2>
-  <div class="word" id="endWord"></div>
-  <p id="endMsg"></p>
-  <button class="btn" id="againBtn">Yeni Kelime</button>
+  <div class="panel">
+    <h2 id="endTitle"></h2>
+    <div class="word" id="endWord"></div>
+    <p id="endMsg"></p>
+    <button class="btn" id="againBtn">Yeni Kelime</button>
+  </div>
+</div>
+
+<div class="card" id="welcome">
+  <div class="panel">
+    <div class="eyebrow">Kelime Atölyesi</div>
+    <h2>KELİME <span>AVI</span></h2>
+    <div class="wline"></div>
+    <p>Gizli 5 harfli Türkçe kelimeyi 6 denemede bul.</p>
+    <div id="wStats">
+      <div><b id="wOyun">0</b><small>oyun</small></div>
+      <div><b id="wOran">%0</b><small>kazanma</small></div>
+      <div><b id="wSeri">0</b><small>seri</small></div>
+    </div>
+    <button class="btn" id="startBtn">Başla</button>
+  </div>
 </div>
 
 <script>
@@ -94,6 +202,7 @@ let target, guesses, cur, state, stats={played:0,won:0,streak:0,maxStreak:0};
 try{ const s=JSON.parse(localStorage.getItem('kelime_stats')); if(s) stats=s; }catch(e){}
 
 const gridEl=document.getElementById('grid'), kbEl=document.getElementById('kb');
+let vRevealed=0; /* görsel katman: flip animasyon sayacı */
 function buildDom(){
   gridEl.innerHTML='';
   for(let r=0;r<6;r++){ const row=document.createElement('div'); row.className='row';
@@ -102,9 +211,13 @@ function buildDom(){
   kbEl.innerHTML='';
   ROWS.forEach((r,ri)=>{
     const row=document.createElement('div'); row.className='krow';
-    if(ri===2){ const e=mkKey('SİL','wide'); e.dataset.k='back'; row.appendChild(e); }
+    if(ri===2){ const e=mkKey('SİL','wide'); e.dataset.k='back';
+      e.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7 6-7z"/><path d="M13 10l4 4m0-4l-4 4"/></svg><span>SİL</span>';
+      row.appendChild(e); }
     for(const ch of r){ const k=mkKey(ch); k.dataset.k=ch; row.appendChild(k); }
-    if(ri===2){ const e=mkKey('DENE','wide'); e.dataset.k='enter'; row.appendChild(e); }
+    if(ri===2){ const e=mkKey('DENE','wide'); e.dataset.k='enter';
+      e.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span>DENE</span>';
+      row.appendChild(e); }
     kbEl.appendChild(row);
   });
 }
@@ -137,11 +250,14 @@ function evalGuess(g){
 }
 function render(){
   const rows=gridEl.children;
+  const vNew=guesses.length>vRevealed; /* görsel: yeni satıra kademeli flip */
   guesses.forEach((g,r)=>{
     const res=evalGuess(g.w);
     [...g.w].forEach((ch,c)=>{ const t=rows[r].children[c];
-      t.textContent=ch; t.className='tile '+res[c]; });
+      t.textContent=ch; t.className='tile '+res[c];
+      if(vNew&&r===guesses.length-1){ t.style.animationDelay=(c*90)+'ms'; t.classList.add('rv'); } });
   });
+  vRevealed=guesses.length;
   if(state==='play'&&guesses.length<6){
     const row=rows[guesses.length];
     for(let c=0;c<5;c++){ const t=row.children[c];
@@ -193,7 +309,12 @@ function finish(won){
   document.getElementById('endMsg').textContent= won
     ? guesses.length+'. denemede buldun. Seri: '+stats.streak+' 🔥'
     : 'Doğru kelime buydu. Seri sıfırlandı — yenisiyle telafi et!';
-  setTimeout(()=>document.getElementById('endcard').classList.remove('hidden'),600);
+  /* görsel: kazanınca satır dalgası + parıltı */
+  if(won){ const row=gridEl.children[guesses.length-1];
+    setTimeout(()=>{ [...row.children].forEach((t,i)=>{
+      t.style.animationDelay=(i*70)+'ms'; t.classList.remove('rv'); t.classList.add('wv'); }); },520); }
+  setTimeout(()=>{ document.getElementById('endcard').classList.remove('hidden');
+    if(won&&typeof vKonfeti==='function') vKonfeti(); },600);
 }
 addEventListener('keydown',e=>{
   if(e.key==='Enter'){ press('enter'); return; }
@@ -210,14 +331,34 @@ try{ const s=JSON.parse(localStorage.getItem('kelime_save'));
     resumed=true; } }catch(e){}
 buildDom();
 if(resumed){ render(); updStats(); } else newGame();
+
+/* — görsel katman: karşılama kartı + konfeti (oyun mantığına dokunmaz) — */
+(function(){
+  const w=document.getElementById('welcome');
+  document.getElementById('wOyun').textContent=stats.played;
+  document.getElementById('wOran').textContent='%'+(stats.played?Math.round(stats.won/stats.played*100):0);
+  document.getElementById('wSeri').textContent=stats.streak;
+  document.getElementById('startBtn').addEventListener('click',()=>w.classList.add('hidden'));
+})();
+function vKonfeti(){
+  const renk=['#46c473','#e9b458','#eec14a','#f3ecdd','#7a5cc4','#e2703a'];
+  for(let i=0;i<70;i++){ const s=document.createElement('span'); s.className='kf';
+    s.style.left=Math.random()*100+'vw';
+    s.style.background=renk[i%renk.length];
+    s.style.animationDelay=(Math.random()*0.9)+'s';
+    s.style.animationDuration=(2+Math.random()*1.6)+'s';
+    s.style.transform='rotate('+Math.random()*360+'deg)';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),4200); }
+}
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5beb5bd5b367411eabd7198e3acc1de6"}'></script><!-- End Cloudflare Web Analytics -->
 
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
-#mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
-  width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
-  background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
+#mpNasilBtn{position:fixed;right:8px;left:auto;bottom:auto;top:max(8px,env(safe-area-inset-top));z-index:2147483000;
+  width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(233,180,88,.5);cursor:pointer;
+  background:rgba(20,22,40,.78);color:#ffc94d;font-size:18px;font-weight:900;
   font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}
 #mpNasilBtn.mpGizli{opacity:0;pointer-events:none}
 #mpNasilKap{position:fixed;inset:0;z-index:2147483001;display:none;align-items:center;justify-content:center;

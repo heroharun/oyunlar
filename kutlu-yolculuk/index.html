@@ -4,53 +4,77 @@
 <title>KUTLU YOLCULUK — Road to Medina</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
-  :root{ --bg:#e8c98f; --ink:#4a3520; --dim:#8f7550; --gold:#c9862e; --teal:#2e8f8a; }
+  :root{ --bg:#33234f; --ink:#4a3520; --cream:#fff3dc; --dim:#eec9a0; --gold:#ffb347; --teal:#4dd6cc; }
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--cream);
     font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
   canvas{display:block;width:100%;height:100%}
   #hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;
     padding:12px 16px;pointer-events:none}
-  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
-  .value{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,230,190,.85);font-weight:700;
+    text-shadow:0 1px 4px rgba(35,18,55,.6)}
+  .value{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:#fff6e6;
+    text-shadow:0 2px 8px rgba(35,18,55,.65)}
   #mtoast{position:fixed;top:20%;left:50%;transform:translateX(-50%);font-size:24px;font-weight:900;
-    color:var(--teal);opacity:0;pointer-events:none;text-shadow:0 2px 8px rgba(46,143,138,.4);
+    color:#6fe8de;opacity:0;pointer-events:none;text-shadow:0 2px 10px rgba(20,10,40,.75);
     white-space:nowrap;z-index:3}
   #mtoast.pop{animation:mp 1.8s ease-out}
   @keyframes mp{0%{opacity:0;transform:translateX(-50%) scale(.6)}
     10%{opacity:1;transform:translateX(-50%) scale(1.06)}88%{opacity:1}100%{opacity:0}}
   .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:12px;text-align:center;background:rgba(232,201,143,.97);
-    transition:opacity .3s;padding:22px;z-index:10;overflow:auto}
+    justify-content:center;gap:12px;text-align:center;
+    background:linear-gradient(180deg,#241a44 0%,#42295e 22%,#844063 46%,#d3684a 66%,#e59a5d 80%,#c99b68 100%);
+    transition:opacity .3s;padding:22px;z-index:10;overflow:auto;
+    box-shadow:inset 0 0 140px rgba(20,8,40,.55)}
   .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .card.hidden .btn{pointer-events:none}
   .card h1{font-size:clamp(32px,8.5vw,64px);font-weight:900;line-height:.98;text-wrap:balance;
-    background:linear-gradient(180deg,#2e8f8a,#c9862e);
-    -webkit-background-clip:text;background-clip:text;color:transparent;transform:rotate(-1.5deg)}
-  .card p{max-width:37ch;color:var(--dim);font-size:14px;line-height:1.55}
-  .card .big{font-size:30px;font-weight:800;color:var(--gold)}
+    background:linear-gradient(180deg,#ffe9ad,#ff9354);
+    -webkit-background-clip:text;background-clip:text;color:transparent;transform:rotate(-1.5deg);
+    filter:drop-shadow(0 3px 6px rgba(30,12,50,.55))}
+  .card p{max-width:37ch;color:#f6ddba;font-size:14px;line-height:1.55}
+  .card .big{font-size:26px;font-weight:800;color:#4a2c10;
+    background:linear-gradient(180deg,#ffd98a,#e8973f);border-radius:999px;padding:8px 26px;
+    box-shadow:0 4px 0 #9c621f,0 8px 18px rgba(20,8,40,.35)}
+  .hero{width:min(88vw,360px);border-radius:18px;box-shadow:0 8px 24px rgba(20,8,40,.45);
+    border:1.5px solid rgba(255,220,170,.35);flex:none}
   .btn{font:inherit;font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;
-    color:#fff;background:linear-gradient(180deg,#2e8f8a,#1e6f6a);border:none;border-radius:999px;
-    padding:13px 34px;cursor:pointer;box-shadow:0 5px 0 #124a46}
+    color:#fff;background:linear-gradient(180deg,#2e9f96,#1e6f6a);border:none;border-radius:999px;
+    padding:13px 34px;cursor:pointer;box-shadow:0 5px 0 #124a46,0 9px 18px rgba(20,8,40,.35)}
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #124a46}
-  .btn.alt{background:linear-gradient(180deg,#e8b45f,#c9862e);box-shadow:0 5px 0 #8f5a18}
-  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-  .hint{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .btn.alt{background:linear-gradient(180deg,#e8b45f,#c9862e);box-shadow:0 5px 0 #8f5a18,0 9px 18px rgba(20,8,40,.35)}
+  .btn:focus-visible{outline:3px solid var(--cream);outline-offset:3px}
+  .hint{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);max-width:88vw}
+  .sect{width:min(92vw,364px);background:rgba(24,12,44,.38);border:1px solid rgba(255,214,150,.3);
+    border-radius:18px;padding:12px 12px 14px;display:flex;flex-direction:column;gap:10px;
+    align-items:center;flex:none;backdrop-filter:blur(2px)}
+  .shead{display:flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.13em;
+    text-transform:uppercase;font-weight:800;color:#ffd9a0}
+  .shead svg{width:19px;height:19px;flex:none}
+  .badge{background:rgba(255,246,228,.94);color:#4a3520;border-radius:12px;padding:9px 14px;
+    font-weight:800;font-size:14px;box-shadow:0 3px 10px rgba(20,8,40,.35)}
   .chars{display:flex;gap:10px}
-  .chbtn{display:flex;flex-direction:column;align-items:center;gap:4px;
-    background:rgba(255,255,255,.4);border:2.5px solid rgba(74,53,32,.25);border-radius:16px;
-    padding:10px 14px;font:inherit;font-size:12px;font-weight:800;color:var(--ink);cursor:pointer}
+  .chbtn{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;
+    background:linear-gradient(180deg,#fff8ea,#f3ddb8);border:2.5px solid rgba(120,70,40,.35);border-radius:16px;
+    padding:10px 14px;font:inherit;font-size:12px;font-weight:800;color:var(--ink);cursor:pointer;
+    box-shadow:0 4px 10px rgba(20,8,40,.3)}
   .chbtn canvas{width:44px;height:60px}
-  .chbtn.on{border-color:var(--teal);background:rgba(46,143,138,.15)}
+  .chbtn.on{border-color:var(--teal);background:linear-gradient(180deg,#eafcf9,#c8ede7);
+    box-shadow:0 0 0 3px rgba(77,214,204,.25),0 4px 10px rgba(20,8,40,.3)}
+  .chbtn.locked{background:linear-gradient(180deg,rgba(214,222,238,.55),rgba(178,190,212,.5));
+    border-style:dashed;border-color:rgba(90,100,130,.5);color:#5a627a;box-shadow:none}
+  .lockBadge{position:absolute;top:-7px;right:-7px;width:24px;height:24px;border-radius:50%;
+    background:linear-gradient(180deg,#ffd98a,#e8973f);display:flex;align-items:center;justify-content:center;
+    font-size:12px;box-shadow:0 2px 6px rgba(20,8,40,.45);border:1.5px solid #fff3dc}
   #nameRow{display:flex;gap:8px;align-items:center}
   #nameIn{font:inherit;font-size:15px;font-weight:700;color:var(--ink);text-align:center;
-    background:rgba(255,255,255,.6);border:2px solid rgba(74,53,32,.3);border-radius:12px;
+    background:rgba(255,248,235,.95);border:2px solid rgba(120,70,40,.35);border-radius:12px;
     padding:10px 14px;width:170px;-webkit-user-select:text;user-select:text}
-  #lbList{max-height:46vh;overflow-y:auto;width:min(88vw,340px);background:rgba(255,255,255,.45);
+  #lbList{max-height:46vh;overflow-y:auto;width:min(88vw,340px);background:rgba(255,248,235,.94);
     border-radius:14px;padding:10px 14px;text-align:left;font-size:13.5px;line-height:2;
-    font-variant-numeric:tabular-nums}
-  #lbList b{color:var(--gold)}
+    font-variant-numeric:tabular-nums;color:#4a3520;box-shadow:0 6px 18px rgba(20,8,40,.35)}
+  #lbList b{color:#b8741f}
   #lbList .me{background:rgba(46,143,138,.18);border-radius:6px;padding:0 6px}
 </style>
 
@@ -61,8 +85,8 @@
 </div>
 <div id="mtoast"></div>
 <button id="pauseBtn" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:5;
-  font-family:inherit;font-size:13px;font-weight:800;color:var(--dim);
-  background:rgba(255,255,255,.35);border:1.5px solid rgba(74,53,32,.3);
+  font-family:inherit;font-size:13px;font-weight:800;color:#ffe9c0;
+  background:rgba(30,18,52,.55);border:1.5px solid rgba(255,220,170,.4);
   border-radius:999px;padding:7px 16px;cursor:pointer;display:none">⏸ mola</button>
 
 <div class="card hidden" id="pausecard">
@@ -73,26 +97,75 @@
 </div>
 
 <div class="card" id="intro">
+  <svg class="hero" viewBox="0 0 360 122" role="img" aria-hidden="true">
+    <defs>
+      <linearGradient id="hSky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2c1e50"/><stop offset=".38" stop-color="#7c3f63"/>
+        <stop offset=".66" stop-color="#e0704c"/><stop offset=".9" stop-color="#f3a45e"/>
+      </linearGradient>
+      <radialGradient id="hSun" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#fff0c4"/><stop offset=".45" stop-color="#ffcf82" stop-opacity=".8"/>
+        <stop offset="1" stop-color="#ff9a5e" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="360" height="122" fill="url(#hSky)"/>
+    <g fill="#fff"><circle cx="42" cy="16" r="1.4"/><circle cx="88" cy="9" r="1"/><circle cx="150" cy="20" r="1.2"/>
+      <circle cx="210" cy="8" r="1"/><circle cx="262" cy="17" r="1.4"/><circle cx="330" cy="12" r="1.1"/>
+      <circle cx="308" cy="30" r=".9"/><circle cx="120" cy="32" r=".9"/></g>
+    <path d="M318 14a11 11 0 1 0 8 19 13 13 0 1 1-8-19Z" fill="#ffe9b8" opacity=".95"/>
+    <circle cx="112" cy="78" r="48" fill="url(#hSun)"/>
+    <circle cx="112" cy="78" r="13" fill="#ffe9b0"/>
+    <path d="M0 78 Q60 60 130 76 T260 72 T360 78 V122 H0 Z" fill="#5e3358" opacity=".85"/>
+    <path d="M0 92 Q80 76 170 90 T360 88 V122 H0 Z" fill="#7a3f52"/>
+    <path d="M0 104 Q90 92 200 103 T360 100 V122 H0 Z" fill="#94503f"/>
+    <g stroke="#3a2038" stroke-width="2.4" stroke-linecap="round" fill="#3a2038">
+      <path d="M300 96v-15" fill="none"/><path d="M300 81c-7-6-13-6-17-3 6-3 12-1 17 3Zm0 0c7-6 13-6 17-3-6-3-12-1-17 3Zm0 0c-3-8-8-11-13-11 5-1 10 3 13 11Zm0 0c3-8 8-11 13-11-5-1-10 3-13 11Z" stroke-width="1"/>
+      <path d="M322 100v-11" fill="none"/><path d="M322 89c-5-5-10-5-13-2 4-2 9-1 13 2Zm0 0c5-5 10-5 13-2-4-2-9-1-13 2Zm0 0c-2-6-6-9-10-8 4-2 8 2 10 8Z" stroke-width="1"/>
+    </g>
+    <g fill="#33203c">
+      <path d="M40 106c1-6 5-9 9-9 1-4 5-6 8-5 2-3 6-3 8 0 3-1 6 2 6 5 3 1 4 4 4 9l-4 4H44Z"/>
+      <path d="M46 110h28l-2 6h-4l-1-5h-13l-1 5h-4Z"/>
+      <path d="M92 108c1-5 4-7 7-7 1-3 4-5 7-4 2-2 5-2 7 0 2-1 5 1 5 4 2 1 3 3 3 7l-3 3H95Z"/>
+      <path d="M97 111h23l-2 5h-3l-1-4h-10l-1 4h-3Z"/>
+      <circle cx="70" cy="93" r="3.4"/><path d="M68 96l3 10h-4Z"/>
+    </g>
+  </svg>
   <h1>KUTLU YOLCULUK</h1>
-  <div style="letter-spacing:.32em;font-weight:800;font-size:13px;color:var(--gold)">— ROAD TO MEDINA —</div>
+  <div style="letter-spacing:.32em;font-weight:800;font-size:13px;color:var(--gold);text-shadow:0 2px 5px rgba(30,12,50,.5)">— ROAD TO MEDINA —</div>
   <p>Gerçek rota, gerçek kilometreler! Haydarpaşa'dan Medine'ye 3.134 km: İzmit, Eskişehir, Konya, Adana, Halep, Şam... ve Hicaz Demiryolu. Her memleketin meşhur azığını topla, durakları geç, kutlu şehre ulaş. 🕌</p>
-  <div class="hint">Yolcunu seç:</div>
-  <div class="chars" id="chars"></div>
+  <div class="sect">
+    <div class="shead">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffd9a0" stroke-width="1.8" stroke-linecap="round"><path d="M12 21v-9"/><path d="M12 12c-4-4-9-4-11-2 5-2 8 0 11 2Zm0 0c4-4 9-4 11-2-5-2-8 0-11 2Zm0 0c-2-6-6-9-10-9 4-2 8 3 10 9Zm0 0c2-6 6-9 10-9-4-2-8 3-10 9Z" fill="#ffd9a0" stroke-width=".6"/></svg>
+      <span>Yolcunu seç:</span>
+    </div>
+    <div class="chars" id="chars"></div>
+  </div>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center">
-    <span style="font-weight:800;font-size:14px;background:rgba(255,255,255,.45);border-radius:12px;padding:9px 14px" id="bankEl">🧺 0 azık · 🐎 0 binek</span>
+    <span class="badge" id="bankEl">🧺 0 azık · 🐎 0 binek</span>
     <button class="btn alt" id="buyBtn" style="padding:10px 16px;font-size:12px">🐎 Binek Al (100 azık)</button>
   </div>
-  <div class="hint">Bineğini seç (puan yaptıkça yenileri açılır):</div>
-  <div class="chars" id="mounts" style="flex-wrap:wrap;justify-content:center;max-width:340px"></div>
-  <div class="hint">koşarken çift dokun = bineğe bin (100 azığın varsa anında!) · ×1.3 hız + bir çarpışma korur</div>
+  <div class="sect">
+    <div class="shead">
+      <svg viewBox="0 0 24 24" fill="#ffd9a0"><path d="M4 17c1-4 3-6 5-6 .6-2 2.4-3.4 4.2-3 1.2-1.4 3.4-1.4 4.6 0 1.8-.4 3.2 1.2 3.2 3 .6.6 1 1.8 1 3l-1.6 3H5.4Z" opacity=".95"/><path d="M5 18.4h16l-1.2 3h-1.6l-.6-2.2h-8l-.6 2.2H7.4Z"/></svg>
+      <span>Bineğini seç (puan yaptıkça yenileri açılır):</span>
+    </div>
+    <div class="chars" id="mounts" style="flex-wrap:wrap;justify-content:center;max-width:340px"></div>
+    <div class="hint">koşarken çift dokun = bineğe bin (100 azığın varsa anında!) · ×1.3 hız + bir çarpışma korur</div>
+  </div>
   <button class="btn" id="startBtn">🚉 Haydarpaşa'dan Yola Çık</button>
   <button class="btn alt" id="lbBtn">🏆 İlk 100</button>
   <span class="hint" id="bestIntro"></span>
 </div>
 
 <div class="card hidden" id="endcard">
-  <svg id="winArt" viewBox="0 0 320 150" style="width:min(78vw,320px);display:none">
-    <rect x="0" y="118" width="320" height="32" fill="#cdbb96"/>
+  <svg id="winArt" viewBox="0 0 320 150" style="width:min(78vw,320px);display:none;border-radius:16px;box-shadow:0 8px 24px rgba(20,8,40,.45);border:1.5px solid rgba(255,220,170,.35)">
+    <defs><linearGradient id="wSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#33224f"/><stop offset=".45" stop-color="#87445f"/>
+      <stop offset=".8" stop-color="#e8804f"/></linearGradient></defs>
+    <rect width="320" height="150" fill="url(#wSky)"/>
+    <g fill="#fff"><circle cx="30" cy="14" r="1.3"/><circle cx="90" cy="8" r="1"/><circle cx="240" cy="12" r="1.2"/><circle cx="296" cy="22" r="1"/><circle cx="160" cy="10" r=".9"/></g>
+    <path d="M288 12a10 10 0 1 0 7 17 12 12 0 1 1-7-17Z" fill="#ffe9b8"/>
+    <rect x="0" y="118" width="320" height="32" fill="#a06a48"/>
     <rect x="60" y="70" width="200" height="50" rx="4" fill="#e8e0cc"/>
     <rect x="60" y="70" width="200" height="8" fill="#d9cfb4"/>
     <path d="M118,70 a42,42 0 0 1 84,0 Z" fill="#e8e0cc"/>
@@ -115,6 +188,15 @@
     </g>
   </svg>
   <h1 id="endTitle"></h1>
+  <svg viewBox="0 0 220 26" style="width:180px;flex:none" aria-hidden="true">
+    <g fill="#ffd98a">
+      <path d="M110 1l3.2 6.6 7.3 1-5.3 5.1 1.3 7.2-6.5-3.4-6.5 3.4 1.3-7.2-5.3-5.1 7.3-1Z"/>
+      <path d="M62 8l2 4.1 4.5.6-3.3 3.2.8 4.5-4-2.1-4 2.1.8-4.5-3.3-3.2 4.5-.6Z" opacity=".8"/>
+      <path d="M158 8l2 4.1 4.5.6-3.3 3.2.8 4.5-4-2.1-4 2.1.8-4.5-3.3-3.2 4.5-.6Z" opacity=".8"/>
+      <rect x="4" y="13" width="42" height="1.6" rx=".8" opacity=".55"/>
+      <rect x="174" y="13" width="42" height="1.6" rx=".8" opacity=".55"/>
+    </g>
+  </svg>
   <div class="big" id="endScore"></div>
   <p id="endMsg"></p>
   <div id="nameRow">
@@ -136,8 +218,17 @@
 'use strict';
 const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
+/* gökyüzü süsleri: yıldızlar + önbellekli güneş ışıması ve vinyet gradyanları */
+const STARS=Array.from({length:44},()=>({x:Math.random(),y:Math.random()*0.17+0.01,
+  r:Math.random()*1.2+0.5,p:Math.random()*6.28}));
+let VIG=null,SUNG=null;
 function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
-  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+  SUNG=ctx.createRadialGradient(W*0.11,H*0.30,4,W*0.11,H*0.30,Math.max(90,W*0.32));
+  SUNG.addColorStop(0,'rgba(255,238,186,.95)'); SUNG.addColorStop(0.14,'rgba(255,198,120,.5)');
+  SUNG.addColorStop(0.5,'rgba(255,150,90,.14)'); SUNG.addColorStop(1,'rgba(255,150,90,0)');
+  VIG=ctx.createRadialGradient(W/2,H*0.52,Math.min(W,H)*0.42,W/2,H*0.52,Math.max(W,H)*0.82);
+  VIG.addColorStop(0,'rgba(28,12,42,0)'); VIG.addColorStop(1,'rgba(28,12,42,.34)'); }
 addEventListener('resize',resize); resize();
 
 let AC=null;
@@ -190,10 +281,11 @@ const REGIONS=[
 ];
 /* bitki örtüsü fazları (gerçek coğrafya) */
 /* yumuşatılmış pastel paletler — göz yormaz, yol ile zıt */
+/* gün batımı ışığında üç coğrafya: yeşil Marmara → bozkır → çöl */
 const PHASES=[
-  {km:0,   sky:'#b7d4bb', mid:'#a2c493', bot:'#87a973', deco:['🌳','🌲'], hill:'66,110,58'},
-  {km:350, sky:'#d3d5b1', mid:'#c2b892', bot:'#a89c77', deco:['🌾','🌿'], hill:'128,116,68'},
-  {km:1700,sky:'#e7d5ab', mid:'#d8bd8c', bot:'#bf9c6c', deco:['🌴','🌵'], hill:'168,118,52'},
+  {km:0,   sky:'#3d2b63', mid:'#e8875c', bot:'#7d9464', deco:['🌳','🌲'], hill:'62,42,72'},
+  {km:350, sky:'#46295e', mid:'#ec8a52', bot:'#b08b5c', deco:['🌾','🌿'], hill:'96,52,66'},
+  {km:1700,sky:'#3a2158', mid:'#f08d4a', bot:'#cf9c5c', deco:['🌴','🌵'], hill:'118,58,58'},
 ];
 function lerpC(a,b,t){
   const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16));
@@ -482,7 +574,13 @@ function paintMount(c,m,t){
   c.strokeStyle='#6b4226'; c.lineWidth=1.8;
   c.beginPath(); c.moveTo(-5,hy+2); c.quadraticCurveTo(-13,-34,-11,-10);
   c.moveTo(7,hy+2); c.quadraticCurveTo(15,-34,13,-10); c.stroke();
-  /* semer + kolan */
+  /* semer kilimi (şeritli) + semer + kolan */
+  c.fillStyle=deve?'#6e3550':'#5a3050';
+  c.beginPath(); c.ellipse(0,-3,17.5,7.5,0,0,6.28); c.fill();
+  c.strokeStyle='#c9a24a'; c.lineWidth=1.6;
+  c.beginPath(); c.ellipse(0,-3,17.5,7.5,0,0,6.28); c.stroke();
+  c.strokeStyle='rgba(255,220,150,.55)'; c.lineWidth=1.4;
+  c.beginPath(); c.ellipse(0,-3,13,5.4,0,0,6.28); c.stroke();
   c.fillStyle='#7a3a3a';
   c.beginPath(); c.ellipse(0,-4,14,5.5,0,0,6.28); c.fill();
   c.strokeStyle='#c9a24a'; c.lineWidth=2;
@@ -525,6 +623,11 @@ function paintChar(c,ch,t,running){
   c.bezierCurveTo(16,-6,13,-24,9,-32);
   c.quadraticCurveTo(0,-36,-9,-32);
   c.closePath(); c.fill();
+  /* kumaş kıvrımları: omuzdan eteğe inen drape gölgeleri */
+  c.strokeStyle='rgba(0,0,0,.10)'; c.lineWidth=2;
+  c.beginPath(); c.moveTo(-5,-24); c.quadraticCurveTo(-7,-4,-9+sway,12);
+  c.moveTo(5,-24); c.quadraticCurveTo(7,-4,9-sway,12);
+  c.moveTo(0,-20); c.quadraticCurveTo(sway*0.6,-2,sway,14); c.stroke();
   /* etek ucu bandı + omuz vurgusu */
   c.strokeStyle='rgba(0,0,0,.14)'; c.lineWidth=2.5;
   c.beginPath(); c.moveTo(-14+sway,12); c.quadraticCurveTo(0,17,14+sway,12); c.stroke();
@@ -574,21 +677,83 @@ function drawChar(px,py,jump){
   paintChar(ctx,ch,tick,jumpT<=0&&!mounted);
   ctx.restore();
 }
+function drawPalmSil(x,y,s,col){
+  /* uzak vaha: hurma silüeti */
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineCap='round';
+  ctx.lineWidth=2.6*s;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.quadraticCurveTo(x+2*s,y-11*s,x+4*s,y-19*s); ctx.stroke();
+  ctx.lineWidth=1.8*s;
+  for(let i=0;i<5;i++){ const a=-2.9+i*0.72;
+    ctx.beginPath(); ctx.moveTo(x+4*s,y-19*s);
+    ctx.quadraticCurveTo(x+4*s+Math.cos(a)*8*s,y-19*s+Math.sin(a)*5*s,
+      x+4*s+Math.cos(a)*13*s,y-19*s+Math.sin(a)*6*s+3.5*s);
+    ctx.stroke(); }
+}
 function draw(){
   const ph=phaseNow();
+  /* gün batımı göğü: üstte mor gece → pembe → turuncu ufuk → sıcak zemin */
   const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,ph.sky); g.addColorStop(0.35,ph.mid); g.addColorStop(1,ph.bot);
+  g.addColorStop(0,ph.sky);
+  g.addColorStop(0.15,lerpC(ph.sky,'#b34f6e',0.55));
+  g.addColorStop(0.27,lerpC(ph.mid,'#e86a7f',0.4));
+  g.addColorStop(0.36,ph.mid);
+  g.addColorStop(0.55,lerpC(ph.mid,ph.bot,0.65));
+  g.addColorStop(1,ph.bot);
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  const dOff1=(tick*0.15)%(W*2), dOff2=(tick*0.35)%(W*2);
-  ctx.fillStyle='rgba('+ph.hill+',.18)';
+  /* yıldızlar (üst gökte, kırpışan) + hilal */
+  ctx.fillStyle='#fff8e8';
+  for(const st of STARS){
+    ctx.globalAlpha=(0.3+0.5*Math.abs(Math.sin(tick*0.02+st.p)))*(1-st.y/0.2);
+    ctx.beginPath(); ctx.arc(st.x*W,st.y*H,st.r,0,6.28); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  const mx0=W*0.84,my0=H*0.06;
+  ctx.fillStyle='#ffe9b8';
+  ctx.beginPath(); ctx.arc(mx0,my0,11,0,6.28); ctx.fill();
+  ctx.fillStyle=lerpC(ph.sky,'#b34f6e',0.2);
+  ctx.beginPath(); ctx.arc(mx0+5,my0-3,9.5,0,6.28); ctx.fill();
+  /* ufukta alçalan güneş + ışıma */
+  ctx.fillStyle=SUNG; ctx.fillRect(0,0,W,H*0.62);
+  ctx.fillStyle='rgba(255,235,176,.95)';
+  ctx.beginPath(); ctx.arc(W*0.11,H*0.30,13,0,6.28); ctx.fill();
+  /* katmanlı kum tepeleri (paralaks — her katman farklı ton/hız) */
+  const dOff1=(tick*0.15)%(W*2), dOff2=(tick*0.35)%(W*2), dOff3=(tick*0.55)%(W*2);
+  ctx.fillStyle='rgba('+ph.hill+',.32)';
   ctx.beginPath(); ctx.moveTo(0,H*0.2);
   for(let x=0;x<=W;x+=40) ctx.lineTo(x,H*0.2-Math.sin((x+dOff1)*0.008)*30);
-  ctx.lineTo(W,H*0.32); ctx.lineTo(0,H*0.32); ctx.fill();
-  ctx.fillStyle='rgba('+ph.hill+',.3)';
+  ctx.lineTo(W,H*0.34); ctx.lineTo(0,H*0.34); ctx.fill();
+  ctx.fillStyle='rgba('+ph.hill+',.5)';
   ctx.beginPath(); ctx.moveTo(0,H*0.26);
   for(let x=0;x<=W;x+=40) ctx.lineTo(x,H*0.26-Math.sin((x+dOff2)*0.012+2)*20);
-  ctx.lineTo(W,H*0.36); ctx.lineTo(0,H*0.36); ctx.fill();
+  ctx.lineTo(W,H*0.38); ctx.lineTo(0,H*0.38); ctx.fill();
+  /* uzak vaha silüetleri (yakın tepe bandının üstünde) */
+  const pcol='rgba('+ph.hill+',.75)';
+  drawPalmSil(W*0.10,H*0.30,1.1,pcol); drawPalmSil(W*0.145,H*0.302,0.8,pcol);
+  drawPalmSil(W*0.88,H*0.298,1.0,pcol); drawPalmSil(W*0.915,H*0.302,0.7,pcol);
+  ctx.fillStyle='rgba('+ph.hill+',.7)';
+  ctx.beginPath(); ctx.moveTo(0,H*0.305);
+  for(let x=0;x<=W;x+=36) ctx.lineTo(x,H*0.305-Math.sin((x+dOff3)*0.016+4)*11);
+  ctx.lineTo(W,H*0.40); ctx.lineTo(0,H*0.40); ctx.fill();
+  /* tepe sırtlarında batan güneş vurgusu */
+  ctx.strokeStyle='rgba(255,206,140,.28)'; ctx.lineWidth=2;
+  ctx.beginPath();
+  for(let x=0;x<=W;x+=36){ const y=H*0.305-Math.sin((x+dOff3)*0.016+4)*11;
+    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }
+  ctx.stroke();
   drawLandmark();
+  /* kum zemininde dalga izleri + akşam ışığı yansıması */
+  const rOff=(tick*speed*0.6)%92;
+  ctx.lineWidth=2; ctx.lineCap='round';
+  for(let y=H*0.42+rOff-92;y<H+30;y+=92){
+    const t=Math.max(0.1,Math.min(1,y/H));
+    for(const side of [-1,1]){
+      const cx2=W/2+side*laneW()*3.55*t;
+      ctx.strokeStyle='rgba(255,230,180,'+(0.12*t)+')';
+      ctx.beginPath(); ctx.ellipse(cx2,y,44*t,9*t,0,3.5,5.9); ctx.stroke();
+      ctx.strokeStyle='rgba(90,40,60,'+(0.10*t)+')';
+      ctx.beginPath(); ctx.ellipse(cx2,y+4*t,40*t,8*t,0,3.5,5.9); ctx.stroke();
+    }
+  }
   if(ph.desert){
     ctx.font='17px system-ui'; ctx.textAlign='center'; ctx.globalAlpha=0.55;
     const kx=W+80-((tick*0.4)%(W+260));
@@ -604,7 +769,7 @@ function draw(){
   const topW=laneW()*1.1, botW=laneW()*3.4;
   /* geniş balast (çakıl) yatağı */
   const rg=ctx.createLinearGradient(0,0,0,H);
-  rg.addColorStop(0,'#6b5a44'); rg.addColorStop(1,'#7a6750');
+  rg.addColorStop(0,'#79573e'); rg.addColorStop(1,'#96724f');
   ctx.fillStyle=rg;
   ctx.beginPath(); ctx.moveTo(W/2-topW,0); ctx.lineTo(W/2+topW,0);
   ctx.lineTo(W/2+botW,H); ctx.lineTo(W/2-botW,H); ctx.fill();
@@ -672,10 +837,14 @@ function draw(){
     if(o.type==='azik'){
       /* toplanacaklar: parlak krem disk + yeşil halka — bir bakışta belli */
       const pr=(20+Math.sin(tick*0.15+o.y)*2)*s;
-      ctx.fillStyle='rgba(255,250,235,.92)';
+      ctx.fillStyle='rgba(60,30,45,.28)';
+      ctx.beginPath(); ctx.ellipse(lx2,o.y+pr*1.15,pr*0.85,5.5*s,0,0,6.28); ctx.fill();
+      ctx.fillStyle='rgba(255,250,235,.94)';
       ctx.beginPath(); ctx.arc(lx2,o.y,pr,0,6.28); ctx.fill();
       ctx.strokeStyle='rgba(46,143,138,.9)'; ctx.lineWidth=3*s;
       ctx.beginPath(); ctx.arc(lx2,o.y,pr,0,6.28); ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.85)';
+      ctx.beginPath(); ctx.ellipse(lx2-pr*0.38,o.y-pr*0.42,pr*0.3,pr*0.15,-0.6,0,6.28); ctx.fill();
       ctx.font=(26*s)+'px system-ui';
       ctx.fillText(o.e, lx2, o.y+1);
     } else {
@@ -690,6 +859,9 @@ function draw(){
       ctx.moveTo(rx+rr2,ry); ctx.arcTo(rx+rw,ry,rx+rw,ry+rh,rr2); ctx.arcTo(rx+rw,ry+rh,rx,ry+rh,rr2);
       ctx.arcTo(rx,ry+rh,rx,ry,rr2); ctx.arcTo(rx,ry,rx+rw,ry,rr2); ctx.fill();
       ctx.strokeStyle='rgba(255,248,238,.8)'; ctx.lineWidth=2.5*s; ctx.stroke();
+      /* üst kenarda akşam ışığı parlaması */
+      ctx.fillStyle='rgba(255,220,170,.22)';
+      ctx.beginPath(); ctx.ellipse(lx2,ry+rh*0.18,pw*0.8,rh*0.14,0,0,6.28); ctx.fill();
       if(o.barikat){
         /* bedevi barikatı: çapraz ahşap bariyer + kum torbaları */
         ctx.save(); ctx.translate(lx2,o.y);
@@ -725,9 +897,11 @@ function draw(){
   if(mounted){ drawMount(px,py-jump); drawChar(px,py-26,jump); }
   else drawChar(px,py,jump);
   ctx.globalAlpha=1;
+  /* kenar vinyeti: sahneyi toparlar, bakışı yola çeker */
+  ctx.fillStyle=VIG; ctx.fillRect(0,0,W,H);
   if(state==='play'){
     ctx.textAlign='center';
-    ctx.fillStyle='rgba(201,134,46,.75)';
+    ctx.fillStyle='rgba(255,214,150,.85)';
     ctx.font='800 11px "Avenir Next",system-ui,sans-serif';
     ctx.fillText('—  R O A D   T O   M E D I N A  —', W/2, H*0.072);
     if(stopI<STOPS.length){
@@ -799,23 +973,90 @@ function buildChars(){
     box.appendChild(b);
   });
 }
-function drawCharMini(mx,ch){ paintChar(mx,ch,0,false); }
+function drawCharMini(mx,ch){
+  mx.fillStyle='rgba(60,35,20,.25)';
+  mx.beginPath(); mx.ellipse(0,20,17,4.5,0,0,6.28); mx.fill();
+  paintChar(mx,ch,0,false); }
+/* menü kartları için YANDAN profil — at ve deve bir bakışta ayırt edilir */
+function paintMountSide(c,m){
+  const deve=m.kind==='deve';
+  c.lineCap='round'; c.lineJoin='round';
+  /* bacaklar + toynak gölgesi */
+  c.strokeStyle=m.c2; c.lineWidth=5;
+  c.beginPath();
+  c.moveTo(-14,6); c.lineTo(-17,26); c.moveTo(-6,8); c.lineTo(-4,26);
+  c.moveTo(8,8); c.lineTo(6,26); c.moveTo(16,6); c.lineTo(19,26); c.stroke();
+  /* kuyruk */
+  c.strokeStyle=m.c2; c.lineWidth=3.2;
+  c.beginPath(); c.moveTo(21,-3); c.quadraticCurveTo(28,5,26,15); c.stroke();
+  /* gövde (degradeli) */
+  const bg=c.createLinearGradient(0,-12,0,12);
+  bg.addColorStop(0,m.c1); bg.addColorStop(1,m.c2);
+  c.fillStyle=bg;
+  c.beginPath(); c.ellipse(0,0,22,11.5,0,0,6.28); c.fill();
+  if(deve){ /* hörgüç */
+    c.beginPath(); c.ellipse(3,-10,11,8,0,3.14,6.28); c.fill();
+    c.fillStyle='rgba(0,0,0,.10)';
+    c.beginPath(); c.ellipse(3,-9,8,3,0,0,3.14); c.fill();
+  }
+  /* boyun + baş */
+  c.fillStyle=m.c1;
+  if(deve){ /* uzun kavisli deve boynu */
+    c.beginPath();
+    c.moveTo(-10,-4);
+    c.bezierCurveTo(-24,-8,-30,-18,-30,-30);
+    c.lineTo(-23,-32);
+    c.bezierCurveTo(-23,-20,-18,-11,-8,-6);
+    c.closePath(); c.fill();
+    c.beginPath(); c.ellipse(-28,-32,6.5,4.2,-0.25,0,6.28); c.fill();
+  } else { /* dik at boynu + yele */
+    c.beginPath();
+    c.moveTo(-16,-4); c.lineTo(-27,-25); c.lineTo(-18,-30); c.lineTo(-7,-7);
+    c.closePath(); c.fill();
+    c.beginPath(); c.ellipse(-26,-28,7,4.6,-0.5,0,6.28); c.fill();
+    c.strokeStyle=m.c2; c.lineWidth=3.4;
+    c.beginPath(); c.moveTo(-20,-28); c.quadraticCurveTo(-13,-17,-9,-6); c.stroke();
+  }
+  /* kulak */
+  c.fillStyle=m.c1;
+  if(deve){ c.beginPath(); c.moveTo(-27,-35); c.lineTo(-24,-40); c.lineTo(-21,-34); c.closePath(); c.fill(); }
+  else{ c.beginPath(); c.moveTo(-24,-31); c.lineTo(-21,-38); c.lineTo(-17,-30); c.closePath(); c.fill(); }
+  /* gövde parlaması */
+  c.fillStyle='rgba(255,255,255,.18)';
+  c.beginPath(); c.ellipse(-4,-5,10,4.5,-0.2,0,6.28); c.fill();
+  /* semer/kilim */
+  c.fillStyle=deve?'#6e3550':'#7a3a3a';
+  c.beginPath(); c.ellipse(deve?8:2,-9,8.5,4.5,0,0,6.28); c.fill();
+  c.strokeStyle='#c9a24a'; c.lineWidth=1.6;
+  c.beginPath(); c.ellipse(deve?8:2,-9,8.5,4.5,0,0,6.28); c.stroke();
+}
 /* ── binek seçici ── */
 function buildMounts(){
   const box=document.getElementById('mounts'); box.innerHTML='';
   MOUNTS.forEach((m,i)=>{
     const locked=best<m.unlock;
     const b=document.createElement('button');
-    b.className='chbtn'+(i===mountSel&&!locked?' on':'');
-    if(locked) b.style.opacity='0.45';
+    b.className='chbtn'+(i===mountSel&&!locked?' on':'')+(locked?' locked':'');
     const mc=document.createElement('canvas'); mc.width=104; mc.height=76;
     mc.style.width='52px'; mc.style.height='38px';
     const mx=mc.getContext('2d');
     mx.translate(50,48); mx.scale(0.95,0.95);
-    paintMount(mx,m,0);
+    if(!locked){
+      mx.fillStyle='rgba(60,35,20,.25)';
+      mx.beginPath(); mx.ellipse(0,28,27,4.8,0,0,6.28); mx.fill();
+    }
+    paintMountSide(mx,m);
+    if(locked){ /* buzlu silüet: çizimi tek renge indir */
+      mx.globalCompositeOperation='source-atop';
+      mx.fillStyle='rgba(178,192,214,.94)';
+      mx.fillRect(-70,-110,160,180);
+      mx.globalCompositeOperation='source-over';
+      const lk=document.createElement('span'); lk.className='lockBadge';
+      lk.textContent='🔒'; b.appendChild(lk);
+    }
     b.appendChild(mc);
     const nm=document.createElement('span');
-    nm.textContent=locked?'🔒 '+m.unlock.toLocaleString('tr-TR')+' puan':m.name;
+    nm.textContent=locked?m.unlock.toLocaleString('tr-TR')+' puan gerek':m.name;
     nm.style.fontSize='10.5px';
     b.appendChild(nm);
     tap(b,()=>{ if(locked){ mtoast('🔒 '+m.name+' için '+m.unlock.toLocaleString('tr-TR')+' puan gerek'); return; }
