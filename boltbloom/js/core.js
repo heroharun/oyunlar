@@ -61,11 +61,11 @@
   var COLORS = {
     orange: { name: 'Turuncu', hex: '#FF8A3D', dark: '#C75E1C', light: '#FFC08A', sym: 'plus' },
     blue: { name: 'Mavi', hex: '#3D8BFF', dark: '#1D57B8', light: '#9CC4FF', sym: 'star' },
-    green: { name: 'Yesil', hex: '#38C25C', dark: '#1B8438', light: '#9BE7AF', sym: 'triangle' },
+    green: { name: 'Yeşil', hex: '#38C25C', dark: '#1B8438', light: '#9BE7AF', sym: 'triangle' },
     pink: { name: 'Pembe', hex: '#FF6FB5', dark: '#C2337A', light: '#FFB4D8', sym: 'heart' },
-    yellow: { name: 'Sari', hex: '#FFC93D', dark: '#C08A00', light: '#FFE49C', sym: 'circle' },
+    yellow: { name: 'Sarı', hex: '#FFC93D', dark: '#C08A00', light: '#FFE49C', sym: 'circle' },
     purple: { name: 'Mor', hex: '#9B5DE5', dark: '#65309F', light: '#CFAAF5', sym: 'square' },
-    red: { name: 'Kirmizi', hex: '#F0483E', dark: '#A61E17', light: '#FFA49E', sym: 'diamond' },
+    red: { name: 'Kırmızı', hex: '#F0483E', dark: '#A61E17', light: '#FFA49E', sym: 'diamond' },
     teal: { name: 'Turkuaz', hex: '#22C3C3', dark: '#0D7F7F', light: '#9AE9E9', sym: 'bar' }
   };
 
@@ -86,36 +86,36 @@
   /* ---------------- Tema bolgeleri ---------------- */
   var THEMES = {
     workshop: {
-      name: 'Oyuncak Atolyesi',
+      name: 'Oyuncak Atölyesi',
       bgA: '#F3E4CE', bgB: '#FCF7EE', glow: '#FFE9C2',
       tones: ['#F0A24C', '#E0763C', '#89B6E8', '#D6DEEC', '#5C6B87']
     },
     candy: {
-      name: 'Seker Fabrikasi',
+      name: 'Şeker Fabrikası',
       bgA: '#FBDCEB', bgB: '#FFF3F8', glow: '#FFD9EA',
       tones: ['#FF9CC4', '#F26FA5', '#9BE0D2', '#FFE6B0', '#7A5C86']
     },
     harbor: {
-      name: 'Denizalti Limani',
+      name: 'Denizaltı Limanı',
       bgA: '#CDE7EE', bgB: '#EFFAFC', glow: '#BFEAF2',
       tones: ['#57BFD1', '#2E8FA6', '#F0C86B', '#DCE9EC', '#3F5C69']
     },
     roboLab: {
-      name: 'Robot Laboratuvari',
+      name: 'Robot Laboratuvarı',
       bgA: '#DCD9F2', bgB: '#F5F3FF', glow: '#D6CEFA',
       tones: ['#8F86D8', '#5F55B0', '#7ED9C4', '#E4E1F5', '#3A3560']
     },
     hangar: {
-      name: 'Uzay Hangari',
+      name: 'Uzay Hangarı',
       bgA: '#D6DEF0', bgB: '#F1F5FF', glow: '#C4D4F5',
       tones: ['#7C92C4', '#4E639B', '#F2A65A', '#E6ECF8', '#2E3A5C']
     }
   };
 
   var RARITY = {
-    common: { name: 'Yaygin', hex: '#8FA0B8' },
+    common: { name: 'Yaygın', hex: '#8FA0B8' },
     rare: { name: 'Nadir', hex: '#3D8BFF' },
-    epic: { name: 'Destansi', hex: '#9B5DE5' },
+    epic: { name: 'Destansı', hex: '#9B5DE5' },
     legendary: { name: 'Efsanevi', hex: '#FFA51F' }
   };
 
@@ -213,10 +213,10 @@
     data: null,
     load: function () {
       var raw = null;
-      try { raw = localStorage.getItem(CONFIG.storageKey); } catch (e) { console.warn('[BoltBloom] localStorage okunamadi:', e); }
+      try { raw = localStorage.getItem(CONFIG.storageKey); } catch (e) { console.warn('[BoltBloom] localStorage okunamadı:', e); }
       var d = null;
       if (raw) {
-        try { d = JSON.parse(raw); } catch (e) { console.warn('[BoltBloom] Bozuk kayit verisi, sifirlaniyor.'); d = null; }
+        try { d = JSON.parse(raw); } catch (e) { console.warn('[BoltBloom] Bozuk kayıt verisi, sıfırlanıyor.'); d = null; }
       }
       this.data = this.merge(DEFAULT_SAVE, d && typeof d === 'object' ? d : {});
       // basit dogrulama
@@ -240,7 +240,7 @@
     },
     save: function () {
       try { localStorage.setItem(CONFIG.storageKey, JSON.stringify(this.data)); }
-      catch (e) { console.warn('[BoltBloom] Kayit yazilamadi:', e); }
+      catch (e) { console.warn('[BoltBloom] Kayit yazılamadı:', e); }
     },
     reset: function () {
       try { localStorage.removeItem(CONFIG.storageKey); } catch (e) { }
@@ -273,7 +273,7 @@
         this.musicGain = this.ctx.createGain();
         this.musicGain.gain.value = 0.0;
         this.musicGain.connect(this.master);
-      } catch (e) { console.warn('[BoltBloom] Ses baslatilamadi:', e); }
+      } catch (e) { console.warn('[BoltBloom] Ses başlatılamadı:', e); }
     },
     unlock: function () {
       this.init();

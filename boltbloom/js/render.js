@@ -472,7 +472,7 @@
           el.innerHTML = BB.screwMarkup(s.color, 30, s.type);
           el.setAttribute('aria-label', BB.colorOf(s.color).name + ' vida bekliyor');
         } else {
-          el.setAttribute('aria-label', 'bos yuva');
+          el.setAttribute('aria-label', 'boş yuva');
         }
       }
       var free = state.reserve.filter(function (x) { return !x; }).length;

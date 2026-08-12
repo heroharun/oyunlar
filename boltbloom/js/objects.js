@@ -111,7 +111,7 @@
 
   var OBJECTS = {
     toyCar: {
-      name: 'Sirin Araba', rarity: 'common',
+      name: 'Şirin Araba', rarity: 'common',
       pieces: [
         P('plate', 0, 30, 268, 98, 0, 0, { fixed: true }),
         P('wheel', -84, 80, 78, 78, 1, 4, { a: [[0, 0]], detail: 'hub', fall: [-70, 240, -140] }),
@@ -126,7 +126,7 @@
     },
 
     chest: {
-      name: 'Hazine Sandigi', rarity: 'common',
+      name: 'Hazine Sandığı', rarity: 'common',
       pieces: [
         P('rect', 0, 54, 254, 124, 0, 4, { fixed: true }),
         P('rect', 0, 56, 234, 104, 1, 0, { a: [[-90, -32], [90, -32], [-90, 32], [90, 32]], detail: 'grid', fall: [0, 260, 8] }),
@@ -169,7 +169,7 @@
     },
 
     rocket: {
-      name: 'Kucuk Roket', rarity: 'rare',
+      name: 'Küçük Roket', rarity: 'rare',
       pieces: [
         P('cyl', 0, 10, 120, 300, 0, 3, { fixed: true }),
         P('triangle', 0, -152, 118, 96, 1, 1, { a: [[0, 26], [-30, 40], [30, 40]], fall: [0, -300, 0] }),
@@ -183,7 +183,7 @@
     },
 
     plane: {
-      name: 'Pervaneli Ucak', rarity: 'rare',
+      name: 'Pervaneli Uçak', rarity: 'rare',
       pieces: [
         P('cyl', 0, 6, 300, 92, 0, 0, { fixed: true }),
         P('wing', -70, -78, 190, 110, 1, 1, { a: [[-46, 0], [40, 12]], fall: [-160, -280, -60] }),
@@ -197,7 +197,7 @@
     },
 
     submarine: {
-      name: 'Cep Denizaltisi', rarity: 'rare',
+      name: 'Cep Denizaltısı', rarity: 'rare',
       pieces: [
         P('cyl', 0, 20, 320, 130, 0, 0, { fixed: true }),
         P('trapezoid', -20, -70, 116, 84, 1, 1, { a: [[-32, 22], [32, 22], [0, -20]], fall: [-40, -290, -24] }),
@@ -226,7 +226,7 @@
     },
 
     mechBird: {
-      name: 'Mekanik Kus', rarity: 'rare',
+      name: 'Mekanik Kuş', rarity: 'rare',
       pieces: [
         P('circle', 0, 26, 190, 170, 0, 0, { fixed: true }),
         P('wing', -138, -6, 170, 120, 1, 1, { a: [[-38, 0], [34, 14]], fall: [-300, -140, -70] }),
@@ -241,7 +241,7 @@
     },
 
     bossRobot: {
-      name: 'Dev Bekci', rarity: 'epic',
+      name: 'Dev Bekçi', rarity: 'epic',
       pieces: [
         P('rect', 0, 40, 210, 190, 0, 4, { fixed: true }),
         P('rect', -122, 22, 62, 170, 1, 1, { a: [[0, -58], [0, 0], [0, 58]], fall: [-300, 150, -60] }),
@@ -279,7 +279,7 @@
     },
 
     dinosaur: {
-      name: 'Vidali Dino', rarity: 'epic',
+      name: 'Vidalı Dino', rarity: 'epic',
       pieces: [
         P('circle', -6, 46, 250, 170, 0, 0, { fixed: true }),
         P('tail', 122, 74, 176, 110, 1, 1, { a: [[-38, -6], [38, 8]], fall: [300, 200, 70] }),
@@ -331,7 +331,7 @@
     },
 
     spaceStation: {
-      name: 'Yildiz Gemisi', rarity: 'legendary',
+      name: 'Yıldız Gemisi', rarity: 'legendary',
       pieces: [
         P('circle', 0, 10, 300, 210, 0, 4, { fixed: true }),
         P('wing', -150, 96, 150, 120, 1, 1, { a: [[-34, -10], [30, 18]], fall: [-320, 240, -80] }),

@@ -135,15 +135,34 @@ h2{font-size:1.15rem;margin:0;letter-spacing:.2px;}
 
 /* ============ ACILIS ============ */
 [data-screen="boot"]{
-  background:radial-gradient(120% 90% at 50% 0%, #FFE7C2 0%, var(--paper) 55%);
+  background:#2B2440;
   align-items:center;justify-content:center;text-align:center;
+  position:absolute;overflow:hidden;
 }
-.boot-inner{padding:24px;display:flex;flex-direction:column;align-items:center;}
-.logo{width:132px;height:132px;animation:bob 3.4s ease-in-out infinite;}
+.boot-scene{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;}
+.boot-inner{position:relative;z-index:1;padding:24px;display:flex;flex-direction:column;align-items:center;margin-top:8dvh;}
+.logo{width:104px;height:104px;animation:bob 3.4s ease-in-out infinite;
+  filter:drop-shadow(0 10px 22px rgba(0,0,0,.45)) drop-shadow(0 0 26px rgba(255,208,138,.35));}
 .logo svg{width:100%;height:100%;}
-.logo-bolt{transform-origin:center;animation:spinSlow 9s linear infinite;}
+.logo-bolt{transform-origin:center;transform-box:fill-box;animation:spinSlow 9s linear infinite;}
+[data-screen="boot"] .brand{
+  color:var(--paper);font-size:2.9rem;letter-spacing:.5px;
+  text-shadow:0 3px 0 #181229, 0 8px 22px rgba(0,0,0,.55);
+}
+[data-screen="boot"] .brand span{
+  color:var(--brass-l);
+  text-shadow:0 3px 0 #7a4a0c, 0 8px 22px rgba(0,0,0,.55);
+}
+[data-screen="boot"] .tagline{color:#F3E9FF;text-shadow:0 2px 6px rgba(16,12,30,.8);}
 .tagline{color:var(--ink-2);margin:.2em 0 1.6em;font-size:1rem;}
 .fineprint{margin-top:1.4em;font-size:.78rem;color:var(--ink-3);}
+[data-screen="boot"] .fineprint{color:#BDB2DC;text-shadow:0 1px 4px rgba(16,12,30,.8);}
+[data-screen="boot"] .btn.primary.big{
+  background:linear-gradient(180deg,#FFE2AC 0%, var(--brass) 55%, var(--brass-d) 100%);
+  border-color:#181229;
+  box-shadow:0 5px 0 #181229, 0 0 30px rgba(242,160,61,.55);
+  font-size:1.25rem;
+}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @keyframes spinSlow{to{transform:rotate(360deg)}}
 
@@ -171,7 +190,8 @@ h2{font-size:1.15rem;margin:0;letter-spacing:.2px;}
 }
 .tile:active{transform:translateY(4px);box-shadow:none;}
 .tile:nth-child(5){grid-column:span 2;}
-.tile-ic{font-size:1.5rem;}
+.tile-ic{font-size:1.5rem;display:grid;place-items:center;}
+.tile-ic svg{width:30px;height:30px;display:block;filter:drop-shadow(0 2px 2px rgba(36,29,58,.22));}
 .menu-stars{color:var(--ink-2);font-size:.9rem;margin:0;}
 
 /* ============ HARITA ============ */
@@ -289,6 +309,7 @@ h2{font-size:1.15rem;margin:0;letter-spacing:.2px;}
   background-size:22px 22px;
 }
 #stage{width:100%;height:100%;display:block;}
+#objRoot{filter:drop-shadow(0 14px 10px rgba(36,29,58,.28)) drop-shadow(0 2px 3px rgba(36,29,58,.18));}
 .screw{cursor:pointer;}
 .screw-hit{fill:transparent;}
 .app.showhit .screw-hit{fill:rgba(255,0,120,.22);}

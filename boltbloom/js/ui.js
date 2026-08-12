@@ -50,7 +50,7 @@
       util.els('[data-coins]').forEach(function (e) { e.textContent = coins; });
       if (!G.level) return;
       var l = document.getElementById('hudLevel');
-      if (l) l.textContent = 'Bolum ' + G.level.id;
+      if (l) l.textContent = 'Bölüm ' + G.level.id;
       var sub = document.getElementById('hudSub');
       if (sub) {
         var bits = [G.level.objectName];
@@ -112,16 +112,16 @@
     modalHtml: function (kind) {
       if (kind === 'pause') {
         var s = Save.data.settings;
-        return '<h2>Duraklatildi</h2>' +
+        return '<h2>Duraklatıldı</h2>' +
           '<div class="toggles">' +
           this.toggleRow('sfx', 'Ses efektleri', s.sfx) +
-          this.toggleRow('music', 'Muzik', s.music) +
-          this.toggleRow('vibrate', 'Titresim', s.vibrate) +
+          this.toggleRow('music', 'Müzik', s.music) +
+          this.toggleRow('vibrate', 'Titreşim', s.vibrate) +
           '</div>' +
           '<div class="mbtns">' +
           '<button class="btn primary" data-act="resume">Devam et</button>' +
-          '<button class="btn" data-act="restart">Yeniden basla</button>' +
-          '<button class="btn ghost" data-act="quit">Bolum haritasi</button>' +
+          '<button class="btn" data-act="restart">Yeniden başla</button>' +
+          '<button class="btn ghost" data-act="quit">Bölüm haritası</button>' +
           '</div>';
       }
       return '';
@@ -132,13 +132,13 @@
     },
 
     pickColor: function (colors, cb) {
-      var html = '<h2>Yeni renk sec</h2><div class="colorpick">';
+      var html = '<h2>Yeni renk seç</h2><div class="colorpick">';
       colors.forEach(function (c) {
         var col = BB.colorOf(c);
         html += '<button class="cpick" data-color="' + c + '" style="--c:' + col.hex + ';--cd:' + col.dark + '" aria-label="' + col.name + '">' +
           BB.screwMarkup(c, 40, 'normal') + '<span>' + col.name + '</span></button>';
       });
-      html += '</div><div class="mbtns"><button class="btn ghost" data-act="closeModal">Vazgec</button></div>';
+      html += '</div><div class="mbtns"><button class="btn ghost" data-act="closeModal">Vazgeç</button></div>';
       this.showModal('color', html);
       this._colorCb = cb;
     },
@@ -153,20 +153,20 @@
         '<div class="collectcard" style="--r:' + rar.hex + '">' +
           '<div class="cc-art">' + this.objectThumb(d.level) + '</div>' +
           '<div class="cc-meta"><strong>' + d.level.objectName + '</strong>' +
-          '<span>' + rar.name + ' · Bolum ' + d.level.id + '</span></div>' +
-          (d.first ? '<div class="cc-new">YENI</div>' : '') +
+          '<span>' + rar.name + ' · Bölüm ' + d.level.id + '</span></div>' +
+          (d.first ? '<div class="cc-new">YENİ</div>' : '') +
         '</div>' +
         '<ul class="statlist">' +
         '<li><span>Skor</span><b data-count="' + d.score.score + '">0</b></li>' +
         '<li><span>Hamle</span><b>' + d.moves + '</b></li>' +
-        '<li><span>Sure</span><b>' + util.fmtTime(d.time) + '</b></li>' +
-        '<li><span>Bos yuva bonusu</span><b>' + (d.score.emptySlots * CONFIG.score.emptyReserveSlot) + '</b></li>' +
-        (d.mistakes === 0 ? '<li class="hl"><span>Hatasiz cozum</span><b>+' + CONFIG.score.perfectBonus + '</b></li>' : '') +
-        (d.gold ? '<li class="hl"><span>Altin vida</span><b>' + d.gold + '</b></li>' : '') +
-        '<li class="coinrow"><span>Kazanilan</span><b>' + icon('coin') + ' ' + d.coins + '</b></li>' +
+        '<li><span>Süre</span><b>' + util.fmtTime(d.time) + '</b></li>' +
+        '<li><span>Boş yuva bonusu</span><b>' + (d.score.emptySlots * CONFIG.score.emptyReserveSlot) + '</b></li>' +
+        (d.mistakes === 0 ? '<li class="hl"><span>Hatasız çözüm</span><b>+' + CONFIG.score.perfectBonus + '</b></li>' : '') +
+        (d.gold ? '<li class="hl"><span>Altın vida</span><b>' + d.gold + '</b></li>' : '') +
+        '<li class="coinrow"><span>Kazanılan</span><b>' + icon('coin') + ' ' + d.coins + '</b></li>' +
         '</ul>' +
         '<div class="mbtns">' +
-        (d.level.id < BB.LEVELS.length ? '<button class="btn primary" data-act="next">Sonraki bolum</button>' : '<button class="btn primary" data-act="quit">Haritaya don</button>') +
+        (d.level.id < BB.LEVELS.length ? '<button class="btn primary" data-act="next">Sonraki bölüm</button>' : '<button class="btn primary" data-act="quit">Haritaya dön</button>') +
         '<button class="btn" data-act="replay">Tekrar oyna</button>' +
         '<button class="btn ghost" data-act="quit">Harita</button>' +
         '</div>';
@@ -188,19 +188,19 @@
     },
 
     showLose: function (reason) {
-      var titles = { tray: 'Yuvalar doldu', time: 'Sure bitti', moves: 'Hamle hakkin bitti' };
+      var titles = { tray: 'Yuvalar doldu', time: 'Süre bitti', moves: 'Hamle hakkın bitti' };
       var hints = {
-        tray: 'Bekleme alanindaki tum yuvalar doldu. Vidalari acik kutulara gonderecek sirayi kur.',
-        time: 'Bu bolumde sure sinirli. Once kutu rengine uyan vidalari topla.',
-        moves: 'Hamle sinirina takildin. Bos yere bekleme yuvasi doldurma.'
+        tray: 'Bekleme alanındaki tüm yuvalar doldu. Vidaları açık kutulara gönderecek sırayı kur.',
+        time: 'Bu bölümde süre sınırlı. Önce kutu rengine uyan vidaları topla.',
+        moves: 'Hamle sınırına takıldın. Boş yere bekleme yuvası doldurma.'
       };
       var inv = Save.data.boosters;
-      var html = '<h2>' + (titles[reason] || 'Bolum bitti') + '</h2>' +
+      var html = '<h2>' + (titles[reason] || 'Bölüm bitti') + '</h2>' +
         '<p class="losehint">' + (hints[reason] || '') + '</p>' +
         '<div class="mbtns">' +
         '<button class="btn primary" data-act="undoLose"' + (inv.undo > 0 ? '' : ' disabled') + '>Son hamleyi geri al (' + (inv.undo || 0) + ')</button>' +
-        (reason === 'tray' ? '<button class="btn" data-act="addSlot"' + (inv.slot > 0 ? '' : ' disabled') + '>Ek yuva ac (' + (inv.slot || 0) + ')</button>' : '') +
-        '<button class="btn" data-act="restart">Yeniden basla</button>' +
+        (reason === 'tray' ? '<button class="btn" data-act="addSlot"' + (inv.slot > 0 ? '' : ' disabled') + '>Ek yuva aç (' + (inv.slot || 0) + ')</button>' : '') +
+        '<button class="btn" data-act="restart">Yeniden başla</button>' +
         '<button class="btn ghost" data-act="quit">Ana harita</button>' +
         '</div>';
       this.showModal('lose', html);
@@ -227,12 +227,12 @@
       var box = document.getElementById('menuLast');
       if (!box) return;
       if (!last) {
-        box.innerHTML = '<div class="lastempty">Ilk nesneni onardiginda burada gorunecek.</div>';
+        box.innerHTML = '<div class="lastempty">İlk nesneni onardığında burada görünecek.</div>';
       } else {
         var def = BB.levelDef(last);
         var tpl = BB.OBJECTS[def.objectType];
         box.innerHTML = '<div class="lastcard">' + this.objectThumb({ objectType: def.objectType, theme: def.theme }) +
-          '<div><span class="eyebrow">Son onarilan</span><strong>' + tpl.name + '</strong></div></div>';
+          '<div><span class="eyebrow">Son onarılan</span><strong>' + tpl.name + '</strong></div></div>';
       }
       var totalStars = 0;
       for (var s in Save.data.stars) totalStars += Save.data.stars[s];
@@ -263,7 +263,7 @@
           for (var s = 1; s <= 3; s++) st += '<i class="' + (s <= stars ? 'on' : '') + '"></i>';
           return '<button class="node' + (locked ? ' locked' : '') + (cur ? ' current' : '') + (stars ? ' done' : '') +
             (def.boss ? ' boss' : '') + '" data-level="' + id + '" style="--side:' + (k % 2 ? 1 : -1) + '"' +
-            (locked ? ' disabled aria-disabled="true"' : '') + ' aria-label="Bolum ' + id + ': ' + def.name + '">' +
+            (locked ? ' disabled aria-disabled="true"' : '') + ' aria-label="Bölüm ' + id + ': ' + def.name + '">' +
             '<span class="nodenum">' + id + '</span>' +
             '<span class="nodestars">' + st + '</span>' +
             (locked ? '<span class="nodelock">' + icon('lock') + '</span>' : '') +
@@ -294,7 +294,7 @@
         card.style.setProperty('--r', rar.hex);
         card.innerHTML = '<div class="cc-art">' + UI.objectThumb({ objectType: def.objectType, theme: def.theme }) + '</div>' +
           '<div class="cc-meta"><strong>' + (owned ? tpl.name : '???') + '</strong>' +
-          '<span>Bolum ' + def.id + ' · ' + rar.name + '</span>' +
+          '<span>Bölüm ' + def.id + ' · ' + rar.name + '</span>' +
           '<span class="ccstars">' + st + '</span></div>';
         grid.appendChild(card);
       });
@@ -322,11 +322,11 @@
       });
       var extra = document.createElement('div');
       extra.className = 'shopnote';
-      extra.innerHTML = '<strong>Gercek para paketleri</strong>' +
-        '<p>Bu prototipte odeme sistemi yok. Alan hazir, baglanti sonra eklenir.</p>' +
+      extra.innerHTML = '<strong>Gerçek para paketleri</strong>' +
+        '<p>Bu prototipte ödeme sistemi yok. Alan hazır, bağlantı sonra eklenir.</p>' +
         '<div class="fakepacks">' +
-        '<button class="btn ghost small" data-act="soon">Kucuk kasa</button>' +
-        '<button class="btn ghost small" data-act="soon">Buyuk kasa</button>' +
+        '<button class="btn ghost small" data-act="soon">Küçük kasa</button>' +
+        '<button class="btn ghost small" data-act="soon">Büyük kasa</button>' +
         '<button class="btn ghost small" data-act="soon">Reklamsiz</button>' +
         '</div>';
       grid.appendChild(extra);
@@ -337,10 +337,10 @@
       { label: '50 coin', type: 'coins', v: 50 },
       { label: '1 Geri Al', type: 'undo', v: 1 },
       { label: '75 coin', type: 'coins', v: 75 },
-      { label: '1 Cekic', type: 'hammer', v: 1 },
+      { label: '1 Çekiç', type: 'hammer', v: 1 },
       { label: '100 coin', type: 'coins', v: 100 },
       { label: '1 Ek Yuva', type: 'slot', v: 1 },
-      { label: 'Ozel kutu gorunumu', type: 'skin', v: 1 }
+      { label: 'Özel kutu görünümü', type: 'skin', v: 1 }
     ],
     todayKey: function () {
       var d = new Date();
@@ -358,20 +358,20 @@
         var isNext = (i === day % 7) && !claimedToday;
         var c = document.createElement('div');
         c.className = 'dayitem' + (got ? ' got' : '') + (isNext ? ' next' : '');
-        c.innerHTML = '<span class="dn">' + (i + 1) + '. gun</span><strong>' + r.label + '</strong>';
+        c.innerHTML = '<span class="dn">' + (i + 1) + '. gün</span><strong>' + r.label + '</strong>';
         grid.appendChild(c);
       });
       var btn = document.getElementById('dailyClaim');
       if (btn) {
         btn.disabled = claimedToday;
-        btn.textContent = claimedToday ? 'Bugun alindi' : 'Odulu al';
+        btn.textContent = claimedToday ? 'Bugün alındı' : 'Ödülü al';
       }
       var note = document.getElementById('dailyNote');
-      if (note) note.textContent = claimedToday ? 'Yarin tekrar gel. Seri: ' + dd.streak + ' gun.' : 'Seri: ' + dd.streak + ' gun.';
+      if (note) note.textContent = claimedToday ? 'Yarın tekrar gel. Seri: ' + dd.streak + ' gün.' : 'Seri: ' + dd.streak + ' gün.';
     },
     claimDaily: function () {
       var dd = Save.data.daily;
-      if (dd.last === this.todayKey()) { this.toast('Bugunun odulu zaten alindi.', 1600); return; }
+      if (dd.last === this.todayKey()) { this.toast('Bugünün ödülü zaten alındı.', 1600); return; }
       var idx = dd.streak % 7;
       var r = this.dailyRewards[idx];
       if (r.type === 'coins') Save.addCoins(r.v);
@@ -381,7 +381,7 @@
       dd.last = this.todayKey();
       Save.save();
       BB.Audio.play('coin');
-      this.toast(r.label + ' alindi.', 2000);
+      this.toast(r.label + ' alındı.', 2000);
       this.buildDaily();
       this.updateHud();
       BB.Particles.rain(30);
@@ -394,13 +394,13 @@
       var s = Save.data.settings;
       list.innerHTML =
         this.toggleRow('sfx', 'Ses efektleri', s.sfx) +
-        this.toggleRow('music', 'Muzik', s.music) +
-        this.toggleRow('vibrate', 'Titresim', s.vibrate) +
-        this.toggleRow('colorblind', 'Renk korlugu modu', s.colorblind) +
-        this.toggleRow('reducedMotion', 'Azaltilmis hareket', s.reducedMotion) +
-        this.toggleRow('tutorial', 'Ogreticiyi goster', s.tutorial) +
-        '<div class="setnote">Surum ' + CONFIG.version + '</div>' +
-        '<button class="btn danger" data-act="resetData">Veriyi sifirla</button>';
+        this.toggleRow('music', 'Müzik', s.music) +
+        this.toggleRow('vibrate', 'Titreşim', s.vibrate) +
+        this.toggleRow('colorblind', 'Renk körlüğü modu', s.colorblind) +
+        this.toggleRow('reducedMotion', 'Azaltılmış hareket', s.reducedMotion) +
+        this.toggleRow('tutorial', 'Öğreticiyi göster', s.tutorial) +
+        '<div class="setnote">Sürüm ' + CONFIG.version + '</div>' +
+        '<button class="btn danger" data-act="resetData">Veriyi sıfırla</button>';
     },
 
     /* ================= Ogretici katmani ================= */
@@ -420,7 +420,7 @@
         '<div class="tut-card"><div class="tut-pip">' + this.pipSvg() + '</div>' +
         '<p>' + text + '</p>' +
         '<div class="tut-btns">' +
-        (targetEl && !isLast ? '' : '<button class="btn primary small" data-act="tutNext">' + (isLast ? 'Basla' : 'Devam') + '</button>') +
+        (targetEl && !isLast ? '' : '<button class="btn primary small" data-act="tutNext">' + (isLast ? 'Başla' : 'Devam') + '</button>') +
         (isLast ? '' : '<button class="btn ghost small" data-act="tutSkip">Atla</button>') +
         '</div></div>';
     },
@@ -444,19 +444,19 @@
       var p = document.getElementById('debugPanel');
       p.classList.add('on');
       p.innerHTML = '<div class="dbg-head">DEBUG <button data-act="dbgClose">x</button></div>' +
-        '<div class="dbg-row"><label>Bolum</label><input id="dbgLevel" type="number" min="1" max="' + BB.LEVELS.length + '" value="1"><button data-act="dbgGo">Git</button></div>' +
+        '<div class="dbg-row"><label>Bölüm</label><input id="dbgLevel" type="number" min="1" max="' + BB.LEVELS.length + '" value="1"><button data-act="dbgGo">Git</button></div>' +
         '<div class="dbg-row">' +
         '<button data-act="dbgCoins">+1000 coin</button>' +
         '<button data-act="dbgBoosters">+9 booster</button>' +
         '</div><div class="dbg-row">' +
-        '<button data-act="dbgReveal">Tum vidalar</button>' +
+        '<button data-act="dbgReveal">Tüm vidalar</button>' +
         '<button data-act="dbgHitbox">Hitbox</button>' +
         '</div><div class="dbg-row">' +
         '<button data-act="dbgWin">Kazan</button>' +
         '<button data-act="dbgLose">Kaybet</button>' +
         '</div><div class="dbg-row">' +
-        '<button data-act="dbgQueue">Kutu sirasi</button>' +
-        '<button data-act="dbgReset">LocalStorage sifirla</button>' +
+        '<button data-act="dbgQueue">Kutu sırası</button>' +
+        '<button data-act="dbgReset">LocalStorage sıfırla</button>' +
         '</div><div class="dbg-fps" id="dbgFps">fps —</div><pre id="dbgOut"></pre>';
       var fpsEl = document.getElementById('dbgFps');
       var frames = 0, t0 = util.now();
@@ -561,7 +561,7 @@
         G.tapScrew(target.dataset.id);
       } else {
         var now = util.now();
-        if (now - this.lastTapT < 320) { R.setCamera(0, 0, 1); UI.toast('Kamera sifirlandi', 900); }
+        if (now - this.lastTapT < 320) { R.setCamera(0, 0, 1); UI.toast('Kamera sıfırlandı', 900); }
         this.lastTapT = now;
         if (G.boosterMode) BB.Boosters.cancel();
       }
@@ -573,7 +573,7 @@
       if (k === 'escape') { e.preventDefault(); G.state === G.STATES.PAUSED ? G.resume() : G.pause(); }
       if (G.state !== G.STATES.PLAYING) return;
       if (k === 'r') { R.setCamera(0, 0, 1); }
-      if (k === 'z') { if (Save.data.boosters.undo > 0) BB.Boosters.use('undo'); else UI.toast('Geri al booster kalmadi.', 1400); }
+      if (k === 'z') { if (Save.data.boosters.undo > 0) BB.Boosters.use('undo'); else UI.toast('Geri al booster kalmadı.', 1400); }
       if (k === ' ' && e.target === document.body) { e.preventDefault(); G.showHint(); }
       if (k === '+' || k === '=') R.setCamera(R.cam.rot, R.cam.tilt, R.cam.zoom + CONFIG.zoom.step);
       if (k === '-') R.setCamera(R.cam.rot, R.cam.tilt, R.cam.zoom - CONFIG.zoom.step);
@@ -601,7 +601,7 @@
       if (Save.spendCoins(price)) {
         Save.data.boosters[key] = (Save.data.boosters[key] || 0) + 1;
         Save.save(); BB.Audio.play('coin');
-        UI.toast(BB.Boosters.defs[key].name + ' alindi.', 1500);
+        UI.toast(BB.Boosters.defs[key].name + ' alındı.', 1500);
         UI.buildShop(); UI.updateHud(); UI.renderBoosters();
       } else { BB.Audio.play('warn'); UI.toast('Yeterli Gear Coin yok.', 1600); }
       return;
@@ -657,14 +657,14 @@
         break;
       case 'replay': UI.hideModal(); G.start(G.level.id); break;
       case 'undoLose':
-        if ((Save.data.boosters.undo || 0) <= 0) { UI.toast('Geri al kalmadi.', 1500); break; }
+        if ((Save.data.boosters.undo || 0) <= 0) { UI.toast('Geri al kalmadı.', 1500); break; }
         UI.hideModal();
         G.setState(G.STATES.PLAYING);
         G.busy = false;
         if (G.undo(false)) BB.Boosters.consume('undo');
         break;
       case 'addSlot':
-        if ((Save.data.boosters.slot || 0) <= 0) { UI.toast('Ek yuva kalmadi.', 1500); break; }
+        if ((Save.data.boosters.slot || 0) <= 0) { UI.toast('Ek yuva kalmadı.', 1500); break; }
         UI.hideModal();
         G.setState(G.STATES.PLAYING);
         G.busy = false;
@@ -676,14 +676,14 @@
       case 'tutNext': BB.Tutorial.next(); break;
       case 'tutSkip': BB.Tutorial.skip(); break;
       case 'claimDaily': UI.claimDaily(); break;
-      case 'soon': UI.toast('Bu bolum prototipte kapali.', 1600); break;
+      case 'soon': UI.toast('Bu bölüm prototipte kapalı.', 1600); break;
       case 'resetData':
-        UI.showModal('confirm', '<h2>Emin misin?</h2><p class="losehint">Tum ilerleme, para ve koleksiyon silinecek.</p>' +
-          '<div class="mbtns"><button class="btn danger" data-act="resetYes">Evet, sifirla</button><button class="btn ghost" data-act="closeModal">Vazgec</button></div>');
+        UI.showModal('confirm', '<h2>Emin misin?</h2><p class="losehint">Tüm ilerleme, para ve koleksiyon silinecek.</p>' +
+          '<div class="mbtns"><button class="btn danger" data-act="resetYes">Evet, sıfırla</button><button class="btn ghost" data-act="closeModal">Vazgeç</button></div>');
         break;
       case 'resetYes':
         Save.reset(); UI.hideModal(); UI.buildSettings(); UI.updateHud();
-        UI.toast('Veriler sifirlandi.', 1600);
+        UI.toast('Veriler sıfırlandı.', 1600);
         break;
       // debug
       case 'dbgClose': document.getElementById('debugPanel').classList.remove('on'); break;
@@ -708,7 +708,7 @@
       case 'dbgQueue':
         if (!G.level) break;
         document.getElementById('dbgOut').textContent =
-          'sirada: ' + G.level.boxQueue.slice(G.level.queueIndex).join(', ') +
+          'sırada: ' + G.level.boxQueue.slice(G.level.queueIndex).join(', ') +
           '\naktif: ' + G.boxes.map(function (b) { return b ? b.color + ' ' + b.count + '/' + b.cap : '-'; }).join(' | ');
         break;
       case 'dbgReset': Save.reset(); UI.toast('Sifirlandi.', 1200); break;
@@ -747,7 +747,7 @@
     UI.updateHud();
     UI.showScreen('boot');
     if (/[?&]debug=1/.test(location.search)) { G.debug = true; UI.buildDebug(); }
-    console.log('%cBolt Bloom ' + CONFIG.version + ' hazir. Debug icin ?debug=1', 'color:#F2A03D;font-weight:bold');
+    console.log('%cBolt Bloom ' + CONFIG.version + ' hazır. Debug için ?debug=1', 'color:#F2A03D;font-weight:bold');
   }
 
   BB.UI = UI;

@@ -13,14 +13,14 @@
   /* ---------------- Bolum tanimlari ---------------- */
   var LEVELS = [
     {
-      id: 1, name: 'Ilk Atolye', theme: 'workshop', objectType: 'toyCar',
+      id: 1, name: 'İlk Atölye', theme: 'workshop', objectType: 'toyCar',
       screws: 9, colors: ['orange', 'blue', 'green'], activeBoxes: 2, reserveSlots: 5,
-      tutorial: true, brief: 'Parlak vidalara dokun, kutulari doldur.'
+      tutorial: true, brief: 'Parlak vidalara dokun, kutuları doldur.'
     },
     {
-      id: 2, name: 'Tozlu Sandik', theme: 'workshop', objectType: 'chest',
+      id: 2, name: 'Tozlu Sandık', theme: 'workshop', objectType: 'chest',
       screws: 12, colors: ['orange', 'blue', 'yellow'], activeBoxes: 2, reserveSlots: 5,
-      brief: 'Ust plakalar alttaki vidalari kapatir.'
+      brief: 'Üst plakalar alttaki vidaları kapatır.'
     },
     {
       id: 3, name: 'Radyo Sesleri', theme: 'workshop', objectType: 'radio',
@@ -28,29 +28,29 @@
       brief: 'Uymayan vidalar bekleme yuvasinda bekler.'
     },
     {
-      id: 4, name: 'Seker Objektif', theme: 'candy', objectType: 'camera',
+      id: 4, name: 'Şeker Objektif', theme: 'candy', objectType: 'camera',
       screws: 18, colors: ['pink', 'yellow', 'teal', 'purple'], activeBoxes: 3, reserveSlots: 5,
-      types: { rusty: 2 }, brief: 'Pasli vidalar iki dokunus ister.'
+      types: { rusty: 2 }, brief: 'Paslı vidalar iki dokunuş ister.'
     },
     {
-      id: 5, name: 'Sekerli Kalkis', theme: 'candy', objectType: 'rocket',
+      id: 5, name: 'Şekerli Kalkış', theme: 'candy', objectType: 'rocket',
       screws: 21, colors: ['pink', 'yellow', 'teal', 'red'], activeBoxes: 3, reserveSlots: 5,
-      types: { rusty: 2, gold: 1 }, gift: true, brief: 'Altin vida ekstra para verir.'
+      types: { rusty: 2, gold: 1 }, gift: true, brief: 'Altın vida ekstra para verir.'
     },
     {
-      id: 6, name: 'Pervane Surubu', theme: 'candy', objectType: 'plane',
+      id: 6, name: 'Pervane Şurubu', theme: 'candy', objectType: 'plane',
       screws: 21, colors: ['pink', 'yellow', 'teal', 'purple', 'green'], activeBoxes: 3, reserveSlots: 5,
-      types: { chained: 2, rusty: 1 }, brief: 'Zincirli vida, esi cikmadan sokulmez.'
+      types: { chained: 2, rusty: 1 }, brief: 'Zincirli vida, eşi çıkmadan sökülmez.'
     },
     {
       id: 7, name: 'Derin Liman', theme: 'harbor', objectType: 'submarine',
       screws: 24, colors: ['teal', 'blue', 'yellow', 'orange', 'green'], activeBoxes: 3, reserveSlots: 5,
-      types: { rusty: 2, chained: 1, gold: 1 }, brief: 'Kutu sirasini takip et.'
+      types: { rusty: 2, chained: 1, gold: 1 }, brief: 'Kutu sırasını takip et.'
     },
     {
-      id: 8, name: 'Fener Nobeti', theme: 'harbor', objectType: 'lighthouse',
+      id: 8, name: 'Fener Nöbeti', theme: 'harbor', objectType: 'lighthouse',
       screws: 24, colors: ['teal', 'blue', 'red', 'yellow', 'purple'], activeBoxes: 3, reserveSlots: 5,
-      types: { frozen: 3, rusty: 1 }, brief: 'Donmus vidalarin once buzu kirilir.'
+      types: { frozen: 3, rusty: 1 }, brief: 'Donmuş vidaların önce buzu kırılır.'
     },
     {
       id: 9, name: 'Demir Kanatlar', theme: 'harbor', objectType: 'mechBird',
@@ -58,37 +58,37 @@
       types: { frozen: 2, chained: 2, returning: 1 }, brief: 'Bir yuva eksik. Acele etme.'
     },
     {
-      id: 10, name: 'Dev Bekci', theme: 'roboLab', objectType: 'bossRobot',
+      id: 10, name: 'Dev Bekçi', theme: 'roboLab', objectType: 'bossRobot',
       screws: 39, colors: ['purple', 'blue', 'teal', 'orange', 'red', 'green'], activeBoxes: 3, reserveSlots: 5,
       boss: true, gift: true, types: { rusty: 3, frozen: 2, chained: 2, gold: 3, bigNut: 2 },
-      brief: 'Bolge patronu. Katmanlari sirayla ac.'
+      brief: 'Bölge patronu. Katmanları sırayla aç.'
     },
     {
-      id: 11, name: 'Laboratuvar Ciragi', theme: 'roboLab', objectType: 'robot',
+      id: 11, name: 'Laboratuvar Çırağı', theme: 'roboLab', objectType: 'robot',
       screws: 27, colors: ['purple', 'blue', 'green', 'yellow', 'red'], activeBoxes: 3, reserveSlots: 5,
-      types: { timed: 2, rusty: 2, gold: 1 }, brief: 'Zamanli vidalar geri kilitlenir.'
+      types: { timed: 2, rusty: 2, gold: 1 }, brief: 'Zamanlı vidalar geri kilitlenir.'
     },
     {
-      id: 12, name: 'Disli Dino', theme: 'roboLab', objectType: 'dinosaur',
+      id: 12, name: 'Dişli Dino', theme: 'roboLab', objectType: 'dinosaur',
       screws: 30, colors: ['purple', 'green', 'orange', 'teal', 'red', 'yellow'], activeBoxes: 3, reserveSlots: 5,
-      moveLimit: 42, types: { chained: 3, rusty: 2, bigNut: 1 }, brief: 'Hamle hakkin sinirli.'
+      moveLimit: 42, types: { chained: 3, rusty: 2, bigNut: 1 }, brief: 'Hamle hakkın sınırlı.'
     },
     {
-      id: 13, name: 'Zamanin Kulesi', theme: 'hangar', objectType: 'clockTower',
+      id: 13, name: 'Zamanın Kulesi', theme: 'hangar', objectType: 'clockTower',
       screws: 33, colors: ['blue', 'orange', 'purple', 'teal', 'yellow', 'red'], activeBoxes: 3, reserveSlots: 5,
-      timeLimit: 240, types: { frozen: 2, timed: 2, gold: 2 }, brief: 'Sure isliyor.'
+      timeLimit: 240, types: { frozen: 2, timed: 2, gold: 2 }, brief: 'Süre işliyor.'
     },
     {
       id: 14, name: 'Ejderha Tamiri', theme: 'hangar', objectType: 'dragon',
       screws: 36, colors: ['red', 'orange', 'purple', 'green', 'teal', 'blue', 'yellow'], activeBoxes: 3, reserveSlots: 5,
-      types: { rusty: 3, chained: 3, frozen: 2, returning: 2, gold: 2 }, brief: 'Tum mekanikler bir arada.'
+      types: { rusty: 3, chained: 3, frozen: 2, returning: 2, gold: 2 }, brief: 'Tüm mekanikler bir arada.'
     },
     {
-      id: 15, name: 'Yildiz Gemisi', theme: 'hangar', objectType: 'spaceStation',
+      id: 15, name: 'Yıldız Gemisi', theme: 'hangar', objectType: 'spaceStation',
       screws: 45, colors: ['blue', 'teal', 'purple', 'orange', 'yellow', 'red', 'green', 'pink'],
       activeBoxes: 3, reserveSlots: 5, boss: true, gift: true,
       types: { rusty: 4, chained: 3, frozen: 2, gold: 4, bigNut: 2, timed: 2 },
-      brief: 'Buyuk final. Cok katmanli govde.'
+      brief: 'Büyük final. Çok katmanlı gövde.'
     }
   ];
 
@@ -148,12 +148,12 @@
     var def = null;
     for (var i = 0; i < LEVELS.length; i++) if (LEVELS[i].id === id) def = LEVELS[i];
     if (!def) {
-      console.warn('[BoltBloom] Bolum bulunamadi: ' + id + ' — yedek bolum yukleniyor.');
+      console.warn('[BoltBloom] Bölüm bulunamadı: ' + id + ' — yedek bölüm yükleniyor.');
       def = LEVELS[0];
     }
     var tpl = BB.OBJECTS[def.objectType];
     if (!tpl) {
-      console.warn('[BoltBloom] Nesne sablonu yok: ' + def.objectType + ' — toyCar kullaniliyor.');
+      console.warn('[BoltBloom] Nesne şablonu yok: ' + def.objectType + ' — toyCar kullanılıyor.');
       tpl = BB.OBJECTS.toyCar;
     }
 
@@ -170,7 +170,7 @@
       };
     });
     var loose = pieces.filter(function (p) { return !p.fixed; });
-    if (!loose.length) { console.error('[BoltBloom] Sablonda sokulebilir parca yok.'); loose = pieces; }
+    if (!loose.length) { console.error('[BoltBloom] Şablonda sökülebilir parça yok.'); loose = pieces; }
 
     /* 2) Vida sayisi: 3'un kati ve parca sayisindan buyuk */
     var want = Math.max(loose.length, def.screws || 9);
@@ -233,7 +233,7 @@
     /* 5) Cozum sirasi simulasyonu */
     var order = simulate(pieces, screws, rnd);
     if (!order) {
-      console.warn('[BoltBloom] Bolum ' + def.id + ': kilitlenme tespit edildi, kapatmalar gevsetildi.');
+      console.warn('[BoltBloom] Bölüm ' + def.id + ': kilitlenme tespit edildi, kapatmalar gevşetildi.');
       screws.forEach(function (s) { s.blockedBy = s.blockedBy.slice(0, 1); });
       order = simulate(pieces, screws, rnd) || screws.slice();
     }

@@ -209,7 +209,7 @@
           var o = this.findScrew(s.chainWith);
           if (o && o.state === 'board') R.hintPulse(o.id);
         }
-        BB.UI.toast(s.locked ? 'Vida gecici olarak kilitli.' : 'Bu vida kapali. Once ustundeki parcayi cikar.', 1600);
+        BB.UI.toast(s.locked ? 'Vida geçici olarak kilitli.' : 'Bu vida kapalı. Önce üstündeki parçayı çıkar.', 1600);
         return;
       }
 
@@ -219,7 +219,7 @@
         BB.Audio.play('rust'); BB.Haptics.light();
         var pos = R.screwScreenPos(s.id), host = document.getElementById('flyLayer').getBoundingClientRect();
         if (pos) P.burst(pos.x - host.left, pos.y - host.top, '#8A6034', 10);
-        BB.UI.toast('Pas kirildi. Tekrar dokun.', 1200);
+        BB.UI.toast('Pas kırıldı. Tekrar dokun.', 1200);
         return;
       }
       // Donmus vida: ilk dokunus buzu kirar
@@ -228,12 +228,12 @@
         BB.Audio.play('ice'); BB.Haptics.light();
         var pos2 = R.screwScreenPos(s.id), host2 = document.getElementById('flyLayer').getBoundingClientRect();
         if (pos2) P.burst(pos2.x - host2.left, pos2.y - host2.top, '#CBF0FF', 14);
-        BB.UI.toast('Buz kirildi.', 1200);
+        BB.UI.toast('Buz kırıldı.', 1200);
         return;
       }
 
       var target = this.findTarget(s.color);
-      if (!target) { BB.Audio.play('warn'); BB.UI.toast('Yer kalmadi.', 1400); return; }
+      if (!target) { BB.Audio.play('warn'); BB.UI.toast('Yer kalmadı.', 1400); return; }
 
       if (s.type === 'returning' && target.kind !== 'box') {
         this.returnSpin(s);
@@ -256,7 +256,7 @@
       var self = this;
       this.busy = true;
       BB.Audio.play('warn');
-      BB.UI.toast('Bu vida bekleme yuvasina gitmez. Uygun kutu gerekli.', 1900);
+      BB.UI.toast('Bu vida bekleme yuvasına gitmez. Uygun kutu gerekli.', 1900);
       R.spin(s, 260).then(function () {
         var el = R.screwEls[s.id];
         if (el) el.querySelector('.screw-spin').setAttribute('transform', '');
@@ -581,7 +581,7 @@
     canUndo: function () { return this.undoStack.length > 0 && !this.busy; },
 
     undo: function (free) {
-      if (!this.undoStack.length) { BB.UI.toast('Geri alinacak hamle yok.', 1400); return false; }
+      if (!this.undoStack.length) { BB.UI.toast('Geri alınacak hamle yok.', 1400); return false; }
       if (this.busy) { BB.UI.toast('Animasyon bitsin.', 1200); return false; }
       var snap = this.undoStack.pop();
       var self = this, L = this.level;
@@ -718,13 +718,13 @@
      ============================================================ */
   var Boosters = {
     defs: {
-      hammer: { name: 'Cekic', hint: 'Bir vidayi aninda kaldirir.', icon: 'hammer' },
-      undo: { name: 'Geri Al', hint: 'Son hamleyi geri alir.', icon: 'undo' },
-      brush: { name: 'Firca', hint: 'Bekleyen bir vidanin rengini degistirir.', icon: 'brush' },
-      slot: { name: 'Ek Yuva', hint: 'Bekleme alanina 1 yuva ekler.', icon: 'slot' },
-      magnet: { name: 'Miknatis', hint: 'Uyan tum acik vidalari toplar.', icon: 'magnet' },
-      xray: { name: 'X-Ray', hint: 'Kapali vidalari gosterir.', icon: 'xray' },
-      swap: { name: 'Kutu Degistir', hint: 'Bir kutuyu siradakiyle degistirir.', icon: 'swap' }
+      hammer: { name: 'Çekiç', hint: 'Bir vidayı anında kaldırır.', icon: 'hammer' },
+      undo: { name: 'Geri Al', hint: 'Son hamleyi geri alır.', icon: 'undo' },
+      brush: { name: 'Fırça', hint: 'Bekleyen bir vidanın rengini değiştirir.', icon: 'brush' },
+      slot: { name: 'Ek Yuva', hint: 'Bekleme alanına 1 yuva ekler.', icon: 'slot' },
+      magnet: { name: 'Mıknatıs', hint: 'Uyan tüm açık vidaları toplar.', icon: 'magnet' },
+      xray: { name: 'X-Ray', hint: 'Kapalı vidaları gösterir.', icon: 'xray' },
+      swap: { name: 'Kutu Değiştir', hint: 'Bir kutuyu sıradakiyle değiştirir.', icon: 'swap' }
     },
     order: ['hammer', 'undo', 'brush', 'slot', 'magnet', 'xray', 'swap'],
 
@@ -733,7 +733,7 @@
       if (G.state !== Game.STATES.PLAYING) return;
       var inv = BB.Save.data.boosters;
       if (G.boosterMode === key) { this.cancel(); return; }
-      if ((inv[key] || 0) <= 0) { BB.UI.toast(this.defs[key].name + ' kalmadi. Magazadan alabilirsin.', 2000); BB.Audio.play('warn'); return; }
+      if ((inv[key] || 0) <= 0) { BB.UI.toast(this.defs[key].name + ' kalmadı. Mağazadan alabilirsin.', 2000); BB.Audio.play('warn'); return; }
       if (G.busy) { BB.UI.toast('Animasyon bitsin.', 1200); return; }
       G.touch();
 
@@ -760,9 +760,9 @@
       }
     },
     promptFor: function (key) {
-      if (key === 'hammer') return 'Kaldirmak istedigin vidaya dokun.';
-      if (key === 'brush') return 'Bekleme yuvasindaki bir vidaya dokun.';
-      if (key === 'swap') return 'Degistirmek istedigin kutuya dokun.';
+      if (key === 'hammer') return 'Kaldırmak istediğin vidaya dokun.';
+      if (key === 'brush') return 'Bekleme yuvasındaki bir vidaya dokun.';
+      if (key === 'swap') return 'Değiştirmek istediğin kutuya dokun.';
       return '';
     },
     cancel: function () {
@@ -782,7 +782,7 @@
     applyToScrew: function (s) {
       var G = Game;
       if (G.boosterMode === 'hammer') {
-        if (!G.isAccessible(s)) { BB.UI.toast('Kapali vidaya cekic islemez.', 1600); BB.Audio.play('warn'); return; }
+        if (!G.isAccessible(s)) { BB.UI.toast('Kapalı vidaya çekiç işlemez.', 1600); BB.Audio.play('warn'); return; }
         G.pushUndo();
         this.consume('hammer');
         G.boosterMode = null;
@@ -801,14 +801,14 @@
         setTimeout(function () { G.checkWin(); }, 60);
         return;
       }
-      BB.UI.toast('Once bekleme yuvasindaki bir vidayi sec.', 1600);
+      BB.UI.toast('Önce bekleme yuvasındaki bir vidayı seç.', 1600);
     },
 
     applyToReserve: function (index) {
       var G = Game;
       if (G.boosterMode !== 'brush') return;
       var s = G.reserve[index];
-      if (!s) { BB.UI.toast('Bu yuva bos.', 1200); return; }
+      if (!s) { BB.UI.toast('Bu yuva boş.', 1200); return; }
       var colors = G.boxes.filter(function (b) { return b; }).map(function (b) { return b.color; });
       colors = colors.filter(function (c, i) { return colors.indexOf(c) === i; });
       if (!colors.length) { BB.UI.toast('Aktif kutu yok.', 1400); return; }
@@ -828,7 +828,7 @@
       var G = Game;
       if (G.boosterMode !== 'swap') return;
       var L = G.level;
-      if (L.queueIndex >= L.boxQueue.length) { BB.UI.toast('Sirada kutu yok.', 1400); return; }
+      if (L.queueIndex >= L.boxQueue.length) { BB.UI.toast('Sırada kutu yok.', 1400); return; }
       G.pushUndo();
       this.consume('swap');
       G.boosterMode = null;
@@ -854,7 +854,7 @@
         var t = G.findTarget(s.color);
         return t && t.kind === 'box';
       });
-      if (!cands.length) { BB.UI.toast('Su an uyan acik vida yok.', 1600); return; }
+      if (!cands.length) { BB.UI.toast('Şu an uyan açık vida yok.', 1600); return; }
       this.consume('magnet');
       G.pushUndo();
       BB.Audio.play('booster');
@@ -878,7 +878,7 @@
       G.xray = true;
       BB.Renderer.syncVisibility(G.level, true);
       BB.Audio.play('booster');
-      BB.UI.toast('Kapali vidalar 5 saniye gorunur.', 2000);
+      BB.UI.toast('Kapalı vidalar 5 saniye görünür.', 2000);
       setTimeout(function () {
         G.xray = false;
         BB.Renderer.syncVisibility(G.level, false);
@@ -892,10 +892,10 @@
   var Tutorial = {
     steps: [
       { text: 'Merhaba! Ben Pip. Parlayan vidaya dokun.', target: 'screw' },
-      { text: 'Vidalar kendi renk kutularina gider.', target: 'boxes' },
-      { text: 'Uymayan vidalar buradaki gecici yuvalarda bekler.', target: 'tray' },
-      { text: 'Yuvalarin hepsini doldurma, yoksa bolum biter.', target: 'tray' },
-      { text: 'Parcalari serbest birakmak icin dogru sirayi bul. Hazirsin!', target: null }
+      { text: 'Vidalar kendi renk kutularına gider.', target: 'boxes' },
+      { text: 'Uymayan vidalar buradaki geçici yuvalarda bekler.', target: 'tray' },
+      { text: 'Yuvaların hepsini doldurma, yoksa bölüm biter.', target: 'tray' },
+      { text: 'Parçaları serbest bırakmak için doğru sırayı bul. Hazırsın!', target: null }
     ],
     idx: 0, active: false,
     start: function () {

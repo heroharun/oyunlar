@@ -6,32 +6,74 @@
 <style>
   :root{ --bg:#fff8f0; --ink:#5a4a3a; --dim:#b8a590; }
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  html,body{height:100%;overflow:hidden;color:var(--ink);
     font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-  #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:8px;
+  body{background:
+    radial-gradient(circle at 16% 10%, rgba(255,255,255,.6), transparent 45%),
+    radial-gradient(circle at 88% 92%, rgba(216,124,62,.16), transparent 50%),
+    linear-gradient(165deg,#fff3e0 0%,#ffe2c0 48%,#f7cda2 100%)}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 50% 42%, transparent 52%, rgba(120,70,30,.13) 100%)}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.42;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8C24 8 6 26 6 48c0 22 18 40 44 40 7 0 9-5 6-10-4-7 1-13 9-13h10c10 0 19-8 19-19C94 24 74 8 50 8z' fill='%23dd9a5e'/%3E%3Ccircle cx='32' cy='34' r='7' fill='%23d95c4c'/%3E%3Ccircle cx='55' cy='26' r='7' fill='%23e8ab3a'/%3E%3Ccircle cx='74' cy='40' r='7' fill='%236aa568'/%3E%3Ccircle cx='30' cy='58' r='7' fill='%235c88c4'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg transform='rotate(-28 50 50)'%3E%3Crect x='44' y='4' width='12' height='46' rx='5' fill='%23ab7647'/%3E%3Crect x='42' y='48' width='16' height='10' rx='3' fill='%23949aa6'/%3E%3Cpath d='M40 58h20l-4 26c-1 6-11 6-12 0z' fill='%23d95c4c'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat:no-repeat,no-repeat;
+    background-position:right -34px top -26px,left -22px bottom 64px;
+    background-size:150px 150px,138px 138px}
+  #wrap{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;gap:8px;
     padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
   header{display:flex;align-items:center;gap:10px;width:min(94vw,480px);justify-content:space-between}
-  h1{font-size:20px;font-weight:900}
-  .pick{display:flex;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  h1{font-size:20px;font-weight:900;text-shadow:0 1px 0 rgba(255,255,255,.8)}
+  .pick{display:flex;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+    padding:3px 2px}
   .pick::-webkit-scrollbar{display:none}
   @media(max-width:520px){#wrap{padding-bottom:64px}}
-  .pickbtn{font:inherit;font-size:22px;background:#fff;border:2px solid #eaddcd;border-radius:12px;
-    width:44px;height:44px;cursor:pointer}
-  .pickbtn.on{border-color:#ff9f5f;background:#fff2e8}
-  #svgbox{flex:1;min-height:0;width:min(94vw,480px);background:#fff;border-radius:20px;
-    box-shadow:0 8px 26px rgba(90,74,58,.12);display:flex;align-items:center;justify-content:center;
-    padding:10px}
-  svg{width:100%;height:100%}
+  .pickbtn{font:inherit;font-size:22px;flex:0 0 auto;width:44px;height:44px;cursor:pointer;
+    background:linear-gradient(180deg,#ffffff,#fdf1e2);border:2px solid #eedcc2;border-radius:14px;
+    box-shadow:0 2px 0 #e6d2b4,0 4px 10px rgba(140,90,40,.14);transition:transform .12s,box-shadow .12s}
+  .pickbtn:active{transform:translateY(1px)}
+  .pickbtn.on{border-color:#ff9448;background:linear-gradient(180deg,#fff4e6,#ffe2c4);
+    box-shadow:0 0 0 3px rgba(255,148,72,.4),0 3px 9px rgba(230,120,40,.3)}
+  #svgbox{position:relative;overflow:hidden;flex:1;min-height:0;width:min(94vw,480px);
+    background:linear-gradient(180deg,#ffffff,#fffcf5);border:1px solid #f1e3cc;border-radius:20px;
+    box-shadow:0 2px 4px rgba(100,64,28,.08),0 14px 34px rgba(150,95,40,.22),0 34px 64px -24px rgba(150,95,40,.28);
+    display:flex;align-items:center;justify-content:center;padding:10px}
+  #svgbox::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background-image:radial-gradient(rgba(150,110,70,.055) 1px,transparent 1.4px);background-size:13px 13px}
+  svg{width:100%;height:100%;position:relative}
   svg .r{cursor:pointer;stroke:#5a4a3a;stroke-width:3;stroke-linejoin:round;transition:fill .15s}
   #palette{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;width:min(94vw,480px);padding:4px 0}
   .swatch{width:32px;height:32px;border-radius:50%;border:2.5px solid #fff;cursor:pointer;
-    box-shadow:0 2px 6px rgba(90,74,58,.25);transition:transform .1s}
+    box-shadow:inset 0 3px 4px rgba(255,255,255,.55),inset 0 -3px 4px rgba(0,0,0,.14),0 2px 6px rgba(90,74,58,.28);
+    transition:transform .1s}
   .swatch.on{transform:scale(1.22);border-color:#5a4a3a}
   #tools{display:flex;gap:8px}
-  .tool{font:inherit;font-size:13px;font-weight:800;letter-spacing:.04em;color:var(--ink);
-    background:#fff;border:2px solid #eaddcd;border-radius:999px;padding:9px 16px;cursor:pointer}
-  .tool:active{background:#fff2e8}
+  .tool{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:800;
+    letter-spacing:.03em;color:var(--ink);cursor:pointer;
+    background:linear-gradient(180deg,#ffffff,#f8ecdb);border:2px solid #e6d4bb;border-radius:999px;padding:9px 14px;
+    box-shadow:0 2px 0 #d9c5a6,0 5px 12px rgba(140,90,40,.16);transition:transform .1s,box-shadow .1s}
+  .tool:active{transform:translateY(1px);box-shadow:0 1px 0 #d9c5a6,0 3px 8px rgba(140,90,40,.14)}
+  .tool svg{width:16px;height:16px;flex:0 0 auto}
+  @media(max-width:420px){
+    #tools{gap:6px;flex-wrap:wrap;justify-content:center;width:min(94vw,480px)}
+    .tool{font-size:12px;padding:8px 10px;gap:4px}
+    .tool svg{width:14px;height:14px}}
+  /* ✨ boyama geri bildirimi */
+  @keyframes sprkA{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.15);opacity:0}}
+  .sprk{position:absolute;width:12px;height:12px;pointer-events:none;z-index:6;
+    clip-path:polygon(50% 0,63% 37%,100% 50%,63% 63%,50% 100%,37% 63%,0 50%,37% 37%);
+    animation:sprkA .6s ease-out forwards}
+  #bravo{position:fixed;left:50%;top:32%;transform:translate(-50%,-50%) scale(0);z-index:60;
+    background:linear-gradient(180deg,#ffb347,#ff8a3c);color:#fff;font-weight:900;font-size:26px;
+    letter-spacing:.05em;padding:14px 34px;border-radius:999px;white-space:nowrap;
+    box-shadow:0 10px 30px rgba(200,90,20,.45);pointer-events:none;
+    transition:transform .35s cubic-bezier(.2,1.6,.4,1)}
+  #bravo.show{transform:translate(-50%,-50%) scale(1)}
+  @keyframes confFall{to{transform:translateY(112vh) rotate(720deg)}}
+  .conf{position:fixed;top:-16px;width:10px;height:14px;z-index:55;pointer-events:none;border-radius:3px;
+    animation:confFall linear forwards}
 </style>
 
 <div id="wrap">
@@ -43,10 +85,10 @@
   <div id="palette"></div>
   <div id="picName" style="font-size:15px;font-weight:900;letter-spacing:.08em;color:#8a6d4e;text-transform:uppercase"></div>
   <div id="tools">
-    <button class="tool" id="newPicBtn" style="background:#ffe8c8;border-color:#e8b45f">🎲 Yeni Resim</button>
-    <button class="tool" id="dlBtn" style="background:#e0f0e8;border-color:#7cb356">📥 İndir</button>
-    <button class="tool" id="eraseBtn">🧽 Sil</button>
-    <button class="tool" id="clearBtn">🗑️ Temizle</button>
+    <button class="tool" id="newPicBtn" style="background:linear-gradient(180deg,#fff0d4,#ffdfa4);border-color:#e8b45f"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="#fff" stroke="#8a5a2a" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.8" fill="#8a5a2a"/><circle cx="15.5" cy="8.5" r="1.8" fill="#8a5a2a"/><circle cx="12" cy="12" r="1.8" fill="#e8834a"/><circle cx="8.5" cy="15.5" r="1.8" fill="#8a5a2a"/><circle cx="15.5" cy="15.5" r="1.8" fill="#8a5a2a"/></svg>Yeni Resim</button>
+    <button class="tool" id="dlBtn" style="background:linear-gradient(180deg,#e6f5ec,#cdeadb);border-color:#7cb356"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10m0 0l-4.5-4.5M12 13l4.5-4.5" fill="none" stroke="#2e7a4a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V16" fill="none" stroke="#2e7a4a" stroke-width="2.6" stroke-linecap="round"/></svg>İndir</button>
+    <button class="tool" id="eraseBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 20l-5.2-5.2a2 2 0 0 1 0-2.8l7.3-7.3a2 2 0 0 1 2.8 0l4.6 4.6a2 2 0 0 1 0 2.8L11.5 20" fill="#f4a6b8" stroke="#7a4a5a" stroke-width="2" stroke-linejoin="round"/><path d="M7.2 9.5l7.3 7.3" stroke="#7a4a5a" stroke-width="2"/><path d="M9.5 20h11" stroke="#7a4a5a" stroke-width="2" stroke-linecap="round"/></svg>Sil</button>
+    <button class="tool" id="clearBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 7h13l-1 13a2 2 0 0 1-2 1.8h-7A2 2 0 0 1 6.5 20z" fill="#c9d4e2" stroke="#4a5a6a" stroke-width="2" stroke-linejoin="round"/><path d="M3.5 7h17M9.5 7V4.8A1.3 1.3 0 0 1 10.8 3.5h2.4a1.3 1.3 0 0 1 1.3 1.3V7M10 11v6m4-6v6" fill="none" stroke="#4a5a6a" stroke-width="2" stroke-linecap="round"/></svg>Temizle</button>
   </div>
 </div>
 
@@ -55,55 +97,92 @@
 /* Her resim: isim + svg parçaları (id'li bölgeler .r sınıfıyla) */
 const PICS={
   kedi:{ icon:'🐱', vb:'0 0 300 300', parts:`
-    <ellipse class="r" id="k_govde" cx="150" cy="200" rx="75" ry="60"/>
-    <circle class="r" id="k_kafa" cx="150" cy="110" r="55"/>
-    <polygon class="r" id="k_kulak1" points="103,75 95,25 135,60"/>
-    <polygon class="r" id="k_kulak2" points="197,75 205,25 165,60"/>
-    <ellipse class="r" id="k_kuyruk" cx="235" cy="180" rx="14" ry="55" transform="rotate(30 235 180)"/>
-    <circle class="r" id="k_goz1" cx="130" cy="102" r="9"/>
-    <circle class="r" id="k_goz2" cx="170" cy="102" r="9"/>
-    <ellipse class="r" id="k_burun" cx="150" cy="122" rx="8" ry="6"/>
-    <ellipse class="r" id="k_pati1" cx="115" cy="252" rx="18" ry="12"/>
-    <ellipse class="r" id="k_pati2" cx="185" cy="252" rx="18" ry="12"/>`},
+    <path class="r" id="k_kuyruk" d="M208,232 Q258,228 264,186 Q266,158 244,156 Q230,156 230,170 Q246,172 246,186 Q240,214 202,216Z"/>
+    <circle class="r" id="k_kuyrukucu" cx="238" cy="164" r="11"/>
+    <path class="r" id="k_govde" d="M150,164 Q208,170 213,226 Q215,262 150,264 Q85,262 87,226 Q92,170 150,164Z"/>
+    <ellipse class="r" id="k_gobek" cx="150" cy="228" rx="36" ry="27"/>
+    <ellipse class="r" id="k_pati1" cx="114" cy="258" rx="20" ry="12"/>
+    <ellipse class="r" id="k_pati2" cx="186" cy="258" rx="20" ry="12"/>
+    <circle class="r" id="k_kafa" cx="150" cy="112" r="60"/>
+    <path class="r" id="k_kulak1" d="M98,80 Q82,22 114,18 Q142,26 146,60 Q120,62 98,80Z"/>
+    <path class="r" id="k_kulak2" d="M202,80 Q218,22 186,18 Q158,26 154,60 Q180,62 202,80Z"/>
+    <path class="r" id="k_kulakic1" d="M108,62 Q102,36 118,33 Q132,39 134,56 Q120,56 108,62Z"/>
+    <path class="r" id="k_kulakic2" d="M192,62 Q198,36 182,33 Q168,39 166,56 Q180,56 192,62Z"/>
+    <circle class="r" id="k_goz1" cx="128" cy="100" r="12"/>
+    <circle class="r" id="k_goz2" cx="172" cy="100" r="12"/>
+    <circle class="r" id="k_bebek1" cx="130" cy="102" r="5"/>
+    <circle class="r" id="k_bebek2" cx="170" cy="102" r="5"/>
+    <path class="r" id="k_burun" d="M141,124 L159,124 Q154,138 150,138 Q146,138 141,124Z"/>
+    <path class="r" id="k_agiz" d="M150,138 Q150,148 138,150 M150,138 Q150,148 162,150" fill="none"/>
+    <path class="r" id="k_biyik" d="M100,112 L74,106 M101,121 L76,124 M200,112 L226,106 M199,121 L224,124" fill="none" stroke-width="2"/>`},
   kelebek:{ icon:'🦋', vb:'0 0 300 300', parts:`
-    <ellipse class="r" id="b_govde" cx="150" cy="160" rx="13" ry="60"/>
-    <circle class="r" id="b_kafa" cx="150" cy="85" r="16"/>
-    <ellipse class="r" id="b_kanat1" cx="95" cy="125" rx="48" ry="38" transform="rotate(-20 95 125)"/>
-    <ellipse class="r" id="b_kanat2" cx="205" cy="125" rx="48" ry="38" transform="rotate(20 205 125)"/>
-    <ellipse class="r" id="b_kanat3" cx="103" cy="195" rx="38" ry="32" transform="rotate(15 103 195)"/>
-    <ellipse class="r" id="b_kanat4" cx="197" cy="195" rx="38" ry="32" transform="rotate(-15 197 195)"/>
-    <circle class="r" id="b_ben1" cx="95" cy="120" r="12"/>
-    <circle class="r" id="b_ben2" cx="205" cy="120" r="12"/>
-    <path class="r" id="b_anten" d="M143,72 Q130,45 118,42 M157,72 Q170,45 182,42" fill="none"/>`},
+    <path class="r" id="b_kanat1" d="M138,120 Q60,52 38,102 Q26,146 84,166 Q120,176 138,148Z"/>
+    <path class="r" id="b_kanat2" d="M162,120 Q240,52 262,102 Q274,146 216,166 Q180,176 162,148Z"/>
+    <path class="r" id="b_kanat3" d="M138,172 Q76,178 66,220 Q64,254 106,248 Q136,240 140,204Z"/>
+    <path class="r" id="b_kanat4" d="M162,172 Q224,178 234,220 Q236,254 194,248 Q164,240 160,204Z"/>
+    <circle class="r" id="b_ben1" cx="88" cy="112" r="16"/>
+    <circle class="r" id="b_ben1i" cx="88" cy="112" r="7"/>
+    <circle class="r" id="b_ben2" cx="212" cy="112" r="16"/>
+    <circle class="r" id="b_ben2i" cx="212" cy="112" r="7"/>
+    <path class="r" id="b_damla1" d="M100,204 q-13,17 0,24 q13,-7 0,-24Z"/>
+    <path class="r" id="b_damla2" d="M200,204 q13,17 0,24 q-13,-7 0,-24Z"/>
+    <ellipse class="r" id="b_govde" cx="150" cy="165" rx="14" ry="55"/>
+    <path class="r" id="b_cizgi" d="M138,144 L162,144 M137,164 L163,164 M138,184 L162,184" fill="none" stroke-width="2.5"/>
+    <circle class="r" id="b_kafa" cx="150" cy="92" r="19"/>
+    <circle class="r" id="b_goz1" cx="143" cy="88" r="4.5"/>
+    <circle class="r" id="b_goz2" cx="157" cy="88" r="4.5"/>
+    <path class="r" id="b_gulus" d="M143,99 Q150,104 157,99" fill="none" stroke-width="2.5"/>
+    <path class="r" id="b_anten" d="M143,75 Q132,52 123,48 M157,75 Q168,52 177,48" fill="none"/>
+    <circle class="r" id="b_antenucu1" cx="121" cy="45" r="6"/>
+    <circle class="r" id="b_antenucu2" cx="179" cy="45" r="6"/>`},
   araba:{ icon:'🚗', vb:'0 0 300 300', parts:`
-    <rect class="r" id="a_govde" x="35" y="160" width="230" height="55" rx="16"/>
-    <path class="r" id="a_tavan" d="M85,160 L110,110 L200,110 L225,160 Z"/>
-    <rect class="r" id="a_cam" x="120" y="120" width="70" height="40" rx="6"/>
-    <circle class="r" id="a_teker1" cx="90" cy="222" r="26"/>
-    <circle class="r" id="a_teker2" cx="210" cy="222" r="26"/>
-    <circle class="r" id="a_jant1" cx="90" cy="222" r="11"/>
-    <circle class="r" id="a_jant2" cx="210" cy="222" r="11"/>
-    <rect class="r" id="a_far" x="252" y="172" width="14" height="14" rx="4"/>`},
+    <path class="r" id="a_yol" d="M0,246 Q150,238 300,246 L300,300 L0,300Z"/>
+    <path class="r" id="a_yolciz" d="M28,268 L64,268 M96,268 L132,268 M164,268 L200,268 M232,268 L268,268" fill="none" stroke-width="4"/>
+    <ellipse class="r" id="a_duman1" cx="24" cy="204" rx="11" ry="8"/>
+    <ellipse class="r" id="a_duman2" cx="12" cy="188" rx="8" ry="6"/>
+    <path class="r" id="a_govde" d="M36,208 Q30,162 64,154 L82,150 Q106,104 150,102 Q194,104 218,150 L236,154 Q270,162 264,208 Q264,220 248,220 L52,220 Q36,220 36,208Z"/>
+    <path class="r" id="a_cam1" d="M114,120 Q132,110 146,110 L146,148 L106,148Z"/>
+    <path class="r" id="a_cam2" d="M154,110 Q168,110 186,120 L194,148 L154,148Z"/>
+    <path class="r" id="a_kapi" d="M150,152 L150,216 M106,152 Q150,146 194,152" fill="none" stroke-width="2.5"/>
+    <circle class="r" id="a_teker1" cx="84" cy="218" r="27"/>
+    <circle class="r" id="a_teker2" cx="216" cy="218" r="27"/>
+    <circle class="r" id="a_jant1" cx="84" cy="218" r="11"/>
+    <circle class="r" id="a_jant2" cx="216" cy="218" r="11"/>
+    <circle class="r" id="a_far" cx="250" cy="176" r="10"/>
+    <rect class="r" id="a_stop" x="40" y="168" width="12" height="16" rx="5"/>`},
   cicek:{ icon:'🌸', vb:'0 0 300 300', parts:`
-    <rect class="r" id="c_sap" x="143" y="150" width="14" height="110" rx="6"/>
-    <ellipse class="r" id="c_yaprak1" cx="115" cy="215" rx="30" ry="14" transform="rotate(-30 115 215)"/>
-    <ellipse class="r" id="c_yaprak2" cx="185" cy="235" rx="30" ry="14" transform="rotate(30 185 235)"/>
-    <circle class="r" id="c_tac1" cx="150" cy="70" r="26"/>
-    <circle class="r" id="c_tac2" cx="112" cy="98" r="26"/>
-    <circle class="r" id="c_tac3" cx="188" cy="98" r="26"/>
-    <circle class="r" id="c_tac4" cx="126" cy="140" r="26"/>
-    <circle class="r" id="c_tac5" cx="174" cy="140" r="26"/>
-    <circle class="r" id="c_orta" cx="150" cy="108" r="22"/>`},
+    <path class="r" id="c_zemin" d="M0,268 Q150,252 300,268 L300,300 L0,300Z"/>
+    <circle class="r" id="c_gunes" cx="254" cy="48" r="19"/>
+    <path class="r" id="c_isin" d="M254,16 L254,24 M226,20 L232,28 M282,20 L276,28 M222,48 L230,48 M286,48 L278,48" fill="none" stroke-width="3"/>
+    <path class="r" id="c_sap" d="M145,152 Q139,212 147,264 L161,264 Q155,212 157,152Z"/>
+    <path class="r" id="c_yaprak1" d="M148,216 Q112,196 96,206 Q92,232 128,238 Q144,232 148,216Z"/>
+    <path class="r" id="c_yaprak2" d="M154,190 Q190,170 206,180 Q210,206 174,212 Q158,206 154,190Z"/>
+    <path class="r" id="c_damar" d="M104,212 Q126,220 142,222 M198,186 Q176,194 160,196" fill="none" stroke-width="2"/>
+    <circle class="r" id="c_tac1" cx="150" cy="62" r="25"/>
+    <circle class="r" id="c_tac2" cx="186" cy="83" r="25"/>
+    <circle class="r" id="c_tac3" cx="186" cy="125" r="25"/>
+    <circle class="r" id="c_tac4" cx="150" cy="146" r="25"/>
+    <circle class="r" id="c_tac5" cx="114" cy="125" r="25"/>
+    <circle class="r" id="c_tac6" cx="114" cy="83" r="25"/>
+    <circle class="r" id="c_orta" cx="150" cy="104" r="26"/>
+    <circle class="r" id="c_goz1" cx="142" cy="99" r="3.6"/>
+    <circle class="r" id="c_goz2" cx="158" cy="99" r="3.6"/>
+    <path class="r" id="c_gulus" d="M141,111 Q150,118 159,111" fill="none" stroke-width="2.5"/>`},
   balik:{ icon:'🐠', vb:'0 0 300 300', parts:`
-    <ellipse class="r" id="f_govde" cx="140" cy="150" rx="85" ry="55"/>
-    <polygon class="r" id="f_kuyruk" points="215,150 275,105 275,195"/>
-    <polygon class="r" id="f_yuzgec1" points="120,98 150,60 165,100"/>
-    <polygon class="r" id="f_yuzgec2" points="120,202 150,240 165,200"/>
-    <circle class="r" id="f_goz" cx="90" cy="135" r="12"/>
-    <path class="r" id="f_cizgi1" d="M130,100 Q120,150 130,200" fill="none"/>
-    <path class="r" id="f_cizgi2" d="M165,100 Q155,150 165,200" fill="none"/>
-    <circle class="r" id="f_kabar1" cx="45" cy="90" r="8"/>
-    <circle class="r" id="f_kabar2" cx="30" cy="60" r="6"/>`},
+    <circle class="r" id="f_kabar1" cx="42" cy="86" r="9"/>
+    <circle class="r" id="f_kabar2" cx="28" cy="58" r="7"/>
+    <circle class="r" id="f_kabar3" cx="48" cy="34" r="6"/>
+    <path class="r" id="f_kuyruk" d="M218,150 Q250,116 272,110 Q266,140 254,150 Q266,160 272,190 Q250,184 218,150Z"/>
+    <path class="r" id="f_yuzgec1" d="M118,96 Q136,56 170,60 Q160,84 150,94Z"/>
+    <path class="r" id="f_govde" d="M60,150 Q66,96 148,92 Q218,98 226,146 Q222,200 148,206 Q66,202 60,150Z"/>
+    <path class="r" id="f_karin" d="M74,182 Q140,206 208,180 Q180,204 148,206 Q102,202 74,182Z"/>
+    <path class="r" id="f_yuzgec2" d="M126,158 Q150,150 160,166 Q148,186 126,180 Q120,168 126,158Z"/>
+    <circle class="r" id="f_pul1" cx="176" cy="132" r="10"/>
+    <circle class="r" id="f_pul2" cx="196" cy="152" r="9"/>
+    <circle class="r" id="f_pul3" cx="172" cy="170" r="9"/>
+    <circle class="r" id="f_goz" cx="100" cy="130" r="13"/>
+    <circle class="r" id="f_bebek" cx="103" cy="132" r="5.5"/>
+    <path class="r" id="f_agiz" d="M68,158 Q80,168 96,164" fill="none" stroke-width="2.5"/>`},
 };
 const PALETTE=['#ff5f5f','#e84a5f','#ff8a5f','#ff9f43','#ffd93d','#ffe08a',
   '#a8e05f','#7bc47f','#2e8f5a','#63e6be','#7fdbda','#4ab8ff',
@@ -159,7 +238,9 @@ const GEN={
     return p;
   },
   bahce(r){
-    let p=`<circle class="r" id="gun" cx="${40+r()*40|0}" cy="45" r="24"/>
+    const gx=40+r()*40|0;
+    let p=`<circle class="r" id="gun" cx="${gx}" cy="45" r="24"/>
+      <path class="r" id="gunray" d="M${gx},6 L${gx},15 M${gx-36},45 L${gx-28},45 M${gx+36},45 L${gx+28},45 M${gx-27},18 L${gx-21},24 M${gx+27},18 L${gx+21},24" fill="none" stroke-width="3"/>
       <ellipse class="r" id="bulut" cx="${190+r()*60|0}" cy="50" rx="36" ry="15"/>
       <path class="r" id="cimen" d="M0,255 Q75,${238+r()*12|0} 150,250 Q225,${240+r()*12|0} 300,252 L300,300 L0,300Z"/>`;
     const n=3+Math.floor(r()*3);
@@ -199,12 +280,14 @@ const GEN={
       <polygon class="r" id="ecati" points="65,150 150,85 235,150"/>
       <path class="r" id="ekapi" d="M130,255 L130,205 a20,20 0 0 1 40,0 L170,255 Z"/>
       <circle class="r" id="etok" cx="162" cy="228" r="4"/>`;
-    for(let i=0;i<pen;i++) p+=`<rect class="r" id="epen${i}" x="${94+i*74}" y="168" width="34" height="30" rx="4"/>`;
+    for(let i=0;i<pen;i++) p+=`<rect class="r" id="epen${i}" x="${94+i*74}" y="168" width="34" height="30" rx="4"/>
+      <path class="r" id="epenc${i}" d="M${94+i*74+17},168 L${94+i*74+17},198 M${94+i*74},183 L${94+i*74+34},183" fill="none" stroke-width="2"/>`;
     if(baca) p+=`<rect class="r" id="ebaca" x="192" y="98" width="20" height="40"/>
       <ellipse class="r" id="eduman" cx="205" cy="80" rx="16" ry="10"/>`;
     p+=`<circle class="r" id="eagac" cx="45" cy="185" r="32"/>
       <rect class="r" id="egovde2" x="39" y="210" width="12" height="45" rx="5"/>
-      <circle class="r" id="egun" cx="255" cy="50" r="20"/>`;
+      <circle class="r" id="egun" cx="255" cy="50" r="20"/>
+      <path class="r" id="egunray" d="M255,16 L255,25 M226,22 L232,30 M284,22 L278,30 M222,50 L230,50 M288,50 L280,50" fill="none" stroke-width="3"/>`;
     return p;
   },
   apartman(r){
@@ -1193,6 +1276,47 @@ document.getElementById('dlBtn').addEventListener('click',()=>{
   };
   img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(data);
 });
+/* ✨ görsel geri bildirim: parıltı + tamamlama kutlaması (oyun mantığına dokunmaz) */
+const doneSet=new Set();
+const bravo=document.createElement('div');
+bravo.id='bravo'; bravo.textContent='Harikasın! 🌟';
+document.body.appendChild(bravo);
+function sparkle(x,y){
+  const rb=box.getBoundingClientRect();
+  const cols=['#ffd93d','#ff8a5f','#ffffff','#ffb3c8','#7fdbda','#b28aff'];
+  for(let i=0;i<6;i++){
+    const s=document.createElement('i'); s.className='sprk';
+    const a=Math.random()*6.283, d=16+Math.random()*28;
+    s.style.left=(x-rb.left-6)+'px'; s.style.top=(y-rb.top-6)+'px';
+    s.style.background=cols[i%cols.length];
+    s.style.setProperty('--dx',(Math.cos(a)*d).toFixed(0)+'px');
+    s.style.setProperty('--dy',(Math.sin(a)*d).toFixed(0)+'px');
+    box.appendChild(s); setTimeout(()=>s.remove(),650);
+  }
+}
+function celebrate(){
+  bravo.classList.add('show');
+  setTimeout(()=>bravo.classList.remove('show'),2400);
+  const cols=['#ff5f5f','#ffd93d','#7bc47f','#4ab8ff','#b28aff','#ff8fc0','#ff9f43'];
+  for(let i=0;i<46;i++){
+    const c=document.createElement('i'); c.className='conf';
+    c.style.left=(Math.random()*100).toFixed(1)+'vw';
+    c.style.background=cols[i%cols.length];
+    c.style.animationDuration=(1.6+Math.random()*1.4).toFixed(2)+'s';
+    c.style.animationDelay=(Math.random()*0.5).toFixed(2)+'s';
+    document.body.appendChild(c); setTimeout(()=>c.remove(),3800);
+  }
+}
+box.addEventListener('click',e=>{
+  const t=e.target&&e.target.closest?e.target.closest('.r'):null;
+  if(!t) return;
+  const f=t.getAttribute('fill');
+  if(f&&f!=='none'&&f!=='#ffffff') sparkle(e.clientX,e.clientY);
+  if(doneSet.has(curPic)) return;
+  const rs=[...box.querySelectorAll('.r')].filter(el=>el.id!=='__bg'&&el.getAttribute('fill')!=='none');
+  if(rs.length&&rs.every(el=>el.getAttribute('fill')!=='#ffffff')){ doneSet.add(curPic); celebrate(); }
+});
+
 /* son rastgele resmi hatırla */
 let opened=false;
 try{ const lg=JSON.parse(localStorage.getItem('boyama_lastgen'));

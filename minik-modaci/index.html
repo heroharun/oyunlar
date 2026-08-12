@@ -6,37 +6,167 @@
 <style>
   :root{ --bg:#fff0f6; --ink:#7a4a66; --dim:#c99ab5; --pink:#ff8fc0; }
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  html,body{height:100%;overflow:hidden;color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 8%, rgba(255,255,255,.6), rgba(255,255,255,0) 40%),
+      radial-gradient(circle at 88% 92%, rgba(255,170,210,.35), rgba(255,170,210,0) 45%),
+      linear-gradient(180deg,#ffeaf4 0%,#ffe0ee 55%,#f4d3e6 100%);
     font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   #wrap{height:100%;display:flex;flex-direction:column;align-items:center;gap:6px;
     padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
-  h1{font-size:20px;font-weight:900}
-  h1 span{color:var(--pink)}
-  #stage{flex:1;min-height:0;width:min(94vw,420px);background:linear-gradient(180deg,#ffe4f0,#fff8fb);
-    border-radius:22px;box-shadow:0 8px 26px rgba(122,74,102,.14);
+  h1{font-size:20px;font-weight:900;letter-spacing:.14em;display:flex;align-items:center;gap:7px;
+    color:#8a4f70;text-shadow:0 1px 0 rgba(255,255,255,.85)}
+  h1 span{color:var(--pink);text-shadow:0 1px 0 rgba(255,255,255,.85)}
+  h1 svg{width:24px;height:24px;flex:0 0 auto;filter:drop-shadow(0 2px 2px rgba(138,79,112,.3))}
+  #stage{flex:1;min-height:0;width:min(94vw,420px);
+    border-radius:22px;overflow:hidden;
+    box-shadow:0 12px 32px rgba(122,74,102,.22), inset 0 0 0 1px rgba(255,255,255,.6);
     display:flex;align-items:center;justify-content:center;padding:8px;position:relative}
-  svg{height:100%;max-width:100%}
-  #rows{display:flex;flex-direction:column;gap:6px;width:min(94vw,420px)}
-  .row{display:flex;align-items:center;gap:8px}
-  .cat{width:74px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
-  .arrow{width:38px;height:38px;border-radius:12px;border:2px solid #f5cade;background:#fff;
+  #scene{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  #doll{position:relative;height:100%;max-width:100%;
+    filter:drop-shadow(0 4px 6px rgba(122,60,95,.18))}
+  #rows{display:flex;flex-direction:column;gap:5px;width:min(94vw,420px);
+    background:linear-gradient(180deg,#ffffff,#fff4f9);
+    border:1px solid #fbdcec;border-radius:18px;padding:7px 10px;
+    box-shadow:0 8px 22px rgba(122,74,102,.14), inset 0 1px 0 #fff}
+  .row{display:flex;align-items:center;gap:8px;padding:2px 0}
+  .row+.row{border-top:1px dashed #f6d9e8;padding-top:5px}
+  .cat{width:74px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    color:#b06a92}
+  .arrow{width:38px;height:38px;border-radius:12px;border:1px solid #f0c3da;
+    background:linear-gradient(180deg,#ffffff,#ffe9f3);
+    box-shadow:0 2px 0 #efc0d8, 0 3px 8px rgba(122,74,102,.14), inset 0 1px 0 #fff;
     font-size:16px;font-weight:900;color:var(--ink);cursor:pointer}
-  .arrow:active{background:#ffe4f0}
+  .arrow:active{background:linear-gradient(180deg,#ffe4f0,#ffd7e9);transform:translateY(1px);
+    box-shadow:0 1px 0 #efc0d8, inset 0 2px 4px rgba(122,74,102,.18)}
   .opts{flex:1;text-align:center;font-size:13px;font-weight:800}
   .colors{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:176px}
-  .cdot{width:22px;height:22px;border-radius:50%;border:2.5px solid #fff;cursor:pointer;
-    box-shadow:0 1px 4px rgba(122,74,102,.3)}
-  .cdot.on{border-color:var(--ink)}
-  #shuffle{position:absolute;top:10px;right:10px;font-size:22px;background:#fff;
-    border:2px solid #f5cade;border-radius:12px;width:44px;height:44px;cursor:pointer}
+  .cdot{position:relative;width:22px;height:22px;border-radius:50%;cursor:pointer;
+    border:1.5px solid rgba(255,255,255,.95);
+    box-shadow:0 2px 5px rgba(90,45,75,.35), inset 0 -4px 6px rgba(0,0,0,.22), inset 0 2px 3px rgba(255,255,255,.45);
+    transition:transform .12s}
+  .cdot::before{content:'';position:absolute;left:16%;top:8%;width:46%;height:38%;border-radius:50%;
+    background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,0) 72%);
+    pointer-events:none}
+  .cdot.on{border-color:#7a4a66;transform:scale(1.18);
+    box-shadow:0 0 0 2px rgba(255,255,255,.9), 0 0 0 3.5px rgba(122,74,102,.5),
+      0 2px 6px rgba(90,45,75,.4), inset 0 -4px 6px rgba(0,0,0,.22), inset 0 2px 3px rgba(255,255,255,.45)}
+  #shuffle{position:absolute;top:10px;right:10px;font-size:22px;z-index:3;
+    background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,233,243,.92));
+    border:1px solid #f0c3da;border-radius:12px;width:44px;height:44px;cursor:pointer;
+    box-shadow:0 2px 0 #efc0d8, 0 4px 10px rgba(122,74,102,.2), inset 0 1px 0 #fff}
+  #shuffle:active,#snap:active{transform:translateY(1px)}
+  /* -- görsel efekt katmanı -- */
+  .sprk{position:absolute;z-index:4;pointer-events:none;font-size:15px;
+    color:#ffdf6e;text-shadow:0 0 6px rgba(255,220,120,.9);
+    animation:sprkA .7s ease-out forwards}
+  @keyframes sprkA{0%{opacity:0;transform:scale(.3) rotate(0deg)}
+    30%{opacity:1;transform:scale(1.15) rotate(40deg)}
+    100%{opacity:0;transform:scale(.4) rotate(120deg) translateY(-18px)}}
+  #flashFX{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:5;border-radius:22px}
+  #flashFX.go{animation:flashA .5s ease-out}
+  @keyframes flashA{0%{opacity:.95}100%{opacity:0}}
+  .conf{position:absolute;top:-12px;width:8px;height:12px;border-radius:2px;z-index:4;pointer-events:none;
+    animation:confA linear forwards}
+  @keyframes confA{0%{transform:translateY(0) rotate(0deg)}
+    100%{transform:translateY(105vh) rotate(660deg);opacity:.4}}
 </style>
 
 <div id="wrap">
-  <h1>👗 MİNİK <span>MODACI</span></h1>
+  <h1><svg viewBox="0 0 24 24" aria-hidden="true">
+      <defs><linearGradient id="hIcoG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffb0d2"/><stop offset="1" stop-color="#ff6fae"/></linearGradient></defs>
+      <circle cx="12" cy="3.2" r="1.8" fill="none" stroke="#b06a92" stroke-width="1.4"/>
+      <path d="M12,5 L12,7 L5,11 L19,11 Z" fill="none" stroke="#b06a92" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M8.5,11 L15.5,11 L18,21 Q12,23.5 6,21 Z" fill="url(#hIcoG)" stroke="#d1518d" stroke-width=".8"/>
+      <circle cx="10" cy="14.5" r=".9" fill="#fff" opacity=".85"/>
+      <circle cx="13.6" cy="17.5" r=".9" fill="#fff" opacity=".7"/>
+    </svg>MİNİK <span>MODACI</span></h1>
   <div id="stage">
+    <svg id="scene" viewBox="0 0 420 560" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="scWall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffeef6"/><stop offset=".62" stop-color="#ffddec"/>
+          <stop offset=".72" stop-color="#f7cbe0"/><stop offset="1" stop-color="#eebbd6"/>
+        </linearGradient>
+        <linearGradient id="scFloor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f3c3da"/><stop offset="1" stop-color="#e4a9c8"/>
+        </linearGradient>
+        <linearGradient id="scCarpet" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ff9ec6"/><stop offset="1" stop-color="#ef7fb2"/>
+        </linearGradient>
+        <linearGradient id="scMirror" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#e8f6ff"/><stop offset=".5" stop-color="#cfe9fb"/>
+          <stop offset="1" stop-color="#b8d9f0"/>
+        </linearGradient>
+        <linearGradient id="scCurt" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#ffc7de"/><stop offset=".5" stop-color="#ffaed0"/>
+          <stop offset="1" stop-color="#f795c0"/>
+        </linearGradient>
+        <radialGradient id="scGlow" cx=".5" cy=".34" r=".62">
+          <stop offset="0" stop-color="#fff" stop-opacity=".55"/>
+          <stop offset=".55" stop-color="#fff" stop-opacity=".12"/>
+          <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="scVin" cx=".5" cy=".46" r=".78">
+          <stop offset="0" stop-color="#7a3c5f" stop-opacity="0"/>
+          <stop offset=".74" stop-color="#7a3c5f" stop-opacity="0"/>
+          <stop offset="1" stop-color="#7a3c5f" stop-opacity=".26"/>
+        </radialGradient>
+      </defs>
+      <rect width="420" height="392" fill="url(#scWall)"/>
+      <rect y="392" width="420" height="168" fill="url(#scFloor)"/>
+      <path d="M0,392 h420 v6 h-420Z" fill="#d795b8" opacity=".6"/>
+      <g stroke="#e9aecb" stroke-width="1.4" opacity=".5">
+        <path d="M70,398 L28,560"/><path d="M175,398 L155,560"/>
+        <path d="M245,398 L265,560"/><path d="M350,398 L392,560"/>
+      </g>
+      <!-- duvar paneli çizgileri -->
+      <g stroke="#f4bcd7" stroke-width="2" opacity=".55" fill="none">
+        <rect x="26" y="40" width="112" height="200" rx="10"/>
+        <rect x="282" y="40" width="112" height="200" rx="10"/>
+      </g>
+      <!-- askı rayı + elbise silüetleri (sol) -->
+      <g opacity=".9">
+        <rect x="18" y="66" width="130" height="5" rx="2.5" fill="#c98fb0"/>
+        <circle cx="24" cy="68" r="4" fill="#b87aa0"/><circle cx="142" cy="68" r="4" fill="#b87aa0"/>
+        <path d="M40,71 v8 l-10,13 l6,40 q4,5 8,0 l6,-40 Z" fill="#f6b6d3" stroke="#e491b8" stroke-width="1"/>
+        <path d="M72,71 v8 l-12,15 l8,52 q4,5 8,0 l8,-52 Z" fill="#c9a6e8" stroke="#b48fd8" stroke-width="1"/>
+        <path d="M106,71 v8 l-9,12 l5,34 q4,5 8,0 l5,-34 Z" fill="#a8d8f0" stroke="#8fc2e2" stroke-width="1"/>
+        <path d="M132,71 v8 l-8,10 l4,28 q4,4 8,0 l4,-28 Z" fill="#ffd9a0" stroke="#ecc088" stroke-width="1"/>
+      </g>
+      <!-- ayna (sağ) -->
+      <g>
+        <ellipse cx="338" cy="150" rx="46" ry="78" fill="none" stroke="#d99b1a" stroke-width="6" opacity=".8"/>
+        <ellipse cx="338" cy="150" rx="40" ry="72" fill="url(#scMirror)"/>
+        <path d="M318,96 Q302,140 316,196" stroke="#fff" stroke-width="7" fill="none" opacity=".65" stroke-linecap="round"/>
+        <path d="M352,102 Q344,130 350,168" stroke="#fff" stroke-width="3.5" fill="none" opacity=".5" stroke-linecap="round"/>
+        <rect x="330" y="226" width="16" height="40" rx="5" fill="#d99b1a" opacity=".75"/>
+        <ellipse cx="338" cy="270" rx="30" ry="7" fill="#c98a12" opacity=".6"/>
+      </g>
+      <!-- tül perdeler -->
+      <g opacity=".5">
+        <path d="M-8,-10 Q46,150 6,420 L-30,420 L-30,-10Z" fill="url(#scCurt)"/>
+        <path d="M428,-10 Q374,150 414,420 L450,420 L450,-10Z" fill="url(#scCurt)"/>
+        <path d="M4,-6 Q40,140 14,380" stroke="#fff" stroke-width="4" fill="none" opacity=".6"/>
+        <path d="M416,-6 Q380,140 406,380" stroke="#fff" stroke-width="4" fill="none" opacity=".6"/>
+      </g>
+      <!-- podyum halısı -->
+      <ellipse cx="210" cy="502" rx="152" ry="38" fill="url(#scCarpet)"/>
+      <ellipse cx="210" cy="498" rx="134" ry="31" fill="#ffb7d6"/>
+      <ellipse cx="210" cy="496" rx="114" ry="25" fill="#ffcbe2" opacity=".8"/>
+      <!-- yumuşak ışık + vinyet -->
+      <rect width="420" height="560" fill="url(#scGlow)"/>
+      <rect width="420" height="560" fill="url(#scVin)"/>
+      <g fill="#fff" opacity=".7">
+        <circle cx="196" cy="34" r="2.2"/><circle cx="236" cy="52" r="1.6"/>
+        <circle cx="164" cy="58" r="1.4"/><circle cx="258" cy="28" r="1.8"/>
+      </g>
+    </svg>
+    <div id="flashFX"></div>
     <button id="shuffle" title="rastgele">🎲</button>
-    <button id="snap" title="resmi kaydet" style="position:absolute;top:10px;left:10px;font-size:22px;background:#fff;border:2px solid #f5cade;border-radius:12px;width:44px;height:44px;cursor:pointer">📸</button>
+    <button id="snap" title="resmi kaydet" style="position:absolute;top:10px;left:10px;font-size:22px;z-index:3;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,233,243,.92));border:1px solid #f0c3da;border-radius:12px;width:44px;height:44px;cursor:pointer;box-shadow:0 2px 0 #efc0d8, 0 4px 10px rgba(122,74,102,.2), inset 0 1px 0 #fff">📸</button>
     <svg viewBox="0 0 240 400" id="doll"></svg>
   </div>
   <div id="rows"></div>
@@ -55,6 +185,16 @@ const TOP_C=['#ff8fc0','#ff5f6d','#ff9f43','#ffd93d','#a8e05f','#4caf6e','#40c4b
   '#4ab8ff','#3a6ea5','#8c5fff','#c46bff','#f7a8d8','#8a5a3a','#3a3a44'];
 const SHOE_C=['#7a4a66','#ff6b6b','#4ab8ff','#1a1a22'];
 const SKIN='#ffd9bd';
+
+/* --- görsel yardımcı: rengi aydınlat/karart (yalnızca çizim katmanı) --- */
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  if(amt>=0){ r+=(255-r)*amt; g+=(255-g)*amt; b+=(255-b)*amt; }
+  else { r*=1+amt; g*=1+amt; b*=1+amt; }
+  const h=v=>('0'+Math.round(Math.max(0,Math.min(255,v))).toString(16)).slice(-2);
+  return '#'+h(r)+h(g)+h(b);
+}
 
 let st={hair:0,hairC:0,top:0,topC:0,shoe:0,shoeC:0,extra:0,motif:0,motifC:0};
 try{ const s=JSON.parse(localStorage.getItem('modaci_save')); if(s) st={...st,...s}; }catch(e){}
@@ -97,8 +237,23 @@ function motifSVG(kind,col){
 }
 function save(){ try{ localStorage.setItem('modaci_save',JSON.stringify(st)); }catch(e){} }
 
+/* --- görsel efekt: giyince minik parıltı --- */
+function sparkFX(){
+  const stg=document.getElementById('stage');
+  for(let i=0;i<5;i++){
+    const s=document.createElement('span'); s.className='sprk';
+    s.textContent=i%2?'✦':'✧';
+    s.style.left=(28+Math.random()*44)+'%';
+    s.style.top=(16+Math.random()*58)+'%';
+    s.style.fontSize=(11+Math.random()*10)+'px';
+    s.style.animationDelay=(Math.random()*0.12)+'s';
+    stg.appendChild(s);
+    setTimeout(()=>s.remove(),950);
+  }
+}
+
 let AC=null;
-function popS(){ try{
+function popS(){ try{sparkFX();}catch(e){} try{
   if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
   if(AC.state==='suspended')AC.resume();
   const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();
@@ -110,62 +265,104 @@ function popS(){ try{
 
 function render(){
   const hc=HAIR_C[st.hairC], tc=TOP_C[st.topC], sc=SHOE_C[st.shoeC];
+  const defs=`<defs>
+    <linearGradient id="gTop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${shade(tc,.34)}"/><stop offset=".5" stop-color="${tc}"/>
+      <stop offset="1" stop-color="${shade(tc,-.24)}"/></linearGradient>
+    <linearGradient id="gHair" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${shade(hc,.26)}"/><stop offset=".55" stop-color="${hc}"/>
+      <stop offset="1" stop-color="${shade(hc,-.22)}"/></linearGradient>
+    <linearGradient id="gShoe" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${shade(sc,.32)}"/><stop offset="1" stop-color="${shade(sc,-.2)}"/></linearGradient>
+    <linearGradient id="gSkin" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${shade(SKIN,.22)}"/><stop offset=".55" stop-color="${SKIN}"/>
+      <stop offset="1" stop-color="${shade(SKIN,-.14)}"/></linearGradient>
+    <radialGradient id="gFace" cx=".38" cy=".3" r=".9">
+      <stop offset="0" stop-color="${shade(SKIN,.28)}"/><stop offset=".62" stop-color="${SKIN}"/>
+      <stop offset="1" stop-color="${shade(SKIN,-.16)}"/></radialGradient>
+    <radialGradient id="gCheek">
+      <stop offset="0" stop-color="#ff9db8" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#ff9db8" stop-opacity="0"/></radialGradient>
+  </defs>`;
   let hair='', top='', shoe='', extra='', backHair='';
   // saçlar
-  if(st.hair===0){ backHair=`<path d="M78,90 Q75,180 88,210 L152,210 Q165,180 162,90 Z" fill="${hc}"/>`;
-    hair=`<path d="M78,95 Q78,40 120,38 Q162,40 162,95 Q150,60 120,58 Q90,60 78,95Z" fill="${hc}"/>`; }
-  if(st.hair===1){ backHair=`<rect x="98" y="150" width="12" height="70" rx="6" fill="${hc}"/>
-    <rect x="130" y="150" width="12" height="70" rx="6" fill="${hc}"/>
-    <circle cx="104" cy="225" r="8" fill="${tc}"/><circle cx="136" cy="225" r="8" fill="${tc}"/>`;
-    hair=`<path d="M78,95 Q78,40 120,38 Q162,40 162,95 Q150,60 120,58 Q90,60 78,95Z" fill="${hc}"/>`; }
-  if(st.hair===2){ hair=`<circle cx="120" cy="42" r="20" fill="${hc}"/>
-    <path d="M80,95 Q80,45 120,42 Q160,45 160,95 Q148,62 120,60 Q92,62 80,95Z" fill="${hc}"/>`; }
-  if(st.hair===3){ backHair=`<circle cx="85" cy="120" r="16" fill="${hc}"/><circle cx="155" cy="120" r="16" fill="${hc}"/>
-    <circle cx="82" cy="150" r="13" fill="${hc}"/><circle cx="158" cy="150" r="13" fill="${hc}"/>`;
-    hair=`<circle cx="90" cy="70" r="18" fill="${hc}"/><circle cx="120" cy="55" r="20" fill="${hc}"/>
-    <circle cx="150" cy="70" r="18" fill="${hc}"/><circle cx="105" cy="58" r="16" fill="${hc}"/>
-    <circle cx="135" cy="58" r="16" fill="${hc}"/>`; }
+  if(st.hair===0){ backHair=`<path d="M78,90 Q75,180 88,210 L152,210 Q165,180 162,90 Z" fill="url(#gHair)"/>`;
+    hair=`<path d="M78,95 Q78,40 120,38 Q162,40 162,95 Q150,60 120,58 Q90,60 78,95Z" fill="url(#gHair)"/>`; }
+  if(st.hair===1){ backHair=`<rect x="98" y="150" width="12" height="70" rx="6" fill="url(#gHair)"/>
+    <rect x="130" y="150" width="12" height="70" rx="6" fill="url(#gHair)"/>
+    <circle cx="104" cy="225" r="8" fill="url(#gTop)"/><circle cx="136" cy="225" r="8" fill="url(#gTop)"/>`;
+    hair=`<path d="M78,95 Q78,40 120,38 Q162,40 162,95 Q150,60 120,58 Q90,60 78,95Z" fill="url(#gHair)"/>`; }
+  if(st.hair===2){ hair=`<circle cx="120" cy="42" r="20" fill="url(#gHair)"/>
+    <path d="M80,95 Q80,45 120,42 Q160,45 160,95 Q148,62 120,60 Q92,62 80,95Z" fill="url(#gHair)"/>`; }
+  if(st.hair===3){ backHair=`<circle cx="85" cy="120" r="16" fill="url(#gHair)"/><circle cx="155" cy="120" r="16" fill="url(#gHair)"/>
+    <circle cx="82" cy="150" r="13" fill="url(#gHair)"/><circle cx="158" cy="150" r="13" fill="url(#gHair)"/>`;
+    hair=`<circle cx="90" cy="70" r="18" fill="url(#gHair)"/><circle cx="120" cy="55" r="20" fill="url(#gHair)"/>
+    <circle cx="150" cy="70" r="18" fill="url(#gHair)"/><circle cx="105" cy="58" r="16" fill="url(#gHair)"/>
+    <circle cx="135" cy="58" r="16" fill="url(#gHair)"/>`; }
   if(st.hair===4){ /* başörtüsü: yüz açık, saç örtülü, omuzlara drape */
     hair=`<path fill-rule="evenodd" d="M120,32 Q72,40 72,104 Q72,148 90,170 L150,170 Q168,148 168,104 Q168,40 120,32
-      M120,63 a37,38 0 1,0 0.1,0 Z" fill="${hc}" stroke="rgba(0,0,0,.08)" stroke-width="2"/>
-    <path d="M90,158 Q120,196 150,158 L150,182 Q120,212 90,182 Z" fill="${hc}"/>
+      M120,63 a37,38 0 1,0 0.1,0 Z" fill="url(#gHair)" stroke="rgba(0,0,0,.08)" stroke-width="2"/>
+    <path d="M90,158 Q120,196 150,158 L150,182 Q120,212 90,182 Z" fill="url(#gHair)"/>
     <path d="M112,138 Q120,146 128,138" stroke="rgba(0,0,0,.1)" stroke-width="2" fill="none"/>`; }
   if(st.hair===5){ /* sunroof: önden hafif kâkül görünen başörtüsü */
     hair=`<path fill-rule="evenodd" d="M120,32 Q72,40 72,104 Q72,148 90,170 L150,170 Q168,148 168,104 Q168,40 120,32
-      M120,60 a38,40 0 1,0 0.1,0 Z" fill="${hc}" stroke="rgba(0,0,0,.08)" stroke-width="2"/>
-    <path d="M90,158 Q120,196 150,158 L150,182 Q120,212 90,182 Z" fill="${hc}"/>
+      M120,60 a38,40 0 1,0 0.1,0 Z" fill="url(#gHair)" stroke="rgba(0,0,0,.08)" stroke-width="2"/>
+    <path d="M90,158 Q120,196 150,158 L150,182 Q120,212 90,182 Z" fill="url(#gHair)"/>
     <path d="M94,74 Q100,58 122,58 Q142,58 147,72 Q134,64 122,68 Q108,72 104,80 Q98,78 94,74Z" fill="#4a2c1a"/>
     <path d="M122,58 Q136,60 146,71 Q138,74 130,70" fill="#3a2214"/>
     <path d="M112,138 Q120,146 128,138" stroke="rgba(0,0,0,.1)" stroke-width="2" fill="none"/>`; }
   // üstler
-  if(st.top===0) top=`<path d="M95,160 L145,160 L162,265 L78,265 Z" fill="${tc}"/>
-    <rect x="95" y="155" width="50" height="30" rx="8" fill="${tc}"/>`;
-  if(st.top===1) top=`<rect x="92" y="155" width="56" height="60" rx="10" fill="${tc}"/>
-    <rect x="85" y="215" width="70" height="55" rx="8" fill="#5a7ab8"/>`;
-  if(st.top===2) top=`<rect x="90" y="152" width="60" height="68" rx="12" fill="${tc}"/>
+  if(st.top===0) top=`<path d="M95,160 L145,160 L162,265 L78,265 Z" fill="url(#gTop)"/>
+    <rect x="95" y="155" width="50" height="30" rx="8" fill="url(#gTop)"/>`;
+  if(st.top===1) top=`<rect x="92" y="155" width="56" height="60" rx="10" fill="url(#gTop)"/>
+    <rect x="85" y="215" width="70" height="55" rx="8" fill="#5a7ab8"/>
+    <path d="M85,223 h14 v40 q-8,4 -14,-2Z" fill="rgba(255,255,255,.18)"/>
+    <path d="M140,215 h15 v55 q-9,2 -15,-4Z" fill="rgba(20,30,60,.18)"/>
+    <path d="M120,222 v44" stroke="rgba(20,30,60,.22)" stroke-width="3"/>`;
+  if(st.top===2) top=`<rect x="90" y="152" width="60" height="68" rx="12" fill="url(#gTop)"/>
     <path d="M90,165 Q120,178 150,165" stroke="#fff" stroke-width="4" fill="none" opacity=".5"/>
-    <rect x="88" y="218" width="64" height="52" rx="8" fill="#8a5a8f"/>`;
-  if(st.top===3) top=`<path d="M97,158 L143,158 L175,290 L65,290 Z" fill="${tc}"/>
+    <rect x="88" y="218" width="64" height="52" rx="8" fill="#8a5a8f"/>
+    <path d="M88,226 h13 v38 q-7,4 -13,-2Z" fill="rgba(255,255,255,.18)"/>
+    <path d="M138,218 h14 v52 q-8,2 -14,-4Z" fill="rgba(40,15,45,.2)"/>`;
+  if(st.top===3) top=`<path d="M97,158 L143,158 L175,290 L65,290 Z" fill="url(#gTop)"/>
     <path d="M75,268 Q120,255 165,268 L175,290 L65,290Z" fill="#fff" opacity=".3"/>
     <circle cx="120" cy="185" r="5" fill="#fff" opacity=".7"/>
     <circle cx="112" cy="205" r="4" fill="#fff" opacity=".6"/>
     <circle cx="130" cy="210" r="4" fill="#fff" opacity=".6"/>`;
-  if(st.top===4) top=`<path d="M96,152 L144,152 L172,348 L68,348 Z" fill="${tc}"/>
-    <path d="M96,158 Q68,205 62,248 L80,252 Q90,210 104,175 Z" fill="${tc}"/>
-    <path d="M144,158 Q172,205 178,248 L160,252 Q150,210 136,175 Z" fill="${tc}"/>
+  if(st.top===4) top=`<path d="M96,152 L144,152 L172,348 L68,348 Z" fill="url(#gTop)"/>
+    <path d="M96,158 Q68,205 62,248 L80,252 Q90,210 104,175 Z" fill="url(#gTop)"/>
+    <path d="M144,158 Q172,205 178,248 L160,252 Q150,210 136,175 Z" fill="url(#gTop)"/>
     <path d="M96,152 L144,152 L148,175 L92,175 Z" fill="rgba(255,255,255,.18)"/>
     <path d="M120,175 L120,340" stroke="rgba(0,0,0,.12)" stroke-width="3"/>
     <circle cx="120" cy="195" r="3.5" fill="rgba(0,0,0,.2)"/>
     <circle cx="120" cy="220" r="3.5" fill="rgba(0,0,0,.2)"/>
     <circle cx="120" cy="245" r="3.5" fill="rgba(0,0,0,.2)"/>`;
+  // saç parlaklığı (highlight)
+  if(hair) hair+= st.hair<4
+    ? `<path d="M90,68 Q101,49 121,47" stroke="rgba(255,255,255,.45)" stroke-width="6" fill="none" stroke-linecap="round"/>`
+    : `<path d="M94,54 Q107,39 124,39" stroke="rgba(255,255,255,.35)" stroke-width="5" fill="none" stroke-linecap="round"/>`;
   // ayakkabılar
-  if(st.shoe===0) shoe=`<ellipse cx="105" cy="352" rx="15" ry="9" fill="${sc}"/>
-    <ellipse cx="135" cy="352" rx="15" ry="9" fill="${sc}"/>`;
-  if(st.shoe===1) shoe=`<rect x="92" y="322" width="24" height="34" rx="8" fill="${sc}"/>
-    <rect x="124" y="322" width="24" height="34" rx="8" fill="${sc}"/>`;
-  if(st.shoe===2) shoe=`<ellipse cx="105" cy="350" rx="17" ry="11" fill="${sc}"/>
-    <ellipse cx="135" cy="350" rx="17" ry="11" fill="${sc}"/>
-    <path d="M92,348 L118,348 M122,348 L148,348" stroke="#fff" stroke-width="3"/>`;
+  if(st.shoe===0) shoe=`<ellipse cx="105" cy="352" rx="15" ry="9" fill="url(#gShoe)" stroke="${shade(sc,-.35)}" stroke-width="1.2"/>
+    <ellipse cx="135" cy="352" rx="15" ry="9" fill="url(#gShoe)" stroke="${shade(sc,-.35)}" stroke-width="1.2"/>
+    <ellipse cx="100" cy="349" rx="5" ry="2.4" fill="#fff" opacity=".4"/>
+    <ellipse cx="130" cy="349" rx="5" ry="2.4" fill="#fff" opacity=".4"/>`;
+  if(st.shoe===1) shoe=`<rect x="92" y="322" width="24" height="34" rx="8" fill="url(#gShoe)" stroke="${shade(sc,-.35)}" stroke-width="1.2"/>
+    <rect x="124" y="322" width="24" height="34" rx="8" fill="url(#gShoe)" stroke="${shade(sc,-.35)}" stroke-width="1.2"/>
+    <path d="M96,327 q0,12 1,22 M128,327 q0,12 1,22" stroke="rgba(255,255,255,.4)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M92,348 h24 M124,348 h24" stroke="rgba(0,0,0,.18)" stroke-width="3"/>`;
+  if(st.shoe===2) shoe=`<ellipse cx="105" cy="350" rx="17" ry="11" fill="url(#gShoe)" stroke="${shade(sc,-.35)}" stroke-width="1.2"/>
+    <ellipse cx="135" cy="350" rx="17" ry="11" fill="url(#gShoe)" stroke="${shade(sc,-.35)}" stroke-width="1.2"/>
+    <path d="M92,348 L118,348 M122,348 L148,348" stroke="#fff" stroke-width="3"/>
+    <ellipse cx="99" cy="345" rx="5" ry="2.6" fill="#fff" opacity=".45"/>
+    <ellipse cx="129" cy="345" rx="5" ry="2.6" fill="#fff" opacity=".45"/>`;
+  // kumaş kıvrım gölgeleri + kenar ışığı (giysi kalıbına kırpılır)
+  const fold=`<clipPath id="sclip"><path d="${TOP_CLIP[st.top]}"/></clipPath>
+    <g clip-path="url(#sclip)">
+      <path d="M58,145 h34 v215 h-34Z" fill="rgba(255,255,255,.15)"/>
+      <path d="M150,145 h42 v215 h-42Z" fill="rgba(90,40,70,.10)"/>
+      <path d="M107,182 q-4,62 -2,152" stroke="rgba(90,40,70,.09)" stroke-width="6" fill="none"/>
+      <path d="M133,182 q4,62 2,152" stroke="rgba(90,40,70,.07)" stroke-width="5" fill="none"/>
+    </g>`;
   // aksesuar
   if(st.extra===1) extra=`<path d="M100,40 L106,24 L113,38 L120,20 L127,38 L134,24 L140,40Z" fill="#ffd93d" stroke="#e8b45f" stroke-width="2"/>`;
   if(st.extra===2) extra=`<path d="M95,50 Q85,38 96,34 Q104,32 103,44 Q104,32 112,36 Q120,42 105,52Z" fill="${TOP_C[(st.topC+1)%TOP_C.length]}"/>`;
@@ -202,24 +399,33 @@ function render(){
     <path d="M14,10 Q24,4 22,16" stroke="#f5a25f" stroke-width="4" fill="none" stroke-linecap="round"/></g>`;
 
   document.getElementById('doll').innerHTML=`
+    ${defs}
+    <ellipse cx="120" cy="360" rx="56" ry="9" fill="rgba(120,50,90,.16)"/>
     ${backHair}
-    <rect x="112" y="128" width="16" height="35" fill="${SKIN}"/>
-    <path d="M95,165 Q78,200 74,240" stroke="${SKIN}" stroke-width="13" fill="none" stroke-linecap="round"/>
-    <path d="M145,165 Q162,200 166,240" stroke="${SKIN}" stroke-width="13" fill="none" stroke-linecap="round"/>
-    <rect x="97" y="255" width="15" height="95" rx="7" fill="${SKIN}"/>
-    <rect x="128" y="255" width="15" height="95" rx="7" fill="${SKIN}"/>
-    ${st.top===4 ? shoe+top : top+shoe}
+    <rect x="112" y="128" width="16" height="35" fill="url(#gSkin)"/>
+    <path d="M95,165 Q78,200 74,240" stroke="url(#gSkin)" stroke-width="15" fill="none" stroke-linecap="round"/>
+    <path d="M145,165 Q162,200 166,240" stroke="url(#gSkin)" stroke-width="15" fill="none" stroke-linecap="round"/>
+    <circle cx="74" cy="241" r="8" fill="url(#gSkin)"/>
+    <circle cx="166" cy="241" r="8" fill="url(#gSkin)"/>
+    <rect x="96" y="255" width="17" height="95" rx="8.5" fill="url(#gSkin)"/>
+    <rect x="127" y="255" width="17" height="95" rx="8.5" fill="url(#gSkin)"/>
+    <path d="M104,298 q1,22 0,44 M135,298 q1,22 0,44" stroke="rgba(200,130,95,.22)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    ${st.top===4 ? shoe+top+fold : top+fold+shoe}
     ${st.motif>0?`<clipPath id="mclip"><path d="${TOP_CLIP[st.top]}"/></clipPath>
       <g clip-path="url(#mclip)">${motifSVG(st.motif,MOTIF_C[st.motifC])}</g>`:''}
-    <circle cx="120" cy="100" r="43" fill="${SKIN}"/>
+    <circle cx="120" cy="100" r="43" fill="url(#gFace)"/>
     ${hair}
-    <circle cx="106" cy="103" r="4.5" fill="#5a3a4a"/>
-    <circle cx="134" cy="103" r="4.5" fill="#5a3a4a"/>
-    <circle cx="107.5" cy="101.5" r="1.5" fill="#fff"/>
-    <circle cx="135.5" cy="101.5" r="1.5" fill="#fff"/>
+    <path d="M98,94 q6,-4 13,-2" stroke="#9a6a50" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M129,92 q7,-2 13,2" stroke="#9a6a50" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <circle cx="106" cy="103" r="5" fill="#5a3a4a"/>
+    <circle cx="134" cy="103" r="5" fill="#5a3a4a"/>
+    <circle cx="107.8" cy="101.2" r="1.8" fill="#fff"/>
+    <circle cx="135.8" cy="101.2" r="1.8" fill="#fff"/>
+    <path d="M100.5,100 l-4,-2.4 M139.5,100 l4,-2.4" stroke="#5a3a4a" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M117,112.5 q3,3 6,0" stroke="#e8a583" stroke-width="2" fill="none" stroke-linecap="round"/>
     <path d="M112,122 Q120,130 128,122" stroke="#c96a8a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-    <circle cx="97" cy="112" r="6" fill="#ffb3c8" opacity=".55"/>
-    <circle cx="143" cy="112" r="6" fill="#ffb3c8" opacity=".55"/>
+    <circle cx="95" cy="113" r="9" fill="url(#gCheek)"/>
+    <circle cx="145" cy="113" r="9" fill="url(#gCheek)"/>
     ${extra}`;
   save();
 }
@@ -290,6 +496,22 @@ document.getElementById('snap').addEventListener('click',()=>{
     a.click();
   };
   img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(data);
+});
+/* --- görsel efekt: fotoğraf anında flaş + konfeti --- */
+document.getElementById('snap').addEventListener('click',()=>{
+  const f=document.getElementById('flashFX'), stg=document.getElementById('stage');
+  f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
+  const cols=['#ff8fc0','#ffd93d','#4ab8ff','#a8e05f','#c46bff','#ff5f6d'];
+  for(let i=0;i<26;i++){
+    const c=document.createElement('span'); c.className='conf';
+    c.style.left=(Math.random()*100)+'%';
+    c.style.background=cols[i%cols.length];
+    c.style.animationDuration=(1.1+Math.random()*0.9)+'s';
+    c.style.animationDelay=(Math.random()*0.25)+'s';
+    if(i%3===0) c.style.borderRadius='50%';
+    stg.appendChild(c);
+    setTimeout(()=>c.remove(),2400);
+  }
 });
 buildRows(); render();
 </script>
