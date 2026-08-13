@@ -22,24 +22,49 @@
       '<circle cx="' + cx2 + '" cy="' + cy + '" r="' + r + '" fill="' + INK + '" stroke="none"/>';
   }
 
+  var minoSeq = 0;
+
   var SPRITES = {
 
     /* ---------- Karakter ---------- */
     mino: function (state) {
+      minoSeq++;
+      var gid = 'minoGrad' + minoSeq;
       var mouth = '<path d="M40 66 q10 9 20 0" />';
       var brow = '';
-      if (state === 'happy') { mouth = '<path d="M38 62 q12 14 24 0" fill="#fff"/>'; }
-      if (state === 'confused') { mouth = '<path d="M40 70 q10 -8 20 0" />'; brow = '<path d="M32 40 l10 -4"/><path d="M68 40 l-10 -4"/>'; }
-      if (state === 'hint') { mouth = '<path d="M42 66 q8 6 16 0" />'; }
+      var fx = '';
+      if (state === 'happy') {
+        mouth = '<path d="M38 62 q12 14 24 0" fill="#fff"/>';
+        brow = '<path d="M31 39 q5 -5 11 -3"/><path d="M69 39 q-5 -5 -11 -3"/>';
+        fx = '<path d="M14 24 l3 6 l6 3 l-6 3 l-3 6 l-3 -6 l-6 -3 l6 -3 z" fill="#ffc93c" stroke="none"/>' +
+          '<path d="M87 15 l2.4 5 l5 2.4 l-5 2.4 l-2.4 5 l-2.4 -5 l-5 -2.4 l5 -2.4 z" fill="#ffd76e" stroke="none"/>';
+      }
+      if (state === 'confused') {
+        mouth = '<path d="M40 70 q10 -8 20 0" />';
+        brow = '<path d="M32 40 l10 -4"/><path d="M68 40 l-10 -4"/>';
+        fx = '<path d="M85 28 q6.5 8.5 6.5 12.5 a6.5 6.5 0 0 1 -13 0 q0 -4 6.5 -12.5 z" fill="#7dd3fc" stroke-width="3"/>';
+      }
+      if (state === 'hint') {
+        mouth = '<path d="M42 66 q8 6 16 0" />';
+        brow = '<path d="M31 38 q6 -4 12 -2"/>';
+      }
       return wrap(
-        '<path d="M50 12 c22 0 32 18 32 36 c0 22 -14 38 -32 38 c-18 0 -32 -16 -32 -38 c0 -18 10 -36 32 -36 z" fill="#a78bfa"/>' +
+        '<defs><radialGradient id="' + gid + '" cx="0.38" cy="0.26" r="0.92">' +
+        '<stop offset="0" stop-color="#cfbfff"/><stop offset="0.55" stop-color="#a78bfa"/><stop offset="1" stop-color="#8465e6"/>' +
+        '</radialGradient></defs>' +
+        '<ellipse cx="50" cy="90" rx="22" ry="4.5" fill="rgba(47,42,69,0.16)" stroke="none"/>' +
+        '<path d="M50 12 c22 0 32 18 32 36 c0 22 -14 38 -32 38 c-18 0 -32 -16 -32 -38 c0 -18 10 -36 32 -36 z" fill="url(#' + gid + ')"/>' +
+        '<path d="M30 33 q6 -13 17 -16" stroke="rgba(255,255,255,0.55)" stroke-width="5"/>' +
         '<path d="M34 14 l4 -12 l8 10" fill="#c4b5fd"/>' +
         '<circle cx="39" cy="49" r="9" fill="#fff"/><circle cx="61" cy="49" r="9" fill="#fff"/>' +
         '<circle cx="40" cy="50" r="4" fill="' + INK + '" stroke="none"/>' +
         '<circle cx="62" cy="50" r="4" fill="' + INK + '" stroke="none"/>' +
+        '<circle cx="41.5" cy="48.3" r="1.4" fill="#fff" stroke="none"/>' +
+        '<circle cx="63.5" cy="48.3" r="1.4" fill="#fff" stroke="none"/>' +
         brow + mouth +
-        '<circle cx="26" cy="64" r="5" fill="#f9a8d4" stroke="none" opacity="0.75"/>' +
-        '<circle cx="74" cy="64" r="5" fill="#f9a8d4" stroke="none" opacity="0.75"/>'
+        '<ellipse cx="27" cy="63" rx="5.5" ry="4" fill="#f9a8d4" stroke="none" opacity="0.8"/>' +
+        '<ellipse cx="73" cy="63" rx="5.5" ry="4" fill="#f9a8d4" stroke="none" opacity="0.8"/>' +
+        fx
       );
     },
 

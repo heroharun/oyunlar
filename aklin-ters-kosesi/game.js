@@ -164,7 +164,16 @@
     },
     setMino: function (slotId, mood) {
       var el = doc.getElementById(slotId);
-      if (el) el.innerHTML = Assets.get('mino', mood || 'idle');
+      if (!el) return;
+      el.innerHTML = Assets.get('mino', mood || 'idle');
+      /* Görsel tepki: sevinçte zıplama, şaşkınlıkta sarsılma */
+      el.classList.remove('mino-pop', 'mino-shake');
+      if (mood === 'happy' || mood === 'confused') {
+        void el.offsetWidth;
+        el.classList.add(mood === 'happy' ? 'mino-pop' : 'mino-shake');
+        clearTimeout(el._minoAnim);
+        el._minoAnim = setTimeout(function () { el.classList.remove('mino-pop', 'mino-shake'); }, 700);
+      }
     }
   };
 
@@ -571,6 +580,11 @@
       setTimeout(function () { if (State.screen === 'PLAYING') UI.setMino('gameMino', 'idle'); }, 900);
       sceneEl.classList.add('nudge');
       setTimeout(function () { sceneEl.classList.remove('nudge'); }, 350);
+      var qc = doc.getElementById('questionCard');
+      if (qc) {
+        qc.classList.remove('card-shake'); void qc.offsetWidth; qc.classList.add('card-shake');
+        setTimeout(function () { qc.classList.remove('card-shake'); }, 450);
+      }
       UI.bubble('Hmm... o değil.', 1200);
     }
     if (el) {

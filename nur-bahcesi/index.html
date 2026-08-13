@@ -82,12 +82,19 @@ body{
 
 /* splash */
 #e-acilis{align-items:center;justify-content:center;min-height:88vh;text-align:center}
-.logo{font-size:76px;filter:drop-shadow(0 0 26px rgba(255,209,102,.55));animation:sekme 3s ease-in-out infinite}
+.logo{line-height:0;filter:drop-shadow(0 0 26px rgba(255,209,102,.55));animation:sekme 3s ease-in-out infinite}
 
 /* karakter oluşturma */
 .secim-satir{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:8px}
-.renk{width:44px;height:44px;border-radius:50%;border:3px solid transparent;cursor:pointer;flex:0 0 auto}
-.renk.secili{border-color:#fff;box-shadow:0 0 0 3px rgba(255,209,102,.6)}
+.renk{position:relative;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.28);cursor:pointer;flex:0 0 auto;
+  box-shadow:inset 0 -7px 10px rgba(0,0,0,.28),inset 0 2px 4px rgba(255,255,255,.25),0 3px 8px rgba(0,0,0,.3);
+  transition:transform .12s ease,box-shadow .12s ease}
+.renk::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.75),rgba(255,255,255,.1) 42%,transparent 62%)}
+.renk:active{transform:scale(.92)}
+.renk.secili{border-color:#fff;transform:scale(1.06);
+  box-shadow:inset 0 -7px 10px rgba(0,0,0,.28),inset 0 2px 4px rgba(255,255,255,.25),
+  0 0 0 3px rgba(255,209,102,.65),0 0 14px rgba(255,209,102,.45)}
 .alan-etiket{font-size:12.5px;font-weight:900;letter-spacing:.09em;color:var(--soluk);text-align:center;text-transform:uppercase}
 input[type=text]{width:100%;background:rgba(255,255,255,.09);border:1.5px solid rgba(255,255,255,.2);
   border-radius:14px;padding:13px 15px;color:var(--metin);font-size:17px;font-family:inherit;text-align:center;font-weight:800}
@@ -195,7 +202,20 @@ canvas{display:block;width:100%;touch-action:none}
 .env-hucre .et{font-size:11px;color:var(--soluk);font-weight:800;letter-spacing:.05em}
 
 /* hikâye */
+#e-hikaye{position:relative;overflow:hidden;min-height:86vh;border-radius:22px;padding-bottom:92px}
+#e-hikaye > *:not(.hikaye-dekor){position:relative;z-index:1}
+.hikaye-dekor{position:absolute;inset:0;z-index:0;pointer-events:none}
+.hikaye-dekor .siluet{position:absolute;left:-4%;right:-4%;bottom:-2px;width:108%;height:auto;opacity:.95}
+.atesb{position:absolute;width:7px;height:7px;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#fff8d8,#ffd166 55%,rgba(255,209,102,0) 78%);
+  box-shadow:0 0 10px 3px rgba(255,220,130,.45);
+  animation:suzul 11s ease-in-out infinite alternate,yanip 3.2s ease-in-out infinite}
+@keyframes suzul{0%{transform:translate(0,0)}30%{transform:translate(14px,-22px)}60%{transform:translate(-10px,-40px)}100%{transform:translate(18px,-62px)}}
+@keyframes yanip{0%,100%{opacity:.9}50%{opacity:.25}}
 .hikaye-sahne{font-size:64px;text-align:center;min-height:86px;animation:sekme 3s ease-in-out infinite}
+.hikaye-kart{background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.05));
+  border:1.5px solid rgba(255,209,102,.4);border-radius:22px;
+  box-shadow:0 14px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14),0 0 24px rgba(255,209,102,.12)}
 .hikaye-metin{font-size:17px;font-weight:700;text-align:center;line-height:1.65;min-height:80px}
 .nokta-sirasi{display:flex;gap:6px;justify-content:center}
 .nokta-sirasi i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.24)}
@@ -244,7 +264,52 @@ canvas{display:block;width:100%;touch-action:none}
 
   <!-- ================= AÇILIŞ ================= -->
   <section class="ekran aktif" id="e-acilis">
-    <div class="logo">🌸</div>
+    <div class="logo" aria-hidden="true"><svg viewBox="0 0 120 120" width="104" height="104">
+      <defs>
+        <linearGradient id="nbTac" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffd9e6"/><stop offset=".55" stop-color="#f4a7c0"/><stop offset="1" stop-color="#d97ba4"/>
+        </linearGradient>
+        <linearGradient id="nbTacArka" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e08fb2"/><stop offset="1" stop-color="#b45f8e"/>
+        </linearGradient>
+        <radialGradient id="nbMerkez" cx=".5" cy=".42" r=".65">
+          <stop offset="0" stop-color="#fff6c2"/><stop offset=".55" stop-color="#ffd166"/><stop offset="1" stop-color="#e9a72e"/>
+        </radialGradient>
+        <radialGradient id="nbIsima" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="rgba(255,224,150,.55)"/><stop offset="1" stop-color="rgba(255,209,102,0)"/>
+        </radialGradient>
+      </defs>
+      <circle cx="60" cy="60" r="58" fill="url(#nbIsima)"/>
+      <g transform="rotate(36 60 60)">
+        <g fill="url(#nbTacArka)">
+          <ellipse cx="60" cy="30" rx="13" ry="21"/>
+          <ellipse cx="60" cy="30" rx="13" ry="21" transform="rotate(72 60 60)"/>
+          <ellipse cx="60" cy="30" rx="13" ry="21" transform="rotate(144 60 60)"/>
+          <ellipse cx="60" cy="30" rx="13" ry="21" transform="rotate(216 60 60)"/>
+          <ellipse cx="60" cy="30" rx="13" ry="21" transform="rotate(288 60 60)"/>
+        </g>
+      </g>
+      <g fill="url(#nbTac)" stroke="rgba(120,40,80,.28)" stroke-width="1">
+        <ellipse cx="60" cy="32" rx="15" ry="24"/>
+        <ellipse cx="60" cy="32" rx="15" ry="24" transform="rotate(72 60 60)"/>
+        <ellipse cx="60" cy="32" rx="15" ry="24" transform="rotate(144 60 60)"/>
+        <ellipse cx="60" cy="32" rx="15" ry="24" transform="rotate(216 60 60)"/>
+        <ellipse cx="60" cy="32" rx="15" ry="24" transform="rotate(288 60 60)"/>
+      </g>
+      <g fill="rgba(255,255,255,.35)">
+        <ellipse cx="60" cy="24" rx="5.5" ry="9"/>
+        <ellipse cx="60" cy="24" rx="5.5" ry="9" transform="rotate(72 60 60)"/>
+        <ellipse cx="60" cy="24" rx="5.5" ry="9" transform="rotate(144 60 60)"/>
+        <ellipse cx="60" cy="24" rx="5.5" ry="9" transform="rotate(216 60 60)"/>
+        <ellipse cx="60" cy="24" rx="5.5" ry="9" transform="rotate(288 60 60)"/>
+      </g>
+      <circle cx="60" cy="60" r="14" fill="url(#nbMerkez)"/>
+      <circle cx="55.5" cy="55.5" r="4" fill="rgba(255,255,255,.65)"/>
+      <g fill="rgba(180,110,30,.55)">
+        <circle cx="60" cy="51" r="1.4"/><circle cx="68" cy="57" r="1.4"/><circle cx="65" cy="66.5" r="1.4"/>
+        <circle cx="55" cy="66.5" r="1.4"/><circle cx="52" cy="57" r="1.4"/>
+      </g>
+    </svg></div>
     <h1 class="baslik">Nur Bahçesi</h1>
     <p class="altbaslik">Gökyüzündeki bahçenin çiçekleri solmaya başladı.<br>Onları yeniden açtırmanın tek yolu var:<br><b style="color:var(--altin)">Kur'an harflerini öğrenmek.</b></p>
     <div class="harf-orta" style="text-align:center;color:var(--altin);opacity:.8">ا ب ت ث ج ح</div>
@@ -361,12 +426,37 @@ canvas{display:block;width:100%;touch-action:none}
 
   <!-- ================= HİKÂYE ================= -->
   <section class="ekran" id="e-hikaye">
+    <div class="hikaye-dekor" aria-hidden="true">
+      <i class="atesb" style="left:12%;bottom:34%;animation-delay:0s,-1s"></i>
+      <i class="atesb" style="left:82%;bottom:42%;animation-delay:-3s,-2.2s;animation-duration:14s,3.8s"></i>
+      <i class="atesb" style="left:28%;bottom:22%;animation-delay:-6s,-.6s;animation-duration:12s,2.8s"></i>
+      <i class="atesb" style="left:64%;bottom:18%;animation-delay:-8s,-1.7s;animation-duration:15s,3.4s"></i>
+      <i class="atesb" style="left:45%;bottom:46%;animation-delay:-4.5s,-2.9s;animation-duration:13s,4.1s"></i>
+      <i class="atesb" style="left:90%;bottom:14%;animation-delay:-10s,-.3s;animation-duration:16s,3s"></i>
+      <svg class="siluet" viewBox="0 0 560 120" preserveAspectRatio="none">
+        <path d="M0 78 Q70 58 140 74 Q210 90 280 70 Q350 50 420 72 Q490 92 560 68 L560 120 L0 120 Z" fill="rgba(38,73,47,.55)"/>
+        <path d="M0 96 Q90 80 180 92 Q280 106 380 90 Q470 78 560 94 L560 120 L0 120 Z" fill="rgba(24,52,32,.8)"/>
+        <g fill="rgba(60,110,70,.65)">
+          <path d="M60 96 Q56 76 62 62 Q68 76 64 96 Z"/>
+          <path d="M62 82 Q52 74 48 64 Q60 68 63 78 Z"/>
+          <path d="M300 100 Q296 82 302 68 Q308 82 304 100 Z"/>
+          <path d="M470 92 Q466 74 472 60 Q478 74 474 92 Z"/>
+          <path d="M472 76 Q482 68 486 58 Q474 62 471 72 Z"/>
+        </g>
+        <g fill="rgba(244,167,192,.5)">
+          <circle cx="62" cy="58" r="5"/><circle cx="302" cy="64" r="4.5"/><circle cx="472" cy="56" r="5"/>
+        </g>
+        <g fill="rgba(255,209,102,.5)">
+          <circle cx="150" cy="88" r="3.4"/><circle cx="395" cy="84" r="3.4"/><circle cx="230" cy="94" r="2.8"/>
+        </g>
+      </svg>
+    </div>
     <div class="ust">
       <div class="bosluk" style="text-align:center;font-weight:900" id="hikayeAd"></div>
       <button class="ikonbtn" data-act="hikayeAtla">⏭</button>
     </div>
     <div class="hikaye-sahne" id="hikayeSahne"></div>
-    <div class="kart"><div class="hikaye-metin" id="hikayeMetin"></div></div>
+    <div class="kart hikaye-kart"><div class="hikaye-metin" id="hikayeMetin"></div></div>
     <div class="nokta-sirasi" id="hikayeNokta"></div>
     <div style="flex:1"></div>
     <button class="dugme tam" data-act="hikayeIleri">Devam</button>

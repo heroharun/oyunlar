@@ -103,12 +103,12 @@ document.getElementById('statIntro').textContent = earned>0
   ? 'TOPLAM KAZANCIN: '+earned.toLocaleString('tr-TR')+' · SUR '+level : '';
 function save(){ try{ localStorage.setItem('fatih_save',JSON.stringify({score,earned,level,cannon})); }catch(e){} }
 
-let blocks=[], particles=[], floaters=[], ball=null, state='intro', shake=0, tick=0;
+let blocks=[], particles=[], floaters=[], smokes=[], ball=null, state='intro', shake=0, tick=0, flashT=0;
 let slingX=0, slingY=0, dragging=false, settleT=0;
 
 const STONES=['#7a7f8c','#8a8f9a','#6b7080','#9a9fa8'];
 function buildWall(n){
-  blocks=[]; particles=[]; floaters=[];
+  blocks=[]; particles=[]; floaters=[]; smokes=[];
   const bw=Math.max(30,Math.min(44,W*0.036)), bh=bw*0.66;
   /* zorluk eğrisi: ilk surlar ince ve yumuşak, sonra kalınlaşıp sertleşir */
   const cols=Math.min(2+Math.ceil(n/3),6);
@@ -116,9 +116,10 @@ function buildWall(n){
   for(let c=0;c<cols;c++){
     const rows=4+Math.min(3+n,11)+(c%2===0?1:0);
     for(let r=0;r<rows;r++){
+      const hp=Math.min(5, 1+Math.floor(n/4)+(r<2?1:0));
       blocks.push({ x:baseX+c*gap, y:GROUND-bh/2-r*bh, w:bw, h:bh,
         vx:0,vy:0,ang:0,va:0,
-        hp:Math.min(5, 1+Math.floor(n/4)+(r<2?1:0)),
+        hp, hp0:hp, seed:Math.random(),
         col:STONES[(r+c)%STONES.length], asleep:true, dead:false, crenel:r===rows-1 });
     }
   }
@@ -180,6 +181,9 @@ function up(){
   if(ball.vx<minVx){ ball.vx=minVx; if(ball.vy>0) ball.vy=Math.min(ball.vy,p*0.3); }
   ball.pierced=0;
   ball.flying=true; state='fly';
+  flashT=14;
+  for(let i=0;i<5;i++) smokes.push({x:ball.x+ball.vx*2,y:ball.y+ball.vy*2,
+    r:4+Math.random()*6,vx:ball.vx*0.15+(Math.random()-.5),life:0.8});
   boom(0.5,60); buzz(15); shake=6; save();
 }
 addEventListener('mousedown',down); addEventListener('mousemove',move); addEventListener('mouseup',up);
@@ -196,9 +200,13 @@ function support(b){
 function hitBlock(b,imp,hx,hy){
   const c=CANNONS[cannon];
   b.asleep=false; b.hp-=c.dmg;
-  for(let i=0;i<(b.hp<=0?14:6);i++) particles.push({x:hx,y:hy,
-    vx:(Math.random()-.5)*8,vy:-Math.random()*6,life:1,col:b.col,size:Math.random()*5+2,
+  const kills=b.hp<=0;
+  for(let i=0;i<(kills?22:6);i++) particles.push({x:hx,y:hy,
+    vx:(Math.random()-.5)*(kills?10:8),vy:-Math.random()*(kills?7:6),life:1,col:b.col,
+    size:Math.random()*(kills?6:5)+(kills?3:2),
     rot:Math.random()*6.28,vr:(Math.random()-.5)*0.3});
+  if(kills) for(let i=0;i<7;i++) smokes.push({x:hx+(Math.random()-.5)*26,
+    y:hy+(Math.random()-.5)*20,r:5+Math.random()*9,vx:(Math.random()-.5)*0.8,life:0.9});
   boom(Math.min(0.6,0.2+imp*0.04),60+Math.random()*40);
   shake=Math.min(14,shake+imp*0.8);
   const died=b.hp<=0;
@@ -221,9 +229,12 @@ function hitBlock(b,imp,hx,hy){
 }
 function physics(){
   tick++;
+  if(flashT>0)flashT--;
   if(ball&&ball.flying){
     ball.vy+=0.5; ball.x+=ball.vx; ball.y+=ball.vy;
     ball.trail.push({x:ball.x,y:ball.y}); if(ball.trail.length>12)ball.trail.shift();
+    if(tick%3===0) smokes.push({x:ball.x-ball.vx,y:ball.y-ball.vy,
+      r:ball.r*0.4,vx:0,life:0.45});
     if(ball.y+ball.r>GROUND){ ball.y=GROUND-ball.r; ball.vy*=-0.4; ball.vx*=0.7;
       if(Math.abs(ball.vy)>2)boom(0.12,50); }
     if(ball.x>W+80||ball.x<-80||(Math.abs(ball.vx)<0.3&&ball.y+ball.r>GROUND-2)){
@@ -278,6 +289,9 @@ function physics(){
   for(const p of particles){ p.vy+=0.25; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.life-=0.025;
     if(p.y>GROUND){p.y=GROUND;p.vy*=-0.4;} }
   particles=particles.filter(p=>p.life>0);
+  for(const s of smokes){ s.x+=s.vx||0; s.y-=0.25; s.r+=0.28; s.life-=0.022; }
+  smokes=smokes.filter(s=>s.life>0);
+  if(smokes.length>90) smokes.splice(0,smokes.length-90);
   for(const f of floaters){ f.y-=1.1; f.life-=0.02; }
   floaters=floaters.filter(f=>f.life>0);
   /* sur, sen nişan alırken de yıkılmış olabilir (devrilme/serpinti) — takılma olmasın */
@@ -300,6 +314,33 @@ function physics(){
   }
 }
 
+/* ufuktaki şehir silüeti: kubbe, minare, mazgallı kuleler (deterministik) */
+function skyline(baseY,s,col,seed){
+  ctx.fillStyle=col;
+  const rnd=i=>{const v=Math.sin(i*127.1+seed*311.7)*43758.5453;return v-Math.floor(v);};
+  let x=-24,i=seed;
+  while(x<W+40){
+    const t=rnd(i), w2=(28+t*54)*s;
+    if(t<0.34){ /* kubbeli yapı */
+      const h=(24+t*46)*s;
+      ctx.fillRect(x,baseY-h,w2,h);
+      ctx.beginPath(); ctx.arc(x+w2/2,baseY-h,w2/2,Math.PI,0); ctx.fill();
+      ctx.fillRect(x+w2/2-1.2*s,baseY-h-w2/2-8*s,2.4*s,9*s); /* alem */
+    } else if(t<0.58){ /* minare */
+      const h=(64+t*70)*s, mw=4.6*s, mx=x+w2/2;
+      ctx.fillRect(mx-mw/2,baseY-h,mw,h);
+      ctx.beginPath(); ctx.moveTo(mx-mw*1.3,baseY-h);
+      ctx.lineTo(mx,baseY-h-13*s); ctx.lineTo(mx+mw*1.3,baseY-h);
+      ctx.closePath(); ctx.fill();
+      ctx.fillRect(mx-mw,baseY-h+16*s,mw*2,3*s); /* şerefe */
+    } else { /* mazgallı kule */
+      const h=(30+t*34)*s;
+      ctx.fillRect(x,baseY-h,w2,h);
+      for(let k=0;k<4;k++) ctx.fillRect(x+k*w2/4+1,baseY-h-5*s,w2/6,5*s);
+    }
+    x+=w2+(8+rnd(i+7)*26)*s; i++;
+  }
+}
 function draw(){
   const g=ctx.createLinearGradient(0,0,0,GROUND);
   g.addColorStop(0,'#2b1c3d'); g.addColorStop(0.6,'#6b3548'); g.addColorStop(1,'#b8654a');
@@ -309,8 +350,37 @@ function draw(){
   ctx.beginPath(); ctx.arc(W*0.82,H*0.13,26,0,6.28); ctx.fill();
   ctx.fillStyle='#4a2b50';
   ctx.beginPath(); ctx.arc(W*0.82+10,H*0.13-4,24,0,6.28); ctx.fill();
-  ctx.fillStyle='rgba(255,239,217,.5)';
-  for(let i=0;i<20;i++){ ctx.fillRect((i*137)%W,(i*89)%(H*0.4),2,2); }
+  // yıldızlar (parıltılı)
+  ctx.fillStyle='rgba(255,239,217,.9)';
+  for(let i=0;i<26;i++){
+    ctx.globalAlpha=0.18+0.4*Math.abs(Math.sin(tick*0.03+i*1.7));
+    ctx.fillRect((i*137)%W,(i*89)%(H*0.35),2,2);
+  }
+  ctx.globalAlpha=1;
+  // süzülen bulutlar
+  for(let i=0;i<4;i++){
+    const cw=70+(i*37)%50, cx=(((i*263)+tick*(0.14+i*0.05))%(W+2*cw))-cw;
+    const cy=H*(0.07+((i*53)%23)/130);
+    ctx.fillStyle='rgba(90,50,84,'+(0.28+(i%2)*0.1)+')';
+    ctx.beginPath();
+    ctx.ellipse(cx,cy,cw*0.55,12,0,0,6.28);
+    ctx.ellipse(cx-cw*0.3,cy+4,cw*0.32,9,0,0,6.28);
+    ctx.ellipse(cx+cw*0.32,cy+3,cw*0.36,10,0,0,6.28);
+    ctx.fill();
+  }
+  // uçan kuşlar
+  ctx.strokeStyle='rgba(28,17,34,.75)'; ctx.lineWidth=1.6;
+  for(let i=0;i<5;i++){
+    const bx=(((i*197)+tick*(0.45+i*0.08))%(W+140))-70;
+    const by=H*(0.11+((i*41)%22)/110)+Math.sin(tick*0.04+i*2)*5;
+    const f=2+Math.sin(tick*0.22+i)*2.4;
+    ctx.beginPath();
+    ctx.moveTo(bx-6,by); ctx.quadraticCurveTo(bx-3,by-f,bx,by);
+    ctx.quadraticCurveTo(bx+3,by-f,bx+6,by); ctx.stroke();
+  }
+  // İstanbul silüeti — ufukta katmanlı kubbe/minare/kuleler
+  skyline(GROUND+2,0.85,'rgba(96,52,72,.55)',5);
+  skyline(GROUND+2,1,'rgba(46,26,48,.9)',11);
   ctx.save();
   if(shake>0.3){ ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake); shake*=0.86; }
   // zemin
@@ -374,6 +444,20 @@ function draw(){
   /* seçili topun rengi: namluda ince şerit */
   ctx.fillStyle=c.col;
   ctx.fillRect(36,-18,5,36);
+  /* namlu alevi: ateşleme anında */
+  if(flashT>0){
+    const fa=flashT/14;
+    ctx.globalAlpha=fa;
+    const fg=ctx.createRadialGradient(84,0,2,84,0,12+26*fa);
+    fg.addColorStop(0,'#fff6cf'); fg.addColorStop(0.4,'#ffc93c');
+    fg.addColorStop(1,'rgba(232,99,47,0)');
+    ctx.fillStyle=fg;
+    ctx.beginPath(); ctx.arc(84,0,12+26*fa,0,6.28); ctx.fill();
+    ctx.fillStyle='rgba(255,214,90,'+fa.toFixed(2)+')';
+    ctx.beginPath(); ctx.moveTo(78,-9); ctx.lineTo(80+34*fa,0); ctx.lineTo(78,9);
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha=1;
+  }
   ctx.restore();
   // nişan
   if(dragging&&ball){
@@ -392,15 +476,56 @@ function draw(){
     ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(b.ang);
     ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fillRect(-b.w/2+3,-b.h/2+3,b.w,b.h);
     ctx.fillStyle=b.col; ctx.fillRect(-b.w/2,-b.h/2,b.w,b.h);
+    /* blok başına ton varyasyonu */
+    ctx.fillStyle=b.seed<0.5
+      ? 'rgba(255,244,224,'+(0.03+b.seed*0.09).toFixed(3)+')'
+      : 'rgba(20,16,24,'+((b.seed-0.5)*0.18).toFixed(3)+')';
+    ctx.fillRect(-b.w/2,-b.h/2,b.w,b.h);
     ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2;
     ctx.strokeRect(-b.w/2,-b.h/2,b.w,b.h);
+    /* derz çizgileri: iç taş eklemleri */
+    ctx.strokeStyle='rgba(0,0,0,.16)'; ctx.lineWidth=1;
+    const dz=(b.seed-0.5)*b.w*0.5;
+    ctx.beginPath();
+    ctx.moveTo(dz,-b.h/2); ctx.lineTo(dz,-b.h*0.06);
+    ctx.moveTo(-b.w/2,-b.h*0.06); ctx.lineTo(b.w/2,-b.h*0.06);
+    ctx.moveTo(-dz*0.7,-b.h*0.06); ctx.lineTo(-dz*0.7,b.h/2);
+    ctx.stroke();
+    /* yüzey benekleri */
+    ctx.fillStyle='rgba(0,0,0,.12)';
+    ctx.fillRect(-b.w*0.32+b.seed*b.w*0.4,b.h*0.14,3,2);
+    ctx.fillRect(b.w*0.12-b.seed*b.w*0.3,-b.h*0.28,2,2);
     ctx.fillStyle='rgba(255,255,255,.12)'; ctx.fillRect(-b.w/2+2,-b.h/2+2,b.w-4,4);
+    /* hasar arttıkça belirginleşen çatlaklar */
+    const dmg=1-b.hp/b.hp0;
+    if(dmg>0.01){
+      ctx.strokeStyle='rgba(18,14,12,'+(0.3+dmg*0.55).toFixed(2)+')';
+      ctx.lineWidth=0.8+dmg*1.4;
+      const sx=(b.seed-0.5)*b.w*0.55;
+      ctx.beginPath();
+      ctx.moveTo(sx,-b.h/2);
+      ctx.lineTo(sx+b.w*0.12,-b.h*0.16);
+      ctx.lineTo(sx-b.w*0.08,b.h*0.1);
+      if(dmg>=0.5){
+        ctx.lineTo(sx+b.w*0.14,b.h*0.3); ctx.lineTo(sx+b.w*0.04,b.h/2);
+        ctx.moveTo(sx-b.w*0.08,b.h*0.1); ctx.lineTo(sx-b.w*0.3,b.h*0.26);
+        ctx.moveTo(sx+b.w*0.12,-b.h*0.16); ctx.lineTo(sx+b.w*0.32,-b.h*0.02);
+      }
+      ctx.stroke();
+    }
     if(b.crenel){ ctx.fillStyle=b.col;
       ctx.fillRect(-b.w/2,-b.h/2-6,b.w*0.28,6); ctx.fillRect(b.w*0.22,-b.h/2-6,b.w*0.28,6); }
     if(b.hp>1){ ctx.fillStyle='rgba(0,0,0,.4)';
       ctx.font='bold 11px system-ui'; ctx.textAlign='center'; ctx.fillText(b.hp,0,4); }
     ctx.restore();
   }
+  // duman/toz bulutları
+  for(const s of smokes){
+    ctx.globalAlpha=Math.max(0,s.life)*0.35;
+    ctx.fillStyle='#bfae9c';
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.28); ctx.fill();
+  }
+  ctx.globalAlpha=1;
   // gülle izi + gülle
   if(ball){
     if(ball.flying) for(let i=0;i<ball.trail.length;i++){ const t=ball.trail[i];

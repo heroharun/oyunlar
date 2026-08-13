@@ -9,26 +9,72 @@
   html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
     font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  /* --- ambiyans: pad halo'ları + vinyet --- */
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(46vmin 46vmin at 30% 46%,rgba(232,84,84,.14),transparent 70%),
+      radial-gradient(46vmin 46vmin at 70% 46%,rgba(61,139,253,.14),transparent 70%),
+      radial-gradient(46vmin 46vmin at 30% 76%,rgba(62,207,154,.13),transparent 70%),
+      radial-gradient(46vmin 46vmin at 70% 76%,rgba(255,201,77,.13),transparent 70%),
+      radial-gradient(120% 90% at 50% 55%,transparent 40%,rgba(8,6,20,.55) 100%)}
+  /* --- silik yıldız / bokeh parçacıkları --- */
+  body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.55;
+    background-image:
+      radial-gradient(1.4px 1.4px at 11% 14%,rgba(255,255,255,.55),transparent 100%),
+      radial-gradient(1px 1px at 27% 7%,rgba(255,255,255,.4),transparent 100%),
+      radial-gradient(1.7px 1.7px at 44% 19%,rgba(255,255,255,.5),transparent 100%),
+      radial-gradient(1px 1px at 63% 9%,rgba(255,255,255,.45),transparent 100%),
+      radial-gradient(1.5px 1.5px at 82% 15%,rgba(255,255,255,.5),transparent 100%),
+      radial-gradient(1px 1px at 93% 30%,rgba(255,255,255,.35),transparent 100%),
+      radial-gradient(1.3px 1.3px at 7% 55%,rgba(255,255,255,.4),transparent 100%),
+      radial-gradient(1px 1px at 95% 62%,rgba(255,255,255,.35),transparent 100%),
+      radial-gradient(1.4px 1.4px at 15% 88%,rgba(255,255,255,.4),transparent 100%),
+      radial-gradient(1px 1px at 55% 95%,rgba(255,255,255,.35),transparent 100%),
+      radial-gradient(1.2px 1.2px at 86% 90%,rgba(255,255,255,.4),transparent 100%),
+      radial-gradient(30px 30px at 20% 32%,rgba(157,148,194,.08),transparent 100%),
+      radial-gradient(38px 38px at 84% 44%,rgba(157,148,194,.07),transparent 100%),
+      radial-gradient(26px 26px at 50% 72%,rgba(157,148,194,.06),transparent 100%)}
   #oyunAlani{height:100%;display:flex;flex-direction:column;align-items:center;
     padding:max(12px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));gap:10px}
   #hud{width:100%;max-width:420px;display:flex;justify-content:space-between;align-items:flex-start}
   .kutu{text-align:center}
   .label{font-size:9px;letter-spacing:.2em;color:var(--dim);font-weight:800}
   .deger{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
-  #canEl{font-size:15px;letter-spacing:2px;text-align:center;margin-top:4px}
-  #durum{min-height:30px;font-size:16px;font-weight:800;color:var(--sari);display:flex;align-items:center}
+  #canEl{display:flex;gap:5px;justify-content:center;margin-top:6px;min-height:18px}
+  .kalp{width:17px;height:17px;filter:drop-shadow(0 0 5px rgba(255,93,108,.55))}
+  .kalp path{fill:#ff5d6c;stroke:#ff8f9a;stroke-width:1}
+  .kalp.bos{filter:none}
+  .kalp.bos path{fill:#2b2647;stroke:rgba(255,255,255,.22)}
+  #durum{min-height:30px;font-size:16px;font-weight:800;color:var(--sari);
+    display:flex;align-items:center;gap:8px}
+  .dikon{width:22px;height:22px;flex:none}
+  .dikon.el{filter:drop-shadow(0 0 7px rgba(255,201,77,.9));animation:elp 1s ease-in-out infinite}
+  .dikon.goz{filter:drop-shadow(0 0 6px rgba(157,148,194,.7))}
+  @keyframes elp{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
   #tahta{flex:1;display:flex;align-items:center;justify-content:center;width:100%}
-  #izgara{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(84vw,380px)}
-  .ped{aspect-ratio:1;border:none;border-radius:26px;cursor:pointer;
-    transition:filter .12s,transform .1s;filter:brightness(.55);position:relative}
-  .ped:active{transform:scale(.96)}
-  .ped.yak{filter:brightness(1.25) saturate(1.2);box-shadow:0 0 40px var(--pr)}
+  /* cihaz gövdesi: metalik konsol çerçevesi */
+  #izgara{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(88vw,404px);
+    padding:14px;border-radius:38px;
+    background:linear-gradient(160deg,#413c60,#232039 45%,#2e2a4a 80%,#3b3659);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.06),
+      inset 0 -8px 16px rgba(0,0,0,.35),0 16px 44px rgba(0,0,0,.5),0 0 70px rgba(110,95,210,.14)}
+  .ped{aspect-ratio:1;border:none;border-radius:26px;cursor:pointer;position:relative;
+    transition:transform .1s,box-shadow .15s,filter .15s;
+    background:linear-gradient(180deg,var(--d1),var(--d2));
+    box-shadow:inset 0 2px 6px rgba(255,255,255,.18),inset 0 -8px 14px rgba(0,0,0,.35),
+      0 4px 10px rgba(0,0,0,.35)}
+  .ped:active{transform:scale(.94) translateY(2px);
+    box-shadow:inset 0 3px 10px rgba(0,0,0,.4),0 1px 4px rgba(0,0,0,.3)}
+  .ped.yak{background:linear-gradient(180deg,var(--l1),var(--l2));
+    filter:saturate(1.15) brightness(1.08);
+    box-shadow:inset 0 2px 8px rgba(255,255,255,.45),0 0 0 3px rgba(255,255,255,.22),
+      0 0 34px 6px var(--pr),0 0 80px 18px var(--pr2)}
   .ped::after{content:"";position:absolute;inset:12px;border-radius:18px;
-    background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.35),transparent 60%)}
-  #p0{--pr:#e85454;background:linear-gradient(180deg,#f06a6a,#c93838)}
-  #p1{--pr:#3d8bfd;background:linear-gradient(180deg,#5a9dff,#2a6fd6)}
-  #p2{--pr:#3ecf9a;background:linear-gradient(180deg,#4fe3ad,#27a374)}
-  #p3{--pr:#ffc94d;background:linear-gradient(180deg,#ffd97a,#f0a832)}
+    background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.32),transparent 60%)}
+  #p0{--pr:#ff6b6b;--pr2:rgba(232,84,84,.45);--d1:#c04345;--d2:#7c2531;--l1:#ff8585;--l2:#e34747}
+  #p1{--pr:#5aa2ff;--pr2:rgba(61,139,253,.45);--d1:#3268c4;--d2:#1d4188;--l1:#7ab6ff;--l2:#3d84ec}
+  #p2{--pr:#4fe3ad;--pr2:rgba(62,207,154,.45);--d1:#2c9e75;--d2:#1a624b;--l1:#63f2bc;--l2:#2eb886}
+  #p3{--pr:#ffd97a;--pr2:rgba(255,201,77,.45);--d1:#cf9c31;--d2:#8d611c;--l1:#ffe392;--l2:#f6b13e}
   #toast{position:fixed;top:16%;left:50%;transform:translateX(-50%);font-size:24px;font-weight:900;
     color:var(--sari);opacity:0;pointer-events:none;white-space:nowrap;z-index:6}
   #toast.pop{animation:tp .8s ease-out}
@@ -53,16 +99,21 @@
     background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);
     border-radius:999px;padding:11px 26px;cursor:pointer}
   .diller{display:flex;gap:8px}
-  .dil{font:inherit;font-size:13px;font-weight:900;color:var(--dim);background:none;
-    border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 14px;cursor:pointer}
-  .dil.aktif{color:#171128;background:var(--sari);border-color:var(--sari)}
+  .dil{font:inherit;font-size:13px;font-weight:900;color:var(--dim);
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+    border:1.5px solid rgba(255,255,255,.18);border-radius:10px;padding:8px 14px;cursor:pointer;
+    box-shadow:0 3px 0 rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
+    transition:transform .08s,box-shadow .08s}
+  .dil:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+  .dil.aktif{color:#171128;background:linear-gradient(180deg,#ffd97a,#f0a832);
+    border-color:#f0a832;box-shadow:0 3px 0 #a8721c,inset 0 1px 0 rgba(255,255,255,.45)}
   .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
   #nasilIcerik{text-align:left;white-space:pre-line}
 </style>
 <div id="oyunAlani">
   <div id="hud">
     <div class="kutu"><div class="label" id="lSeviye">SEVİYE</div><div class="deger" id="seviyeEl">1</div></div>
-    <div><div id="canEl">❤️❤️❤️</div></div>
+    <div><div id="canEl"></div></div>
     <div class="kutu"><div class="label" id="lRekor">REKOR</div><div class="deger" id="bestEl">0</div></div>
   </div>
   <div id="durum"></div>
@@ -177,10 +228,22 @@ function uygulaDil(){
   document.getElementById('bestIntro').textContent=best>0?S('enIyiIntroF')(best):'';
   document.querySelectorAll('.dil').forEach(b=>b.classList.toggle('aktif',b.dataset.dil===dil));
 }
+/* görsel parlatma: SVG kalpler + parlayan durum ikonları (metinler DILLER'de aynen durur) */
+const KALP=f=>'<svg class="kalp'+(f?'':' bos')+'" viewBox="0 0 24 24" aria-hidden="true">'+
+  '<path d="M12 20.6S5 16.2 2.6 12C.9 8.9 2.2 5.4 5.4 4.7c2-.4 3.8.5 4.9 2.1a.8.8 0 0 0 1.4 0c1.1-1.6 2.9-2.5 4.9-2.1 3.2.7 4.5 4.2 2.8 7.3C17 16.2 12 20.6 12 20.6z"/></svg>';
+const DIKON={
+  'sıra':'<svg class="dikon el" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l6.2 7.2h-3.7v6.1h-5V9.7H5.8z" fill="#ffc94d"/><rect x="9.5" y="17.6" width="5" height="2" rx="1" fill="#ffc94d" opacity=".75"/><rect x="10.3" y="20.6" width="3.4" height="1.6" rx=".8" fill="#ffc94d" opacity=".4"/></svg>',
+  'izle':'<svg class="dikon goz" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.5c-5.4 0-9.4 5.2-9.9 6.1a.9.9 0 0 0 0 .8c.5.9 4.5 6.1 9.9 6.1s9.4-5.2 9.9-6.1a.9.9 0 0 0 0-.8c-.5-.9-4.5-6.1-9.9-6.1z" fill="#9d94c2"/><circle cx="12" cy="12" r="3.6" fill="#171128"/><circle cx="13.2" cy="10.8" r="1.1" fill="#f4f1ff"/></svg>'};
+function durumYaz(k){
+  const el=document.getElementById('durum'),t=S(k).replace(/^[\u{1F440}\u{1F446}]️?\s*/u,'');
+  el.innerHTML=(DIKON[k]||'')+'<span></span>';
+  el.lastChild.textContent=t;
+}
 function updHud(){
   document.getElementById('seviyeEl').textContent=dizi.length;
   document.getElementById('bestEl').textContent=best;
-  document.getElementById('canEl').textContent='❤️'.repeat(can)+'🖤'.repeat(3-can);
+  let h='';for(let j=0;j<3;j++)h+=KALP(j<can);
+  document.getElementById('canEl').innerHTML=h;
 }
 const bekle=ms=>new Promise(r=>setTimeout(r,ms));
 async function yak(i,sure=420){
@@ -191,12 +254,12 @@ async function yak(i,sure=420){
 }
 async function goster(){
   gosterimde=true;
-  document.getElementById('durum').textContent=S('izle');
+  durumYaz('izle');
   await bekle(650);
   const hiz=Math.max(230,470-dizi.length*18);   /* uzadıkça hızlanır */
   for(const i of dizi){ await yak(i,hiz); await bekle(hiz*0.35); }
   gosterimde=false; adim=0;
-  document.getElementById('durum').textContent=S('sıra');
+  durumYaz('sıra');
 }
 async function pedBas(i){
   if(state!=='play'||gosterimde)return;

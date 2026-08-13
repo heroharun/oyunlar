@@ -9,28 +9,50 @@
   html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
     font-family:"Avenir Next","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-  #oyunAlani{height:100%;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+  /* ── fon: renkli bokeh + vinyet ── */
+  .bokeh{position:fixed;border-radius:50%;filter:blur(46px);opacity:.32;pointer-events:none;z-index:0;
+    will-change:transform;animation:bo 16s ease-in-out infinite alternate}
+  .b1{width:44vmin;height:44vmin;left:-14vmin;top:-12vmin;background:radial-gradient(circle,#3d8bfd,transparent 70%)}
+  .b2{width:38vmin;height:38vmin;right:-12vmin;top:6vmin;background:radial-gradient(circle,#e85454,transparent 70%);animation-duration:19s;animation-delay:-6s}
+  .b3{width:46vmin;height:46vmin;left:-10vmin;bottom:-14vmin;background:radial-gradient(circle,#3ecf9a,transparent 70%);animation-duration:22s;animation-delay:-11s}
+  .b4{width:34vmin;height:34vmin;right:-10vmin;bottom:-8vmin;background:radial-gradient(circle,#b06bff,transparent 70%);animation-duration:17s;animation-delay:-3s}
+  @keyframes bo{0%{transform:translate(0,0) scale(1)}50%{transform:translate(7vmin,5vmin) scale(1.12)}100%{transform:translate(-5vmin,8vmin) scale(.94)}}
+  #vinyet{position:fixed;inset:0;pointer-events:none;z-index:2;
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(5,8,18,.55) 100%)}
+  #flash{position:fixed;inset:0;pointer-events:none;z-index:5;opacity:0}
+  #flash.ok{animation:fl .45s ease-out;box-shadow:inset 0 0 90px 18px rgba(62,207,154,.55)}
+  #flash.bad{animation:fl .5s ease-out;box-shadow:inset 0 0 100px 24px rgba(232,84,84,.6)}
+  @keyframes fl{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+  @media (prefers-reduced-motion:reduce){.bokeh{animation:none}}
+  #oyunAlani{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
   #hud{display:flex;justify-content:space-between;align-items:flex-start}
   .kutu{text-align:center}
   .label{font-size:9px;letter-spacing:.2em;color:var(--dim);font-weight:800}
-  .deger{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+  .deger{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;text-shadow:0 0 12px rgba(255,201,77,.35),0 0 26px rgba(255,201,77,.18)}
   #canEl{font-size:15px;letter-spacing:2px;text-align:center;margin-top:4px}
   #sahne{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
   #soruEtiket{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
-  #kelime{font-size:clamp(52px,17vw,92px);font-weight:900;letter-spacing:.02em;
+  #kelime{position:relative;font-size:clamp(52px,17vw,92px);font-weight:900;letter-spacing:.02em;
     text-shadow:0 4px 20px rgba(0,0,0,.4);transition:transform .08s}
+  #kelime::before{content:'';position:absolute;left:50%;top:50%;width:150%;height:230%;
+    transform:translate(-50%,-50%);border-radius:50%;z-index:-1;opacity:.14;filter:blur(24px);
+    background:radial-gradient(closest-side,currentColor,transparent 75%)}
   #kelime.sars{animation:sr .3s}
   @keyframes sr{25%{transform:translateX(-9px)}50%{transform:translateX(8px)}75%{transform:translateX(-5px)}}
   #zamanKutu{width:min(70vw,300px);height:10px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden}
-  #zaman{height:100%;background:linear-gradient(90deg,#3ecf9a,#ffc94d);border-radius:99px}
+  #zaman{height:100%;background:linear-gradient(90deg,#3ecf9a,#ffc94d);border-radius:99px;
+    box-shadow:0 0 10px rgba(62,207,154,.55),0 0 22px rgba(255,201,77,.3)}
   #butonlar{display:flex;gap:14px;padding-bottom:8px}
   .cevap{flex:1;font:inherit;font-size:38px;font-weight:900;border:none;border-radius:22px;
-    padding:22px 0;cursor:pointer;color:#fff;transition:transform .08s,filter .15s}
-  .cevap:active{transform:translateY(4px)}
-  #hayirBtn{background:linear-gradient(180deg,#f06a6a,#d13c3c);box-shadow:0 6px 0 #8f2020}
-  #hayirBtn:active{box-shadow:0 2px 0 #8f2020}
-  #evetBtn{background:linear-gradient(180deg,#4fe3ad,#2eb583);box-shadow:0 6px 0 #17724e}
-  #evetBtn:active{box-shadow:0 2px 0 #17724e}
+    padding:22px 0;cursor:pointer;color:#fff;transition:transform .08s,filter .15s;
+    text-shadow:0 2px 6px rgba(0,0,0,.3)}
+  .cevap:active{transform:translateY(5px) scale(.98);filter:brightness(.94)}
+  #hayirBtn{background:linear-gradient(180deg,#f27d7d,#d13c3c);
+    box-shadow:0 7px 0 #8f2020,0 12px 24px rgba(232,84,84,.35),inset 0 2px 0 rgba(255,255,255,.35)}
+  #hayirBtn:active{box-shadow:0 2px 0 #8f2020,0 4px 10px rgba(232,84,84,.3),inset 0 2px 0 rgba(255,255,255,.25)}
+  #evetBtn{background:linear-gradient(180deg,#5eeab8,#2eb583);
+    box-shadow:0 7px 0 #17724e,0 12px 24px rgba(62,207,154,.35),inset 0 2px 0 rgba(255,255,255,.35)}
+  #evetBtn:active{box-shadow:0 2px 0 #17724e,0 4px 10px rgba(62,207,154,.3),inset 0 2px 0 rgba(255,255,255,.25)}
   #toast{position:fixed;top:18%;left:50%;transform:translateX(-50%);font-size:24px;font-weight:900;
     color:var(--sari);opacity:0;pointer-events:none;white-space:nowrap;z-index:6}
   #toast.pop{animation:tp .8s ease-out}
@@ -42,8 +64,25 @@
   .kart.gizli{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .kart.gizli .btn,.kart.gizli .btn2,.kart.gizli .dil{pointer-events:none}
   .kart h1{font-size:clamp(34px,9vw,58px);font-weight:900;line-height:1.05;transform:rotate(-2deg)}
+  #giris h1{background:linear-gradient(100deg,#e85454 5%,#ffc94d 35%,#3ecf9a 65%,#3d8bfd 95%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 4px 14px rgba(0,0,0,.45))}
   .kart h1 .r1{color:#e85454}.kart h1 .r2{color:#3d8bfd}.kart h1 .r3{color:#3ecf9a}.kart h1 .r4{color:#ffc94d}
   .kart p{max-width:38ch;color:var(--dim);font-size:14.5px;line-height:1.6}
+  /* giriş açıklaması: ikonlu maddeler */
+  #girisMetin{display:flex;flex-direction:column;gap:10px;text-align:left;max-width:40ch}
+  .gsatir{display:flex;align-items:flex-start;gap:10px}
+  .gikon{flex:0 0 auto;width:30px;height:30px;border-radius:10px;display:flex;align-items:center;
+    justify-content:center;font-size:15px;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.14);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  /* nasıl-oynanır: numaralı rozetler */
+  #nasilIcerik{display:flex;flex-direction:column;gap:12px;max-width:42ch}
+  .nsatir{display:flex;align-items:flex-start;gap:12px}
+  .rozet{flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;font-size:13px;font-weight:900;color:#101820;
+    background:linear-gradient(180deg,#ffd97a,#f0b429);
+    box-shadow:0 3px 0 #a97b0e,0 0 12px rgba(255,201,77,.35);margin-top:1px}
+  .rozet.tus{background:linear-gradient(180deg,#8fb3ff,#3d8bfd);box-shadow:0 3px 0 #1f4f9e,0 0 12px rgba(61,139,253,.35);color:#fff}
   .kart .puanlar{font-size:30px;font-weight:900}
   .btn{font:inherit;font-weight:900;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
     color:#101820;background:linear-gradient(180deg,#4fe3ad,#2eb583);border:none;border-radius:999px;
@@ -58,8 +97,11 @@
     border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 14px;cursor:pointer}
   .dil.aktif{color:#101820;background:var(--sari);border-color:var(--sari)}
   .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
-  #nasilIcerik{text-align:left;white-space:pre-line}
+  #nasilIcerik{text-align:left}
 </style>
+<div class="bokeh b1"></div><div class="bokeh b2"></div><div class="bokeh b3"></div><div class="bokeh b4"></div>
+<div id="vinyet"></div>
+<div id="flash"></div>
 <div id="oyunAlani">
   <div id="hud">
     <div class="kutu"><div class="label" id="lPuan">PUAN</div><div class="deger" id="puanEl">0</div></div>
@@ -164,14 +206,41 @@ function toast(t){ const el=document.getElementById('toast'); el.textContent=t;
 
 let state='intro', puan=0, seri=0, can=3, sure=0, sureMax=0, uyum=false, timerId=null;
 
+/* metinleri değiştirmeden görsel satırlara böl (ikon/rozet sunumu) */
+function girisDoldur(){
+  const kap=document.getElementById('girisMetin'); kap.textContent='';
+  const ikonlar=['🎨','👆','🧠','✨'];
+  S('giris').split(/(?<=[.!?])\s+/).filter(s=>s.trim()).forEach((c,i)=>{
+    const row=document.createElement('div'); row.className='gsatir';
+    const ik=document.createElement('span'); ik.className='gikon'; ik.textContent=ikonlar[i]||'✨';
+    const tx=document.createElement('span'); tx.textContent=c.trim();
+    row.append(ik,tx); kap.appendChild(row);
+  });
+}
+function nasilDoldur(){
+  const kap=document.getElementById('nasilIcerik'); kap.textContent='';
+  S('nasil').split(/\n+/).filter(s=>s.trim()).forEach(satir=>{
+    satir=satir.trim();
+    const row=document.createElement('div'); row.className='nsatir';
+    const rz=document.createElement('span'); rz.className='rozet';
+    const num=satir.match(/^(\d)️?⃣\s*/);
+    if(num){ rz.textContent=num[1]; satir=satir.slice(num[0].length); }
+    else if(/^⌨/.test(satir)){ rz.classList.add('tus'); rz.textContent='⌨'; satir=satir.replace(/^⌨️?\s*/,''); }
+    else rz.textContent='•';
+    const tx=document.createElement('span'); tx.textContent=satir;
+    row.append(rz,tx); kap.appendChild(row);
+  });
+}
+function flashEt(c){ const f=document.getElementById('flash');
+  f.className=''; void f.offsetWidth; f.classList.add(c); }
 function uygulaDil(){
-  document.getElementById('girisMetin').textContent=S('giris');
+  girisDoldur();
   document.getElementById('baslaBtn').textContent=S('basla');
   document.getElementById('tekrarBtn').textContent=S('tekrar');
   document.getElementById('nasilBtn').textContent=S('nasilBtn');
   document.getElementById('nasilKapat').textContent=S('tamam');
   document.getElementById('nasilBaslik').textContent=S('nasilBaslik');
-  document.getElementById('nasilIcerik').textContent=S('nasil');
+  nasilDoldur();
   document.getElementById('soruEtiket').textContent=S('soruEtiket');
   document.getElementById('lPuan').textContent=S('lPuan');
   document.getElementById('lSeri').textContent=S('lSeri');
@@ -210,13 +279,13 @@ function cevap(secim){
   audio();
   if(secim===uyum){
     puan++; seri++;
-    blip(620+Math.min(seri,10)*35,0.07,0.12); buzz(6);
+    blip(620+Math.min(seri,10)*35,0.07,0.12); buzz(6); flashEt('ok');
     if(seri%10===0){ toast(S('seriF')(seri)); blip(1040,0.12,0.12); }
     updHud(); yeniSoru();
   } else hata(S('yanlisMsg'));
 }
 function hata(msg){
-  can--; seri=0; updHud(); toast(msg);
+  can--; seri=0; updHud(); toast(msg); flashEt('bad');
   blip(180,0.25,0.16,'sawtooth'); buzz([40,30,40]);
   const el=document.getElementById('kelime');
   el.classList.remove('sars'); void el.offsetWidth; el.classList.add('sars');

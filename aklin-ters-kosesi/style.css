@@ -80,6 +80,12 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02e
   color: var(--ink);
 }
 .logo span { color: var(--purple); display: inline-block; transform: rotate(-3deg); }
+/* "Ters köşe" esprisi: son harf ters ve farklı renkte */
+.logo .flip {
+  display: inline-block; font-weight: inherit;
+  color: var(--coral);
+  transform: rotate(180deg) translateY(-0.06em);
+}
 .logo.sm { font-size: 26px; }
 .tagline { text-align: center; color: var(--ink-soft); margin: 10px 0 26px; font-size: 15px; }
 
@@ -123,9 +129,37 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02e
   font-family: var(--font-display);
 }
 .pill.tappable { cursor: pointer; }
-.ico { font-size: 16px; }
+/* Emoji yerine çizgi stiliyle uyumlu SVG ampul ikonu */
+.ico {
+  display: inline-block; width: 18px; height: 18px; flex: 0 0 18px;
+  font-size: 0; line-height: 0; color: transparent; vertical-align: -4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg stroke='%232f2a45' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M50 8 a27 27 0 0 1 16 48 v10 h-32 v-10 a27 27 0 0 1 16 -48 z' fill='%23ffc93c'/%3E%3Cpath d='M38 78 h24 M42 89 h16' fill='none'/%3E%3Cpath d='M37 36 a15 15 0 0 1 10 -13' fill='none' stroke='%23fff' stroke-width='6'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+}
 
-/* ---------------- Açılış ---------------- */
+/* ---------------- Açılış / menü zemini ---------------- */
+#screen-boot, #screen-menu {
+  background:
+    radial-gradient(ellipse at 50% 42%, transparent 58%, rgba(47, 42, 69, 0.06) 100%),
+    radial-gradient(circle at 18% 8%, rgba(255, 201, 60, 0.14) 0%, transparent 34%),
+    radial-gradient(circle at 84% 90%, rgba(124, 92, 255, 0.12) 0%, transparent 40%),
+    linear-gradient(180deg, #f5edff 0%, var(--paper) 46%, #ecfaf3 100%);
+}
+/* Köşelerde ters dönmüş silik soru işaretleri (tema esprisi) */
+#screen-boot::before, #screen-menu::before,
+#screen-boot::after, #screen-menu::after {
+  content: "?"; position: absolute; pointer-events: none;
+  font-family: var(--font-display); font-weight: 800; line-height: 1;
+  color: var(--purple); opacity: 0.07; user-select: none; -webkit-user-select: none;
+}
+#screen-boot::before, #screen-menu::before {
+  top: 4px; left: 12px; font-size: 108px; transform: rotate(184deg);
+}
+#screen-boot::after, #screen-menu::after {
+  bottom: 6px; right: 14px; font-size: 88px; color: var(--coral);
+  transform: rotate(168deg);
+}
+#screen-menu::before { top: 52px; }
+
 .boot-inner { margin: auto; text-align: center; width: 100%; padding: 0 12px; }
 .boot-mino { width: 150px; height: 150px; margin: 0 auto 6px; animation: float 3.2s ease-in-out infinite; }
 #btnBootStart { width: 70%; margin: 0 auto; font-size: 20px; }
@@ -176,9 +210,15 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02e
 /* ---------------- Soru kartı ---------------- */
 .question-card {
   display: flex; gap: 10px; align-items: center;
-  background: #fff; border: 3px dashed var(--ink); border-radius: var(--radius);
-  padding: 10px 12px; margin: 10px 0 8px; box-shadow: var(--shadow);
+  background: linear-gradient(180deg, #ffffff 0%, #fcf9ff 100%);
+  border: 3px dashed var(--ink); border-radius: var(--radius);
+  padding: 10px 12px; margin: 10px 0 8px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.9),
+    0 6px 0 rgba(47, 42, 69, 0.12),
+    0 12px 22px rgba(124, 92, 255, 0.14);
 }
+.question-card.card-shake { animation: cardShake .4s ease; }
 .instruction { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.35; }
 
 /* Cümle içindeki sürüklenebilir kelimeler */
@@ -247,6 +287,11 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02e
 .gesture-bar .btn { padding: 9px 14px; font-size: 14px; min-height: 44px; background: #fff2c9; }
 .action-bar { display: flex; gap: 8px; }
 #btnHint.glow { animation: glow 1.1s ease-in-out infinite; }
+#btnHint {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 5px; white-space: nowrap;
+}
+#btnHint .ico { width: 16px; height: 16px; flex-basis: 16px; }
 
 /* ---------------- Overlay / sheet ---------------- */
 .overlay {
@@ -267,7 +312,10 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02e
 .sheet h3 { font-size: 24px; text-align: center; }
 .sheet .muted { text-align: center; color: var(--ink-soft); margin: -4px 0 4px; font-size: 14px; }
 .sheet.celebrate { text-align: center; align-items: stretch; }
-.reward { font-weight: 800; color: var(--purple); text-align: center; margin: 0; }
+.reward {
+  font-weight: 800; color: var(--purple); text-align: center; margin: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap;
+}
 
 .row-toggle {
   display: flex; justify-content: space-between; align-items: center;
@@ -341,6 +389,28 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02e
 @keyframes cardIn { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes cardOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-60px); opacity: 0; } }
 @keyframes flyAway { to { transform: translate(-50%,-50%) translate(120px, -220px) rotate(25deg); opacity: 0; } }
+
+@keyframes minoPop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.16) rotate(-5deg) translateY(-6px); }
+  70% { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+@keyframes minoShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px) rotate(-4deg); }
+  45% { transform: translateX(4px) rotate(4deg); }
+  70% { transform: translateX(-2px) rotate(-2deg); }
+}
+@keyframes cardShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+.mino-pop { animation: minoPop .55s ease; }
+.mino-shake { animation: minoShake .5s ease; }
 
 .wiggle { animation: wiggle .32s ease; }
 .bounce { animation: bounceUp .5s ease; }

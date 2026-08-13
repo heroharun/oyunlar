@@ -48,6 +48,78 @@ body {
   -webkit-user-select: none;
 }
 
+/* --- uzay fonu: yıldız katmanları + nebula --- */
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::before {
+  background-image:
+    radial-gradient(42% 30% at 18% 22%, rgba(126, 104, 224, .10), transparent 70%),
+    radial-gradient(38% 26% at 82% 12%, rgba(86, 120, 230, .09), transparent 70%),
+    radial-gradient(30% 22% at 70% 78%, rgba(150, 110, 220, .06), transparent 70%),
+    radial-gradient(1.2px 1.2px at 24px 36px, rgba(255, 255, 255, .55), transparent 100%),
+    radial-gradient(1px 1px at 132px 88px, rgba(255, 255, 255, .40), transparent 100%),
+    radial-gradient(1.4px 1.4px at 200px 150px, rgba(255, 220, 180, .50), transparent 100%),
+    radial-gradient(1px 1px at 76px 184px, rgba(185, 200, 255, .45), transparent 100%),
+    radial-gradient(1.1px 1.1px at 170px 40px, rgba(255, 255, 255, .35), transparent 100%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 230px 230px, 230px 230px, 230px 230px, 230px 230px, 230px 230px;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat;
+}
+
+body::after {
+  background-image:
+    radial-gradient(1.3px 1.3px at 48px 120px, rgba(255, 255, 255, .70), transparent 100%),
+    radial-gradient(1px 1px at 160px 58px, rgba(200, 215, 255, .60), transparent 100%),
+    radial-gradient(1.5px 1.5px at 250px 190px, rgba(255, 235, 200, .55), transparent 100%),
+    radial-gradient(1px 1px at 96px 236px, rgba(255, 255, 255, .50), transparent 100%);
+  background-size: 290px 290px;
+  background-repeat: repeat;
+  animation: ky-twinkle 3.8s ease-in-out infinite alternate;
+}
+
+@keyframes ky-twinkle {
+  from { opacity: .25; }
+  to { opacity: .95; }
+}
+
+/* süzülen minik meteor */
+.ky-meteor {
+  position: fixed;
+  top: 12%;
+  left: 78%;
+  width: 74px;
+  height: 1.5px;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 240, 220, .85));
+  transform: rotate(38deg);
+  opacity: 0;
+  animation: ky-meteor 13s linear infinite;
+}
+.ky-meteor + .ky-meteor {
+  top: 58%;
+  left: 14%;
+  width: 56px;
+  animation-duration: 17s;
+  animation-delay: 6s;
+}
+
+@keyframes ky-meteor {
+  0% { opacity: 0; transform: rotate(38deg) translateX(0); }
+  70% { opacity: 0; transform: rotate(38deg) translateX(0); }
+  73% { opacity: .9; }
+  80% { opacity: 0; transform: rotate(38deg) translateX(-150px); }
+  100% { opacity: 0; transform: rotate(38deg) translateX(-150px); }
+}
+
 button {
   font: inherit;
   color: inherit;
@@ -170,6 +242,13 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round
 .kp.on .ky-spin { animation: ky-spin 7s linear infinite; transform-box: fill-box; transform-origin: 50% 50%; }
 
 @keyframes ky-spin { to { transform: rotate(360deg); } }
+
+.scene.flash { animation: ky-scene-glow .8s ease-out; }
+@keyframes ky-scene-glow {
+  0% { box-shadow: 0 0 0 0 rgba(255, 216, 160, 0), 0 18px 40px -24px #000; }
+  30% { box-shadow: 0 0 26px -2px rgba(255, 216, 160, .40), 0 18px 40px -24px #000; }
+  100% { box-shadow: 0 0 0 0 rgba(255, 216, 160, 0), 0 18px 40px -24px #000; }
+}
 
 .scene.flash::after {
   content: "";
@@ -445,6 +524,37 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast.good { border-color: rgba(107, 227, 176, .5); color: #DFFFF2; }
 .toast.warn { border-color: rgba(255, 184, 107, .5); color: var(--gold-soft); }
+
+/* ---------------- kutlama efektleri ---------------- */
+
+.fly-word {
+  position: fixed;
+  z-index: 45;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  color: var(--gold-soft);
+  text-shadow:
+    0 0 10px rgba(255, 216, 160, .95),
+    0 0 26px rgba(255, 184, 107, .55);
+  will-change: transform, opacity;
+}
+
+.ky-spark {
+  position: fixed;
+  z-index: 46;
+  pointer-events: none;
+  width: 8px;
+  height: 8px;
+  will-change: transform, opacity;
+}
+.ky-spark--star {
+  clip-path: polygon(50% 0%, 63% 36%, 100% 40%, 71% 63%, 81% 100%, 50% 76%, 19% 100%, 29% 63%, 0% 40%, 37% 36%);
+  border-radius: 0;
+}
+.ky-spark--dot { border-radius: 50%; }
 
 /* ---------------- alt sayfa / modal ---------------- */
 

@@ -26,6 +26,11 @@
   .btn.red{background:linear-gradient(180deg,#ff8f99,#ff5f6d);box-shadow:0 5px 0 #b03844;color:#fff}
   .btn.red:active{box-shadow:0 2px 0 #b03844}
   .btn:focus-visible{outline:3px solid #dceffc;outline-offset:3px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .btn svg{width:19px;height:19px;flex:none}
+  #intro{overflow:hidden}
+  .ibg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(88vw,400px);height:auto;z-index:-1;opacity:.5;pointer-events:none}
   .netrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
   .btn.kucuk{font-size:13px;padding:12px 22px}
   #joinCode{font:800 16px "Avenir Next",system-ui;letter-spacing:.3em;text-transform:uppercase;
@@ -38,12 +43,37 @@
 <canvas id="cv"></canvas>
 
 <div class="card" id="intro">
+  <svg class="ibg" viewBox="0 0 400 520" aria-hidden="true" fill="none">
+    <!-- perspektifte hokey masası -->
+    <polygon points="132,36 268,36 348,486 52,486" fill="#122641" stroke="#2a4a6e" stroke-width="3"/>
+    <polygon points="146,50 254,50 330,472 70,472" fill="#16324e"/>
+    <polygon points="146,50 254,50 330,472 70,472" stroke="rgba(143,195,232,.35)" stroke-width="2"/>
+    <!-- orta çizgi + çember -->
+    <line x1="104" y1="290" x2="296" y2="290" stroke="rgba(143,195,232,.6)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="104" y1="290" x2="296" y2="290" stroke="#cfe9fa" stroke-width="1.6" stroke-linecap="round"/>
+    <ellipse cx="200" cy="290" rx="48" ry="17" stroke="rgba(143,195,232,.6)" stroke-width="5"/>
+    <ellipse cx="200" cy="290" rx="48" ry="17" stroke="#cfe9fa" stroke-width="1.6"/>
+    <!-- kaleler -->
+    <line x1="174" y1="50" x2="226" y2="50" stroke="rgba(63,169,245,.45)" stroke-width="10" stroke-linecap="round"/>
+    <line x1="174" y1="50" x2="226" y2="50" stroke="#3fa9f5" stroke-width="4" stroke-linecap="round"/>
+    <line x1="152" y1="472" x2="248" y2="472" stroke="rgba(255,95,109,.45)" stroke-width="12" stroke-linecap="round"/>
+    <line x1="152" y1="472" x2="248" y2="472" stroke="#ff5f6d" stroke-width="5" stroke-linecap="round"/>
+    <!-- tokmaklar + pak -->
+    <ellipse cx="200" cy="416" rx="30" ry="12" fill="#c0392b"/>
+    <ellipse cx="200" cy="410" rx="30" ry="12" fill="#ff5f6d"/>
+    <ellipse cx="200" cy="410" rx="12" ry="5" fill="#ffd0d5"/>
+    <ellipse cx="200" cy="126" rx="22" ry="9" fill="#1e78b8"/>
+    <ellipse cx="200" cy="121" rx="22" ry="9" fill="#3fa9f5"/>
+    <ellipse cx="200" cy="121" rx="9" ry="4" fill="#cfe9fa"/>
+    <ellipse cx="232" cy="252" rx="12" ry="5" fill="#1a2332"/>
+    <ellipse cx="232" cy="249" rx="12" ry="5" fill="#4a5568"/>
+  </svg>
   <h1><span class="a">HAVA</span> <span class="b">HOKEYİ</span></h1>
   <p>Topu rakip kaleye sok, 7 sayıya ilk ulaşan kazanır. İki kişilik modda telefonu aranıza koyun — herkes kendi yarısından tokmağını sürükler!</p>
-  <button class="btn red" id="vsBtn">🤝 2 Kişilik</button>
-  <button class="btn" id="aiBtn">🤖 Bilgisayara Karşı</button>
+  <button class="btn red" id="vsBtn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg>2 Kişilik</button>
+  <button class="btn" id="aiBtn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>Bilgisayara Karşı</button>
   <div class="netrow">
-    <button class="btn kucuk" id="hostBtn">🌐 Oda Kur</button>
+    <button class="btn kucuk" id="hostBtn"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>Oda Kur</button>
     <input id="joinCode" maxlength="4" placeholder="KOD" autocomplete="off">
     <button class="btn kucuk" id="joinBtn">Katıl</button>
   </div>
@@ -185,30 +215,96 @@ function endMatch(){
   document.getElementById('endcard').classList.remove('hidden');
 }
 
+/* sadece görsel durum: pak izi, skor sıçraması, kale ışık patlaması */
+const trail=[];
+let sonCiz1=0, sonCiz2=0, pop1=0, pop2=0, flashUst=0, flashAlt=0;
 function draw(){
   // buz
   const g=ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0,'#cfe9fa'); g.addColorStop(0.5,'#eaf6fe'); g.addColorStop(1,'#cfe9fa');
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  // çizgiler
+  // buz parlaklığı: çapraz yansıma bandı
+  const sheen=ctx.createLinearGradient(0,0,W,H);
+  sheen.addColorStop(0,'rgba(255,255,255,0)');
+  sheen.addColorStop(0.40,'rgba(255,255,255,0)');
+  sheen.addColorStop(0.50,'rgba(255,255,255,.30)');
+  sheen.addColorStop(0.60,'rgba(255,255,255,0)');
+  sheen.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=sheen; ctx.fillRect(0,0,W,H);
+  // hava delikleri: seyrek, çok silik nokta ızgarası
+  ctx.fillStyle='rgba(110,165,200,.16)';
+  const ad=46;
+  for(let dy=ad;dy<H;dy+=ad){
+    const off=(Math.round(dy/ad)%2)?ad/2:0;
+    for(let dx=off+ad/2;dx<W;dx+=ad){
+      ctx.beginPath(); ctx.arc(dx,dy,1.3,0,6.28); ctx.fill();
+    }
+  }
+  // kenar bantları: neon ışıma
+  ctx.save();
+  ctx.strokeStyle='rgba(63,169,245,.5)'; ctx.lineWidth=5;
+  ctx.shadowColor='#3fa9f5'; ctx.shadowBlur=16;
+  ctx.strokeRect(2.5,2.5,W-5,H-5);
+  ctx.restore();
+  // çizgiler (ışımalı)
+  ctx.save();
+  ctx.shadowColor='#6fc0f0'; ctx.shadowBlur=10;
   ctx.strokeStyle='#8fc3e8'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke();
   ctx.beginPath(); ctx.arc(W/2,H/2,70,0,6.28); ctx.stroke();
+  ctx.restore();
   ctx.fillStyle='rgba(143,195,232,.25)';
   ctx.beginPath(); ctx.arc(W/2,H/2,12,0,6.28); ctx.fill();
-  // kaleler
+  // kaleler (ışımalı ağız çizgileri)
   const gw=GOAL_W();
-  ctx.strokeStyle='#3fa9f5'; ctx.lineWidth=7; ctx.lineCap='round';
+  ctx.save(); ctx.lineCap='round'; ctx.lineWidth=7;
+  ctx.strokeStyle='#3fa9f5'; ctx.shadowColor='#3fa9f5'; ctx.shadowBlur=14;
   ctx.beginPath(); ctx.moveTo(W/2-gw/2,4); ctx.lineTo(W/2+gw/2,4); ctx.stroke();
-  ctx.strokeStyle='#ff5f6d';
+  ctx.strokeStyle='#ff5f6d'; ctx.shadowColor='#ff5f6d'; ctx.shadowBlur=14;
   ctx.beginPath(); ctx.moveTo(W/2-gw/2,H-4); ctx.lineTo(W/2+gw/2,H-4); ctx.stroke();
-  // skor
-  ctx.font='900 46px "Avenir Next",system-ui,sans-serif'; ctx.textAlign='center';
-  ctx.fillStyle='rgba(63,169,245,.3)'; ctx.fillText(score2??0,W/2,H/2-40);
-  ctx.save(); ctx.translate(W/2,H/2+40); ctx.rotate(mode==='vs'?Math.PI:0);
-  ctx.fillStyle='rgba(255,95,109,.3)'; ctx.fillText(score1??0,0,mode==='vs'?-14:14);
+  ctx.restore();
+  // gol algısı (yalnız görsel): rakam sıçraması + kale ışık patlaması
+  const s1=score1??0, s2=score2??0;
+  if(s1>sonCiz1){ pop1=24; flashUst=28; }
+  if(s2>sonCiz2){ pop2=24; flashAlt=28; }
+  sonCiz1=s1; sonCiz2=s2;
+  if(flashUst>0){ const a=flashUst/28; flashUst--;
+    const fg=ctx.createRadialGradient(W/2,4,0,W/2,4,gw*(1.7-a*0.7));
+    fg.addColorStop(0,'rgba(255,120,132,'+(0.55*a).toFixed(3)+')');
+    fg.addColorStop(1,'rgba(255,120,132,0)');
+    ctx.fillStyle=fg; ctx.fillRect(0,0,W,H*0.5);
+  }
+  if(flashAlt>0){ const a=flashAlt/28; flashAlt--;
+    const fg=ctx.createRadialGradient(W/2,H-4,0,W/2,H-4,gw*(1.7-a*0.7));
+    fg.addColorStop(0,'rgba(100,190,255,'+(0.55*a).toFixed(3)+')');
+    fg.addColorStop(1,'rgba(100,190,255,0)');
+    ctx.fillStyle=fg; ctx.fillRect(0,H*0.5,W,H*0.5);
+  }
+  // skor: büyük parlak neon rakamlar
+  const sc1=1+(pop1>0?(pop1/24)*0.55:0), sc2=1+(pop2>0?(pop2/24)*0.55:0);
+  if(pop1>0)pop1--; if(pop2>0)pop2--;
+  ctx.font='900 64px "Avenir Next",system-ui,sans-serif'; ctx.textAlign='center';
+  ctx.save(); ctx.translate(W/2,H/2-52); ctx.scale(sc2,sc2);
+  ctx.shadowColor='#3fa9f5'; ctx.shadowBlur=22;
+  ctx.fillStyle='rgba(63,169,245,.55)'; ctx.fillText(s2,0,0); ctx.fillText(s2,0,0);
+  ctx.restore();
+  ctx.save(); ctx.translate(W/2,H/2+52); ctx.rotate(mode==='vs'?Math.PI:0);
+  ctx.scale(sc1,sc1);
+  ctx.shadowColor='#ff5f6d'; ctx.shadowBlur=22;
+  ctx.fillStyle='rgba(255,95,109,.55)';
+  ctx.fillText(s1,0,mode==='vs'?-30:30); ctx.fillText(s1,0,mode==='vs'?-30:30);
   ctx.restore();
   if(state==='intro') return;
+  // pak izi: hareket ederken kısa iz
+  if(state==='play'&&freeze<=0&&Math.hypot(puck.vx,puck.vy)>1.4){
+    trail.push({x:puck.x,y:puck.y});
+  } else if(trail.length) trail.shift();
+  if(trail.length>10) trail.shift();
+  for(let i=0;i<trail.length;i++){
+    const k=(i+1)/trail.length;
+    ctx.fillStyle='rgba(46,96,146,'+(0.20*k).toFixed(3)+')';
+    ctx.beginPath(); ctx.arc(trail[i].x,trail[i].y,R_P()*(0.35+0.6*k),0,6.28); ctx.fill();
+  }
   // tokmaklar
   drawMallet(mal2,'#3fa9f5','#1e78b8');
   drawMallet(mal1,'#ff5f6d','#c0392b');

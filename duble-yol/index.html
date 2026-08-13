@@ -39,6 +39,17 @@
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b05e2a}
   .btn:focus-visible{outline:3px solid var(--sari);outline-offset:3px}
   .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  #giris{overflow:hidden}
+  #giris>*{position:relative;z-index:1}
+  #giris p,#giris .hint{text-shadow:0 1px 6px rgba(8,12,24,.9)}
+  #giris h1 .k{background:linear-gradient(180deg,#ffb3a0 0%,#e84545 55%,#9c2130 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 3px 10px rgba(232,69,69,.45))}
+  #giris h1 .m{background:linear-gradient(180deg,#a8ccff 0%,#3d8bfd 55%,#1f4fa8 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 3px 10px rgba(61,139,253,.45))}
+  .deger.parla{animation:sparla .6s ease-out}
+  @keyframes sparla{30%{transform:scale(1.3);color:var(--sari);text-shadow:0 0 16px rgba(255,201,77,.95)}}
 </style>
 <canvas id="c"></canvas>
 <div id="hud">
@@ -52,6 +63,57 @@
 <div id="toast"></div>
 
 <div class="kart" id="giris">
+  <svg id="girisBg" viewBox="0 0 400 720" preserveAspectRatio="xMidYMid slice" aria-hidden="true"
+       style="position:absolute;inset:0;width:100%;height:100%;z-index:0">
+    <defs>
+      <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#070c1a"/><stop offset=".5" stop-color="#141e36"/><stop offset="1" stop-color="#1a2332"/>
+      </linearGradient>
+      <linearGradient id="gRoad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#26334b"/><stop offset="1" stop-color="#1b2537"/>
+      </linearGradient>
+      <radialGradient id="gAy" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#fff6d8" stop-opacity=".85"/><stop offset=".4" stop-color="#ffe9a8" stop-opacity=".22"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="gFar" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stop-color="#ffe9a8" stop-opacity=".30"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="gVin" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0a0f1d" stop-opacity=".55"/><stop offset=".45" stop-color="#0a0f1d" stop-opacity=".12"/><stop offset="1" stop-color="#0a0f1d" stop-opacity=".62"/>
+      </linearGradient>
+    </defs>
+    <rect width="400" height="720" fill="url(#gSky)"/>
+    <circle cx="318" cy="88" r="72" fill="url(#gAy)"/>
+    <circle cx="318" cy="88" r="22" fill="#f7ecc9"/>
+    <circle cx="310" cy="82" r="5" fill="#e6d9b1"/><circle cx="326" cy="96" r="3.5" fill="#e6d9b1"/>
+    <g fill="#fff">
+      <circle cx="30" cy="48" r="1.6" opacity=".85"/><circle cx="74" cy="120" r="1.2" opacity=".55"/>
+      <circle cx="120" cy="36" r="1.8" opacity=".9"/><circle cx="168" cy="94" r="1.1" opacity=".5"/>
+      <circle cx="210" cy="40" r="1.4" opacity=".7"/><circle cx="248" cy="132" r="1.2" opacity=".55"/>
+      <circle cx="54" cy="188" r="1.3" opacity=".6"/><circle cx="140" cy="160" r="1" opacity=".45"/>
+      <circle cx="196" cy="150" r="1.5" opacity=".7"/><circle cx="368" cy="180" r="1.3" opacity=".6"/>
+      <circle cx="352" cy="30" r="1.2" opacity=".55"/><circle cx="286" cy="60" r="1" opacity=".5"/>
+      <circle cx="16" cy="130" r="1.1" opacity=".5"/><circle cx="382" cy="112" r="1.5" opacity=".7"/>
+    </g>
+    <path d="M0,272 Q60,240 130,264 T260,258 T400,268 L400,320 L0,320 Z" fill="#101827"/>
+    <g fill="#0b1220">
+      <path d="M36,262 L46,236 L56,262 Z"/><path d="M64,266 L72,246 L80,266 Z"/>
+      <path d="M320,262 L330,238 L340,262 Z"/><path d="M350,266 L358,248 L366,266 Z"/>
+    </g>
+    <path d="M200,268 L54,720 L346,720 Z" fill="url(#gRoad)"/>
+    <path d="M200,268 L54,720 L70,720 L202,268 Z" fill="#e9eefb" opacity=".5"/>
+    <path d="M200,268 L346,720 L330,720 L198,268 Z" fill="#e9eefb" opacity=".5"/>
+    <line x1="200" y1="276" x2="200" y2="720" stroke="#ffc94d" stroke-width="5" stroke-dasharray="16 30" opacity=".7"/>
+    <path d="M182,522 L152,330 L198,330 L192,522 Z" fill="url(#gFar)"/>
+    <path d="M218,522 L248,330 L202,330 L208,522 Z" fill="url(#gFar)"/>
+    <rect x="176" y="518" width="48" height="86" rx="15" fill="#0c1322"/>
+    <rect x="182" y="536" width="36" height="24" rx="7" fill="#1a2438"/>
+    <ellipse cx="187" cy="522" rx="5" ry="3" fill="#ffe9a8"/>
+    <ellipse cx="213" cy="522" rx="5" ry="3" fill="#ffe9a8"/>
+    <rect x="181" y="594" width="14" height="4" rx="2" fill="#ff5540"/>
+    <rect x="205" y="594" width="14" height="4" rx="2" fill="#ff5540"/>
+    <rect width="400" height="720" fill="url(#gVin)"/>
+  </svg>
   <h1><span class="k">DUBLE</span> <span class="m">YOL</span></h1>
   <p>İki araba, tek sürücü — ikisi de sende! <b style="color:var(--kirmizi)">Sol yarıya dokun</b> → kırmızı şerit değiştirir, <b style="color:var(--mavi)">sağ yarıya dokun</b> → mavi şerit değiştirir. Konilerden ve bariyerlerden kaç, yıldızları topla. <b style="color:#ff4d6a">3 canın var</b> — yolda çıkan ❤️ ile tazelenir. Yol hiç bitmez!</p>
   <button class="btn" id="baslaBtn">Yola Çık</button>
@@ -92,6 +154,10 @@ let state='intro', tick=0, dist=0, puan=0, yildiz=0, spd=0, can=3, iFrames=0;
 /* her yarı: lane 0=iç, 1=dış · laneX yumuşak geçiş */
 const araba=[{lane:0,laneX:0,renk:'#e84545',govde:'#c22f2f'},{lane:1,laneX:1,renk:'#3d8bfd',govde:'#2a6fd6'}];
 let objs=[], spawnT=[0,0], carpan=null;
+let fx=[], sonYuz=0;
+const rnd=n=>{ const v=Math.sin(n)*43758.5453; return v-Math.floor(v); };
+function puf(x,y,renk){ for(let i=0;i<8;i++){ const a2=Math.random()*6.28, v=1+Math.random()*2.2;
+  fx.push({x,y,vx:Math.cos(a2)*v,vy:Math.sin(a2)*v-0.8,t:1,renk}); } }
 
 const ARABA_Y=()=>H*0.8;
 /* yarı merkezi + şerit x'i */
@@ -103,11 +169,15 @@ function laneCX(side,lane){
 
 function reset(){ tick=0; dist=0; puan=0; yildiz=0; spd=3.6; can=3; iFrames=0;
   araba[0].lane=0; araba[0].laneX=0; araba[1].lane=1; araba[1].laneX=1;
-  objs=[]; spawnT=[120,340]; carpan=null; updHud(); }
+  objs=[]; spawnT=[120,340]; carpan=null; fx=[]; sonYuz=0; updHud(); }
 function updHud(){
   document.getElementById('puanEl').textContent=Math.floor(puan).toLocaleString('tr-TR');
   document.getElementById('yildizEl').textContent=yildiz;
   document.getElementById('canEl').textContent='❤️'.repeat(can)+'🖤'.repeat(3-can);
+  /* geçilen her 100 puanda skorda minik parıltı */
+  const yuz=Math.floor(puan/100);
+  if(yuz>sonYuz){ sonYuz=yuz; const pe=document.getElementById('puanEl');
+    pe.classList.remove('parla'); void pe.offsetWidth; pe.classList.add('parla'); }
 }
 
 /* ── SPAWN: her yarıda tek tek, geçilebilir aralıklarla ── */
@@ -140,9 +210,11 @@ function physics(dt){
     if(o.hit)continue;
     const a=araba[o.side];
     if(Math.abs(o.y-ay)<38&&Math.abs(o.lane-a.laneX)<0.4){
-      if(o.tip==='yildiz'){ o.hit=true; yildiz++; puan+=15; updHud(); blip(980,0.08,0.12); buzz(8); }
+      if(o.tip==='yildiz'){ o.hit=true; yildiz++; puan+=15; updHud(); blip(980,0.08,0.12); buzz(8);
+        puf(laneCX(o.side,o.lane),o.y,'#ffdc78'); }
       else if(o.tip==='can'){ o.hit=true; can=Math.min(3,can+1); updHud();
-        blip(660,0.1,0.13); blip(880,0.14,0.13); buzz([15,25,15]); toast('❤️ +1 can!'); }
+        blip(660,0.1,0.13); blip(880,0.14,0.13); buzz([15,25,15]); toast('❤️ +1 can!');
+        puf(laneCX(o.side,o.lane),o.y,'#ff7d94'); }
       else if(iFrames>0){ /* koruma: hasar yok */ }
       else { crash(o); return; }
     }
@@ -175,24 +247,65 @@ function crash(o){
 /* ── ÇİZİM ── */
 function cizYol(){
   ctx.fillStyle='#233047'; ctx.fillRect(0,0,W,H);
+  const akisY=tick*spd;
+  /* yol kenarı çim şeritleri + akıp geçen ağaç/çim silüetleri (hız hissi) */
+  const kW=W*0.05;
+  ctx.fillStyle='#1c2f28';
+  ctx.fillRect(0,0,kW,H); ctx.fillRect(W-kW,0,kW,H);
+  for(let side=0;side<2;side++){
+    const bx=side===0?kW*0.5:W-kW*0.5;
+    const adet=Math.ceil(H/58)+2;
+    for(let k=0;k<adet;k++){
+      const y=((k*58+akisY)%(H+80))-40;
+      const j=k*3.7+side*31;
+      if(k%3===0){ /* ağaç silüeti */
+        const tr=6+rnd(j)*6;
+        ctx.fillStyle='#14231c';
+        ctx.fillRect(bx-1.5,y,3,tr*1.1);
+        ctx.beginPath(); ctx.arc(bx,y-tr*0.5,tr,0,6.28); ctx.fill();
+      } else { /* çim tutamı */
+        ctx.fillStyle='#28453a';
+        ctx.beginPath(); ctx.ellipse(bx+(rnd(j)-0.5)*kW*0.7,y,4.5,2.2,0,0,6.28); ctx.fill();
+      }
+    }
+  }
   /* iki asfalt şerit bloğu */
   for(let s=0;s<2;s++){
     const cx2=s===0?W*0.25:W*0.75, yolW=W*0.40;
     ctx.fillStyle='#2b3950';
     ctx.fillRect(cx2-yolW/2,0,yolW,H);
+    /* asfalt dokusu: leke ve çatlak benekleri (akar) */
+    for(let k=0;k<16;k++){
+      const j=k*7.3+s*57;
+      const y=((k*97+rnd(j+1)*60+akisY)%(H+60))-30;
+      const x=cx2-yolW/2+10+rnd(j)*(yolW-20);
+      if(k%4===0){ /* çatlak */
+        ctx.strokeStyle='rgba(12,17,26,.35)'; ctx.lineWidth=1.4;
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+6+rnd(j+2)*8,y+10); ctx.lineTo(x+2,y+20); ctx.stroke();
+      } else { /* leke */
+        ctx.fillStyle=k%2?'rgba(12,17,26,.20)':'rgba(255,255,255,.05)';
+        ctx.beginPath(); ctx.ellipse(x,y,3+rnd(j+3)*6,2+rnd(j+4)*3,rnd(j+5)*3,0,6.28); ctx.fill();
+      }
+    }
     /* kenar çizgileri */
     ctx.fillStyle='#f2f6ff';
     ctx.fillRect(cx2-yolW/2+3,0,4,H); ctx.fillRect(cx2+yolW/2-7,0,4,H);
-    /* orta kesikli şerit çizgisi — akar */
-    ctx.fillStyle='rgba(255,201,77,.85)';
-    const akis=(tick*spd)%56;
+    /* orta kesikli şerit çizgisi — akar + glow */
+    ctx.save();
+    ctx.shadowColor='rgba(255,201,77,.8)'; ctx.shadowBlur=9;
+    ctx.fillStyle='rgba(255,201,77,.9)';
+    const akis=akisY%56;
     for(let y=-56+akis;y<H;y+=56){ ctx.fillRect(cx2-2.5,y,5,30); }
+    ctx.restore();
   }
-  /* ortadaki refüj */
+  /* ortadaki refüj — parlayan noktalar */
   ctx.fillStyle='#18202f'; ctx.fillRect(W*0.5-W*0.045,0,W*0.09,H);
-  ctx.fillStyle='#3a4a63';
+  ctx.save();
+  ctx.shadowColor='rgba(126,160,216,.85)'; ctx.shadowBlur=8;
+  ctx.fillStyle='#4a5f80';
   const akis2=(tick*spd*0.6)%90;
   for(let y=-90+akis2;y<H;y+=90){ ctx.beginPath(); ctx.arc(W*0.5,y,5,0,6.28); ctx.fill(); }
+  ctx.restore();
 }
 function cizAraba(side){
   const a=araba[side], x=laneCX(side,0)+(laneCX(side,1)-laneCX(side,0))*a.laneX, y=ARABA_Y();
@@ -245,11 +358,16 @@ function cizObj(o){
   const x=laneCX(o.side,o.lane);
   if(o.tip==='yildiz'){
     const r=15+Math.sin(tick*0.15+o.y)*2;
-    ctx.save(); ctx.translate(x,o.y); ctx.rotate(Math.sin(tick*0.05+o.y)*0.2);
+    ctx.save(); ctx.translate(x,o.y); ctx.rotate(tick*0.03+o.y*0.02);
     /* parlama halesi */
     const g=ctx.createRadialGradient(0,0,2,0,0,r*2.1);
-    g.addColorStop(0,'rgba(255,220,120,.5)'); g.addColorStop(1,'rgba(255,220,120,0)');
+    g.addColorStop(0,'rgba(255,220,120,.55)'); g.addColorStop(1,'rgba(255,220,120,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r*2.1,0,6.28); ctx.fill();
+    /* ışıma çizgileri */
+    ctx.strokeStyle='rgba(255,240,190,'+(0.35+0.3*Math.sin(tick*0.2+o.y)).toFixed(3)+')';
+    ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(-r*1.8,0); ctx.lineTo(r*1.8,0);
+    ctx.moveTo(0,-r*1.8); ctx.lineTo(0,r*1.8); ctx.stroke();
     ctx.fillStyle='#ffc94d';
     ctx.beginPath();
     for(let i=0;i<10;i++){ const rr=i%2?r*0.45:r, aa=i*Math.PI/5-Math.PI/2;
@@ -263,8 +381,12 @@ function cizObj(o){
     const s2=1+Math.sin(tick*0.2)*0.08;
     ctx.save(); ctx.translate(x,o.y); ctx.scale(s2,s2);
     const g=ctx.createRadialGradient(0,0,2,0,0,34);
-    g.addColorStop(0,'rgba(255,90,110,.45)'); g.addColorStop(1,'rgba(255,90,110,0)');
+    g.addColorStop(0,'rgba(255,90,110,.5)'); g.addColorStop(1,'rgba(255,90,110,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,34,0,6.28); ctx.fill();
+    /* nabız halkası */
+    ctx.strokeStyle='rgba(255,120,140,'+(0.3+0.25*Math.sin(tick*0.2)).toFixed(3)+')';
+    ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(0,0,23+Math.sin(tick*0.2)*2,0,6.28); ctx.stroke();
     ctx.fillStyle='#ff4d6a';
     ctx.beginPath();
     ctx.moveTo(0,13);
@@ -321,6 +443,16 @@ function draw(){
   objs.sort((a,b)=>a.y-b.y);
   for(const o of objs) cizObj(o);
   cizAraba(0); cizAraba(1);
+  /* toplama parıltı parçacıkları */
+  if(fx.length){
+    for(const p of fx){
+      if(state==='play'){ p.x+=p.vx; p.y+=p.vy+spd*0.4; p.t-=0.045; }
+      ctx.globalAlpha=Math.max(0,p.t); ctx.fillStyle=p.renk;
+      ctx.beginPath(); ctx.arc(p.x,p.y,2.6*p.t+0.6,0,6.28); ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    fx=fx.filter(p=>p.t>0);
+  }
   if(state==='dur'){
     ctx.fillStyle='rgba(26,35,50,.72)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle='#f2f6ff'; ctx.font='900 30px "Avenir Next",system-ui';

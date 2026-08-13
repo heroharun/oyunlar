@@ -95,7 +95,8 @@
     border:1px solid rgba(240,180,41,.3);padding:16px 14px;border-radius:14px;background:rgba(255,255,255,.04);
     transition:border-color .15s, transform .15s}
   .mode:hover{border-color:var(--gold);transform:translateY(-3px)}
-  .micon{font-size:30px;line-height:1}
+  .micon{height:36px;display:flex;align-items:center;justify-content:center}
+  .micon svg{width:34px;height:34px;display:block;color:var(--gold);filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
   .mode h4{font-family:'Rampart One',cursive;letter-spacing:2px;color:var(--gold);font-size:17px;text-align:center}
   .mdesc{font-size:12px;opacity:.75;text-align:center;line-height:1.7}
   .mkey{font-size:11px;opacity:.5;margin-top:auto}
@@ -139,7 +140,7 @@
   <input class="nick" id="nick1" maxlength="12" placeholder="ADINI YAZ">
   <div class="modes">
     <div class="mode">
-      <div class="micon">🤖</div>
+      <div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="8.5" width="14" height="10" rx="2.6"/><line x1="12" y1="8.5" x2="12" y2="5"/><circle cx="12" cy="3.8" r="1.3" fill="currentColor" stroke="none"/><circle cx="9" cy="13" r="1.35" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.35" fill="currentColor" stroke="none"/><line x1="9.5" y1="16.2" x2="14.5" y2="16.2"/><line x1="2.8" y1="12.5" x2="5" y2="12.5"/><line x1="19" y1="12.5" x2="21.2" y2="12.5"/></svg></div>
       <h4>TEK KİŞİLİK</h4>
       <p class="mdesc">Bota karşı oyna<br>WASD veya oklar + <kbd>Boşluk</kbd></p>
       <div class="netrow">
@@ -149,7 +150,7 @@
       <p class="mkey">kısayol: <kbd>1</kbd> <kbd>2</kbd></p>
     </div>
     <div class="mode">
-      <div class="micon">👥</div>
+      <div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.5" cy="8.2" r="3.1"/><path d="M2.8 19.2c0-3.1 2.6-5.2 5.7-5.2s5.7 2.1 5.7 5.2"/><circle cx="16.6" cy="9.3" r="2.5"/><path d="M15.8 14.6c2.9.3 5.4 2.1 5.4 4.6"/></svg></div>
       <h4>YEREL 2 OYUNCU</h4>
       <p class="mdesc">Aynı klavye<br><b style="color:var(--aka)">WASD</b> + <kbd>Boşluk</kbd> · <b style="color:#7aa8e0">Oklar</b> + <kbd>Enter</kbd></p>
       <input class="nick" id="nick2" maxlength="12" placeholder="2. OYUNCUNUN ADI">
@@ -157,7 +158,7 @@
       <p class="mkey">kısayol: <kbd>Boşluk</kbd></p>
     </div>
     <div class="mode">
-      <div class="micon">🌐</div>
+      <div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><ellipse cx="12" cy="12" rx="3.9" ry="8.6"/><line x1="3.4" y1="12" x2="20.6" y2="12"/><path d="M5.2 7.2h13.6M5.2 16.8h13.6"/></svg></div>
       <h4>ONLINE 2 OYUNCU</h4>
       <p class="mdesc">İki farklı cihaz, oda koduyla</p>
       <button class="btn" id="btnHost">ODA KUR</button>
@@ -544,7 +545,22 @@ function makePlayer(i){
   };
 }
 let players = [makePlayer(0), makePlayer(1)];
-let powerups = [], particles = [], floats = [], bullets = [];
+let powerups = [], particles = [], floats = [], bullets = [], trails = [];
+/* topaç izleri: hızlı hareket eden topaçların ardında solan renk izi (salt görsel) */
+function updateTrails(dt){
+  if(game.state!=='menu'){
+    for(const p of players){
+      const v = Math.hypot(p.vx, p.vy);
+      if(p.fallScale>0 && (v>110 || p.falling>0) && topAlpha(p)>0.3){
+        const src = p.disguiseT>0 ? players[p.i?0:1] : p;
+        trails.push({x:p.x, y:p.y, r:p.r*0.72*(p.falling>0?p.fallScale:1),
+                     c:src.color2, life:0.28, max:0.28});
+      }
+    }
+  }
+  for(const t of trails) t.life-=dt;
+  trails = trails.filter(t=>t.life>0);
+}
 let spawnT = 2.5;
 
 function resetPositions(){
@@ -1051,8 +1067,10 @@ function collide(){
     if(kbImmB){ b.vx=bVx0; b.vy=bVy0; }
 
     const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
-    fxShake(6);
+    const imp = Math.min(1, -rel/620); // çarpışma şiddeti (0-1) — salt görsel
+    fxShake(6+imp*9);
     fxBurst(mx,my,'#f4ead5',8,150);
+    fxBurst(mx,my,'#ffd76e',5+Math.round(imp*12),190+imp*200); // kıvılcım patlaması
     playSfx('clash');
 
     // yakın silah hasarı
@@ -1259,8 +1277,59 @@ function updateHud(){
 }
 
 /* ================= ÇİZİM ================= */
+/* seyirci silüetleri + tribün ışıkları (silik arka plan, salt görsel) */
+var crowd = null;
+function buildCrowd(){
+  crowd = {W:W, H:H, seats:[], lights:[]};
+  let seed = 7;
+  const rnd = ()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
+  for(let r=0;r<3;r++){
+    const y0 = H*0.055 + r*24;
+    const step = 30;
+    for(let x=-10; x<W+20; x+=step){
+      crowd.seats.push({x:x+(r%2?step/2:0)+rnd()*6, y:y0+rnd()*9, r:8+rnd()*5, o:0.22+r*0.09});
+    }
+  }
+  for(let i=0;i<16;i++) crowd.lights.push({x:rnd()*W, y:H*0.03+rnd()*H*0.13, ph:rnd()*20, sp:2+rnd()*4});
+}
+function drawCrowd(){
+  if(!crowd || crowd.W!==W || crowd.H!==H) buildCrowd();
+  ctx.save();
+  // tribün karanlığı
+  const tg = ctx.createLinearGradient(0,0,0,H*0.24);
+  tg.addColorStop(0,'rgba(0,0,0,.5)'); tg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=tg; ctx.fillRect(0,0,W,H*0.24);
+  // silüetler (hafif tepe ışığıyla)
+  for(const s of crowd.seats){
+    ctx.globalAlpha = s.o;
+    ctx.fillStyle = '#05070f';
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, Math.PI, 0); ctx.fill();
+    ctx.fillRect(s.x-s.r, s.y, s.r*2, s.r*1.3);
+    ctx.globalAlpha = s.o*0.35;
+    ctx.strokeStyle = 'rgba(240,180,41,.5)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, Math.PI*1.15, Math.PI*1.85); ctx.stroke();
+  }
+  // flaş / tribün ışıkları (yanıp söner)
+  for(const l of crowd.lights){
+    const tw = Math.sin(game.frameT*l.sp + l.ph);
+    if(tw<=0.55) continue;
+    ctx.globalAlpha = (tw-0.55)*0.7;
+    ctx.fillStyle='#ffe9b0';
+    ctx.beginPath(); ctx.arc(l.x, l.y, 1.6, 0, 7); ctx.fill();
+    ctx.globalAlpha *= 0.4;
+    ctx.beginPath(); ctx.arc(l.x, l.y, 4.5, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+}
 function drawArena(){
   ctx.save();
+  drawCrowd();
+  // ring altındaki uçurum: kenardan dışa koyu degrade (düşme bölgesi)
+  const fz = ctx.createRadialGradient(CX, CY, AR+24, CX, CY, AR+170);
+  fz.addColorStop(0,'rgba(0,0,0,.5)'); fz.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(CX, CY, AR+170, 0, 7);
+  ctx.fillStyle=fz; ctx.fill();
+
   ctx.beginPath(); ctx.arc(CX, CY+10, AR+26, 0, 7);
   ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fill();
 
@@ -1283,12 +1352,46 @@ function drawArena(){
   }
   ctx.globalAlpha=1;
 
+  // ahşap damar halkaları (doku)
+  ctx.globalAlpha=0.08; ctx.strokeStyle='#7a5c2e'; ctx.lineWidth=1.5;
+  for(let i=1;i<=5;i++){
+    ctx.beginPath(); ctx.arc(CX, CY, AR*(i/5.6), 0, 7); ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+
+  // merkez motifi: spiral + pusula ışınları
+  ctx.save();
+  ctx.translate(CX, CY);
+  ctx.globalAlpha=0.16; ctx.strokeStyle='#6e4a1f'; ctx.lineWidth=3; ctx.lineCap='round';
+  ctx.beginPath();
+  for(let a=0; a<=Math.PI*6; a+=0.14){
+    const rr = a/(Math.PI*6)*AR*0.32;
+    const px = Math.cos(a)*rr, py = Math.sin(a)*rr;
+    a===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.globalAlpha=0.11; ctx.lineWidth=4;
+  for(let i=0;i<8;i++){
+    ctx.rotate(Math.PI/4);
+    ctx.beginPath(); ctx.moveTo(AR*0.42,0); ctx.lineTo(AR*0.64,0); ctx.stroke();
+  }
+  ctx.restore();
+
   ctx.beginPath(); ctx.arc(CX, CY, AR, 0, 7);
   ctx.lineWidth=13; ctx.strokeStyle='#6e4a1f'; ctx.stroke();
   ctx.beginPath(); ctx.arc(CX, CY, AR, 0, 7);
   ctx.lineWidth=9; ctx.setLineDash([16,7]);
   ctx.strokeStyle='#a87d3c'; ctx.stroke();
   ctx.setLineDash([]);
+
+  // kenar çizgisine neon parıltı (nabız gibi hafif soluk alır)
+  ctx.save();
+  ctx.shadowColor='rgba(240,180,41,.9)';
+  ctx.shadowBlur=22+Math.sin(game.frameT*2.2)*7;
+  ctx.strokeStyle='rgba(240,180,41,'+(0.6+Math.sin(game.frameT*2.2)*0.15)+')';
+  ctx.lineWidth=3.5;
+  ctx.beginPath(); ctx.arc(CX, CY, AR+2, 0, 7); ctx.stroke();
+  ctx.restore();
 
   ctx.strokeStyle='rgba(110,74,31,.6)'; ctx.lineWidth=5; ctx.lineCap='round';
   ctx.beginPath(); ctx.moveTo(CX-AR*0.18, CY-30); ctx.lineTo(CX-AR*0.18, CY+30); ctx.stroke();
@@ -1308,13 +1411,16 @@ function drawTop(p){
   const src = p.disguiseT>0 ? players[p.i?0:1] : p; // kılık: rakip renkleri
   ctx.save();
   ctx.translate(p.x, p.y);
-  const sc = p.falling>0 ? p.fallScale : 1;
+  // düşerken: yumuşak küçülme (smoothstep) + hızlanan ekstra dönüş + solma
+  const fs = p.fallScale;
+  const sc = p.falling>0 ? fs*fs*(3-2*fs) : 1;
+  if(p.falling>0) ctx.globalAlpha *= Math.max(0, Math.min(1, fs*1.6));
   ctx.scale(sc, sc);
 
   ctx.beginPath(); ctx.ellipse(0, p.r*0.55, p.r*1.05, p.r*0.4, 0, 0, 7);
   ctx.fillStyle='rgba(0,0,0,.3)'; ctx.fill();
 
-  ctx.rotate(p.ang);
+  ctx.rotate(p.ang + (p.falling>0 ? (1-fs)*7 : 0));
 
   if(p.weapon==='sword' || p.weapon==='knife'){
     const blades = p.weapon==='sword' ? 3 : 5;
@@ -1576,6 +1682,13 @@ function draw(){
   }
 
   drawArena();
+  for(const t of trails){
+    const k = t.life/t.max;
+    ctx.globalAlpha = k*0.28;
+    ctx.fillStyle = t.c;
+    ctx.beginPath(); ctx.arc(t.x, t.y, t.r*(0.45+0.55*k), 0, 7); ctx.fill();
+  }
+  ctx.globalAlpha=1;
   for(const pu of powerups) drawPowerup(pu);
 
   for(const p of players) drawChain(p);
@@ -1619,6 +1732,7 @@ function loop(now){
   last = now;
   game.frameT += dt;
   update(dt);
+  updateTrails(dt);
   draw();
   requestAnimationFrame(loop);
 }

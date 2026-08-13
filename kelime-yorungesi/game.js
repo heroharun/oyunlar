@@ -323,27 +323,60 @@
     if (!S.sel.length) return;
     const col = statusColor();
     const pts = S.sel.map(function (i) { return S.letters[i]; });
+    const tip = (S.dragging && S.pointer) ? S.pointer : pts[pts.length - 1];
+
+    const path = function () {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      if (S.dragging && S.pointer) ctx.lineTo(S.pointer.x, S.pointer.y);
+    };
+
+    const grad = ctx.createLinearGradient(pts[0].x, pts[0].y, tip.x, tip.y);
+    grad.addColorStop(0, shade(col, 0.30));
+    grad.addColorStop(1, col);
 
     ctx.save();
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.shadowColor = col;
-    ctx.shadowBlur = 16;
-    ctx.strokeStyle = col;
-    ctx.globalAlpha = 0.9;
-    ctx.lineWidth = Math.max(4, W.tile * 0.32);
 
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-    if (S.dragging && S.pointer) ctx.lineTo(S.pointer.x, S.pointer.y);
+    // dış ışıma: geniş, yumuşak
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 22;
+    ctx.strokeStyle = col;
+    ctx.globalAlpha = 0.28;
+    ctx.lineWidth = Math.max(7, W.tile * 0.55);
+    path();
+    ctx.stroke();
+
+    // ana çizgi: parlak degrade
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = grad;
+    ctx.globalAlpha = 0.95;
+    ctx.lineWidth = Math.max(4, W.tile * 0.32);
+    path();
+    ctx.stroke();
+
+    // iç çekirdek: beyaza yakın ince ışık
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.globalAlpha = 0.7;
+    ctx.lineWidth = Math.max(1.5, W.tile * 0.10);
+    path();
     ctx.stroke();
 
     if (S.dragging && S.pointer) {
-      ctx.globalAlpha = 0.85;
+      ctx.globalAlpha = 0.9;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 12;
       ctx.fillStyle = col;
       ctx.beginPath();
       ctx.arc(S.pointer.x, S.pointer.y, Math.max(3, W.tile * 0.16), 0, TAU);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.beginPath();
+      ctx.arc(S.pointer.x, S.pointer.y, Math.max(1.5, W.tile * 0.07), 0, TAU);
       ctx.fill();
     }
     ctx.restore();
@@ -351,19 +384,42 @@
 
   function drawTile(L) {
     const sel = L.selected;
-    const r = W.tile * (sel ? 1.1 : 1);
+    let r = W.tile * (sel ? 1.1 : 1);
+
+    // basılıda kısa çökme
+    if (L.pressT) {
+      const t = (performance.now() - L.pressT) / 200;
+      if (t < 1) r *= 1 - 0.10 * Math.sin(Math.PI * clamp(t, 0, 1));
+      else L.pressT = 0;
+    }
     const col = statusColor();
 
-    ctx.save();
-    if (sel) { ctx.shadowColor = col; ctx.shadowBlur = 18; }
-
-    const g = ctx.createLinearGradient(L.x, L.y - r, L.x, L.y + r);
+    // seçilide renkli halka + glow
     if (sel) {
-      g.addColorStop(0, col);
-      g.addColorStop(1, shade(col, -0.28));
+      ctx.save();
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 20;
+      ctx.lineWidth = 2.2;
+      ctx.strokeStyle = col;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      ctx.arc(L.x, L.y, r + 3.5, 0, TAU);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // cam gövde: radyal iç parlama
+    ctx.save();
+    if (sel) { ctx.shadowColor = col; ctx.shadowBlur = 16; }
+    const g = ctx.createRadialGradient(L.x, L.y - r * 0.45, r * 0.12, L.x, L.y + r * 0.15, r * 1.15);
+    if (sel) {
+      g.addColorStop(0, shade(col, 0.30));
+      g.addColorStop(0.55, col);
+      g.addColorStop(1, shade(col, -0.32));
     } else {
-      g.addColorStop(0, 'rgba(255,255,255,0.16)');
-      g.addColorStop(1, 'rgba(255,255,255,0.055)');
+      g.addColorStop(0, 'rgba(255,255,255,0.30)');
+      g.addColorStop(0.5, 'rgba(215,225,255,0.12)');
+      g.addColorStop(1, 'rgba(150,170,255,0.05)');
     }
     ctx.fillStyle = g;
     ctx.beginPath();
@@ -371,9 +427,30 @@
     ctx.fill();
     ctx.restore();
 
+    // üst highlight hilali
     ctx.save();
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = sel ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.20)';
+    ctx.beginPath();
+    ctx.arc(L.x, L.y, r, 0, TAU);
+    ctx.clip();
+    const h = ctx.createLinearGradient(L.x, L.y - r, L.x, L.y - r * 0.05);
+    h.addColorStop(0, sel ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.32)');
+    h.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = h;
+    ctx.beginPath();
+    ctx.ellipse(L.x, L.y - r * 0.55, r * 0.74, r * 0.42, 0, 0, TAU);
+    ctx.fill();
+    // alt iç gölge: derinlik
+    const b = ctx.createLinearGradient(L.x, L.y + r * 0.3, L.x, L.y + r);
+    b.addColorStop(0, 'rgba(10,14,40,0)');
+    b.addColorStop(1, sel ? 'rgba(10,14,40,0.18)' : 'rgba(10,14,40,0.30)');
+    ctx.fillStyle = b;
+    ctx.fillRect(L.x - r, L.y, r * 2, r);
+    ctx.restore();
+
+    // kenar çizgisi
+    ctx.save();
+    ctx.lineWidth = sel ? 1.4 : 1.2;
+    ctx.strokeStyle = sel ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.24)';
     ctx.beginPath();
     ctx.arc(L.x, L.y, r, 0, TAU);
     ctx.stroke();
@@ -381,6 +458,7 @@
 
     ctx.save();
     ctx.fillStyle = sel ? '#141A38' : '#EDF1FF';
+    if (!sel) { ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 3; ctx.shadowOffsetY = 1; }
     ctx.font = '800 ' + (r * 1.02).toFixed(1) + 'px ' + CANVAS_FONT;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -447,6 +525,7 @@
     }
     L.selected = true;
     L.order = S.sel.length;
+    L.pressT = performance.now();
     S.sel.push(i);
     KY_AUDIO.play('tap', S.sel.length - 1);
     updateCurrent();
@@ -545,6 +624,68 @@
     releaseAfter('bad', 340);
   }
 
+  /* ---------------- kutlama (yalnızca görsel) ---------------- */
+
+  const REDUCED_MOTION = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function flyWord(word, i) {
+    if (REDUCED_MOTION || !document.body.animate) return;
+    const slot = slotEl(i);
+    if (!slot) return;
+    const from = currentEl.getBoundingClientRect();
+    const to = slot.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.className = 'fly-word';
+    el.textContent = word;
+    el.style.left = (from.left + from.width / 2) + 'px';
+    el.style.top = (from.top + from.height / 2) + 'px';
+    document.body.appendChild(el);
+    const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
+    const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
+    const anim = el.animate([
+      { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+      { transform: 'translate(-50%,-50%) scale(1.25)', opacity: 1, offset: 0.22 },
+      { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(.5)', opacity: 0 }
+    ], { duration: 640, easing: 'cubic-bezier(.3,.7,.25,1)' });
+    anim.onfinish = function () { el.remove(); };
+    setTimeout(function () { if (el.parentNode) el.remove(); }, 900);
+  }
+
+  function burstStars() {
+    if (REDUCED_MOTION || !document.body.animate) return;
+    const rect = scene.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const colors = ['#FFD9A0', '#FFB86B', '#6BE3B0', '#B9A6FF', '#EDF1FF'];
+    for (let k = 0; k < 26; k++) {
+      const el = document.createElement('i');
+      const star = k % 3 !== 0;
+      el.className = 'ky-spark ' + (star ? 'ky-spark--star' : 'ky-spark--dot');
+      const c = colors[k % colors.length];
+      el.style.background = c;
+      el.style.left = cx + 'px';
+      el.style.top = cy + 'px';
+      const s = 0.6 + Math.random() * 1.1;
+      el.style.boxShadow = star ? 'none' : '0 0 8px ' + c;
+      document.body.appendChild(el);
+      const ang = Math.random() * TAU;
+      const dist = 60 + Math.random() * 130;
+      const dx = Math.cos(ang) * dist;
+      const dy = Math.sin(ang) * dist - 24;
+      const rot = (Math.random() * 520 - 260).toFixed(0);
+      const anim = el.animate([
+        { transform: 'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity: 1 },
+        { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(' + s + ') rotate(' + rot + 'deg)', opacity: 0 }
+      ], { duration: 700 + Math.random() * 450, easing: 'cubic-bezier(.15,.6,.35,1)' });
+      anim.onfinish = function () { el.remove(); };
+    }
+    setTimeout(function () {
+      const left = document.querySelectorAll('.ky-spark');
+      for (let j = 0; j < left.length; j++) left[j].remove();
+    }, 1400);
+  }
+
   function bounceSlot(i) {
     const el = slotEl(i);
     if (!el) return;
@@ -567,6 +708,7 @@
     Save.write();
 
     KY_AUDIO.play('correct');
+    flyWord(word, i);
     growWorld(S.found.size);
     updateHud();
     updateRibbon();
@@ -574,6 +716,7 @@
 
     if (S.found.size === S.words.length) {
       S.busy = true;
+      burstStars();
       setTimeout(levelComplete, 850);
     }
   }
@@ -642,7 +785,7 @@
     if (!quiet) KY_AUDIO.play('correct');
     growWorld(S.found.size);
     updateRibbon();
-    if (S.found.size === S.words.length) { S.busy = true; setTimeout(levelComplete, 850); }
+    if (S.found.size === S.words.length) { S.busy = true; burstStars(); setTimeout(levelComplete, 850); }
   }
 
   function hintRandomLetter() {
