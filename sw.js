@@ -1,6 +1,6 @@
 /* Oyun Salonu SW — kurulumda TÜM oyunları indirir (internetsiz oynanır),
    internet varken her açılışta sunucudan taze sürüm çeker (güncel kalır) */
-const CACHE = 'oyunlar-v4';
+const CACHE = 'oyunlar-v5';
 
 /* çevrimdışı paket: portal + tüm oyunlar (SW konumuna göre göreli çözülür) */
 const PAKET = ['./', 'manifest.json',
@@ -46,25 +46,29 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
-    try {
-      /* önce ağ: sayfa açılışlarında HTTP önbelleğini atla ki oyunlar hep güncel gelsin */
-      const fresh = await fetch(req.mode === 'navigate'
-        ? new Request(req.url, { cache: 'no-cache' }) : req);
-      if (fresh && fresh.ok) cache.put(req, fresh.clone());
-      return fresh;
-    } catch (err) {
-      /* çevrimdışı: önbellekten ver */
-      const hit = await cache.match(req, { ignoreSearch: true });
-      if (hit) return hit;
-      /* .../oyun/index.html gibi istekleri .../oyun/ kaydına düşür */
-      if (req.mode === 'navigate') {
-        const kok = await cache.match(req.url.replace(/index\.html$/, ''), { ignoreSearch: true });
-        if (kok) return kok;
-        /* kapsam kökü: github.io'da /oyunlar/, masalpark.com'da / — ikisinde de çalışır */
-        const portal = await cache.match(self.registration.scope);
-        if (portal) return portal;
-      }
-      throw err;
+    /* ÖNBELLEKTEN ANINDA AÇ + arka planda tazele:
+       iOS PWA'da SW/ağ uyanana kadar dokunuşun asılı kalmasını bitirir.
+       Guncellik: internet varken arka planda taze surum cekilir (en fazla 1 acilis geride). */
+    let hit = await cache.match(req, { ignoreSearch: true });
+    if (!hit && req.mode === 'navigate')
+      hit = await cache.match(req.url.replace(/index\.html$/, ''), { ignoreSearch: true });
+    const tazele = (async () => {
+      try {
+        const fresh = await fetch(req.mode === 'navigate'
+          ? new Request(req.url, { cache: 'no-cache' }) : req);
+        if (fresh && fresh.ok) await cache.put(req, fresh.clone());
+        return fresh;
+      } catch (err) { return null; }
+    })();
+    if (hit) { e.waitUntil(tazele); return hit; }
+    /* önbellekte yok: ağı bekle (ilk ziyaret), gelirse kaydet */
+    const fresh = await tazele;
+    if (fresh) return fresh;
+    /* çevrimdışı ve önbellekte yok: gezinmeyi portala düşür */
+    if (req.mode === 'navigate') {
+      const portal = await cache.match(self.registration.scope);
+      if (portal) return portal;
     }
+    return Response.error();
   })());
 });
