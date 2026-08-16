@@ -1,0 +1,2609 @@
+<!DOCTYPE html>
+<html lang="tr" data-dil="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#2A2151">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Kız Giydirme — çocuklar için chibi karakter oluşturma ve giydirme oyunu">
+<title>Kız Giydirme</title>
+<style>
+/* ============ TOKENLAR ============ */
+:root{
+  --mor:#2A2151; --mor2:#3E3072; --mor3:#544092;
+  --krem:#FFF8F0; --krem2:#FFEFE2; --kagit:#FFFDFA;
+  --seftali:#FF9E7D; --gul:#FF7BA9; --lila:#A78BFA;
+  --nane:#4FD1B0; --gunes:#FFCE5C; --gok:#7DD3FC;
+  --murekkep:#3B2F55; --murekkep2:#7A6E93;
+  --golge:0 10px 24px rgba(42,33,81,.16), 0 2px 6px rgba(42,33,81,.10);
+  --golge-yuksek:0 22px 48px rgba(42,33,81,.28), 0 6px 14px rgba(42,33,81,.16);
+  --ic-isik:inset 0 2px 0 rgba(255,255,255,.75), inset 0 -3px 0 rgba(42,33,81,.10);
+  --r-s:14px; --r-m:22px; --r-l:32px; --r-xl:44px;
+  --gecis:cubic-bezier(.34,1.56,.64,1);
+  --ust:env(safe-area-inset-top,0px);
+  --alt:env(safe-area-inset-bottom,0px);
+  --sol:env(safe-area-inset-left,0px);
+  --sag:env(safe-area-inset-right,0px);
+  --panel-h:47dvh;
+}
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  background:var(--mor); color:var(--murekkep);
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  touch-action:manipulation; user-select:none; -webkit-user-select:none;
+  font-weight:800;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0;touch-action:manipulation}
+svg{display:block}
+:focus{outline:none}
+:focus-visible{outline:4px solid var(--gunes);outline-offset:3px;border-radius:8px}
+[hidden]{display:none!important}
+html[dir="rtl"] body{direction:rtl}
+
+/* ============ SAHNE ============ */
+#sahne{position:fixed;inset:0;height:100dvh;width:100vw;overflow:hidden;isolation:isolate}
+.ekran{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transform:scale(.96);
+  transition:opacity .26s ease, transform .32s var(--gecis), visibility .26s;
+}
+.ekran.acik{opacity:1;visibility:visible;pointer-events:auto;transform:scale(1)}
+
+/* ============ ATMOSFER (parçacık katmanı) ============ */
+#gokyuzu{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#gokyuzu canvas{width:100%;height:100%;display:block}
+
+/* ============ SPLASH ============ */
+#e-splash{
+  background:
+    radial-gradient(120% 80% at 50% 8%, #6B54B8 0%, transparent 60%),
+    radial-gradient(90% 60% at 15% 95%, #B65C9E 0%, transparent 65%),
+    linear-gradient(175deg,#3E3072 0%,#2A2151 55%,#1E1840 100%);
+  align-items:center;justify-content:center;gap:0;
+}
+.logo-kutu{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:clamp(18px,5vh,42px)}
+.logo{position:relative;animation:logoGir .9s var(--gecis) both}
+@keyframes logoGir{from{opacity:0;transform:translateY(28px) scale(.82)}to{opacity:1;transform:none}}
+.logo svg{width:min(76vw,420px);height:auto;filter:drop-shadow(0 14px 0 rgba(30,24,64,.45)) drop-shadow(0 26px 40px rgba(0,0,0,.4))}
+.logo-alt{
+  color:#F3E8FF;font-size:clamp(11px,2.6vw,15px);letter-spacing:.34em;
+  text-transform:uppercase;font-weight:800;opacity:.72;margin-top:-6px;
+}
+html[dir="rtl"] .logo-alt{letter-spacing:normal}
+
+/* Büyük yumuşak ana buton */
+.dev-btn{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:14px;
+  min-height:84px;padding:0 clamp(38px,9vw,72px);
+  border-radius:999px;
+  background:linear-gradient(180deg,#FFC49B 0%,var(--seftali) 42%,#F97D5D 100%);
+  box-shadow:0 10px 0 #C9553B, 0 20px 34px rgba(0,0,0,.34), var(--ic-isik);
+  color:#fff;font-size:clamp(24px,5.6vw,34px);font-weight:900;letter-spacing:.06em;
+  text-shadow:0 2px 0 rgba(160,60,40,.45);
+  transition:transform .16s var(--gecis), box-shadow .16s ease;
+}
+.dev-btn::after{
+  content:"";position:absolute;inset:6px 14px auto;height:34%;border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0));pointer-events:none;
+}
+.dev-btn:active{transform:translateY(7px) scale(.985);box-shadow:0 3px 0 #C9553B, 0 8px 16px rgba(0,0,0,.3), var(--ic-isik)}
+.nefes{animation:nefes 2.4s ease-in-out infinite}
+@keyframes nefes{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+
+/* ============ ANA MENÜ ============ */
+#e-menu{
+  background:
+    radial-gradient(100% 70% at 50% 0%, #5B47A8 0%, transparent 62%),
+    linear-gradient(180deg,#463684 0%,#2A2151 70%,#221B44 100%);
+  padding:calc(var(--ust) + 10px) calc(var(--sag) + 12px) calc(var(--alt) + 12px) calc(var(--sol) + 12px);
+}
+.ust-bar{position:relative;z-index:3;display:flex;align-items:center;gap:10px;min-height:56px}
+.ust-bar .bosluk{flex:1}
+.menu-govde{position:relative;z-index:2;flex:1;display:flex;align-items:center;justify-content:center;gap:clamp(10px,3vw,42px);min-height:0;padding:4px 0}
+.menu-vitrin{
+  position:relative;flex:0 0 auto;width:min(38vw,300px);
+  display:flex;align-items:flex-end;justify-content:center;
+  animation:vitrinGir .7s var(--gecis) both .1s;
+}
+@keyframes vitrinGir{from{opacity:0;transform:translateY(30px) scale(.9)}to{opacity:1;transform:none}}
+.menu-vitrin svg{width:100%;height:auto;max-height:62dvh;filter:drop-shadow(0 18px 26px rgba(0,0,0,.35))}
+.menu-vitrin .sahne-halka{
+  position:absolute;bottom:-2%;left:50%;translate:-50% 0;width:86%;aspect-ratio:3/1;
+  background:radial-gradient(closest-side,rgba(255,206,92,.42),transparent 72%);
+  border-radius:50%;filter:blur(2px);z-index:-1;
+}
+.sallan{animation:sallan 3.6s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes sallan{0%,100%{transform:rotate(-1.6deg) translateY(0)}50%{transform:rotate(1.6deg) translateY(-7px)}}
+
+.menu-kartlar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,2.4vw,18px);flex:1;max-width:560px}
+.mkart{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  padding:clamp(12px,2.6vh,22px) 10px;border-radius:var(--r-l);
+  background:linear-gradient(180deg,var(--kagit) 0%,#FFEFE0 100%);
+  box-shadow:0 8px 0 rgba(42,33,81,.38), var(--golge-yuksek), var(--ic-isik);
+  transition:transform .18s var(--gecis), box-shadow .18s ease;
+  animation:kartGir .5s var(--gecis) both;
+}
+.mkart:nth-child(1){animation-delay:.16s}.mkart:nth-child(2){animation-delay:.23s}
+.mkart:nth-child(3){animation-delay:.3s}.mkart:nth-child(4){animation-delay:.37s}
+@keyframes kartGir{from{opacity:0;transform:translateY(26px) scale(.88)}to{opacity:1;transform:none}}
+.mkart:active{transform:translateY(6px) scale(.97);box-shadow:0 2px 0 rgba(42,33,81,.38), 0 6px 14px rgba(0,0,0,.2), var(--ic-isik)}
+.mkart .rozet{
+  width:clamp(52px,9vh,74px);aspect-ratio:1;border-radius:26%;display:grid;place-items:center;
+  box-shadow:0 6px 14px rgba(42,33,81,.22), inset 0 2px 0 rgba(255,255,255,.6);
+}
+.mkart .rozet svg{width:62%;height:62%}
+.mkart b{font-size:clamp(13px,2.6vw,18px);font-weight:900;letter-spacing:.02em;color:var(--murekkep)}
+.mkart[data-renk="a"] .rozet{background:linear-gradient(160deg,#FFB8D0,var(--gul))}
+.mkart[data-renk="b"] .rozet{background:linear-gradient(160deg,#C4B0FF,var(--lila))}
+.mkart[data-renk="c"] .rozet{background:linear-gradient(160deg,#8EE8D6,var(--nane))}
+.mkart[data-renk="d"] .rozet{background:linear-gradient(160deg,#FFE08A,var(--gunes))}
+
+/* ============ YUVARLAK İKON BUTON ============ */
+.ibtn{
+  width:56px;height:56px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(180deg,var(--kagit),#FFEADA);
+  box-shadow:0 5px 0 rgba(42,33,81,.3), 0 10px 20px rgba(0,0,0,.18), var(--ic-isik);
+  transition:transform .15s var(--gecis), box-shadow .15s ease, opacity .2s;
+}
+.ibtn svg{width:26px;height:26px}
+.ibtn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(42,33,81,.3), 0 4px 10px rgba(0,0,0,.16), var(--ic-isik)}
+.ibtn.buyuk{width:68px;height:68px}
+.ibtn.buyuk svg{width:32px;height:32px}
+.ibtn.kapali{opacity:.42}
+.ibtn.kapali::after{
+  content:"";position:absolute;width:34px;height:4px;border-radius:2px;background:var(--murekkep);
+  transform:rotate(-45deg);
+}
+.ibtn{position:relative}
+.ibtn.vurgu{background:linear-gradient(180deg,#FFD9A8,var(--gunes));box-shadow:0 5px 0 #C79323, 0 10px 20px rgba(0,0,0,.2), var(--ic-isik)}
+.ibtn:disabled{opacity:.34;pointer-events:none}
+.etiket{
+  font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;
+  color:#EFE6FF;opacity:.8;
+}
+
+/* ============ EDİTÖR ============ */
+#e-editor{background:var(--mor)}
+.ed-sahne{
+  position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+  padding:calc(var(--ust) + 4px) 8px 4px;
+  transition:background .5s ease;
+}
+.ed-zemin{position:absolute;inset:0;z-index:0;overflow:hidden}
+.ed-zemin svg{width:100%;height:100%;object-fit:cover}
+.ed-ust{
+  position:absolute;top:calc(var(--ust) + 8px);left:calc(var(--sol) + 10px);right:calc(var(--sag) + 10px);
+  z-index:5;display:flex;align-items:center;gap:8px;pointer-events:none;
+}
+.ed-ust>*{pointer-events:auto}
+.ed-ust .bosluk{flex:1;pointer-events:none}
+.karakter-yuva{
+  position:relative;z-index:2;height:100%;width:100%;
+  display:flex;align-items:center;justify-content:center;
+  padding:56px 4px 6px;
+}
+#karakter{
+  height:100%;width:100%;min-height:0;
+  display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 16px 20px rgba(30,20,60,.28));
+  transition:transform .3s var(--gecis);
+}
+/* Acik olcu sart: viewBox'li ama olcusuz SVG flex icinde 0'a coker (iOS Safari) */
+#karakter>svg{width:100%;height:100%;max-height:100%}
+#modalYuz>svg{width:100%;height:100%}
+.pop{animation:pop .34s var(--gecis)}
+@keyframes pop{0%{transform:scale(.96)}55%{transform:scale(1.035)}100%{transform:scale(1)}}
+.zipla{animation:zipla .5s var(--gecis)}
+@keyframes zipla{0%{transform:translateY(0)}35%{transform:translateY(-16px) scale(1.02,.98)}70%{transform:translateY(0) scale(.99,1.01)}100%{transform:none}}
+
+/* Parıltı patlaması */
+#parilti{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.spark{position:absolute;width:14px;height:14px;margin:-7px;will-change:transform,opacity}
+.spark svg{width:100%;height:100%}
+@keyframes sparkUc{from{opacity:1;transform:translate(0,0) scale(.3) rotate(0)}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(160deg)}}
+
+/* ============ ÇEKMECE PANELİ ============ */
+.cekmece{
+  position:relative;z-index:6;flex:0 0 auto;height:var(--panel-h);
+  display:flex;flex-direction:column;
+  background:linear-gradient(180deg,var(--kagit) 0%,var(--krem2) 100%);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  box-shadow:0 -12px 34px rgba(20,14,44,.34), inset 0 2px 0 rgba(255,255,255,.9);
+  padding-bottom:var(--alt);
+  animation:cekmeceGir .42s var(--gecis) both;
+}
+@keyframes cekmeceGir{from{transform:translateY(58%)}to{transform:none}}
+.cekmece::before{
+  content:"";position:absolute;top:9px;left:50%;translate:-50% 0;width:56px;height:5px;
+  border-radius:3px;background:rgba(42,33,81,.16);
+}
+/* Kategori şeridi */
+.kat-serit{
+  display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+  padding:18px calc(var(--sag) + 12px) 8px calc(var(--sol) + 12px);
+  flex:0 0 auto;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;
+}
+.kat-serit::-webkit-scrollbar{display:none}
+.kat{
+  flex:0 0 auto;width:64px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:6px 2px;border-radius:20px;transition:transform .18s var(--gecis);
+}
+.kat .ikon{
+  width:54px;height:54px;border-radius:20px;display:grid;place-items:center;
+  background:linear-gradient(180deg,#fff,#F1E9FB);
+  box-shadow:0 4px 0 rgba(42,33,81,.14), inset 0 2px 0 rgba(255,255,255,.9);
+  transition:transform .18s var(--gecis), box-shadow .18s ease, background .25s ease;
+}
+.kat .ikon svg{width:30px;height:30px}
+.kat small{font-size:9.5px;font-weight:900;letter-spacing:.03em;color:var(--murekkep2);
+  max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase}
+.kat:active{transform:scale(.93)}
+.kat[aria-selected="true"] .ikon{
+  background:linear-gradient(180deg,#FFDCA8,var(--gunes));
+  box-shadow:0 0 0 4px rgba(255,206,92,.42), 0 6px 14px rgba(200,140,20,.3), inset 0 2px 0 rgba(255,255,255,.7);
+  transform:translateY(-3px) scale(1.06);
+}
+.kat[aria-selected="true"] small{color:var(--murekkep)}
+
+/* Alt kategori pilleri */
+.alt-serit{
+  display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;flex:0 0 auto;
+  padding:2px calc(var(--sag) + 12px) 6px calc(var(--sol) + 12px);
+}
+.alt-serit::-webkit-scrollbar{display:none}
+.alt-serit:empty{display:none}
+.pil{
+  flex:0 0 auto;min-height:36px;padding:0 16px;border-radius:999px;
+  background:#EDE4F7;color:var(--murekkep2);font-size:12.5px;font-weight:900;
+  display:inline-flex;align-items:center;transition:transform .15s var(--gecis),background .2s,color .2s;
+}
+.pil:active{transform:scale(.94)}
+.pil[aria-selected="true"]{background:linear-gradient(180deg,var(--lila),#8B6BE8);color:#fff;box-shadow:0 3px 8px rgba(122,90,220,.4)}
+
+/* Renk baloncukları */
+.renk-serit{
+  display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;flex:0 0 auto;align-items:center;
+  padding:2px calc(var(--sag) + 14px) 8px calc(var(--sol) + 14px);
+}
+.renk-serit::-webkit-scrollbar{display:none}
+.renk-serit:empty{display:none}
+.balon{
+  flex:0 0 auto;width:40px;height:40px;border-radius:50%;
+  box-shadow:0 3px 8px rgba(42,33,81,.24), inset 0 2px 3px rgba(255,255,255,.5), inset 0 -3px 5px rgba(0,0,0,.14);
+  transition:transform .18s var(--gecis), box-shadow .18s ease;
+}
+.balon:active{transform:scale(.88)}
+.balon[aria-selected="true"]{
+  transform:scale(1.16);
+  box-shadow:0 0 0 4px #fff, 0 0 0 7px var(--gunes), 0 5px 12px rgba(42,33,81,.3);
+}
+
+/* Item ızgarası */
+.izgara{
+  flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  display:grid;gap:9px;align-content:start;
+  grid-template-columns:repeat(auto-fill,minmax(78px,1fr));
+  padding:4px calc(var(--sag) + 12px) 16px calc(var(--sol) + 12px);
+}
+.izgara::-webkit-scrollbar{display:none}
+.item{
+  position:relative;aspect-ratio:1;border-radius:24px;overflow:hidden;
+  background:linear-gradient(180deg,#fff,#F6EEFF);
+  box-shadow:0 4px 0 rgba(42,33,81,.13), 0 6px 12px rgba(42,33,81,.1), inset 0 2px 0 rgba(255,255,255,.9);
+  display:grid;place-items:center;
+  transition:transform .18s var(--gecis), box-shadow .2s ease;
+  animation:itemGir .28s var(--gecis) both;
+}
+@keyframes itemGir{from{opacity:0;transform:scale(.8) translateY(10px)}to{opacity:1;transform:none}}
+.item svg{width:100%;height:100%}
+.item:active{transform:scale(.9)}
+.item[aria-selected="true"]{
+  box-shadow:0 0 0 4px var(--gunes), 0 6px 16px rgba(220,160,30,.36), inset 0 2px 0 rgba(255,255,255,.9);
+  background:linear-gradient(180deg,#FFFDF4,#FFF2CE);
+  transform:translateY(-2px) scale(1.03);
+}
+.item[aria-selected="true"]::after{
+  content:"";position:absolute;top:5px;inset-inline-end:5px;width:20px;height:20px;border-radius:50%;
+  background:var(--nane) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 13l4 4 10-10' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/72% no-repeat;
+  box-shadow:0 2px 5px rgba(0,0,0,.2);
+  animation:pop .3s var(--gecis);
+}
+.item.yok{background:linear-gradient(180deg,#fff,#EFE9F6)}
+
+/* Editör alt aksiyon barı */
+.ed-aksiyon{
+  position:absolute;z-index:7;display:flex;gap:10px;align-items:center;
+  inset-inline-end:calc(var(--sag) + 12px);
+  bottom:calc(var(--panel-h) + 12px);
+}
+.sihir{
+  width:74px;height:74px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(180deg,#C9B4FF,#8B6BE8);
+  box-shadow:0 7px 0 #5F45A8, 0 14px 26px rgba(60,30,120,.42), inset 0 3px 0 rgba(255,255,255,.5);
+  transition:transform .16s var(--gecis), box-shadow .16s;
+}
+.sihir svg{width:40px;height:40px}
+.sihir:active{transform:translateY(5px) scale(.96);box-shadow:0 2px 0 #5F45A8, 0 6px 12px rgba(60,30,120,.4), inset 0 3px 0 rgba(255,255,255,.5)}
+.donduc{animation:donduc .55s var(--gecis)}
+@keyframes donduc{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* ============ FOTOĞRAF MODU ============ */
+#e-foto{background:#1A1533}
+.foto-sahne{
+  position:relative;flex:1;min-height:0;display:grid;place-items:center;
+  padding:calc(var(--ust) + 64px) 10px 10px;
+}
+.foto-cerceve{
+  position:relative;width:min(96%,560px);aspect-ratio:3/4;max-height:100%;
+  border-radius:26px;overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,.5), 0 0 0 5px rgba(255,255,255,.9);
+  background:#fff;touch-action:none;
+}
+.foto-zemin{position:absolute;inset:0}
+.foto-zemin svg{width:100%;height:100%}
+.foto-karakter{
+  position:absolute;left:50%;top:50%;width:64%;
+  transform:translate(-50%,-50%);transform-origin:center;will-change:transform;
+}
+.foto-karakter svg{width:100%;height:auto;filter:drop-shadow(0 12px 16px rgba(0,0,0,.3))}
+.cikartma{position:absolute;width:14%;translate:-50% -50%;will-change:transform}
+.cikartma svg{width:100%;height:auto;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+.cikartma.sec{outline:3px dashed rgba(255,255,255,.9);outline-offset:4px;border-radius:8px}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20}
+.flash-on{animation:flashla .5s ease-out}
+@keyframes flashla{0%{opacity:0}8%{opacity:1}100%{opacity:0}}
+.foto-alt{
+  flex:0 0 auto;display:flex;flex-direction:column;gap:8px;
+  padding:8px calc(var(--sag) + 12px) calc(var(--alt) + 12px) calc(var(--sol) + 12px);
+}
+.foto-araclar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;align-items:center;padding:2px 0}
+.foto-araclar::-webkit-scrollbar{display:none}
+.mini{
+  flex:0 0 auto;width:56px;height:56px;border-radius:18px;overflow:hidden;display:grid;place-items:center;
+  background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.28), inset 0 2px 0 rgba(255,255,255,.8);
+  transition:transform .16s var(--gecis),box-shadow .16s;
+}
+.mini svg{width:100%;height:100%}
+.mini.cs svg{width:64%;height:64%}
+.mini:active{transform:scale(.9)}
+.mini[aria-selected="true"]{box-shadow:0 0 0 4px var(--gunes),0 4px 10px rgba(0,0,0,.3)}
+.deklansor{
+  width:84px;height:84px;border-radius:50%;display:grid;place-items:center;margin:0 auto;
+  background:linear-gradient(180deg,#fff,#F0E6FF);
+  box-shadow:0 0 0 6px rgba(255,255,255,.22), 0 8px 0 #B9A3E0, 0 14px 28px rgba(0,0,0,.4);
+  transition:transform .14s var(--gecis),box-shadow .14s;
+}
+.deklansor svg{width:40px;height:40px}
+.deklansor:active{transform:translateY(6px) scale(.96);box-shadow:0 0 0 6px rgba(255,255,255,.22), 0 2px 0 #B9A3E0, 0 6px 14px rgba(0,0,0,.4)}
+.foto-satir{display:flex;align-items:center;gap:12px;justify-content:center}
+
+/* ============ ALBÜM ============ */
+#e-albom{
+  background:radial-gradient(90% 60% at 50% 0%,#5B47A8 0%,transparent 60%),linear-gradient(180deg,#3A2D6E,#221B44);
+  padding:calc(var(--ust) + 10px) calc(var(--sag) + 12px) calc(var(--alt) + 12px) calc(var(--sol) + 12px);
+}
+.albom-izgara{
+  flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;
+  display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  align-content:start;padding:12px 4px 20px;
+}
+.albom-izgara::-webkit-scrollbar{display:none}
+.polaroid{
+  background:#fff;border-radius:8px;padding:9px 9px 30px;position:relative;
+  box-shadow:0 10px 22px rgba(0,0,0,.36);
+  transition:transform .2s var(--gecis);
+  animation:kartGir .35s var(--gecis) both;
+}
+.polaroid:nth-child(even){rotate:1.6deg}
+.polaroid:nth-child(odd){rotate:-1.4deg}
+.polaroid:active{transform:scale(.95)}
+.polaroid img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:3px;background:#EEE;display:block}
+.polaroid span{
+  position:absolute;bottom:8px;left:0;right:0;text-align:center;
+  font-size:11px;font-weight:900;color:var(--murekkep2);
+}
+.bos-durum{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:20px;
+}
+.bos-durum svg{width:110px;height:110px;opacity:.9}
+.bos-durum p{color:#E8DEFF;font-size:16px;font-weight:800;max-width:26ch;margin:0;line-height:1.5}
+
+/* Tam ekran foto */
+#e-buyut{background:rgba(16,12,36,.96);backdrop-filter:blur(8px);padding:calc(var(--ust) + 10px) 14px calc(var(--alt) + 14px);align-items:center}
+#buyutImg{flex:1;min-height:0;width:100%;object-fit:contain;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.55)}
+.buyut-alt{display:flex;gap:14px;justify-content:center;padding-top:14px;flex:0 0 auto}
+
+/* ============ MODAL ============ */
+#ortu{
+  position:absolute;inset:0;z-index:40;background:rgba(24,16,52,.62);backdrop-filter:blur(5px);
+  display:grid;place-items:center;padding:20px;
+  opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s;
+}
+#ortu.acik{opacity:1;visibility:visible}
+.modal{
+  width:min(94%,400px);background:linear-gradient(180deg,var(--kagit),var(--krem2));
+  border-radius:var(--r-l);padding:26px 22px 20px;text-align:center;
+  box-shadow:0 26px 60px rgba(0,0,0,.5), inset 0 3px 0 rgba(255,255,255,.9);
+  transform:scale(.82);transition:transform .3s var(--gecis);
+}
+#ortu.acik .modal{transform:scale(1)}
+.modal .yuz{width:82px;height:82px;margin:0 auto 12px}
+.modal h3{margin:0 0 6px;font-size:21px;font-weight:900;color:var(--murekkep)}
+.modal p{margin:0 0 20px;font-size:14.5px;font-weight:700;color:var(--murekkep2);line-height:1.5}
+.modal-btnler{display:flex;gap:12px;justify-content:center}
+.mbtn{
+  min-height:56px;min-width:110px;padding:0 22px;border-radius:999px;font-size:16px;font-weight:900;color:#fff;
+  box-shadow:0 5px 0 rgba(0,0,0,.22), var(--ic-isik);transition:transform .14s var(--gecis),box-shadow .14s;
+}
+.mbtn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.22), var(--ic-isik)}
+.mbtn.evet{background:linear-gradient(180deg,#8FE9CF,var(--nane));box-shadow:0 5px 0 #2F9E83, var(--ic-isik);color:#0C4F41}
+.mbtn.hayir{background:linear-gradient(180deg,#EFE6F8,#DDD0EE);color:var(--murekkep);box-shadow:0 5px 0 #B7A8CE, var(--ic-isik)}
+.mbtn.tehlike{background:linear-gradient(180deg,#FFA5A5,#F2637A);box-shadow:0 5px 0 #B93F55, var(--ic-isik)}
+
+/* Nasıl oynanır */
+.modal-kaydir{max-height:min(58dvh,460px);overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.modal-kaydir::-webkit-scrollbar{display:none}
+.nasil-liste{list-style:none;margin:2px 0 4px;padding:0;display:flex;flex-direction:column;gap:12px}
+.nadim{display:flex;align-items:center;gap:13px;text-align:start}
+.nrozet{flex:none;width:50px;height:50px;border-radius:16px;display:grid;place-items:center;
+  box-shadow:0 4px 10px rgba(42,33,81,.2), inset 0 2px 0 rgba(255,255,255,.6)}
+.nrozet svg{width:56%;height:56%}
+.nrozet[data-renk="a"]{background:linear-gradient(160deg,#FFB8D0,var(--gul))}
+.nrozet[data-renk="b"]{background:linear-gradient(160deg,#C4B0FF,var(--lila))}
+.nrozet[data-renk="c"]{background:linear-gradient(160deg,#8EE8D6,var(--nane))}
+.nrozet[data-renk="d"]{background:linear-gradient(160deg,#FFE08A,var(--gunes))}
+.nmetin{display:flex;flex-direction:column;gap:2px}
+.nmetin b{font-size:14.5px;font-weight:900;color:var(--murekkep)}
+.nmetin small{font-size:13px;font-weight:700;color:var(--murekkep2);line-height:1.45}
+.nasil-ipucu{display:flex;align-items:center;gap:9px;margin:15px 0 2px !important;padding:10px 13px;
+  border-radius:16px;background:rgba(167,139,250,.16);text-align:start}
+.nasil-ipucu svg{flex:none;width:21px;height:21px;color:var(--mor)}
+.nasil-ipucu span{font-size:12.5px;font-weight:800;color:var(--murekkep2);line-height:1.4}
+.ayar-baglanti{display:flex;align-items:center;gap:10px;width:100%;min-height:54px;margin-top:6px;
+  padding:0 15px;border-radius:16px;background:rgba(42,33,81,.07);text-align:start}
+.ayar-baglanti svg{flex:none;width:23px;height:23px;color:var(--mor)}
+.ayar-baglanti span{font-size:14.5px;font-weight:900;color:var(--murekkep)}
+.ayar-baglanti:active{transform:scale(.98)}
+.surum{margin-top:12px;font-size:11.5px;font-weight:800;letter-spacing:.06em;color:var(--murekkep2);opacity:.55}
+.dil-grup.buyuk .dil-btn{min-height:56px;min-width:104px;font-size:16px}
+
+/* Ayar satırları */
+.ayar-satir{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 4px;text-align:start}
+.ayar-satir b{font-size:15px;font-weight:900}
+.dil-grup{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;padding:6px 0 12px}
+.dil-btn{
+  min-height:48px;min-width:60px;padding:0 14px;border-radius:16px;background:#EDE4F7;color:var(--murekkep2);
+  font-weight:900;font-size:14px;transition:transform .14s var(--gecis)
+}
+.dil-btn:active{transform:scale(.93)}
+.dil-btn[aria-selected="true"]{background:linear-gradient(180deg,var(--lila),#8B6BE8);color:#fff}
+
+/* Anlık bildirim */
+#tost{
+  position:absolute;left:50%;bottom:calc(var(--alt) + 26px);translate:-50% 0;z-index:60;
+  background:rgba(30,22,60,.94);color:#fff;padding:13px 24px;border-radius:999px;
+  font-size:14.5px;font-weight:900;box-shadow:0 10px 26px rgba(0,0,0,.4);
+  opacity:0;pointer-events:none;transition:opacity .25s, transform .3s var(--gecis);
+}
+#tost.gor{opacity:1;transform:translateY(-8px)}
+
+/* ============ RESPONSIVE ============ */
+/* Telefon portrait: karakter üst, panel alt (varsayılan) */
+@media (max-height:620px) and (orientation:portrait){ :root{--panel-h:44dvh} }
+
+/* Yatay / geniş: karakter solda, panel sağda */
+@media (orientation:landscape) and (min-width:660px){
+  :root{--panel-h:100%}
+  #e-editor{flex-direction:row}
+  .ed-sahne{padding-inline-start:calc(var(--sol) + 8px)}
+  .cekmece{
+    width:min(46vw,520px);height:100%;border-radius:var(--r-xl) 0 0 var(--r-xl);
+    box-shadow:-12px 0 34px rgba(20,14,44,.34), inset 2px 0 0 rgba(255,255,255,.9);
+    padding-top:var(--ust);
+    animation:cekmeceGirYan .42s var(--gecis) both;
+  }
+  @keyframes cekmeceGirYan{from{transform:translateX(40%)}to{transform:none}}
+  .cekmece::before{top:50%;left:11px;translate:0 -50%;width:5px;height:52px}
+  .kat-serit{padding-top:16px}
+  .izgara{grid-template-columns:repeat(auto-fill,minmax(84px,1fr))}
+  .ed-aksiyon{bottom:calc(var(--alt) + 14px);inset-inline-end:calc(min(46vw,520px) + 14px)}
+  #e-foto{flex-direction:row}
+  .foto-alt{width:min(40vw,360px);justify-content:center;padding-top:var(--ust)}
+  .foto-araclar{flex-wrap:wrap;overflow:visible;justify-content:center}
+}
+@media (orientation:landscape) and (max-width:659px){
+  :root{--panel-h:52dvh}
+}
+/* Tablet portrait: daha büyük ızgara */
+@media (min-width:700px) and (orientation:portrait){
+  :root{--panel-h:42dvh}
+  .izgara{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px}
+  .kat{width:76px}.kat .ikon{width:64px;height:64px;border-radius:24px}
+  .kat .ikon svg{width:36px;height:36px}.kat small{font-size:11px;max-width:76px}
+  .balon{width:48px;height:48px}
+}
+/* Menü dar ekranda dikey */
+@media (max-width:560px){
+  .menu-govde{flex-direction:column;gap:6px}
+  .menu-vitrin{width:min(46vw,190px)}
+  .menu-vitrin svg{max-height:28dvh}
+  .menu-kartlar{width:100%;max-width:none}
+}
+@media (max-width:560px) and (orientation:landscape){
+  .menu-govde{flex-direction:row}
+  .menu-vitrin{width:22vw}
+  .menu-vitrin svg{max-height:52dvh}
+}
+/* Hareket azaltma */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  #gokyuzu{display:none}
+}
+</style>
+</head>
+<body>
+<div id="sahne">
+
+  <!-- ===== SPLASH ===== -->
+  <section class="ekran acik" id="e-splash" aria-label="Kız Giydirme">
+    <div id="gokyuzu"><canvas id="tuvalGok"></canvas></div>
+    <div class="logo-kutu">
+      <div class="logo" id="logoYuva"></div>
+      <div class="logo-alt" data-yazi="slogan">giydir · süsle · fotoğrafla</div>
+      <button class="dev-btn nefes" data-act="basla" aria-label="Oyna">
+        <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M7 4.5v15c0 .9 1 1.4 1.7.9l11-7.5c.6-.4.6-1.4 0-1.8l-11-7.5C8 3.1 7 3.6 7 4.5z" fill="currentColor"/></svg>
+        <span data-yazi="oyna">OYNA</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== ANA MENÜ ===== -->
+  <section class="ekran" id="e-menu" aria-label="Ana menü">
+    <div class="ust-bar">
+      <button class="ibtn" data-act="muzik" id="btnMuzik" aria-label="Müzik aç kapat"></button>
+      <button class="ibtn" data-act="ses" id="btnSes" aria-label="Ses efektleri aç kapat"></button>
+      <div class="bosluk"></div>
+      <button class="ibtn" data-act="nasil" aria-label="Nasıl oynanır"></button>
+      <button class="ibtn" data-act="dilSec" aria-label="Dil seç"></button>
+      <button class="ibtn" data-act="ayarlar" aria-label="Ayarlar"></button>
+    </div>
+    <div class="menu-govde">
+      <div class="menu-vitrin">
+        <div class="sahne-halka"></div>
+        <div class="sallan" id="menuKarakter"></div>
+      </div>
+      <div class="menu-kartlar">
+        <button class="mkart" data-renk="a" data-act="git" data-hedef="editor" data-kat="body">
+          <span class="rozet" id="rz1"></span><b data-yazi="olustur">OLUŞTUR</b>
+        </button>
+        <button class="mkart" data-renk="b" data-act="git" data-hedef="editor" data-kat="dress">
+          <span class="rozet" id="rz2"></span><b data-yazi="giydir">GİYDİR</b>
+        </button>
+        <button class="mkart" data-renk="c" data-act="git" data-hedef="foto">
+          <span class="rozet" id="rz3"></span><b data-yazi="fotograf">FOTOĞRAF</b>
+        </button>
+        <button class="mkart" data-renk="d" data-act="git" data-hedef="albom">
+          <span class="rozet" id="rz4"></span><b data-yazi="albom">ALBÜMÜM</b>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== EDİTÖR ===== -->
+  <section class="ekran" id="e-editor" aria-label="Karakter editörü">
+    <div class="ed-sahne" id="edSahne">
+      <div class="ed-zemin" id="edZemin"></div>
+      <div class="ed-ust">
+        <button class="ibtn" data-act="git" data-hedef="menu" aria-label="Geri"></button>
+        <div class="bosluk"></div>
+        <button class="ibtn" data-act="geri-al" id="btnGeriAl" aria-label="Geri al"></button>
+        <button class="ibtn" data-act="yeni-karakter" aria-label="Yeni karakter"></button>
+        <button class="ibtn vurgu" data-act="git" data-hedef="foto" aria-label="Fotoğraf çek"></button>
+      </div>
+      <div class="karakter-yuva"><div id="karakter"></div></div>
+      <div id="parilti"></div>
+    </div>
+    <div class="ed-aksiyon">
+      <button class="sihir" data-act="rastgele" id="btnSihir" aria-label="Rastgele kombin"></button>
+    </div>
+    <div class="cekmece">
+      <div class="kat-serit" id="katSerit" role="tablist" aria-label="Kategoriler"></div>
+      <div class="alt-serit" id="altSerit" role="tablist" aria-label="Alt kategoriler"></div>
+      <div class="renk-serit" id="renkSerit" role="listbox" aria-label="Renkler"></div>
+      <div class="izgara" id="izgara" role="listbox" aria-label="Parçalar"></div>
+    </div>
+  </section>
+
+  <!-- ===== FOTOĞRAF ===== -->
+  <section class="ekran" id="e-foto" aria-label="Fotoğraf modu">
+    <div class="ed-ust">
+      <button class="ibtn" data-act="git" data-hedef="editor" aria-label="Geri"></button>
+      <div class="bosluk"></div>
+      <button class="ibtn" data-act="cikartma-sil" aria-label="Çıkartmaları temizle"></button>
+    </div>
+    <div class="foto-sahne">
+      <div class="foto-cerceve" id="cerceve">
+        <div class="foto-zemin" id="fotoZemin"></div>
+        <div class="foto-karakter" id="fotoKarakter"></div>
+        <div id="cikartmalar"></div>
+        <div id="flash"></div>
+      </div>
+    </div>
+    <div class="foto-alt">
+      <div class="foto-araclar" id="fotoZeminler" role="listbox" aria-label="Arka planlar"></div>
+      <div class="foto-araclar" id="fotoCikartmalar" role="listbox" aria-label="Çıkartmalar"></div>
+      <div class="foto-satir">
+        <button class="ibtn" data-act="zoom-eksi" aria-label="Küçült"></button>
+        <button class="deklansor" data-act="cek" aria-label="Fotoğraf çek"></button>
+        <button class="ibtn" data-act="zoom-arti" aria-label="Büyüt"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ALBÜM ===== -->
+  <section class="ekran" id="e-albom" aria-label="Albüm">
+    <div class="ust-bar">
+      <button class="ibtn" data-act="git" data-hedef="menu" aria-label="Geri"></button>
+      <div class="bosluk"></div>
+      <span class="etiket" id="albomSayi"></span>
+      <button class="ibtn" data-act="git" data-hedef="foto" aria-label="Yeni fotoğraf"></button>
+    </div>
+    <div class="albom-izgara" id="albomIzgara"></div>
+  </section>
+
+  <!-- ===== BÜYÜK FOTOĞRAF ===== -->
+  <section class="ekran" id="e-buyut" aria-label="Fotoğraf">
+    <img id="buyutImg" alt="Kaydedilmiş fotoğraf">
+    <div class="buyut-alt">
+      <button class="ibtn buyuk" data-act="git" data-hedef="albom" aria-label="Geri"></button>
+      <button class="ibtn buyuk vurgu" data-act="indir" aria-label="İndir"></button>
+      <button class="ibtn buyuk" data-act="sil-sor" aria-label="Sil"></button>
+    </div>
+  </section>
+
+  <!-- ===== MODAL ===== -->
+  <div id="ortu" role="dialog" aria-modal="true" aria-labelledby="modalBaslik">
+    <div class="modal">
+      <div class="yuz" id="modalYuz"></div>
+      <h3 id="modalBaslik"></h3>
+      <p id="modalMetin"></p>
+      <div id="modalIcerik" class="modal-kaydir"></div>
+      <div class="modal-btnler" id="modalBtnler"></div>
+    </div>
+  </div>
+
+  <div id="tost" role="status" aria-live="polite"></div>
+</div>
+<script>
+"use strict";
+/* ==========================================================================
+   Kız Giydirme — çocuklar için chibi karakter oluşturucu
+   Tek dosya · sifir bagimlilik · tamamen cevrimdisi
+   ========================================================================== */
+
+/* ---------- Yardimcilar ---------- */
+const $  = (s, k) => (k || document).querySelector(s);
+const $$ = (s, k) => Array.prototype.slice.call((k || document).querySelectorAll(s));
+const kilit = (v, a, b) => Math.max(a, Math.min(b, v));
+const rnd  = n => Math.floor(Math.random() * n);
+const sec  = a => a[rnd(a.length)];
+const el   = (etiket, sinif, ic) => { const d = document.createElement(etiket); if (sinif) d.className = sinif; if (ic != null) d.innerHTML = ic; return d; };
+
+/* ---------- Depo: localStorage sarmalayici + bellek yedegi ---------- */
+const Depo = (() => {
+  const bellek = {};
+  let canli = false;
+  try { const t = "__mm__"; localStorage.setItem(t, "1"); localStorage.removeItem(t); canli = true; } catch (e) { canli = false; }
+  const ad = k => "minimori." + k;
+  return {
+    canli: () => canli,
+    al(k, varsayilan) {
+      try {
+        const ham = canli ? localStorage.getItem(ad(k)) : bellek[k];
+        if (ham == null) return varsayilan;
+        return JSON.parse(ham);
+      } catch (e) { return varsayilan; }
+    },
+    yaz(k, deger) {
+      const ham = JSON.stringify(deger);
+      try { if (canli) localStorage.setItem(ad(k), ham); else bellek[k] = ham; return true; }
+      catch (e) { bellek[k] = ham; return false; }
+    },
+    sil(k) { try { if (canli) localStorage.removeItem(ad(k)); } catch (e) {} delete bellek[k]; }
+  };
+})();
+
+/* ---------- Diller ---------- */
+const DILLER = ["tr", "en", "ar", "fr"];
+const DIL_AD = { tr: "Türkçe", en: "English", ar: "العربية", fr: "Français" };
+const SOZLUK = {
+  tr: { nasil_baslik:"Nasıl Oynanır?", nasil_alt:"Dört basit adım — okuma gerekmez!", nasil_1:"Ten rengini, saçını, gözlerini ve gülüşünü seç.", nasil_2:"Kıyafet, ayakkabı, başörtü ve aksesuar giydir. Sihirli değneğe dokun, kendiliğinden giyinsin!", nasil_3:"Zemin seç, çıkartma ekle ve deklanşöre bas.", nasil_4:"Fotoğraflarını sakla, büyüt veya telefonuna indir.", nasil_ipucu:"Bir şeyi beğenmedin mi? Geri al düğmesi son 24 değişikliği geri alır.", nasil_basla:"HADİ BAŞLAYALIM", oyna:"OYNA", slogan:"giydir · süsle · fotoğrafla", olustur:"OLUŞTUR", giydir:"GİYDİR", fotograf:"FOTOĞRAF", albom:"ALBÜMÜM",
+        ayarlar:"Ayarlar", dil:"Dil", muzik:"Müzik", sesler:"Sesler", kapat:"Tamam", evet:"Evet", hayir:"Hayır", sil:"Sil",
+        yeniBaslik:"Yeni karakter?", yeniMetin:"Şu anki karakterin baştan başlar.", silBaslik:"Bu fotoğraf silinsin mi?", silMetin:"Geri getirilemez.",
+        bosAlbom:"Henüz fotoğrafın yok. Karakterini giydir, sonra kamerayla bir kare çek!", kaydedildi:"Albüme kaydedildi!", indirildi:"İndiriliyor…",
+        silindi:"Fotoğraf silindi", geriAlindi:"Geri alındı", geriAlYok:"Geri alacak bir şey yok",
+        kaydetHata:"Albüm dolu, önce birkaç fotoğraf sil.", temizlendi:"Çıkartmalar temizlendi", adet:"fotoğraf",
+        k_body:"Vücut", k_hair:"Saç", k_face:"Yüz", k_top:"Üst", k_bottom:"Alt", k_dress:"Elbise", k_shoes:"Ayakkabı", k_acc:"Aksesuar", k_special:"Sihir", k_bg:"Mekân",
+        a_skin:"Ten", a_style:"Model", a_color:"Renk", a_eyes:"Göz", a_brow:"Kaş", a_mouth:"Ağız", a_blush:"Yanak",
+        a_tshirt:"Tişört", a_sweater:"Kazak", a_jacket:"Ceket", a_blouse:"Bluz",
+        a_skirt:"Etek", a_pants:"Pantolon", a_shorts:"Şort", a_socks:"Çorap",
+        a_casual:"Günlük", a_princess:"Prenses", a_party:"Parti", a_fantasy:"Masal",
+        a_sneaker:"Spor", a_boot:"Bot", a_flat:"Babet", a_magic:"Sihirli",
+        a_scarf:"Başörtü", a_hat:"Şapka", a_glasses:"Gözlük", a_neck:"Kolye", a_ear:"Küpe", a_crown:"Taç",
+        a_wings:"Kanat", a_tail:"Kuyruk", a_aura:"Aura", yok:"Yok" },
+  en: { nasil_baslik:"How to Play", nasil_alt:"Four simple steps — no reading needed!", nasil_1:"Pick a skin tone, hair, eyes and smile.", nasil_2:"Add clothes, shoes, a headscarf and accessories. Tap the magic wand for an instant outfit!", nasil_3:"Choose a backdrop, add stickers and press the shutter.", nasil_4:"Keep your photos, view them big or save them to your device.", nasil_ipucu:"Changed your mind? Undo takes back the last 24 changes.", nasil_basla:"LET\u2019S START", oyna:"PLAY", slogan:"dress · style · snapshot", olustur:"CREATE", giydir:"DRESS UP", fotograf:"PHOTO", albom:"MY ALBUM",
+        ayarlar:"Settings", dil:"Language", muzik:"Music", sesler:"Sounds", kapat:"Done", evet:"Yes", hayir:"No", sil:"Delete",
+        yeniBaslik:"New character?", yeniMetin:"Your current look starts over.", silBaslik:"Delete this photo?", silMetin:"This can't be undone.",
+        bosAlbom:"No photos yet. Dress your character, then take a shot with the camera!", kaydedildi:"Saved to album!", indirildi:"Downloading…",
+        silindi:"Photo deleted", geriAlindi:"Undone", geriAlYok:"Nothing to undo",
+        kaydetHata:"Album is full, delete a few photos first.", temizlendi:"Stickers cleared", adet:"photos",
+        k_body:"Body", k_hair:"Hair", k_face:"Face", k_top:"Tops", k_bottom:"Bottoms", k_dress:"Dresses", k_shoes:"Shoes", k_acc:"Accessories", k_special:"Magic", k_bg:"Places",
+        a_skin:"Skin", a_style:"Style", a_color:"Color", a_eyes:"Eyes", a_brow:"Brows", a_mouth:"Mouth", a_blush:"Blush",
+        a_tshirt:"T-shirt", a_sweater:"Sweater", a_jacket:"Jacket", a_blouse:"Blouse",
+        a_skirt:"Skirt", a_pants:"Pants", a_shorts:"Shorts", a_socks:"Socks",
+        a_casual:"Casual", a_princess:"Princess", a_party:"Party", a_fantasy:"Fantasy",
+        a_sneaker:"Sneakers", a_boot:"Boots", a_flat:"Flats", a_magic:"Magic",
+        a_scarf:"Headscarf", a_hat:"Hats", a_glasses:"Glasses", a_neck:"Necklace", a_ear:"Earrings", a_crown:"Crowns",
+        a_wings:"Wings", a_tail:"Tails", a_aura:"Aura", yok:"None" },
+  ar: { nasil_baslik:"كيف نلعب؟", nasil_alt:"أربع خطوات بسيطة — بلا قراءة!", nasil_1:"اختر لون البشرة والشعر والعينين والابتسامة.", nasil_2:"ألبسها الثياب والحذاء والحجاب والإكسسوارات. المسي العصا السحرية لملابس فورية!", nasil_3:"اختر الخلفية وأضف الملصقات واضغط زر التصوير.", nasil_4:"احفظ صورك أو كبّرها أو نزّلها على جهازك.", nasil_ipucu:"غيّرت رأيك؟ زر التراجع يعيد آخر ٢٤ تغييراً.", nasil_basla:"هيا نبدأ", oyna:"العب", slogan:"ألبس · زيّن · صوّر", olustur:"أنشئ", giydir:"ألبس", fotograf:"صورة", albom:"ألبومي",
+        ayarlar:"الإعدادات", dil:"اللغة", muzik:"موسيقى", sesler:"أصوات", kapat:"تم", evet:"نعم", hayir:"لا", sil:"حذف",
+        yeniBaslik:"شخصية جديدة؟", yeniMetin:"سيبدأ مظهرك الحالي من جديد.", silBaslik:"حذف هذه الصورة؟", silMetin:"لا يمكن التراجع.",
+        bosAlbom:"لا صور بعد. ألبس شخصيتك ثم التقط صورة بالكاميرا!", kaydedildi:"حُفظت في الألبوم!", indirildi:"جارٍ التنزيل…",
+        silindi:"حُذفت الصورة", geriAlindi:"تم التراجع", geriAlYok:"لا شيء للتراجع عنه",
+        kaydetHata:"الألبوم ممتلئ، احذف بعض الصور.", temizlendi:"مُسحت الملصقات", adet:"صور",
+        k_body:"الجسم", k_hair:"الشعر", k_face:"الوجه", k_top:"قمصان", k_bottom:"سراويل", k_dress:"فساتين", k_shoes:"أحذية", k_acc:"إكسسوار", k_special:"سحر", k_bg:"أماكن",
+        a_skin:"البشرة", a_style:"الشكل", a_color:"اللون", a_eyes:"العيون", a_brow:"الحواجب", a_mouth:"الفم", a_blush:"الخدود",
+        a_tshirt:"تيشيرت", a_sweater:"كنزة", a_jacket:"جاكيت", a_blouse:"بلوزة",
+        a_skirt:"تنورة", a_pants:"بنطال", a_shorts:"شورت", a_socks:"جوارب",
+        a_casual:"يومي", a_princess:"أميرة", a_party:"حفلة", a_fantasy:"خيال",
+        a_sneaker:"رياضي", a_boot:"بوت", a_flat:"مسطح", a_magic:"سحري",
+        a_scarf:"حجاب", a_hat:"قبعات", a_glasses:"نظارات", a_neck:"عقد", a_ear:"أقراط", a_crown:"تيجان",
+        a_wings:"أجنحة", a_tail:"ذيل", a_aura:"هالة", yok:"بدون" },
+  fr: { nasil_baslik:"Comment jouer ?", nasil_alt:"Quatre étapes simples — sans lecture !", nasil_1:"Choisis la couleur de peau, les cheveux, les yeux et le sourire.", nasil_2:"Ajoute vêtements, chaussures, foulard et accessoires. Touche la baguette magique pour une tenue instantanée !", nasil_3:"Choisis un décor, ajoute des autocollants et appuie sur le déclencheur.", nasil_4:"Garde tes photos, agrandis-les ou télécharge-les.", nasil_ipucu:"Tu as changé d\u2019avis ? Annuler revient sur les 24 derniers changements.", nasil_basla:"C\u2019EST PARTI", oyna:"JOUER", slogan:"habille · décore · photographie", olustur:"CRÉER", giydir:"HABILLER", fotograf:"PHOTO", albom:"MON ALBUM",
+        ayarlar:"Réglages", dil:"Langue", muzik:"Musique", sesler:"Sons", kapat:"OK", evet:"Oui", hayir:"Non", sil:"Supprimer",
+        yeniBaslik:"Nouveau personnage ?", yeniMetin:"Ton look actuel recommence à zéro.", silBaslik:"Supprimer cette photo ?", silMetin:"C'est définitif.",
+        bosAlbom:"Pas encore de photo. Habille ton personnage, puis prends une photo !", kaydedildi:"Enregistré dans l'album !", indirildi:"Téléchargement…",
+        silindi:"Photo supprimée", geriAlindi:"Annulé", geriAlYok:"Rien à annuler",
+        kaydetHata:"Album plein, supprime quelques photos.", temizlendi:"Autocollants effacés", adet:"photos",
+        k_body:"Corps", k_hair:"Cheveux", k_face:"Visage", k_top:"Hauts", k_bottom:"Bas", k_dress:"Robes", k_shoes:"Chaussures", k_acc:"Accessoires", k_special:"Magie", k_bg:"Lieux",
+        a_skin:"Peau", a_style:"Style", a_color:"Couleur", a_eyes:"Yeux", a_brow:"Sourcils", a_mouth:"Bouche", a_blush:"Joues",
+        a_tshirt:"T-shirt", a_sweater:"Pull", a_jacket:"Veste", a_blouse:"Blouse",
+        a_skirt:"Jupe", a_pants:"Pantalon", a_shorts:"Short", a_socks:"Chaussettes",
+        a_casual:"Décontracté", a_princess:"Princesse", a_party:"Fête", a_fantasy:"Féerique",
+        a_sneaker:"Baskets", a_boot:"Bottes", a_flat:"Ballerines", a_magic:"Magique",
+        a_scarf:"Foulard", a_hat:"Chapeaux", a_glasses:"Lunettes", a_neck:"Collier", a_ear:"Boucles", a_crown:"Couronnes",
+        a_wings:"Ailes", a_tail:"Queue", a_aura:"Aura", yok:"Aucun" }
+};
+let DIL = "tr";
+const T = k => (SOZLUK[DIL] && SOZLUK[DIL][k]) || SOZLUK.tr[k] || k;
+
+/* ---------- Ikon kutuphanesi (tamami vektor) ---------- */
+const ik = d => '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
+const IKON = {
+  geri:      ik('<path d="M15 5l-7 7 7 7"/>'),
+  ayar:      ik('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.6v2.2M12 19.2v2.2M21.4 12h-2.2M4.8 12H2.6M18.6 5.4l-1.6 1.6M7 17l-1.6 1.6M18.6 18.6L17 17M7 7L5.4 5.4"/>'),
+  muzik:     ik('<path d="M9 18V5.5l10-2V16"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="16.5" cy="16" r="2.6"/>'),
+  ses:       ik('<path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/><path d="M16 9.2a4 4 0 010 5.6M18.8 6.6a8 8 0 010 10.8"/>'),
+  geriAl:    ik('<path d="M3.5 8.5h10a5.5 5.5 0 010 11H8"/><path d="M7 4.5L3.5 8.5 7 12.5"/>'),
+  yeni:      ik('<path d="M12 5v14M5 12h14"/>'),
+  kamera:    ik('<path d="M3.5 8.5h3l1.6-2.4h7.8l1.6 2.4h3v10.5h-17z"/><circle cx="12" cy="13.5" r="3.6"/>'),
+  cop:       ik('<path d="M4.5 6.5h15M9.5 6.5V4.2h5v2.3M6.5 6.5l1 13h9l1-13"/><path d="M10.5 10v6M13.5 10v6"/>'),
+  indir:     ik('<path d="M12 3.5v11.5M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 18.5h15"/>'),
+  arti:      ik('<circle cx="12" cy="12" r="8.4"/><path d="M12 8.4v7.2M8.4 12h7.2"/>'),
+  eksi:      ik('<circle cx="12" cy="12" r="8.4"/><path d="M8.4 12h7.2"/>'),
+  supur:     ik('<path d="M14.5 3.5l6 6M17 6L8 15l-4 5 5-4 9-9"/>'),
+  asa:       ik('<path d="M5.5 18.5L16 8"/><path d="M18.2 5.8l-2.4 2.4M18.2 5.8l2.3-2.3M18.2 5.8l-2.3-2.3M18.2 5.8l2.4 2.4"/><path d="M7 4.5l.7 1.8L9.5 7l-1.8.7L7 9.5l-.7-1.8L4.5 7l1.8-.7z" fill="currentColor" stroke="none"/>'),
+  onay:      ik('<path d="M5 13l4.5 4.5L19 7"/>'),
+  kalp:      ik('<path d="M12 20s-7.2-4.5-7.2-9.4A4.1 4.1 0 0112 8.2a4.1 4.1 0 017.2 2.4C19.2 15.5 12 20 12 20z"/>'),
+  resim:     ik('<rect x="3.5" y="4.5" width="17" height="15" rx="2.6"/><circle cx="8.6" cy="9.6" r="1.7"/><path d="M4 16.5l4.6-4.2 4 3.4 3.2-2.6 4.2 3.4"/>'),
+  elbise:    ik('<path d="M9 3.5l3 2.5 3-2.5 2 3.5-2.2 2 2.7 11H6.5l2.7-11L7 7z"/>'),
+  yildiz:    ik('<path d="M12 3.6l2.5 5.4 5.9.7-4.4 4 1.2 5.8L12 16.6 6.8 19.5 8 13.7l-4.4-4 5.9-.7z"/>'),
+  soru:      ik('<circle cx="12" cy="12" r="9"/><path d="M9.3 9.4a2.8 2.8 0 1 1 3.4 2.8v1.6"/><circle cx="12.4" cy="17.2" r="1.05" fill="currentColor" stroke="none"/>'),
+  kure:      ik('<circle cx="12" cy="12" r="8.8"/><path d="M3.4 12h17.2"/><path d="M12 3.2c2.6 2.7 3.9 5.7 3.9 8.8s-1.3 6.1-3.9 8.8c-2.6-2.7-3.9-5.7-3.9-8.8S9.4 5.9 12 3.2z"/>'),
+  kalem:     ik('<path d="M16.5 3.8l3.7 3.7-11 11-4.7 1 1-4.7z"/><path d="M14.2 6.1l3.7 3.7"/>'),
+};
+
+/* ==========================================================================
+   CIZIM MOTORU — karakter tuvali 400 x 620
+   Tum parcalar saf SVG. Yeni asset eklemek icin sadece KATALOG'a satir eklenir.
+   ========================================================================== */
+const TUVAL = { w: 400, h: 620 };
+/** Tam boy gorunum: ust/yanlarda nefes payi birakir */
+const TAM_KADRAJ = "-14 -38 428 662";
+
+/* ---------- Renk yardimcilari ---------- */
+function hex2rgb(h) {
+  h = h.replace("#", "");
+  if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+function rgb2hex(r,g,b){ return "#" + [r,g,b].map(v => kilit(Math.round(v),0,255).toString(16).padStart(2,"0")).join(""); }
+/** k<1 koyulastirir, k>1 acar */
+/** Zemin acikca acik ise koyu, degilse acik vurgu uretir (gri tonlari onler) */
+function vurguRenk(h) {
+  const c = hex2rgb(h);
+  const isik = c[0] * .299 + c[1] * .587 + c[2] * .114;
+  const doygun = Math.max(c[0], c[1], c[2]) - Math.min(c[0], c[1], c[2]);
+  // Renksiz kumaslarda (beyaz/gri/siyah) tonlama sadece gri uretir; canli vurgu koy
+  if (doygun < 26) return isik > 150 ? "#FF9EC4" : "#F0E4FF";
+  return isik > 198 ? tonla(h, .68) : tonla(h, 1.55);
+}
+function tonla(h, k) {
+  const c = hex2rgb(h);
+  if (k <= 1) return rgb2hex(c[0]*k, c[1]*k, c[2]*k);
+  return rgb2hex(c[0]+(255-c[0])*(k-1), c[1]+(255-c[1])*(k-1), c[2]+(255-c[2])*(k-1));
+}
+
+/* ---------- Paletler ---------- */
+const TENLER = [
+  { id:"t1", h:"#FFE0CC" }, { id:"t2", h:"#FBCEAC" }, { id:"t3", h:"#F2B98D" }, { id:"t4", h:"#E09E6F" },
+  { id:"t5", h:"#C87F52" }, { id:"t6", h:"#A2603C" }, { id:"t7", h:"#7B472A" }, { id:"t8", h:"#5A331D" }
+];
+const SAC_RENK = [
+  { id:"s1", h:"#2E2733" }, { id:"s2", h:"#5B3A24" }, { id:"s3", h:"#8A5A32" }, { id:"s4", h:"#C9913F" },
+  { id:"s5", h:"#EBCB7A" }, { id:"s6", h:"#D2603A" }, { id:"s7", h:"#F291B8" }, { id:"s8", h:"#B182E8" },
+  { id:"s9", h:"#7FA8F0" }, { id:"s10", h:"#5FD7BC" }, { id:"s11", h:"#F0F0F5" }, { id:"s12", h:"#8E96A8" }
+];
+const GOZ_RENK = [
+  { id:"g1", h:"#4A3A2E" }, { id:"g2", h:"#7A5230" }, { id:"g3", h:"#C08A3E" }, { id:"g4", h:"#4F8A46" },
+  { id:"g5", h:"#3E7FC4" }, { id:"g6", h:"#5FC7D6" }, { id:"g7", h:"#8B6BE8" }, { id:"g8", h:"#D95E8C" }
+];
+const KUMAS = [
+  { id:"k1", h:"#F2637A" }, { id:"k2", h:"#FF9E7D" }, { id:"k3", h:"#FFCE5C" }, { id:"k4", h:"#7CD68F" },
+  { id:"k5", h:"#4FD1B0" }, { id:"k6", h:"#5FBDE8" }, { id:"k7", h:"#7C8BE8" }, { id:"k8", h:"#A78BFA" },
+  { id:"k9", h:"#F291C8" }, { id:"k10", h:"#FFFFFF" }, { id:"k11", h:"#4A4463" }, { id:"k12", h:"#F7E3C8" }
+];
+
+/* ---------- Govde parcalari ---------- */
+const G = { headTop:68, headCy:180, mouthY:248, eyeY:198, eyeLX:157, eyeRX:243, browY:156 };
+
+function bicimGovde(v) {
+  // v: 0 dengeli, 1 tombis, 2 zarif
+  const w = v === 1 ? 10 : v === 2 ? -7 : 0;
+  return `M${152-w} 324 C${152-w} 306 170 298 200 298 C230 298 ${248+w} 306 ${248+w} 324
+          L${253+w} 416 C${253+w} 436 232 447 200 447 C168 447 ${147-w} 436 ${147-w} 416 Z`;
+}
+function cizKol(ten, tenK) {
+  return `<g>
+    <path d="M162 324 C136 352 124 382 121 408" stroke="${ten}" stroke-width="30" fill="none" stroke-linecap="round"/>
+    <path d="M238 324 C264 352 276 382 279 408" stroke="${ten}" stroke-width="30" fill="none" stroke-linecap="round"/>
+    <circle cx="120" cy="416" r="17" fill="${ten}"/><circle cx="280" cy="416" r="17" fill="${ten}"/>
+  </g>`;
+}
+function cizBacak(ten) {
+  return `<g>
+    <path d="M179 440 C174 480 171 505 172 528" stroke="${ten}" stroke-width="35" fill="none" stroke-linecap="round"/>
+    <path d="M221 440 C226 480 229 505 228 528" stroke="${ten}" stroke-width="35" fill="none" stroke-linecap="round"/>
+  </g>`;
+}
+function cizAyak(ten, tenK) {
+  return `<g><ellipse cx="172" cy="551" rx="24" ry="16" fill="${ten}"/><ellipse cx="228" cy="551" rx="24" ry="16" fill="${ten}"/>
+  <ellipse cx="172" cy="558" rx="22" ry="9" fill="${tenK}" opacity=".35"/><ellipse cx="228" cy="558" rx="22" ry="9" fill="${tenK}" opacity=".35"/></g>`;
+}
+function cizKafa(ten, tenK, bicim) {
+  const kulak = `<ellipse cx="90" cy="198" rx="16" ry="21" fill="${ten}"/><ellipse cx="310" cy="198" rx="16" ry="21" fill="${ten}"/>
+    <ellipse cx="93" cy="198" rx="7" ry="10" fill="${tenK}" opacity=".5"/><ellipse cx="307" cy="198" rx="7" ry="10" fill="${tenK}" opacity=".5"/>`;
+  const kafa = `M200 66 C264 66 316 112 316 172 C316 242 268 294 200 294 C132 294 84 242 84 172 C84 112 136 66 200 66 Z`;
+  return `<g>
+    <rect x="180" y="258" width="40" height="50" rx="18" fill="${tenK}"/>
+    ${kulak}
+    <path d="${kafa}" fill="${ten}"/>
+    <path d="M200 294 C160 294 126 276 106 246 C132 274 164 286 200 286 C236 286 268 274 294 246 C274 276 240 294 200 294 Z" fill="${tenK}" opacity=".35"/>
+  </g>`;
+}
+
+/* ---------- Gozler (8) ---------- */
+function cizGoz(tip, renk) {
+  const k = tonla(renk, .55), a = tonla(renk, 1.35), lash = "#3B2C4E";
+  const iris = (r, cy) => `<circle cx="1" cy="${cy}" r="${r}" fill="${renk}"/>
+    <circle cx="1" cy="${cy + r*0.28}" r="${r*0.62}" fill="${k}"/>
+    <circle cx="1" cy="${cy + r*0.3}" r="${r*0.45}" fill="#241C36"/>
+    <path d="M${1-r*0.8} ${cy+r*0.55} a${r} ${r} 0 0 0 ${r*1.6} 0 z" fill="${a}" opacity=".55"/>
+    <circle cx="${-r*0.42}" cy="${cy-r*0.45}" r="${r*0.36}" fill="#fff"/>
+    <circle cx="${r*0.42}" cy="${cy+r*0.5}" r="${r*0.18}" fill="#fff" opacity=".85"/>`;
+  switch (tip) {
+    case 1: return `<ellipse rx="22" ry="27" fill="#fff"/>${iris(17,2)}<path d="M-22 -11 Q0 -33 22 -11" fill="none" stroke="${lash}" stroke-width="7" stroke-linecap="round"/>`;
+    case 2: return `<path d="M-20 6 Q0 -20 20 6" fill="none" stroke="${lash}" stroke-width="8" stroke-linecap="round"/>`;
+    case 3: return `<ellipse rx="25" ry="30" fill="#fff"/>${iris(20,2)}<path d="M-25 -12 Q0 -37 25 -12" fill="none" stroke="${lash}" stroke-width="8" stroke-linecap="round"/><circle cx="-11" cy="-14" r="4" fill="#fff"/>`;
+    case 4: return `<ellipse rx="23" ry="20" fill="#fff"/>${iris(15,0)}<path d="M-23 -6 Q0 -26 23 -6" fill="none" stroke="${lash}" stroke-width="7" stroke-linecap="round"/>`;
+    case 5: return `<ellipse rx="22" ry="26" fill="#fff"/>${iris(16,4)}<path d="M-22 -8 Q0 -30 22 -8 L22 -2 Q0 -14 -22 -2 Z" fill="${lash}"/>`;
+    case 6: return `<ellipse rx="22" ry="27" fill="#fff"/>${iris(17,2)}<path d="M-22 -11 Q0 -33 22 -11" fill="none" stroke="${lash}" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-20 -18 l-9 -9M-11 -25 l-5 -10M0 -28 l0 -11" stroke="${lash}" stroke-width="4.6" stroke-linecap="round"/>`;
+    case 7: return `<ellipse rx="23" ry="28" fill="#fff"/><circle cx="1" cy="2" r="18" fill="${renk}"/>
+      <circle cx="1" cy="4" r="10" fill="#241C36"/>
+      <path d="M-7 -7 l3.1 6.4 7 .9 -5.1 4.8 1.3 7 -6.3 -3.4 -6.3 3.4 1.3 -7 -5.1 -4.8 7 -.9z" fill="#FFFFFF"/>
+      <circle cx="9" cy="10" r="3.4" fill="#fff" opacity=".85"/>
+      <path d="M-23 -12 Q0 -34 23 -12" fill="none" stroke="${lash}" stroke-width="7" stroke-linecap="round"/>`;
+    default: return `<circle r="21" fill="#fff"/><circle cx="1" cy="1" r="12" fill="${renk}"/><circle cx="1" cy="2" r="6.5" fill="#241C36"/>
+      <circle cx="-4" cy="-5" r="4" fill="#fff"/><path d="M-21 -10 Q0 -30 21 -10" fill="none" stroke="${lash}" stroke-width="6.4" stroke-linecap="round"/>`;
+  }
+}
+/* ---------- Kaslar (6) ---------- */
+function cizKas(tip, renk) {
+  const s = (kalinlik) => `fill="none" stroke="${renk}" stroke-width="${kalinlik}" stroke-linecap="round"`;
+  switch (tip) {
+    case 1: return `<path d="M-18 2 Q0 -9 18 0" ${s(7)}/>`;
+    case 2: return `<path d="M-18 0 L18 0" ${s(7)}/>`;
+    case 3: return `<path d="M-18 4 Q0 -14 18 2" ${s(9)}/>`;
+    case 4: return `<path d="M-18 -2 Q0 -2 18 6" ${s(7)}/>`;
+    case 5: return `<path d="M-16 3 Q-2 -8 16 -4" ${s(5.5)}/>`;
+    default: return `<path d="M-17 1 Q0 -7 17 1" ${s(6)}/>`;
+  }
+}
+/* ---------- Agizlar (8) ---------- */
+function cizAgiz(tip) {
+  const d = "#C0526E", ic = "#8E3350", dil = "#FF8FA8";
+  switch (tip) {
+    case 1: return `<path d="M-15 -2 Q0 12 15 -2" fill="none" stroke="${d}" stroke-width="6" stroke-linecap="round"/>`;
+    case 2: return `<path d="M-17 -3 Q0 22 17 -3 Q0 4 -17 -3 Z" fill="${ic}"/><path d="M-9 9 Q0 20 9 9 Q0 6 -9 9 Z" fill="${dil}"/>`;
+    case 3: return `<ellipse rx="8" ry="10" fill="${ic}"/><ellipse cx="0" cy="4" rx="5" ry="4.5" fill="${dil}"/>`;
+    case 4: return `<path d="M-17 -2 Q-8.5 8 0 -2 Q8.5 8 17 -2" fill="none" stroke="${d}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 5: return `<path d="M-9 -1 Q0 6 9 -1" fill="none" stroke="${d}" stroke-width="5.5" stroke-linecap="round"/>`;
+    case 6: return `<path d="M-15 -3 Q0 10 15 -3" fill="none" stroke="${d}" stroke-width="6" stroke-linecap="round"/><path d="M-7 6 Q0 20 7 6 Z" fill="${dil}" stroke="${d}" stroke-width="2.6"/>`;
+    case 7: return `<path d="M-18 -5 Q0 22 18 -5 Z" fill="${ic}"/><path d="M-15 -5 L15 -5 L13.5 1.5 L-13.5 1.5 Z" fill="#FFFFFF"/>
+      <path d="M-8 12 Q0 19 8 12 Q0 9 -8 12 Z" fill="${dil}"/><path d="M-18 -5 L18 -5" stroke="${d}" stroke-width="3" stroke-linecap="round"/>`;
+    default: return `<path d="M0 -5 Q-9 -13 -12 -4 Q-13 4 0 12 Q13 4 12 -4 Q9 -13 0 -5 Z" fill="${d}"/>`;
+  }
+}
+/* ---------- Yanaklar (4) ---------- */
+function cizYanak(tip, x) {
+  const p = "#FF8FA8";
+  if (tip === 0) return "";
+  if (tip === 1) return `<ellipse cx="${x}" cy="230" rx="24" ry="14" fill="${p}" opacity=".42"/>`;
+  if (tip === 2) return `<g stroke="${p}" stroke-width="4.4" stroke-linecap="round" opacity=".72">
+    <path d="M${x-13} 224 l7 11M${x} 222 l7 11M${x+13} 224 l7 11"/></g>`;
+  if (tip === 3) return `<path d="M${x} 224 q-7-8-12 0 q-4 8 12 17 q16-9 12-17 q-5-8-12 0z" fill="${p}" opacity=".62"/>`;
+  return `<path d="M${x} 218 l4.4 9 9.8 1.3-7.1 6.8 1.7 9.7-8.8-4.7-8.8 4.7 1.7-9.7-7.1-6.8 9.8-1.3z" fill="${p}" opacity=".6"/>`;
+}
+/* ---------- Burun ---------- */
+function cizBurun(tenK) {
+  return `<path d="M196 218 Q200 225 205 220" fill="none" stroke="${tenK}" stroke-width="4" stroke-linecap="round" opacity=".75"/>`;
+}
+
+/* ==========================================================================
+   SACLAR — her stil {arka, on} dondurur
+   ========================================================================== */
+const PERCEM = {
+  duz:   c => `<path d="M86 168 C86 98 134 56 200 56 C266 56 314 98 314 168 C312 140 304 118 296 108 C280 138 246 149 200 149 C154 149 120 138 104 108 C96 118 88 140 86 168 Z" fill="${c}"/>`,
+  yan:   c => `<path d="M86 170 C86 100 134 56 200 56 C266 56 314 100 314 170 C310 138 300 114 292 106 C258 143 190 160 132 134 C114 130 100 146 86 170 Z" fill="${c}"/>`,
+  perde: c => `<path d="M86 170 C86 100 134 56 200 56 C266 56 314 100 314 170 C308 134 296 112 288 104 C268 126 236 141 200 113 C164 141 132 126 112 104 C104 112 92 134 86 170 Z" fill="${c}"/>`,
+  m:     c => `<path d="M88 166 C88 98 136 56 200 56 C264 56 312 98 312 166 C306 130 296 112 288 104 C272 131 244 124 226 102 C216 124 184 124 174 102 C156 124 128 131 112 104 C104 112 94 130 88 166 Z" fill="${c}"/>`,
+  minik: c => `<path d="M92 150 C92 96 138 58 200 58 C262 58 308 96 308 150 C300 128 292 112 284 106 C264 132 232 140 200 140 C168 140 136 132 116 106 C108 112 100 128 92 150 Z" fill="${c}"/>`,
+  kabarik: c => `<path d="M82 176 C82 96 132 50 200 50 C268 50 318 96 318 176 C314 154 306 126 296 112 C288 148 260 122 242 110 C230 142 206 128 200 108 C194 132 166 148 152 112 C136 126 112 148 104 112 C94 126 86 154 82 176 Z" fill="${c}"/>`
+};
+function tutam(c, x, y, r) { return `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/>`; }
+
+const SACLAR = {
+  duzUzun: (c, k) => ({
+    arka: `<path d="M54 196 C54 100 120 40 200 40 C280 40 346 100 346 196 L346 388 C346 436 300 452 200 452 C100 452 54 436 54 388 Z" fill="${c}"/>
+           <path d="M54 300 L346 300 L346 388 C346 436 300 452 200 452 C100 452 54 436 54 388 Z" fill="${k}" opacity=".18"/>`,
+    on: PERCEM.duz(c) }),
+  bob: (c, k) => ({
+    arka: `<path d="M62 194 C62 106 124 46 200 46 C276 46 338 106 338 194 L338 262 C338 300 300 316 200 316 C100 316 62 300 62 262 Z" fill="${c}"/>
+           <path d="M62 262 C62 300 100 316 200 316 C300 316 338 300 338 262 L338 282 C338 316 300 330 200 330 C100 330 62 316 62 282 Z" fill="${k}" opacity=".25"/>`,
+    on: PERCEM.duz(c) }),
+  ikiTopuz: (c, k) => ({
+    arka: `<path d="M64 196 C64 108 126 48 200 48 C274 48 336 108 336 196 L336 250 C336 282 300 296 200 296 C100 296 64 282 64 250 Z" fill="${c}"/>
+           ${tutam(c,72,86,42)}${tutam(c,328,86,42)}
+           <circle cx="66" cy="80" r="14" fill="${tonla(c,1.25)}" opacity=".5"/><circle cx="322" cy="80" r="14" fill="${tonla(c,1.25)}" opacity=".5"/>`,
+    on: PERCEM.perde(c) }),
+  atKuyrugu: (c, k) => ({
+    arka: `<path d="M64 194 C64 106 126 46 200 46 C276 46 338 106 338 194 L338 240 C338 270 300 284 200 284 C100 284 64 270 64 240 Z" fill="${c}"/>
+           <path d="M312 130 C368 150 388 230 372 310 C362 362 336 392 312 386 C292 380 296 350 306 314 C318 268 320 200 300 166 Z" fill="${c}"/>
+           <path d="M318 150 C356 176 366 244 354 302" stroke="${k}" stroke-width="6" fill="none" opacity=".3"/>`,
+    on: PERCEM.yan(c) }),
+  ikiOrgu: (c, k) => ({
+    arka: `<path d="M62 196 C62 106 124 46 200 46 C276 46 338 106 338 196 L338 246 C338 278 300 292 200 292 C100 292 62 278 62 246 Z" fill="${c}"/>
+           ${[0,1].map(i => { const x = i ? 330 : 70, s = i ? 1 : -1; return `
+             <g fill="${c}"><ellipse cx="${x}" cy="252" rx="24" ry="26"/><ellipse cx="${x+s*6}" cy="300" rx="26" ry="27"/>
+             <ellipse cx="${x}" cy="348" rx="24" ry="26"/><ellipse cx="${x+s*5}" cy="392" rx="20" ry="22"/>
+             <path d="M${x+s*5} 410 l${s*14} 22 l${-s*24} -6 z"/></g>`; }).join("")}`,
+    on: PERCEM.m(c) }),
+  kivircik: (c, k) => ({
+    arka: `<g fill="${c}">${[[78,140,50],[126,84,52],[200,62,58],[274,84,52],[322,140,50],[70,208,44],[330,208,44],[92,262,40],[308,262,40],[200,120,60]]
+      .map(p => tutam(c,p[0],p[1],p[2])).join("")}</g>
+      <g fill="${tonla(c,1.2)}" opacity=".35">${[[110,110,18],[240,80,16],[300,150,16],[96,190,14]].map(p=>tutam("",p[0],p[1],p[2]).replace('fill=""','')).join("")}</g>`,
+    on: `<g fill="${c}">${[[112,124,40],[160,96,42],[212,92,44],[262,110,40],[300,144,36]].map(p=>tutam(c,p[0],p[1],p[2])).join("")}</g>` }),
+  dalgaliUzun: (c, k) => ({
+    arka: `<path d="M54 194 C54 98 120 38 200 38 C280 38 346 98 346 194 C346 240 356 300 340 350 C328 388 348 420 330 444 C312 466 286 440 288 408 C290 360 300 300 296 240 L104 240 C100 300 110 360 112 408 C114 440 88 466 70 444 C52 420 72 388 60 350 C44 300 54 240 54 194 Z" fill="${c}"/>
+           <path d="M104 250 C100 320 112 380 112 420" stroke="${k}" stroke-width="7" fill="none" opacity=".22"/>
+           <path d="M296 250 C300 320 288 380 288 420" stroke="${k}" stroke-width="7" fill="none" opacity=".22"/>`,
+    on: PERCEM.perde(c) }),
+  pixie: (c, k) => ({
+    arka: `<path d="M70 192 C70 112 128 54 200 54 C272 54 330 112 330 192 L330 214 C330 236 300 246 200 246 C100 246 70 236 70 214 Z" fill="${c}"/>`,
+    on: `<path d="M88 168 C88 96 138 54 200 54 C264 54 314 98 314 168 C306 132 296 112 286 104 C270 130 232 152 190 142 C160 134 138 118 124 100 C108 116 94 140 88 168 Z" fill="${c}"/>
+         <path d="M300 110 C316 128 320 152 314 172 C310 148 304 128 296 116 Z" fill="${tonla(c,.82)}"/>` }),
+  orguTac: (c, k) => ({
+    arka: `<path d="M64 196 C64 108 126 48 200 48 C274 48 336 108 336 196 L336 300 C336 340 300 356 200 356 C100 356 64 340 64 300 Z" fill="${c}"/>`,
+    on: `${PERCEM.perde(c)}
+      <g fill="${tonla(c,1.18)}">${[0,1,2,3,4,5,6,7,8].map(i => { const t = -0.06 + i*0.145; const x = 200 - Math.cos(t*Math.PI/1.0)*0; return ""; }).join("")}</g>
+      <path d="M92 130 C120 88 160 66 200 66 C240 66 280 88 308 130" fill="none" stroke="${tonla(c,1.2)}" stroke-width="17" stroke-linecap="round"/>
+      <path d="M92 130 C120 88 160 66 200 66 C240 66 280 88 308 130" fill="none" stroke="${tonla(c,.82)}" stroke-width="17" stroke-linecap="round" stroke-dasharray="15 15"/>` }),
+  yuksekTopuz: (c, k) => ({
+    arka: `<path d="M66 198 C66 110 128 50 200 50 C272 50 334 110 334 198 L334 252 C334 284 300 298 200 298 C100 298 66 284 66 252 Z" fill="${c}"/>
+           <ellipse cx="200" cy="34" rx="56" ry="46" fill="${c}"/>
+           <ellipse cx="182" cy="24" rx="20" ry="15" fill="${tonla(c,1.25)}" opacity=".45"/>
+           <path d="M144 62 C168 44 232 44 256 62" stroke="${k}" stroke-width="7" fill="none" opacity=".3"/>`,
+    on: PERCEM.minik(c) }),
+  yanAyrik: (c, k) => ({
+    arka: `<path d="M56 196 C56 100 122 40 200 40 C278 40 344 100 344 196 L344 400 C344 442 302 458 220 456 C240 430 246 380 244 320 L152 320 C150 384 158 430 176 456 C100 452 56 438 56 398 Z" fill="${c}"/>`,
+    on: PERCEM.yan(c) }),
+  prenses: (c, k) => ({
+    arka: `<path d="M48 200 C48 96 118 34 200 34 C282 34 352 96 352 200 C352 250 366 300 356 356 C348 400 366 434 340 452 C316 468 292 442 296 404 C302 344 306 280 298 232 L102 232 C94 280 98 344 104 404 C108 442 84 468 60 452 C34 434 52 400 44 356 C34 300 48 250 48 200 Z" fill="${c}"/>
+           <g fill="${tonla(c,1.16)}" opacity=".45"><ellipse cx="96" cy="300" rx="16" ry="34"/><ellipse cx="304" cy="300" rx="16" ry="34"/></g>`,
+    on: PERCEM.kabarik(c) })
+};
+
+/* ==========================================================================
+   KIYAFETLER
+   ========================================================================== */
+/** Bel dolgusu — etek/pantolon nerede baslarsa baslasin gobek acikta kalmaz */
+const BEL_DOLGU = c => `<path d="M150 400 C172 412 228 412 250 400 L254 438 C254 452 232 460 200 460 C168 460 146 452 146 438 Z" fill="${c}"/>`;
+/** Sacta ve ortude yumusak isik yansimasi */
+const SAC_PARLAK = `<path d="M128 168 C138 112 166 80 204 72" fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" opacity=".17"/>`;
+const BAS_PARLAK = `<path d="M118 176 C126 116 154 78 194 66" fill="none" stroke="#FFFFFF" stroke-width="15" stroke-linecap="round" opacity=".2"/>`;
+/** Yere temas golgesi — figuru zemine oturtur */
+const YER_GOLGE = `<ellipse cx="200" cy="574" rx="88" ry="13" fill="#1A1236" opacity=".2"/>`;
+
+function govdeUst(c, boy) {
+  return `<path d="M152 320 C152 302 170 294 200 294 C230 294 248 302 248 320 L254 ${boy} C254 ${boy+13} 232 ${boy+21} 200 ${boy+21} C168 ${boy+21} 146 ${boy+13} 146 ${boy} Z" fill="${c}"/>`;
+}
+function kolKisa(c) {
+  return `<path d="M164 320 C146 340 136 354 131 366" stroke="${c}" stroke-width="35" fill="none" stroke-linecap="round"/>
+          <path d="M236 320 C254 340 264 354 269 366" stroke="${c}" stroke-width="35" fill="none" stroke-linecap="round"/>`;
+}
+function kolUzun(c) {
+  return `<path d="M163 320 C138 350 126 380 123 404" stroke="${c}" stroke-width="35" fill="none" stroke-linecap="round"/>
+          <path d="M237 320 C262 350 274 380 277 404" stroke="${c}" stroke-width="35" fill="none" stroke-linecap="round"/>`;
+}
+function yaka(c) { return `<path d="M176 298 Q200 316 224 298 Q200 306 176 298 Z" fill="${c}"/>`; }
+function etekBicim(c, alt, genis) {
+  const g = genis || 0;
+  return `<path d="M150 426 C172 438 228 438 250 426 L${282+g} ${alt-22} C${282+g} ${alt-8} ${246} ${alt} 200 ${alt} C154 ${alt} ${118-g} ${alt-8} ${118-g} ${alt-22} Z" fill="${c}"/>`;
+}
+
+/* ---------- UST GIYSILER (12) ---------- */
+const USTLER = {
+  tisort:   (c, c2) => govdeUst(c, 398) + kolKisa(c) + yaka(tonla(c, 1.2)),
+  cizgili:  (c, c2) => govdeUst(c, 398) + kolKisa(c) +
+    `<g fill="${c2}" opacity=".85"><rect x="146" y="326" width="108" height="12" rx="6"/><rect x="146" y="352" width="110" height="12" rx="6"/><rect x="147" y="378" width="110" height="12" rx="6"/></g>` + yaka(tonla(c,1.2)),
+  kalpli:   (c, c2) => govdeUst(c, 398) + kolKisa(c) +
+    `<path d="M200 340 q-10-12-19-2 q-8 10 19 30 q27-20 19-30 q-9-10-19 2z" fill="${c2}"/>` + yaka(tonla(c,1.2)),
+  kazak:    (c, c2) => govdeUst(c, 404) + kolUzun(c) +
+    `<path d="M172 296 Q200 320 228 296 L232 306 Q200 330 168 306 Z" fill="${tonla(c,.82)}"/>
+     <rect x="147" y="410" width="106" height="14" rx="7" fill="${tonla(c,.82)}"/>`,
+  orguKazak:(c, c2) => govdeUst(c, 404) + kolUzun(c) +
+    `<g stroke="${tonla(c,.85)}" stroke-width="5" fill="none" stroke-linecap="round">
+      <path d="M172 316 q10 14 0 28 q-10 14 0 28 q10 14 0 28"/><path d="M200 316 q10 14 0 28 q-10 14 0 28 q10 14 0 28"/><path d="M228 316 q10 14 0 28 q-10 14 0 28 q10 14 0 28"/></g>
+     <rect x="147" y="410" width="106" height="14" rx="7" fill="${tonla(c,.82)}"/>`,
+  kapusonlu:(c, c2) => govdeUst(c, 404) + kolUzun(c) +
+    `<path d="M160 292 C168 322 232 322 240 292 C244 312 226 332 200 332 C174 332 156 312 160 292 Z" fill="${tonla(c,.86)}"/>
+     <path d="M188 322 L188 352M212 322 L212 352" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+     <rect x="147" y="410" width="106" height="14" rx="7" fill="${tonla(c,.82)}"/>`,
+  ceket:    (c, c2) => govdeUst("#FFFFFF", 398) + kolUzun(c) +
+    `<path d="M152 320 C152 302 168 294 178 294 L200 340 L222 294 C232 294 248 302 248 320 L254 398 C254 411 240 418 226 419 L222 340 L200 386 L178 340 L174 419 C160 418 146 411 146 398 Z" fill="${c}"/>
+     <circle cx="200" cy="360" r="5" fill="${tonla(c,1.35)}"/>`,
+  kotCeket: (c, c2) => govdeUst("#F4F1EA", 398) + kolUzun("#5B7FB0") +
+    `<path d="M152 320 C152 302 168 294 178 294 L200 336 L222 294 C232 294 248 302 248 320 L254 398 C254 411 240 418 226 419 L222 336 L200 380 L178 336 L174 419 C160 418 146 411 146 398 Z" fill="#5B7FB0"/>
+     <path d="M176 300 L176 414M224 300 L224 414" stroke="#8FB0D8" stroke-width="3" stroke-dasharray="6 5"/>`,
+  hirka:    (c, c2) => govdeUst("#FFF6EC", 398) + kolUzun(c) +
+    `<path d="M152 318 C152 300 168 294 176 294 L176 419 C160 418 146 411 146 398 Z" fill="${c}"/>
+     <path d="M248 318 C248 300 232 294 224 294 L224 419 C240 418 254 411 254 398 Z" fill="${c}"/>
+     <g fill="${tonla(c,1.4)}"><circle cx="192" cy="330" r="4.6"/><circle cx="192" cy="356" r="4.6"/><circle cx="192" cy="382" r="4.6"/></g>`,
+  firfirBluz:(c, c2) => govdeUst(c, 392) +
+    `<path d="M166 318 C148 332 140 350 138 364 C150 372 166 368 172 356 C176 342 176 328 172 318 Z" fill="${c}"/>
+     <path d="M234 318 C252 332 260 350 262 364 C250 372 234 368 228 356 C224 342 224 328 228 318 Z" fill="${c}"/>
+     <path d="M146 392 q14 12 27 0 q13 12 27 0 q14 12 27 0 q13 12 27 0 l0 12 q-14 12 -27 0 q-14 12 -27 0 q-13 12 -27 0 q-13 12 -27 0z" fill="${tonla(c,1.18)}"/>
+     <path d="M176 296 Q200 318 224 296" fill="none" stroke="${tonla(c,.85)}" stroke-width="5"/>`,
+  askili:   (c, c2) => `<path d="M158 330 C158 310 176 300 200 300 C224 300 242 310 242 330 L248 398 C248 411 228 419 200 419 C172 419 152 411 152 398 Z" fill="${c}"/>
+     <path d="M178 302 L172 288M222 302 L228 288" stroke="${c}" stroke-width="9" stroke-linecap="round"/>`,
+  balerin:  (c, c2) => `<path d="M156 328 C156 308 176 298 200 298 C224 298 244 308 244 328 L250 396 C250 410 228 418 200 418 C172 418 150 410 150 396 Z" fill="${c}"/>
+     <path d="M170 302 Q200 324 230 302 Q200 314 170 302 Z" fill="${tonla(c,1.25)}"/>
+     <path d="M164 328 q-14 12 -18 26 q10 8 20 0 q4 -16 4 -26z" fill="${tonla(c,1.15)}"/>
+     <path d="M236 328 q14 12 18 26 q-10 8 -20 0 q-4 -16 -4 -26z" fill="${tonla(c,1.15)}"/>`
+};
+/* ---------- ALT GIYSILER (10) ---------- */
+const ALTLAR = {
+  duzEtek:  (c, c2) => etekBicim(c, 502),
+  plileEtek:(c, c2) => etekBicim(c, 502) +
+    `<g stroke="${tonla(c,.82)}" stroke-width="4" opacity=".8">
+      <path d="M168 436 L146 494M184 440 L174 498M200 442 L200 500M216 440 L226 498M232 436 L254 494"/></g>`,
+  tutu:     (c, c2) => `<path d="M150 426 C172 438 228 438 250 426 L272 466 C272 476 244 484 200 484 C156 484 128 476 128 466 Z" fill="${c}"/>
+     <g fill="${tonla(c,1.2)}" opacity=".85"><ellipse cx="140" cy="470" rx="34" ry="20"/><ellipse cx="200" cy="480" rx="42" ry="22"/><ellipse cx="260" cy="470" rx="34" ry="20"/></g>`,
+  kabarik:  (c, c2) => `<path d="M150 424 C172 436 228 436 250 424 C292 448 300 486 292 502 C270 516 236 522 200 522 C164 522 130 516 108 502 C100 486 108 448 150 424 Z" fill="${c}"/>
+     <path d="M116 496 q22 12 42 8M242 504 q22 -4 42 -12" stroke="${tonla(c,1.2)}" stroke-width="5" fill="none" opacity=".7"/>`,
+  kotPantolon:(c,c2) => `<path d="M152 422 L248 422 L251 448 C251 462 230 468 200 468 C170 468 149 462 149 448 Z" fill="${c}"/>
+     <path d="M180 452 C176 486 174 508 175 528" stroke="${c}" stroke-width="40" fill="none" stroke-linecap="round"/>
+     <path d="M220 452 C224 486 226 508 225 528" stroke="${c}" stroke-width="40" fill="none" stroke-linecap="round"/>
+     <path d="M200 430 L200 462" stroke="${tonla(c,1.3)}" stroke-width="3" stroke-dasharray="5 4"/>`,
+  tayt:     (c, c2) => `<path d="M152 424 L248 424 L250 446 C250 460 230 466 200 466 C170 466 150 460 150 446 Z" fill="${c}"/>
+     <path d="M180 450 C176 486 174 508 175 528" stroke="${c}" stroke-width="34" fill="none" stroke-linecap="round"/>
+     <path d="M220 450 C224 486 226 508 225 528" stroke="${c}" stroke-width="34" fill="none" stroke-linecap="round"/>`,
+  kumasPantolon:(c,c2)=> `<path d="M152 422 L248 422 L251 448 C251 462 230 468 200 468 C170 468 149 462 149 448 Z" fill="${c}"/>
+     <path d="M179 452 C173 486 170 508 171 530" stroke="${c}" stroke-width="46" fill="none" stroke-linecap="round"/>
+     <path d="M221 452 C227 486 230 508 229 530" stroke="${c}" stroke-width="46" fill="none" stroke-linecap="round"/>`,
+  kotSort:  (c, c2) => `<path d="M152 422 L248 422 L251 448 C251 462 230 468 200 468 C170 468 149 462 149 448 Z" fill="${c}"/>
+     <path d="M181 452 L179 482" stroke="${c}" stroke-width="42" fill="none" stroke-linecap="round"/>
+     <path d="M219 452 L221 482" stroke="${c}" stroke-width="42" fill="none" stroke-linecap="round"/>
+     <path d="M200 428 L200 462" stroke="${tonla(c,1.3)}" stroke-width="3" stroke-dasharray="5 4"/>`,
+  sort:     (c, c2) => `<path d="M152 424 L248 424 L250 446 C250 460 230 466 200 466 C170 466 150 460 150 446 Z" fill="${c}"/>
+     <path d="M181 450 L180 476" stroke="${c}" stroke-width="38" fill="none" stroke-linecap="round"/>
+     <path d="M219 450 L220 476" stroke="${c}" stroke-width="38" fill="none" stroke-linecap="round"/>`,
+  kapri:    (c, c2) => `<path d="M152 422 L248 422 L251 448 C251 462 230 468 200 468 C170 468 149 462 149 448 Z" fill="${c}"/>
+     <path d="M180 452 C176 480 175 492 175 502" stroke="${c}" stroke-width="42" fill="none" stroke-linecap="round"/>
+     <path d="M220 452 C224 480 225 492 225 502" stroke="${c}" stroke-width="42" fill="none" stroke-linecap="round"/>
+     <g fill="${tonla(c,1.25)}"><circle cx="175" cy="500" r="5"/><circle cx="225" cy="500" r="5"/></g>`
+};
+/* ---------- ELBISELER (15) ---------- */
+function elbiseBaz(c, alt, genis) { return govdeUst(c, 412) + etekBicim(c, alt, genis); }
+const ELBISELER = {
+  gunlukA: (c,c2) => elbiseBaz(c, 500) + kolKisa(c) + yaka(tonla(c,1.2)),
+  gunlukB: (c,c2) => elbiseBaz(c, 500) + kolKisa(c) +
+    `<g fill="${c2}"><circle cx="176" cy="352" r="7"/><circle cx="212" cy="336" r="7"/><circle cx="228" cy="376" r="7"/><circle cx="168" cy="466" r="8"/><circle cx="232" cy="470" r="8"/><circle cx="200" cy="450" r="8"/></g>`,
+  gunlukC: (c,c2) => elbiseBaz(c, 496) +
+    `<path d="M178 300 L172 286M222 300 L228 286" stroke="${c}" stroke-width="9" stroke-linecap="round"/>
+     <rect x="146" y="404" width="108" height="14" rx="7" fill="${c2}"/>`,
+  gunlukD: (c,c2) => elbiseBaz(c, 500) + kolUzun(c) +
+    `<g stroke="${tonla(c,1.25)}" stroke-width="4" opacity=".75" fill="none"><path d="M150 452 h100M150 476 h108"/></g>` + yaka(tonla(c,1.2)),
+  prensesA:(c,c2) => govdeUst(c,412) + `<path d="M150 424 C172 436 228 436 250 424 C300 452 312 496 302 514 C274 528 240 534 200 534 C160 534 126 528 98 514 C88 496 100 452 150 424 Z" fill="${c}"/>
+     <path d="M176 296 Q200 318 224 296" fill="none" stroke="${c2}" stroke-width="6"/>
+     <rect x="146" y="404" width="108" height="16" rx="8" fill="${c2}"/>
+     <path d="M200 404 l7 14 15 2 -11 11 3 15 -14 -7 -14 7 3 -15 -11 -11 15 -2z" fill="${c2}"/>`,
+  prensesB:(c,c2) => govdeUst(c,412) + `<path d="M150 424 C172 436 228 436 250 424 C298 450 310 494 300 512 C272 526 240 532 200 532 C160 532 128 526 100 512 C90 494 102 450 150 424 Z" fill="${c}"/>
+     <g fill="${tonla(c,1.22)}" opacity=".9"><ellipse cx="146" cy="500" rx="30" ry="17"/><ellipse cx="200" cy="512" rx="34" ry="18"/><ellipse cx="254" cy="500" rx="30" ry="17"/></g>
+     <path d="M168 300 q32 22 64 0" fill="none" stroke="${c2}" stroke-width="6"/>`,
+  prensesC:(c,c2) => govdeUst(c,412) + `<path d="M150 424 C172 436 228 436 250 424 C296 450 306 492 296 510 C270 524 238 530 200 530 C162 530 130 524 104 510 C94 492 104 450 150 424 Z" fill="${c}"/>
+     <path d="M162 318 q-18 16 -22 34 q12 10 24 0 q4 -20 2 -34z" fill="${tonla(c,1.15)}"/>
+     <path d="M238 318 q18 16 22 34 q-12 10 -24 0 q-4 -20 -2 -34z" fill="${tonla(c,1.15)}"/>
+     <path d="M200 424 L188 530M200 424 L212 530" stroke="${tonla(c,1.28)}" stroke-width="4" opacity=".6"/>`,
+  prensesD:(c,c2) => govdeUst(c,412) + `<path d="M150 424 C172 436 228 436 250 424 C302 454 316 500 306 518 C276 532 242 538 200 538 C158 538 124 532 94 518 C84 500 98 454 150 424 Z" fill="${c}"/>
+     <rect x="146" y="402" width="108" height="18" rx="9" fill="${c2}"/>
+     <g fill="${tonla(c,1.3)}" opacity=".85"><circle cx="150" cy="486" r="6"/><circle cx="200" cy="500" r="6"/><circle cx="250" cy="486" r="6"/><circle cx="176" cy="466" r="5"/><circle cx="224" cy="466" r="5"/></g>`,
+  partiA:  (c,c2) => elbiseBaz(c, 496) +
+    `<g fill="${tonla(c,1.45)}" opacity=".9">${[[168,330],[200,318],[232,334],[180,364],[220,364],[160,436],[200,452],[240,436],[178,478],[224,478]].map(p=>`<path d="M${p[0]} ${p[1]-7} l3.4 6.6 7.2 1 -5.2 5.2 1.3 7.2 -6.7-3.5 -6.7 3.5 1.3-7.2 -5.2-5.2 7.2-1z"/>`).join("")}</g>`,
+  partiB:  (c,c2) => govdeUst(c,412) + etekBicim(c, 498, 12) +
+    `<rect x="146" y="402" width="108" height="16" rx="8" fill="${c2}"/>
+     <path d="M170 300 q30 20 60 0" fill="none" stroke="${c2}" stroke-width="7"/>
+     <path d="M118 476 q40 14 82 14 q42 0 82 -14" fill="none" stroke="${tonla(c,1.35)}" stroke-width="6" opacity=".8"/>`,
+  partiC:  (c,c2) => govdeUst(c,412) + `<path d="M150 424 C172 436 228 436 250 424 L268 470 C276 490 250 502 200 502 C150 502 124 490 132 470 Z" fill="${c}"/>
+     ${kolKisa(c)}<g fill="${tonla(c,1.5)}" opacity=".9"><rect x="146" y="330" width="108" height="8" rx="4"/><rect x="148" y="360" width="106" height="8" rx="4"/><rect x="150" y="390" width="102" height="8" rx="4"/></g>`,
+  partiD:  (c,c2) => govdeUst(c,412) + etekBicim(c, 504, 6) +
+    `<path d="M200 296 l8 18 20 2 -14 14 4 20 -18 -10 -18 10 4 -20 -14 -14 20 -2z" fill="${c2}"/>
+     <g fill="${c2}"><circle cx="164" cy="454" r="7"/><circle cx="236" cy="454" r="7"/><circle cx="200" cy="480" r="7"/></g>`,
+  masalA:  (c,c2) => govdeUst(c,412) + `<path d="M150 424 C172 436 228 436 250 424 C294 452 306 496 296 514 C268 528 238 534 200 534 C162 534 130 528 104 514 C94 496 106 452 150 424 Z" fill="${c}"/>
+     <path d="M104 500 q24 -26 48 0 q24 -26 48 0 q24 -26 48 0 q24 -26 48 0" fill="none" stroke="${tonla(c,1.4)}" stroke-width="7" stroke-linecap="round"/>
+     <path d="M200 400 l6 13 14 2 -10 10 2 14 -12 -7 -12 7 2 -14 -10 -10 14 -2z" fill="${c2}"/>`,
+  masalB:  (c,c2) => govdeUst(c,412) + `<path d="M150 424 C172 436 228 436 250 424 C288 448 300 490 292 510 C266 524 236 530 200 530 C164 530 134 524 108 510 C100 490 112 448 150 424 Z" fill="${c}"/>
+     <g fill="${tonla(c,1.4)}" opacity=".8"><ellipse cx="150" cy="470" rx="20" ry="12"/><ellipse cx="250" cy="470" rx="20" ry="12"/><ellipse cx="200" cy="496" rx="24" ry="14"/></g>
+     <path d="M166 316 q-20 18 -24 38 q14 10 26 -2 q4 -22 2 -36z" fill="${tonla(c,1.2)}"/>
+     <path d="M234 316 q20 18 24 38 q-14 10 -26 -2 q-4 -22 -2 -36z" fill="${tonla(c,1.2)}"/>`,
+  masalC:  (c,c2) => govdeUst(c,412) + `<path d="M150 424 C172 436 228 436 250 424 L276 486 C282 502 246 512 200 512 C154 512 118 502 124 486 Z" fill="${c}"/>
+     <g fill="${tonla(c,1.5)}" opacity=".85">${[[150,470],[200,486],[250,470],[172,440],[228,440]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="9"/>`).join("")}</g>
+     <path d="M146 404 h108" stroke="${c2}" stroke-width="12" stroke-linecap="round"/>`
+};
+/* ---------- CORAP (5) ---------- */
+function corapCiz(c, ust) {
+  return `<path d="M176 ${ust} C175 505 175 516 176 526" stroke="${c}" stroke-width="38" fill="none" stroke-linecap="round"/>
+          <path d="M224 ${ust} C225 505 225 516 224 526" stroke="${c}" stroke-width="38" fill="none" stroke-linecap="round"/>`;
+}
+const CORAPLAR = {
+  kisa:   (c,c2) => corapCiz(c, 512),
+  orta:   (c,c2) => corapCiz(c, 486),
+  uzun:   (c,c2) => corapCiz(c, 452),
+  cizgili:(c,c2) => corapCiz(c, 452) + `<g stroke="${tonla(c,1.5)}" stroke-width="6" opacity=".9">
+     <path d="M158 464 h36M206 464 h36M158 486 h36M206 486 h36M158 508 h36M206 508 h36"/></g>`,
+  firfir: (c,c2) => corapCiz(c, 486) + `<path d="M157 484 q9 -10 19 0 q10 -10 19 0M205 484 q9 -10 19 0 q10 -10 19 0" stroke="${tonla(c,1.4)}" stroke-width="6" fill="none" stroke-linecap="round"/>`
+};
+/* ---------- AYAKKABILAR (10) ---------- */
+function ayakkabiCift(f) { return `<g transform="translate(172,545)">${f(-1)}</g><g transform="translate(228,545)">${f(1)}</g>`; }
+const AYAKKABILAR = {
+  spor:   (c,c2) => ayakkabiCift(s => `<rect x="-27" y="-18" width="54" height="26" rx="12" fill="${c}"/>
+     <rect x="-29" y="2" width="58" height="14" rx="7" fill="#FFFFFF"/>
+     <path d="M-14 -12 L10 -2M-14 -2 L10 8" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>`),
+  sporYuksek:(c,c2)=> ayakkabiCift(s => `<rect x="-26" y="-34" width="52" height="42" rx="13" fill="${c}"/>
+     <rect x="-29" y="2" width="58" height="14" rx="7" fill="#FFFFFF"/>
+     <path d="M-12 -26 L8 -18M-12 -16 L8 -8M-12 -6 L8 2" stroke="#FFFFFF" stroke-width="3.6" stroke-linecap="round"/>`),
+  sporRenkli:(c,c2)=> ayakkabiCift(s => `<rect x="-27" y="-18" width="54" height="26" rx="12" fill="${c}"/>
+     <rect x="-29" y="2" width="58" height="14" rx="7" fill="${c2}"/>
+     <circle cx="${s*8}" cy="-6" r="7" fill="#FFFFFF"/>`),
+  bot:    (c,c2) => ayakkabiCift(s => `<rect x="-25" y="-52" width="50" height="60" rx="14" fill="${c}"/>
+     <rect x="-28" y="2" width="56" height="14" rx="7" fill="${tonla(c,.65)}"/>
+     <rect x="-25" y="-46" width="50" height="9" rx="4.5" fill="${tonla(c,1.3)}"/>`),
+  botKurk:(c,c2) => ayakkabiCift(s => `<rect x="-25" y="-48" width="50" height="56" rx="14" fill="${c}"/>
+     <rect x="-28" y="2" width="56" height="14" rx="7" fill="${tonla(c,.65)}"/>
+     <ellipse cx="0" cy="-46" rx="27" ry="11" fill="#FFF3E2"/>`),
+  yagmurBotu:(c,c2)=>ayakkabiCift(s => `<path d="M-24 -56 h48 v50 q0 14 -14 14 h-20 q-14 0 -14 -14z" fill="${c}"/>
+     <rect x="-28" y="2" width="56" height="14" rx="7" fill="${tonla(c,.7)}"/>
+     <rect x="-24" y="-30" width="48" height="8" rx="4" fill="${c2}"/>`),
+  babet:  (c,c2) => ayakkabiCift(s => `<ellipse cx="0" cy="-2" rx="27" ry="16" fill="${c}"/>
+     <ellipse cx="0" cy="6" rx="28" ry="9" fill="${tonla(c,.7)}"/>
+     <path d="M0 -14 q-6 -7 -11 -1 q-4 6 11 14 q15 -8 11 -14 q-5 -6 -11 1z" fill="${tonla(c,1.4)}"/>`),
+  babetFiyonk:(c,c2)=>ayakkabiCift(s => `<ellipse cx="0" cy="-2" rx="27" ry="16" fill="${c}"/>
+     <ellipse cx="0" cy="6" rx="28" ry="9" fill="${tonla(c,.7)}"/>
+     <path d="M-13 -12 l10 6 -10 6z M13 -12 l-10 6 10 6z" fill="${c2}"/><circle cx="0" cy="-6" r="4" fill="${c2}"/>`),
+  sihirliBot:(c,c2)=> ayakkabiCift(s => `<path d="M-24 -54 q0 -8 8 -8 h32 q8 0 8 8 v48 q0 14 -14 14 h-20 q-14 0 -14 -14z" fill="${c}"/>
+     <rect x="-28" y="2" width="56" height="14" rx="7" fill="${tonla(c,.66)}"/>
+     <path d="M0 -40 l4.6 9.4 10.4 1.4 -7.5 7.3 1.8 10.3 -9.3 -4.9 -9.3 4.9 1.8 -10.3 -7.5 -7.3 10.4 -1.4z" fill="${tonla(c2,1.35)}"/>`),
+  peri:   (c,c2) => ayakkabiCift(s => `<ellipse cx="0" cy="-2" rx="27" ry="16" fill="${c}"/>
+     <ellipse cx="0" cy="6" rx="28" ry="9" fill="${tonla(c,.7)}"/>
+     <path d="M${s*14} -12 q14 -14 22 -6 q6 8 -8 14 q-10 4 -14 -8z" fill="${c2}" opacity=".9"/>`)
+};
+/* ---------- BASORTU (8) ---------- */
+/** Yuz acikligi — evenodd ile delinir */
+const BO_YUZ = "M200 92 C254 92 292 134 292 190 C292 248 252 292 200 292 C148 292 108 248 108 190 C108 134 146 92 200 92 Z";
+const BO_KISA = "M200 40 C280 40 336 98 336 178 C336 232 316 272 292 300 L302 336 L98 336 L108 300 C84 272 64 232 64 178 C64 98 120 40 200 40 Z";
+const BO_OMUZ = "M200 40 C280 40 336 98 336 178 C336 236 314 280 292 308 L318 372 L82 372 L108 308 C86 280 64 236 64 178 C64 98 120 40 200 40 Z";
+const BO_UZUN = "M200 40 C280 40 336 98 336 178 C336 236 313 280 291 308 L326 424 L74 424 L109 308 C87 280 64 236 64 178 C64 98 120 40 200 40 Z";
+function boGovde(d, c) { return `<path d="${d} ${BO_YUZ}" fill="${c}" fill-rule="evenodd"/>`; }
+const BASORTULER = {
+  sade:     (c, c2) => boGovde(BO_KISA, c) + `<path d="M110 296 Q200 330 290 296" fill="none" stroke="${c2}" stroke-width="7" stroke-linecap="round" opacity=".55"/>`,
+  omuz:     (c, c2) => boGovde(BO_OMUZ, c) + `<path d="M108 308 Q200 340 292 308 L318 372 L82 372 Z" fill="${c2}" opacity=".38"/>`,
+  uzun:     (c, c2) => boGovde(BO_UZUN, c) + `<path d="M78 410 L322 410 L326 424 L74 424 Z" fill="${c2}" opacity=".6"/>`,
+  bantli:   (c, c2) => boGovde(BO_KISA, c) + `<path d="M112 150 C140 108 168 92 200 92 C232 92 260 108 288 150 C258 122 230 110 200 110 C170 110 142 122 112 150 Z" fill="${c2}"/>`,
+  desenli:  (c, c2) => boGovde(BO_KISA, c) + [[112,124],[152,80],[248,80],[288,124],[96,196],[304,196],[126,268],[274,268],[200,54]]
+              .map(q => `<circle cx="${q[0]}" cy="${q[1]}" r="9" fill="${c2}" opacity=".75"/>`).join(""),
+  fiyonklu: (c, c2) => boGovde(BO_KISA, c) + `<g transform="translate(300,142)">
+              <path d="M0 0 C-26 -24 -52 -18 -50 4 C-48 24 -22 24 0 0 Z" fill="${c2}"/>
+              <path d="M0 0 C26 -24 52 -18 50 4 C48 24 22 24 0 0 Z" fill="${c2}"/>
+              <circle cx="0" cy="2" r="11" fill="${c}"/></g>`,
+  cicekli:  (c, c2) => boGovde(BO_KISA, c) + [[294,134,1],[268,96,.76],[306,180,.6]].map(q =>
+              `<g transform="translate(${q[0]},${q[1]}) scale(${q[2]})">` +
+              [0,1,2,3,4].map(i => `<ellipse cx="0" cy="-15" rx="9" ry="14" fill="${c2}" transform="rotate(${i * 72})"/>`).join("") +
+              `<circle r="8" fill="#FFCE5C"/></g>`).join(""),
+  katli:    (c, c2) => boGovde(BO_KISA, c) + `<path d="M200 76 C262 76 304 126 304 190 C304 258 258 306 200 306 C142 306 96 258 96 190 C96 126 138 76 200 76 Z ${BO_YUZ}" fill="${c2}" fill-rule="evenodd"/>`
+};
+
+/* ---------- SAPKA / TAC (7) ---------- */
+const SAPKALAR = {
+  bere:   (c,c2) => `<path d="M118 108 C118 62 156 34 200 34 C244 34 282 62 282 108 C282 122 250 130 200 130 C150 130 118 122 118 108 Z" fill="${c}"/>
+     <circle cx="200" cy="30" r="12" fill="${tonla(c,1.3)}"/>`,
+  kasket: (c,c2) => `<path d="M118 106 C118 58 154 30 200 30 C246 30 282 58 282 106 L282 112 C282 120 250 126 200 126 C150 126 118 120 118 112 Z" fill="${c}"/>
+     <path d="M118 110 C90 112 62 122 56 136 C74 148 116 148 140 138 C132 126 124 116 118 110 Z" fill="${tonla(c,.78)}"/>
+     <circle cx="200" cy="28" r="9" fill="${c2}"/>`,
+  hasir:  (c,c2) => `<ellipse cx="200" cy="112" rx="140" ry="34" fill="${c}"/>
+     <path d="M136 108 C136 62 164 36 200 36 C236 36 264 62 264 108 Z" fill="${tonla(c,1.12)}"/>
+     <path d="M136 96 q64 18 128 0" stroke="${c2}" stroke-width="12" fill="none"/>`,
+  bone:   (c,c2) => `<path d="M116 110 C116 58 154 28 200 28 C246 28 284 58 284 110 C284 124 250 132 200 132 C150 132 116 124 116 110 Z" fill="${c}"/>
+     <rect x="112" y="104" width="176" height="24" rx="12" fill="${tonla(c,1.22)}"/>
+     <circle cx="200" cy="20" r="17" fill="${tonla(c,1.3)}"/>`,
+  partiSapka:(c,c2)=>`<path d="M200 4 L252 106 L148 106 Z" fill="${c}"/>
+     <path d="M200 4 L252 106 L200 106 Z" fill="${tonla(c,.82)}"/>
+     <circle cx="200" cy="2" r="12" fill="${c2}"/>
+     <g fill="${c2}"><circle cx="176" cy="76" r="6"/><circle cx="222" cy="86" r="6"/><circle cx="200" cy="54" r="6"/></g>`,
+  tac:    (c,c2) => `<path d="M136 108 L146 46 L172 78 L200 34 L228 78 L254 46 L264 108 Z" fill="${c}"/>
+     <rect x="132" y="104" width="136" height="16" rx="8" fill="${tonla(c,.82)}"/>
+     <g fill="${c2}"><circle cx="146" cy="44" r="8"/><circle cx="200" cy="32" r="9"/><circle cx="254" cy="44" r="8"/><circle cx="200" cy="112" r="7"/></g>`,
+  yildizTac:(c,c2)=>`<path d="M130 110 C130 78 160 58 200 58 C240 58 270 78 270 110 Z" fill="${c}" opacity=".92"/>
+     <rect x="126" y="106" width="148" height="16" rx="8" fill="${tonla(c,.82)}"/>
+     ${[[160,74,12],[200,52,17],[240,74,12]].map(p=>`<path d="M${p[0]} ${p[1]-p[2]} l${p[2]*0.36} ${p[2]*0.72} ${p[2]*0.8} ${p[2]*0.12} -${p[2]*0.58} ${p[2]*0.56} ${p[2]*0.14} ${p[2]*0.8} -${p[2]*0.72} -${p[2]*0.38} -${p[2]*0.72} ${p[2]*0.38} ${p[2]*0.14} -${p[2]*0.8} -${p[2]*0.58} -${p[2]*0.56} ${p[2]*0.8} -${p[2]*0.12}z" fill="${c2}"/>`).join("")}`
+};
+/* ---------- GOZLUK (3) ---------- */
+const GOZLUKLER = {
+  yuvarlak:(c,c2) => `<g fill="none" stroke="${c}" stroke-width="7">
+     <circle cx="157" cy="198" r="34"/><circle cx="243" cy="198" r="34"/><path d="M191 196 q9 -8 18 0"/><path d="M123 192 L98 186M277 192 L302 186"/></g>
+     <g fill="#FFFFFF" opacity=".28"><circle cx="157" cy="198" r="30"/><circle cx="243" cy="198" r="30"/></g>`,
+  kalp:    (c,c2) => `<g fill="${c}" opacity=".85">
+     <path d="M157 176 q-13 -14 -24 -1 q-10 13 24 38 q34 -25 24 -38 q-11 -13 -24 1z"/>
+     <path d="M243 176 q-13 -14 -24 -1 q-10 13 24 38 q34 -25 24 -38 q-11 -13 -24 1z"/></g>
+     <path d="M186 192 h28M124 186 L98 180M276 186 L302 180" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round"/>`,
+  gunes:   (c,c2) => `<g fill="${c}">
+     <path d="M120 176 h74 q6 0 6 8 q0 30 -22 34 q-32 6 -48 -14 q-14 -16 -16 -22 q-2 -6 6 -6z"/>
+     <path d="M280 176 h-74 q-6 0 -6 8 q0 30 22 34 q32 6 48 -14 q14 -16 16 -22 q2 -6 -6 -6z"/></g>
+     <path d="M118 176 L96 170M282 176 L304 170" stroke="${c}" stroke-width="7" stroke-linecap="round"/>
+     <g fill="#FFFFFF" opacity=".4"><path d="M132 184 l14 0 -18 20 -10 -8z"/><path d="M218 184 l14 0 -18 20 -10 -8z"/></g>`
+};
+/* ---------- KOLYE (3) ---------- */
+const KOLYELER = {
+  inci:  (c,c2) => `<path d="M172 302 q28 30 56 0" fill="none" stroke="${c}" stroke-width="3.4"/>
+     <g fill="${c}">${[[176,308],[186,318],[200,322],[214,318],[224,308]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="6"/>`).join("")}</g>`,
+  kalpli:(c,c2) => `<path d="M176 300 q24 28 48 0" fill="none" stroke="${c}" stroke-width="3.4"/>
+     <path d="M200 318 q-9 -10 -16 -1 q-6 9 16 26 q22 -17 16 -26 q-7 -9 -16 1z" fill="${c2}"/>`,
+  yildizli:(c,c2)=> `<path d="M176 300 q24 28 48 0" fill="none" stroke="${c}" stroke-width="3.4"/>
+     <path d="M200 316 l6 12 13 2 -9.5 9.5 2.2 13 -11.7 -6.2 -11.7 6.2 2.2 -13 -9.5 -9.5 13 -2z" fill="${c2}"/>`
+};
+/* ---------- KUPE (2) ---------- */
+const KUPELER = {
+  damla:(c,c2) => `<g fill="${c}"><circle cx="90" cy="216" r="7"/><circle cx="310" cy="216" r="7"/>
+     <path d="M90 222 q-8 12 0 20 q8 -8 0 -20z"/><path d="M310 222 q-8 12 0 20 q8 -8 0 -20z"/></g>`,
+  halka:(c,c2) => `<g fill="none" stroke="${c}" stroke-width="5"><circle cx="90" cy="228" r="13"/><circle cx="310" cy="228" r="13"/></g>`
+};
+/* ---------- SIHIR (8) ---------- */
+const SIHIRLER = {
+  periKanat:(c,c2) => ({ arka: `<g opacity=".8">
+     <path d="M162 330 C120 282 62 280 44 322 C30 356 62 400 112 402 C146 404 162 376 164 356 Z" fill="${c}"/>
+     <path d="M238 330 C280 282 338 280 356 322 C370 356 338 400 288 402 C254 404 238 376 236 356 Z" fill="${c}"/>
+     <path d="M158 346 C124 314 86 312 70 336M242 346 C276 314 314 312 330 336" stroke="${tonla(c,1.4)}" stroke-width="5" fill="none"/></g>`, on:"" }),
+  melekKanat:(c,c2) => ({ arka: `<g>
+     <path d="M164 328 C130 276 78 262 52 292 C28 320 48 372 96 396 C130 412 162 392 166 362 Z" fill="#FFFFFF"/>
+     <path d="M236 328 C270 276 322 262 348 292 C372 320 352 372 304 396 C270 412 238 392 234 362 Z" fill="#FFFFFF"/>
+     <g stroke="${c}" stroke-width="4" fill="none" opacity=".45">
+       <path d="M150 348 C120 320 88 306 66 312M156 372 C126 356 100 348 76 350"/>
+       <path d="M250 348 C280 320 312 306 334 312M244 372 C274 356 300 348 324 350"/></g></g>`, on:"" }),
+  kelebekKanat:(c,c2)=>({ arka: `<g opacity=".85">
+     <path d="M164 326 C126 268 66 264 46 300 C28 334 68 366 112 358 C90 384 106 414 138 408 C160 404 168 378 166 356 Z" fill="${c}"/>
+     <path d="M236 326 C274 268 334 264 354 300 C372 334 332 366 288 358 C310 384 294 414 262 408 C240 404 232 378 234 356 Z" fill="${c}"/>
+     <g fill="${tonla(c,1.45)}" opacity=".8"><circle cx="92" cy="308" r="12"/><circle cx="308" cy="308" r="12"/><circle cx="124" cy="386" r="8"/><circle cx="276" cy="386" r="8"/></g></g>`, on:"" }),
+  kediKuyruk:(c,c2) => ({ arka: `<path d="M252 430 C300 428 328 396 322 350 C318 320 336 306 352 318" stroke="${c}" stroke-width="22" fill="none" stroke-linecap="round"/>
+     <path d="M336 312 C348 306 358 314 356 326" stroke="${tonla(c,1.5)}" stroke-width="22" fill="none" stroke-linecap="round"/>`, on:"" }),
+  yildizKuyruk:(c,c2)=>({ arka: `<path d="M252 432 C302 434 336 408 344 366" stroke="${c}" stroke-width="18" fill="none" stroke-linecap="round" opacity=".9"/>
+     <g fill="${tonla(c,1.35)}">${[[344,352,15],[318,398,10],[286,424,8]].map(p=>`<path d="M${p[0]} ${p[1]-p[2]} l${p[2]*.36} ${p[2]*.72} ${p[2]*.8} ${p[2]*.12} -${p[2]*.58} ${p[2]*.56} ${p[2]*.14} ${p[2]*.8} -${p[2]*.72} -${p[2]*.38} -${p[2]*.72} ${p[2]*.38} ${p[2]*.14} -${p[2]*.8} -${p[2]*.58} -${p[2]*.56} ${p[2]*.8} -${p[2]*.12}z"/>`).join("")}</g>`, on:"" }),
+  aura:(c,c2) => ({ arka: `<circle cx="200" cy="300" r="200" fill="${c}" opacity=".16"/><circle cx="200" cy="300" r="150" fill="${c}" opacity=".14"/>`, on:"" }),
+  hale:(c,c2) => ({ arka: "", on: `<ellipse cx="200" cy="34" rx="62" ry="16" fill="none" stroke="${c}" stroke-width="10" opacity=".9"/>
+     <ellipse cx="200" cy="34" rx="62" ry="16" fill="none" stroke="#FFFFFF" stroke-width="3.4" opacity=".7"/>` }),
+  yildizYagmuru:(c,c2)=>({ arka: "", on: `<g fill="${c}" opacity=".92">${[[74,120,13],[326,140,11],[58,266,9],[344,282,12],[96,64,8],[300,58,10],[122,332,8],[292,352,7]]
+     .map(p=>`<path d="M${p[0]} ${p[1]-p[2]} l${p[2]*.36} ${p[2]*.72} ${p[2]*.8} ${p[2]*.12} -${p[2]*.58} ${p[2]*.56} ${p[2]*.14} ${p[2]*.8} -${p[2]*.72} -${p[2]*.38} -${p[2]*.72} ${p[2]*.38} ${p[2]*.14} -${p[2]*.8} -${p[2]*.58} -${p[2]*.56} ${p[2]*.8} -${p[2]*.12}z"/>`).join("")}</g>` })
+};
+/* ---------- EL AKSESUARI (4) ---------- */
+/** Eller disa acildi; aksesuarlar avuca otursun diye kaydirilir */
+const EL_SOL = s => `<g transform="translate(-10,2)">${s}</g>`;
+const EL_SAG = s => `<g transform="translate(10,2)">${s}</g>`;
+const ELLER = {
+  canta: (c,c2) => EL_SOL(`<g><path d="M96 424 q0 -10 10 -10 h34 q10 0 10 10 v26 q0 10 -10 10 h-34 q-10 0 -10 -10z" fill="${c}"/>
+     <path d="M108 416 q0 -14 15 -14 q15 0 15 14" fill="none" stroke="${tonla(c,.7)}" stroke-width="5"/>
+     <circle cx="123" cy="436" r="7" fill="${c2}"/></g>`),
+  balon: (c,c2) => EL_SAG(`<path d="M300 382 Q292 400 270 414" fill="none" stroke="${tonla(c,.7)}" stroke-width="3.4" stroke-linecap="round"/>
+     <path d="M274 356 C266 324 280 300 300 300 C320 300 334 324 326 356 C320 376 280 376 274 356 Z" fill="${c}"/>
+     <path d="M300 374 l-7 10 14 0 z" fill="${tonla(c,.78)}"/>
+     <ellipse cx="290" cy="322" rx="8" ry="12" fill="#FFFFFF" opacity=".45" transform="rotate(-18 290 322)"/>`),
+  asaEl: (c,c2) => EL_SAG(`<path d="M272 414 L308 350" stroke="${tonla(c,.7)}" stroke-width="8" stroke-linecap="round"/>
+     <path d="M312 322 l8 18 20 3 -14 14 3 20 -18 -10 -18 10 3 -20 -14 -14 20 -3z" fill="${c}"/>`),
+  ayicik:(c,c2) => EL_SOL(`<g transform="translate(106,412)"><circle cx="0" cy="0" r="26" fill="${c}"/>
+     <circle cx="-18" cy="-20" r="10" fill="${c}"/><circle cx="18" cy="-20" r="10" fill="${c}"/>
+     <ellipse cx="0" cy="6" rx="13" ry="10" fill="${tonla(c,1.3)}"/>
+     <circle cx="-8" cy="-4" r="3.4" fill="#3B2C4E"/><circle cx="8" cy="-4" r="3.4" fill="#3B2C4E"/>
+     <ellipse cx="0" cy="2" rx="4" ry="3" fill="#3B2C4E"/></g>`)
+};
+
+/* ==========================================================================
+   ARKA PLANLAR (8) — 400 x 620, slice ile hem editorde hem fotografta calisir
+   ========================================================================== */
+function bulut(x,y,s,o){ return `<g transform="translate(${x},${y}) scale(${s})" opacity="${o||1}"><ellipse cx="0" cy="0" rx="46" ry="26" fill="#fff"/><ellipse cx="-32" cy="8" rx="30" ry="20" fill="#fff"/><ellipse cx="32" cy="8" rx="32" ry="20" fill="#fff"/></g>`; }
+function yildizP(x,y,r,c,o){ return `<path d="M${x} ${y-r} l${r*.36} ${r*.72} ${r*.8} ${r*.12} -${r*.58} ${r*.56} ${r*.14} ${r*.8} -${r*.72} -${r*.38} -${r*.72} ${r*.38} ${r*.14} -${r*.8} -${r*.58} -${r*.56} ${r*.8} -${r*.12}z" fill="${c}" opacity="${o==null?1:o}"/>`; }
+const ARKAPLANLAR = {
+  oda: () => `<rect width="400" height="620" fill="#FBE3EC"/>
+    <rect y="430" width="400" height="190" fill="#E3B892"/>
+    <path d="M0 430 h400 v10 H0z" fill="#C89A72"/>
+    <g stroke="#F3CBDA" stroke-width="3"><path d="M40 0v430M120 0v430M200 0v430M280 0v430M360 0v430"/></g>
+    <g><rect x="26" y="120" width="96" height="72" rx="8" fill="#FFF7EE" stroke="#D9AFC0" stroke-width="6"/>
+      <path d="M32 180 l26 -30 22 22 18 -16 26 24z" fill="#9FD8C0"/><circle cx="96" cy="146" r="10" fill="#FFD98A"/></g>
+    <g transform="translate(300,300)"><rect x="-52" y="-40" width="104" height="130" rx="14" fill="#F6C9DA"/>
+      <rect x="-40" y="-26" width="80" height="46" rx="10" fill="#FFF"/>
+      <circle cx="0" cy="60" r="22" fill="#FFE0B2"/></g>
+    <ellipse cx="200" cy="596" rx="150" ry="22" fill="#D9A783" opacity=".55"/>`,
+  bahce: () => `<linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9FD8F5"/><stop offset="1" stop-color="#D8F0FB"/></linearGradient>
+    <rect width="400" height="620" fill="url(#bg1)"/>
+    <circle cx="330" cy="80" r="46" fill="#FFDE7A"/><circle cx="330" cy="80" r="62" fill="#FFDE7A" opacity=".3"/>
+    ${bulut(90,110,1,.9)}${bulut(300,190,.7,.75)}
+    <path d="M0 470 q100 -50 200 -10 q100 40 200 -10 v170 H0z" fill="#8ED27A"/>
+    <path d="M0 520 q120 -30 200 5 q90 38 200 -5 v100 H0z" fill="#6FBD5E"/>
+    <g transform="translate(64,430)"><rect x="-7" y="0" width="14" height="70" fill="#5FA34F"/>
+      <g fill="#FF9CC0">${[0,1,2,3,4].map(i=>`<circle cx="${Math.cos(i*1.2566)*22}" cy="${Math.sin(i*1.2566)*22}" r="15"/>`).join("")}</g><circle r="12" fill="#FFDE7A"/></g>
+    <g transform="translate(340,460)"><rect x="-6" y="0" width="12" height="60" fill="#5FA34F"/>
+      <g fill="#FFF3A8">${[0,1,2,3,4,5].map(i=>`<circle cx="${Math.cos(i*1.047)*18}" cy="${Math.sin(i*1.047)*18}" r="12"/>`).join("")}</g><circle r="10" fill="#FFAE5C"/></g>
+    <g fill="#FFFFFF" opacity=".7">${[[140,300],[250,250],[190,360]].map(p=>`<ellipse cx="${p[0]}" cy="${p[1]}" rx="9" ry="6"/>`).join("")}</g>`,
+  sekerDiyari: () => `<linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD3E8"/><stop offset="1" stop-color="#FFF0D8"/></linearGradient>
+    <rect width="400" height="620" fill="url(#bg2)"/>
+    ${bulut(80,90,.9,.85)}${bulut(320,160,.65,.7)}
+    <path d="M0 500 q60 -60 110 0 q60 -70 120 0 q60 -60 110 0 q40 -30 60 -10 v130 H0z" fill="#FFB3D4"/>
+    <path d="M0 545 q80 -40 140 0 q70 -40 140 0 q60 -30 120 0 v75 H0z" fill="#F98BB8"/>
+    <g transform="translate(70,380)"><rect x="-4" y="0" width="8" height="86" fill="#F4E3D0"/>
+      <circle cy="-14" r="30" fill="#FFF"/><path d="M-30 -14 a30 30 0 0 1 60 0 z" fill="#FF7BA9"/>
+      <g stroke="#FF7BA9" stroke-width="7" fill="none"><path d="M-26 0 a26 26 0 0 0 52 0"/></g></g>
+    <g transform="translate(332,330)"><path d="M0 -34 l30 52 -60 0z" fill="#F9C87A"/><circle cy="-40" r="22" fill="#FFF"/>
+      <circle cx="-10" cy="-48" r="13" fill="#FFB3D4"/><circle cx="12" cy="-46" r="14" fill="#B9E8DC"/></g>
+    <g>${[[150,220,10],[260,300,8],[110,300,7],[300,240,9]].map(p=>yildizP(p[0],p[1],p[2],"#FFFFFF",.75)).join("")}</g>`,
+  saray: () => `<linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FA8E8"/><stop offset="1" stop-color="#DCC8F2"/></linearGradient>
+    <rect width="400" height="620" fill="url(#bg3)"/>
+    ${bulut(310,90,.7,.6)}
+    <g fill="#F3EAFB">
+      <rect x="30" y="240" width="70" height="260"/><rect x="300" y="240" width="70" height="260"/><rect x="120" y="290" width="160" height="210"/>
+      <path d="M22 240 L65 160 L108 240z"/><path d="M292 240 L335 160 L378 240z"/><path d="M112 290 L200 200 L288 290z"/></g>
+    <g fill="#B69BE8"><rect x="52" y="300" width="26" height="42" rx="13"/><rect x="322" y="300" width="26" height="42" rx="13"/>
+      <rect x="150" y="340" width="30" height="50" rx="15"/><rect x="220" y="340" width="30" height="50" rx="15"/>
+      <path d="M176 420 q24 -26 48 0 v80 h-48z"/></g>
+    <g fill="#F2A0C4">${[[65,150],[335,150],[200,190]].map(p=>`<path d="M${p[0]} ${p[1]} l0 -22 M${p[0]} ${p[1]-22} l22 8 -22 10z"/>`).join("")}</g>
+    <rect y="500" width="400" height="120" fill="#9BD48C"/>
+    <path d="M0 500 q100 -24 200 0 q100 24 200 0 v20 H0z" fill="#B4E2A4"/>`,
+  sahil: () => `<linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FD0F2"/><stop offset=".55" stop-color="#BFEAF8"/><stop offset="1" stop-color="#FFE9BE"/></linearGradient>
+    <rect width="400" height="620" fill="url(#bg4)"/>
+    <circle cx="70" cy="90" r="40" fill="#FFE082"/>
+    ${bulut(280,110,.8,.85)}
+    <path d="M0 330 h400 v130 H0z" fill="#4EBBE0"/>
+    <g fill="#FFFFFF" opacity=".65"><path d="M10 366 q22 -12 44 0 q22 12 44 0M210 400 q22 -12 44 0 q22 12 44 0M90 434 q22 -12 44 0 q22 12 44 0"/></g>
+    <path d="M0 452 q100 -22 200 0 q100 22 200 0 v168 H0z" fill="#FBE0B0"/>
+    <g transform="translate(330,300)"><path d="M-6 0 q-4 60 2 130 h14 q-8 -70 -2 -130z" fill="#B98A56"/>
+      <g fill="#4FB96E"><path d="M0 -8 q-56 -26 -76 6 q40 -6 76 6z"/><path d="M0 -8 q56 -26 76 6 q-40 -6 -76 6z"/><path d="M0 -8 q-20 -50 18 -62 q4 40 -18 62z"/><path d="M0 -8 q26 -46 62 -30 q-30 24 -62 30z"/></g></g>
+    <g fill="#FF9CC0">${[[80,540],[140,570],[300,556]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="9"/>`).join("")}</g>`,
+  orman: () => `<linearGradient id="bg5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#CFEBC4"/><stop offset="1" stop-color="#EEF7D8"/></linearGradient>
+    <rect width="400" height="620" fill="url(#bg5)"/>
+    <g fill="#7FC178" opacity=".55">${[[40,300,66],[360,280,72],[120,240,52],[290,230,56]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}"/>`).join("")}</g>
+    ${[[46,470,1],[352,486,1.15],[122,436,.75]].map(t=>`<g transform="translate(${t[0]},${t[1]}) scale(${t[2]})">
+      <rect x="-13" y="-10" width="26" height="120" rx="8" fill="#A87A50"/>
+      <circle cy="-70" r="56" fill="#5FAE62"/><circle cx="-42" cy="-34" r="40" fill="#6DBB6C"/><circle cx="42" cy="-34" r="40" fill="#549E58"/></g>`).join("")}
+    <path d="M0 540 q100 -26 200 0 q100 26 200 0 v80 H0z" fill="#8CCB7C"/>
+    <g fill="#FFD1E0">${[[180,520,7],[236,540,6],[92,556,7]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}"/>`).join("")}</g>
+    <g fill="#FFFFFF" opacity=".55">${[[300,360],[90,380]].map(p=>`<ellipse cx="${p[0]}" cy="${p[1]}" rx="8" ry="5"/>`).join("")}</g>`,
+  geceGokyuzu: () => `<linearGradient id="bg6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26205C"/><stop offset="1" stop-color="#5B3E86"/></linearGradient>
+    <rect width="400" height="620" fill="url(#bg6)"/>
+    <g>${[[40,60,9],[120,120,6],[330,70,10],[280,160,7],[70,220,7],[360,240,8],[180,80,7],[240,40,6],[100,320,5],[320,340,6]]
+      .map(p=>yildizP(p[0],p[1],p[2],"#FFF6C8",.95)).join("")}</g>
+    <g transform="translate(310,140)"><circle r="42" fill="#FFF1C0"/><circle cx="-16" cy="-10" r="9" fill="#EFDDA8" opacity=".7"/><circle cx="12" cy="14" r="7" fill="#EFDDA8" opacity=".7"/></g>
+    <path d="M0 470 q80 -70 160 -20 q90 56 240 -30 v200 H0z" fill="#3B2E70"/>
+    <path d="M0 530 q120 -50 220 0 q90 44 180 -14 v104 H0z" fill="#2C2258"/>
+    <g fill="#FFFFFF" opacity=".2">${[[150,420,26],[280,440,20]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}"/>`).join("")}</g>`,
+  kis: () => `<linearGradient id="bg7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#AFD8F2"/><stop offset="1" stop-color="#F0F8FF"/></linearGradient>
+    <rect width="400" height="620" fill="url(#bg7)"/>
+    <g fill="#FFFFFF" opacity=".9">${[[60,80],[150,50],[250,110],[340,60],[100,190],[300,220],[200,160],[40,270],[360,300]]
+      .map(p=>`<g transform="translate(${p[0]},${p[1]})"><g stroke="#FFF" stroke-width="3.4" stroke-linecap="round"><path d="M0 -11 v22M-9.5 -5.5 L9.5 5.5M-9.5 5.5 L9.5 -5.5"/></g></g>`).join("")}</g>
+    <path d="M0 430 q90 -70 180 -14 q90 54 220 -20 v224 H0z" fill="#E4F1FB"/>
+    <path d="M0 500 q110 -40 210 4 q90 40 190 -14 v130 H0z" fill="#FFFFFF"/>
+    ${[[54,470,.9],[344,492,1]].map(t=>`<g transform="translate(${t[0]},${t[1]}) scale(${t[2]})">
+      <rect x="-10" y="0" width="20" height="70" rx="6" fill="#9C7350"/>
+      <path d="M0 -84 L36 -20 -36 -20z" fill="#4E9A66"/><path d="M0 -54 L46 20 -46 20z" fill="#5FAE72"/></g>`).join("")}
+    <ellipse cx="200" cy="600" rx="160" ry="20" fill="#DCEBF7"/>`
+};
+
+/* ==========================================================================
+   KARAKTER BIRLESTIRICI
+   ========================================================================== */
+function paletAl(p, id, yedek) { const b = p.find(x => x.id === id); return b ? b.h : (p.find(x => x.id === yedek) || p[0]).h; }
+
+/* --- Gradyan defteri: duz renkleri tek isik kaynagina gore hacimlendirir --- */
+const ISIK_BOLGE = {
+  ten:  [108,  60, 302, 540],
+  bas:  [112,  44, 300, 330],
+  ust:  [138, 288, 288, 448],
+  alt:  [136, 402, 290, 552],
+  ayak: [148, 512, 262, 588],
+  goz:  [190, 172, 214, 228],
+  tam:  [110,  40, 302, 560]
+};
+const SURUM = "1.4";
+let GR_SAYAC = 0;
+function gradDefteri() {
+  const onek = "mg" + (++GR_SAYAC) + "_", tanim = [], harita = {};
+  return {
+    /** markup icindeki ana rengi, ayni renkten turetilmis gradyanla degistirir */
+    boya(markup, hex, bolge) {
+      if (!markup || !hex || hex.charAt(0) !== "#") return markup;
+      const anahtar = bolge + hex;
+      let url = harita[anahtar];
+      if (!url) {
+        const id = onek + tanim.length, z = ISIK_BOLGE[bolge] || ISIK_BOLGE.tam;
+        tanim.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${z[0]}" y1="${z[1]}" x2="${z[2]}" y2="${z[3]}">` +
+          `<stop offset="0" stop-color="${tonla(hex, 1.17)}"/><stop offset=".5" stop-color="${hex}"/><stop offset="1" stop-color="${tonla(hex, .83)}"/></linearGradient>`);
+        url = harita[anahtar] = "url(#" + id + ")";
+      }
+      return markup.split('fill="' + hex + '"').join('fill="' + url + '"')
+                   .split('stroke="' + hex + '"').join('stroke="' + url + '"');
+    },
+    /** Yanak gibi parcalar icin kenarlari eriyen yumusak leke */
+    yumusat(markup, hex) {
+      if (!markup || !hex) return markup;
+      const anahtar = "y" + hex;
+      let url = harita[anahtar];
+      if (!url) {
+        const id = onek + tanim.length;
+        tanim.push(`<radialGradient id="${id}" cx=".5" cy=".45" r=".62">` +
+          `<stop offset="0" stop-color="${hex}" stop-opacity="1"/><stop offset=".55" stop-color="${hex}" stop-opacity=".82"/>` +
+          `<stop offset="1" stop-color="${hex}" stop-opacity="0"/></radialGradient>`);
+        url = harita[anahtar] = "url(#" + id + ")";
+      }
+      return markup.split('fill="' + hex + '"').join('fill="' + url + '"');
+    },
+    defs() { return tanim.length ? "<defs>" + tanim.join("") + "</defs>" : ""; }
+  };
+}
+
+function karakterKatmanlari(k) {
+  const GD = gradDefteri();
+  const ten  = paletAl(TENLER, k.ten, "t2"), tenK = tonla(ten, .84);
+  const sacC = paletAl(SAC_RENK, k.sacRenk, "s2"), sacK = tonla(sacC, .7);
+  const gozC = paletAl(GOZ_RENK, k.gozRenk, "g5");
+  const kv = (id, yedek) => paletAl(KUMAS, id, yedek || "k1");
+  const ortulu = !!(k.basortu && BASORTULER[k.basortu]);
+  const sac = (!ortulu && SACLAR[k.sacStil]) ? SACLAR[k.sacStil](sacC, sacK) : { arka: "", on: "" };
+  const sihir = k.sihir && SIHIRLER[k.sihir] ? SIHIRLER[k.sihir](kv(k.sihirRenk, "k8"), tonla(kv(k.sihirRenk, "k8"), .7)) : { arka: "", on: "" };
+  const elbiseVar = !!(k.elbise && ELBISELER[k.elbise]);
+  const par = (c, s) => `<g transform="translate(${c[0]},${c[1]})">${s}</g>`;
+  const kat = [];
+  const ek = (ad, s) => { if (s) kat.push([ad, s]); };
+  /** Parcayi once gradyanla hacimlendirip ekler */
+  const ekG = (ad, s, hex, bolge) => ek(ad, GD.boya(s, hex, bolge));
+
+  ek("golge", YER_GOLGE);
+  ek("sihirArka", sihir.arka);
+  ekG("arkaSac", sac.arka, sacC, "bas");
+  ekG("bacak", cizBacak(ten), ten, "ten");
+  ekG("ayak", cizAyak(ten, tenK), ten, "ten");
+  if (k.corap && CORAPLAR[k.corap]) ekG("corap", CORAPLAR[k.corap](kv(k.corapRenk, "k10")), kv(k.corapRenk, "k10"), "ayak");
+  if (k.ayakkabi && AYAKKABILAR[k.ayakkabi]) ekG("ayakkabi", AYAKKABILAR[k.ayakkabi](kv(k.ayakkabiRenk, "k1"), kv(k.ayakkabiRenk2 || "k3", "k3")), kv(k.ayakkabiRenk, "k1"), "ayak");
+  ekG("govde", `<path d="${bicimGovde(k.govde | 0)}" fill="${ten}"/>` + cizKol(ten, tenK), ten, "ten");
+  ekG("boyun", `<rect x="180" y="256" width="40" height="52" rx="18" fill="${tenK}"/>`, tenK, "ten");
+  if (!elbiseVar) {
+    if (k.alt && ALTLAR[k.alt]) {
+      const ca = kv(k.altRenk, "k7");
+      // Bel dolgusu: ust ile alt arasinda ten bosluğu kalmasin
+      ekG("alt", BEL_DOLGU(ca) + ALTLAR[k.alt](ca, vurguRenk(ca)), ca, "alt");
+    }
+    if (k.ust && USTLER[k.ust]) ekG("ust", USTLER[k.ust](kv(k.ustRenk, "k6"), vurguRenk(kv(k.ustRenk, "k6"))), kv(k.ustRenk, "k6"), "ust");
+  } else {
+    ekG("elbise", ELBISELER[k.elbise](kv(k.elbiseRenk, "k9"), vurguRenk(kv(k.elbiseRenk, "k9"))), kv(k.elbiseRenk, "k9"), "ust");
+  }
+  ekG("kafa", cizKafa(ten, tenK), ten, "ten");
+  ek("yuz",
+    par([G.eyeLX, G.browY], cizKas(k.kas | 0, tonla(sacC, .78))) +
+    par([G.eyeRX, G.browY], `<g transform="scale(-1,1)">${cizKas(k.kas | 0, tonla(sacC, .78))}</g>`) +
+    par([G.eyeLX, G.eyeY], cizGoz(k.goz | 0, gozC)) +
+    par([G.eyeRX, G.eyeY], `<g transform="scale(-1,1)">${cizGoz(k.goz | 0, gozC)}</g>`) +
+    cizBurun(tenK) +
+    par([200, G.mouthY], cizAgiz(k.agiz | 0)) +
+    cizYanak(k.yanak | 0, 130) + cizYanak(k.yanak | 0, 270));
+  // Iris hacim kazansin, yanak kenarlari erisin
+  kat[kat.length - 1][1] = GD.yumusat(GD.boya(kat[kat.length - 1][1], gozC, "goz"), "#FF8FA8");
+  ekG("onSac", sac.on + (sac.on ? SAC_PARLAK : ""), sacC, "bas");
+  if (ortulu) ekG("basortu", BASORTULER[k.basortu](kv(k.basortuRenk, "k9"), vurguRenk(kv(k.basortuRenk, "k9"))) + BAS_PARLAK, kv(k.basortuRenk, "k9"), "bas");
+  if (k.gozluk && GOZLUKLER[k.gozluk]) ek("gozluk", GOZLUKLER[k.gozluk](kv(k.gozlukRenk, "k11"), "#fff"));
+  if (k.kupe && !ortulu && KUPELER[k.kupe]) ek("kupe", KUPELER[k.kupe](kv(k.kupeRenk, "k3"), "#fff"));
+  if (k.kolye && KOLYELER[k.kolye]) ek("kolye", KOLYELER[k.kolye](kv(k.kolyeRenk, "k3"), vurguRenk(kv(k.kolyeRenk, "k3"))));
+  if (k.sapka && SAPKALAR[k.sapka]) ekG("sapka", SAPKALAR[k.sapka](kv(k.sapkaRenk, "k1"), vurguRenk(kv(k.sapkaRenk, "k1"))), kv(k.sapkaRenk, "k1"), "bas");
+  if (k.el && ELLER[k.el]) ekG("el", ELLER[k.el](kv(k.elRenk, "k1"), vurguRenk(kv(k.elRenk, "k1"))), kv(k.elRenk, "k1"), "alt");
+  ek("sihirOn", sihir.on);
+  kat.unshift(["__defs", GD.defs()]);
+  return kat;
+}
+
+/**
+ * Karakteri SVG olarak uretir.
+ * @param {object} k karakter durumu
+ * @param {object} o {viewBox, sadece:[katmanAdi], sinif, id, golge}
+ */
+function cizKarakter(k, o) {
+  o = o || {};
+  const vb = o.viewBox || TAM_KADRAJ;
+  const tum = karakterKatmanlari(k);
+  const tanim = (tum.find(x => x[0] === "__defs") || ["", ""])[1];
+  const katmanlar = tum.filter(x => x[0] !== "__defs");
+  const suz = o.sadece ? katmanlar.filter(x => o.sadece.indexOf(x[0]) >= 0) : katmanlar;
+  const govde = suz.map(x => `<g data-katman="${x[0]}">${x[1]}</g>`).join("");
+  return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg"${o.id ? ` id="${o.id}"` : ""}${o.sinif ? ` class="${o.sinif}"` : ""} preserveAspectRatio="xMidYMid meet" role="img" aria-label="karakter">${tanim}${govde}</svg>`;
+}
+let AP_SAYAC = 0;
+/** Her zemine ust isik + kenar vinyeti ekler; duz renk yerine derinlik verir */
+function zeminDerinlik() {
+  const o = "ap" + (++AP_SAYAC) + "_";
+  return `<defs>
+    <radialGradient id="${o}isik" cx=".5" cy=".08" r=".85">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".34"/>
+      <stop offset=".55" stop-color="#FFFFFF" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${o}vin" cx=".5" cy=".46" r=".78">
+      <stop offset=".55" stop-color="#1B1236" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1B1236" stop-opacity=".26"/></radialGradient>
+  </defs>
+  <rect width="400" height="620" fill="url(#${o}isik)"/>
+  <rect width="400" height="620" fill="url(#${o}vin)"/>`;
+}
+/** Zemindeki duz renk kutlelerini ortak isik kaynagina gore hacimlendirir */
+function zeminHacim(markup, onek) {
+  const harita = {}, tanim = [];
+  const yeni = markup.replace(/fill="(#[0-9a-fA-F]{3,6})"/g, (tam, hex) => {
+    if (!harita[hex]) {
+      const id = onek + "h" + tanim.length;
+      tanim.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="90" y1="0" x2="330" y2="620">` +
+        `<stop offset="0" stop-color="${tonla(hex, 1.11)}"/><stop offset=".48" stop-color="${hex}"/>` +
+        `<stop offset="1" stop-color="${tonla(hex, .89)}"/></linearGradient>`);
+      harita[hex] = "url(#" + id + ")";
+    }
+    return 'fill="' + harita[hex] + '"';
+  });
+  return (tanim.length ? "<defs>" + tanim.join("") + "</defs>" : "") + yeni;
+}
+function cizArkaplan(id, en, boy) {
+  const f = ARKAPLANLAR[id] || ARKAPLANLAR.bahce;
+  const onek = "ap" + (++AP_SAYAC) + "_";
+  return `<svg viewBox="0 0 400 620" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:${en||"100%"};height:${boy||"100%"}">${zeminHacim(f(), onek)}${zeminDerinlik()}</svg>`;
+}
+
+/* ==========================================================================
+   KATALOG — yeni parca eklemek icin buraya bir satir eklemek yeterli
+   ========================================================================== */
+const kIk = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+const K_IKON = {
+  body:   kIk('<circle cx="12" cy="6.6" r="3.6"/><path d="M5.6 20.4c0-3.8 2.9-6.6 6.4-6.6s6.4 2.8 6.4 6.6"/>'),
+  hair:   kIk('<path d="M4.4 13.5C4.4 7.7 8 4 12 4s7.6 3.7 7.6 9.5"/><path d="M4.4 13.5c0 3 .4 5 .4 6.5M19.6 13.5c0 3-.4 5-.4 6.5"/><path d="M7.6 10.6c3 2.4 6.4 2.4 8.8 0"/>'),
+  face:   kIk('<circle cx="12" cy="12" r="8.4"/><path d="M9 10.4v.1M15 10.4v.1" stroke-width="3"/><path d="M8.8 14.4c1.8 2 4.6 2 6.4 0"/>'),
+  top:    kIk('<path d="M9 4l3 2 3-2 4.4 2.6-1.8 4-2.2-1v10.4H8.6V9.6l-2.2 1-1.8-4z"/>'),
+  bottom: kIk('<path d="M6.6 4h10.8l1 6-2.4 10h-3.4l-.6-8-.6 8H8l-2.4-10z"/>'),
+  dress:  kIk('<path d="M9.2 3.6l2.8 2.4 2.8-2.4 1.8 3.4-2 1.8 3.6 11.6H6l3.6-11.6-2-1.8z"/>'),
+  shoes:  kIk('<path d="M3.4 16.4V8.6h3.2l1.6 2.6 3.4 1.4 6.8 1.6c1.4.3 2.2 1.2 2.2 2.2v1.6H3.4z"/><path d="M3.4 18.4h17.2"/>'),
+  acc:    kIk('<path d="M3.6 17.4L5 7.6l4.2 4L12 5.4l2.8 6.2 4.2-4-1.4 9.8z"/><path d="M3.6 19.6h16.8"/>'),
+  special:kIk('<path d="M12 3.4l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M18.6 15.6l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>'),
+  bg:     kIk('<rect x="3.4" y="5" width="17.2" height="14" rx="2.6"/><circle cx="8.6" cy="10" r="1.7"/><path d="M4 16.6l4.6-4.2 4 3.4 3.2-2.6 4.2 3.4"/>')
+};
+const YOK_TH = '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14" fill="none" stroke="#C3B6D6" stroke-width="3.4" stroke-dasharray="5 5"/><path d="M13 27L27 13" stroke="#C3B6D6" stroke-width="3.4" stroke-linecap="round"/></svg>';
+
+const liste = (obj, on) => Object.keys(obj).map((id, i) => ({ id: id, ad: (on || "") + (i + 1) }));
+
+const KATALOG = [
+  { id:"body", ad:"k_body", ikon:K_IKON.body, gruplar:[
+    { id:"ten", ad:"a_skin", tip:"palet", alan:"ten", palet:TENLER, kirp:"74 52 252 260", sadece:["boyun","kafa","yuz"] },
+    { id:"govde", ad:"a_style", alan:"govde", kirp:"110 270 180 200", sadece:["govde","boyun","kafa"],
+      ogeler:[{id:0},{id:1},{id:2}] }
+  ]},
+  { id:"hair", ad:"k_hair", ikon:K_IKON.hair, gruplar:[
+    { id:"sacStil", ad:"a_style", alan:"sacStil", paletGrup:"sacRenk", kirp:"20 8 360 330", sadece:["arkaSac","kafa","yuz","onSac"],
+      ogeler:liste(SACLAR) },
+    { id:"sacRenk", ad:"a_color", tip:"palet", alan:"sacRenk", palet:SAC_RENK, kirp:"20 8 360 330", sadece:["arkaSac","kafa","yuz","onSac"] },
+    { id:"basortu", ad:"a_scarf", alan:"basortu", paletGrup:"basortuRenk", kirp:"34 18 332 316", sadece:["arkaSac","kafa","yuz","onSac","basortu"], bos:true,
+      ogeler:liste(BASORTULER) },
+    { id:"basortuRenk", ad:"a_color", tip:"palet", alan:"basortuRenk", palet:KUMAS, kirp:"34 18 332 316", sadece:["arkaSac","kafa","yuz","onSac","basortu"] }
+  ]},
+  { id:"face", ad:"k_face", ikon:K_IKON.face, gruplar:[
+    { id:"goz", ad:"a_eyes", alan:"goz", paletGrup:"gozRenk", kirp:"112 150 176 100", sadece:["kafa","yuz"], ogeler:[0,1,2,3,4,5,6,7].map(i=>({id:i})) },
+    { id:"gozRenk", ad:"a_color", tip:"palet", alan:"gozRenk", palet:GOZ_RENK, kirp:"112 150 176 100", sadece:["kafa","yuz"] },
+    { id:"kas", ad:"a_brow", alan:"kas", kirp:"112 128 176 92", sadece:["kafa","yuz"], ogeler:[0,1,2,3,4,5].map(i=>({id:i})) },
+    { id:"agiz", ad:"a_mouth", alan:"agiz", kirp:"156 214 88 70", sadece:["kafa","yuz"], ogeler:[0,1,2,3,4,5,6,7].map(i=>({id:i})) },
+    { id:"yanak", ad:"a_blush", alan:"yanak", kirp:"92 186 216 84", sadece:["kafa","yuz"], bos:true, ogeler:[1,2,3,4].map(i=>({id:i})) }
+  ]},
+  { id:"top", ad:"k_top", ikon:K_IKON.top, gruplar:[
+    { id:"ust", ad:"a_style", alan:"ust", paletGrup:"ustRenk", kirp:"112 274 176 168", sadece:["govde","boyun","ust"], bos:true, temizle:["elbise"],
+      ogeler:liste(USTLER) },
+    { id:"ustRenk", ad:"a_color", tip:"palet", alan:"ustRenk", palet:KUMAS, kirp:"112 274 176 168", sadece:["govde","boyun","ust"] }
+  ]},
+  { id:"bottom", ad:"k_bottom", ikon:K_IKON.bottom, gruplar:[
+    { id:"alt", ad:"a_style", alan:"alt", paletGrup:"altRenk", kirp:"96 406 208 152", sadece:["bacak","alt"], bos:true, temizle:["elbise"],
+      ogeler:liste(ALTLAR) },
+    { id:"altRenk", ad:"a_color", tip:"palet", alan:"altRenk", palet:KUMAS, kirp:"96 406 208 152", sadece:["bacak","alt"] },
+    { id:"corap", ad:"a_socks", alan:"corap", paletGrup:"corapRenk", kirp:"140 436 120 136", sadece:["bacak","ayak","corap"], bos:true, ogeler:liste(CORAPLAR) },
+    { id:"corapRenk", ad:"a_color", tip:"palet", alan:"corapRenk", palet:KUMAS, kirp:"140 436 120 136", sadece:["bacak","ayak","corap"] }
+  ]},
+  { id:"dress", ad:"k_dress", ikon:K_IKON.dress, gruplar:[
+    { id:"elbise", ad:"a_style", alan:"elbise", paletGrup:"elbiseRenk", kirp:"84 270 232 290", sadece:["bacak","govde","boyun","elbise"], bos:true,
+      ogeler:liste(ELBISELER) },
+    { id:"elbiseRenk", ad:"a_color", tip:"palet", alan:"elbiseRenk", palet:KUMAS, kirp:"84 270 232 290", sadece:["bacak","govde","boyun","elbise"] }
+  ]},
+  { id:"shoes", ad:"k_shoes", ikon:K_IKON.shoes, gruplar:[
+    { id:"ayakkabi", ad:"a_style", alan:"ayakkabi", paletGrup:"ayakkabiRenk", kirp:"128 480 144 108", sadece:["bacak","ayak","ayakkabi"], bos:true, ogeler:liste(AYAKKABILAR) },
+    { id:"ayakkabiRenk", ad:"a_color", tip:"palet", alan:"ayakkabiRenk", palet:KUMAS, kirp:"128 480 144 108", sadece:["bacak","ayak","ayakkabi"] }
+  ]},
+  { id:"acc", ad:"k_acc", ikon:K_IKON.acc, gruplar:[
+    { id:"sapka", ad:"a_hat", alan:"sapka", paletGrup:"sapkaRenk", kirp:"20 0 360 200", sadece:["arkaSac","kafa","yuz","onSac","sapka"], bos:true, ogeler:liste(SAPKALAR) },
+    { id:"sapkaRenk", ad:"a_color", tip:"palet", alan:"sapkaRenk", palet:KUMAS, kirp:"20 0 360 200", sadece:["arkaSac","kafa","yuz","onSac","sapka"] },
+    { id:"gozluk", ad:"a_glasses", alan:"gozluk", paletGrup:"gozlukRenk", kirp:"84 148 232 108", sadece:["kafa","yuz","gozluk"], bos:true, ogeler:liste(GOZLUKLER) },
+    { id:"gozlukRenk", ad:"a_color", tip:"palet", alan:"gozlukRenk", palet:KUMAS, kirp:"84 148 232 108", sadece:["kafa","yuz","gozluk"] },
+    { id:"kolye", ad:"a_neck", alan:"kolye", paletGrup:"kolyeRenk", kirp:"150 276 100 80", sadece:["govde","boyun","kolye"], bos:true, ogeler:liste(KOLYELER) },
+    { id:"kolyeRenk", ad:"a_color", tip:"palet", alan:"kolyeRenk", palet:KUMAS, kirp:"150 276 100 80", sadece:["govde","boyun","kolye"] },
+    { id:"kupe", ad:"a_ear", alan:"kupe", paletGrup:"kupeRenk", kirp:"60 176 280 96", sadece:["kafa","yuz","kupe"], bos:true, ogeler:liste(KUPELER) },
+    { id:"kupeRenk", ad:"a_color", tip:"palet", alan:"kupeRenk", palet:KUMAS, kirp:"60 176 280 96", sadece:["kafa","yuz","kupe"] }
+  ]},
+  { id:"special", ad:"k_special", ikon:K_IKON.special, gruplar:[
+    { id:"sihir", ad:"a_magic", alan:"sihir", paletGrup:"sihirRenk", kirp:"16 240 368 220", sadece:["sihirArka","govde","boyun","sihirOn"], bos:true, ogeler:liste(SIHIRLER) },
+    { id:"sihirRenk", ad:"a_color", tip:"palet", alan:"sihirRenk", palet:KUMAS, kirp:"16 240 368 220", sadece:["sihirArka","govde","boyun","sihirOn"] },
+    { id:"el", ad:"a_style", alan:"el", paletGrup:"elRenk", kirp:"76 330 248 130", sadece:["govde","el"], bos:true, ogeler:liste(ELLER) },
+    { id:"elRenk", ad:"a_color", tip:"palet", alan:"elRenk", palet:KUMAS, kirp:"76 330 248 130", sadece:["govde","el"] }
+  ]},
+  { id:"bg", ad:"k_bg", ikon:K_IKON.bg, gruplar:[
+    { id:"arkaplan", ad:"a_style", alan:"arkaplan", tip:"zemin", ogeler:liste(ARKAPLANLAR) }
+  ]}
+];
+const GRUP_BUL = (() => { const m = {}; KATALOG.forEach(k => k.gruplar.forEach(g => { g.katId = k.id; m[g.id] = g; })); return m; })();
+/** Bir stil grubuna bagli paletler serit olarak gosterilir, sekme olarak degil */
+const ESLI_PALET = (() => { const m = {}; KATALOG.forEach(k => k.gruplar.forEach(g => { if (g.paletGrup) m[g.paletGrup] = g.id; })); return m; })();
+
+/* ==========================================================================
+   MOTOR — durum, kayit, geri alma, rastgele kombin
+   ========================================================================== */
+const VARSAYILAN = {
+  ten:"t2", govde:0, basortu:null, basortuRenk:"k9",
+  sacStil:"bob", sacRenk:"s2",
+  goz:1, gozRenk:"g5", kas:0, agiz:1, yanak:1,
+  ust:"tisort", ustRenk:"k6",
+  alt:"duzEtek", altRenk:"k8",
+  elbise:null, elbiseRenk:"k9",
+  corap:"kisa", corapRenk:"k10",
+  ayakkabi:"spor", ayakkabiRenk:"k1", ayakkabiRenk2:"k3",
+  sapka:null, sapkaRenk:"k3",
+  gozluk:null, gozlukRenk:"k11",
+  kolye:null, kolyeRenk:"k3",
+  kupe:null, kupeRenk:"k3",
+  sihir:null, sihirRenk:"k8",
+  el:null, elRenk:"k1",
+  arkaplan:"bahce"
+};
+const GECMIS_SINIR = 24, ALBUM_SINIR = 40;
+
+const MOTOR = {
+  durum: {
+    ekran: "splash",
+    karakter: Object.assign({}, VARSAYILAN),
+    kategori: "body",
+    grup: "ten",
+    gecmis: [],
+    album: [],
+    ayar: { muzik: true, ses: true, dil: "tr" },
+    foto: { zemin: "bahce", olcek: 1, x: 0, y: 0, cikartmalar: [] },
+    acikFoto: null
+  },
+  dinleyiciler: [],
+
+  abone(f) { this.dinleyiciler.push(f); },
+  yayin(tip, veri) { this.dinleyiciler.forEach(f => { try { f(tip, veri); } catch (e) { console.error(e); } }); },
+
+  /* --- kalici depolama --- */
+  yukle() {
+    const k = Depo.al("karakter", null);
+    if (k && typeof k === "object") this.durum.karakter = Object.assign({}, VARSAYILAN, k);
+    const a = Depo.al("ayar", null);
+    if (a && typeof a === "object") this.durum.ayar = Object.assign({}, this.durum.ayar, a);
+    const alb = Depo.al("album", null);
+    if (Array.isArray(alb)) this.durum.album = alb;
+    const f = Depo.al("foto", null);
+    if (f && typeof f === "object") this.durum.foto = Object.assign({}, this.durum.foto, f, { cikartmalar: Array.isArray(f.cikartmalar) ? f.cikartmalar : [] });
+    DIL = DILLER.indexOf(this.durum.ayar.dil) >= 0 ? this.durum.ayar.dil : "tr";
+    return this.durum;
+  },
+  kaydetKarakter() { Depo.yaz("karakter", this.durum.karakter); },
+  kaydetAyar() { Depo.yaz("ayar", this.durum.ayar); },
+  kaydetAlbum() { return Depo.yaz("album", this.durum.album); },
+  kaydetFoto() { Depo.yaz("foto", this.durum.foto); },
+
+  /* --- parca uygulama --- */
+  uygula(grupId, deger) {
+    const g = GRUP_BUL[grupId];
+    if (!g) return false;
+    const k = this.durum.karakter;
+    const onceki = {};
+    onceki[g.alan] = k[g.alan];
+    const temizlenecek = (g.temizle || []).filter(a => k[a] != null);
+    if (k[g.alan] === deger && !temizlenecek.length) return false;
+    temizlenecek.forEach(a => { onceki[a] = k[a]; k[a] = null; });
+    k[g.alan] = deger;
+    this.gecmiseEkle(onceki);
+    this.kaydetKarakter();
+    this.yayin("karakter", { grup: grupId, deger: deger });
+    return true;
+  },
+  gecmiseEkle(onceki) {
+    this.durum.gecmis.push(onceki);
+    if (this.durum.gecmis.length > GECMIS_SINIR) this.durum.gecmis.shift();
+  },
+  geriAl() {
+    const g = this.durum.gecmis.pop();
+    if (!g) return false;
+    Object.keys(g).forEach(a => { this.durum.karakter[a] = g[a]; });
+    this.kaydetKarakter();
+    this.yayin("karakter", { geriAl: true });
+    return true;
+  },
+  geriAlinabilir() { return this.durum.gecmis.length > 0; },
+
+  yeniKarakter() {
+    this.durum.gecmis = [];
+    this.durum.karakter = Object.assign({}, VARSAYILAN);
+    this.kaydetKarakter();
+    this.yayin("karakter", { yeni: true });
+  },
+
+  /* --- rastgele ama uyumlu kombin --- */
+  rastgele() {
+    const k = this.durum.karakter;
+    const onceki = Object.assign({}, k);
+    const temalar = [
+      { ad:"gunluk", kumas:["k1","k2","k3","k4","k5","k6"], sac:["s1","s2","s3","s4","s5"], zemin:["bahce","oda","orman"] },
+      { ad:"prenses", kumas:["k9","k8","k10","k3"], sac:["s4","s5","s7","s11"], zemin:["saray","sekerDiyari"] },
+      { ad:"peri", kumas:["k5","k8","k9","k6"], sac:["s7","s8","s9","s10"], zemin:["orman","geceGokyuzu"] },
+      { ad:"seker", kumas:["k9","k3","k5","k2"], sac:["s7","s5","s10"], zemin:["sekerDiyari","oda"] },
+      { ad:"okyanus", kumas:["k6","k5","k10","k7"], sac:["s9","s10","s11"], zemin:["sahil","bahce"] },
+      { ad:"kis", kumas:["k10","k6","k11","k7"], sac:["s1","s11","s12","s2"], zemin:["kis","geceGokyuzu"] },
+      { ad:"parti", kumas:["k1","k3","k8","k9"], sac:["s6","s7","s8","s4"], zemin:["oda","sekerDiyari"] },
+      { ad:"ruya", kumas:["k8","k7","k9","k10"], sac:["s8","s9","s11","s10"], zemin:["geceGokyuzu","saray"] }
+    ];
+    const t = sec(temalar);
+    const ana = sec(t.kumas), yan = sec(t.kumas.filter(x => x !== ana)) || ana;
+    k.ten = sec(TENLER).id;
+    k.sacStil = sec(Object.keys(SACLAR));
+    k.sacRenk = sec(t.sac);
+    k.goz = rnd(8); k.gozRenk = sec(GOZ_RENK).id; k.kas = rnd(6); k.agiz = rnd(8); k.yanak = rnd(5);
+    k.govde = rnd(3);
+    if (Math.random() < .5) {
+      k.elbise = sec(Object.keys(ELBISELER)); k.elbiseRenk = ana;
+    } else {
+      k.elbise = null;
+      k.ust = sec(Object.keys(USTLER)); k.ustRenk = ana;
+      k.alt = sec(Object.keys(ALTLAR)); k.altRenk = yan;
+    }
+    k.corap = Math.random() < .7 ? sec(Object.keys(CORAPLAR)) : null; k.corapRenk = Math.random() < .5 ? "k10" : yan;
+    k.ayakkabi = sec(Object.keys(AYAKKABILAR)); k.ayakkabiRenk = yan; k.ayakkabiRenk2 = ana;
+    k.basortu = Math.random() < .4 ? sec(Object.keys(BASORTULER)) : null; k.basortuRenk = ana;
+    k.sapka = (!k.basortu && Math.random() < .5) ? sec(Object.keys(SAPKALAR)) : null; k.sapkaRenk = ana;
+    k.gozluk = Math.random() < .22 ? sec(Object.keys(GOZLUKLER)) : null; k.gozlukRenk = yan;
+    k.kolye = Math.random() < .4 ? sec(Object.keys(KOLYELER)) : null; k.kolyeRenk = "k3";
+    k.kupe = Math.random() < .35 ? sec(Object.keys(KUPELER)) : null; k.kupeRenk = "k3";
+    k.sihir = Math.random() < .4 ? sec(Object.keys(SIHIRLER)) : null; k.sihirRenk = ana;
+    k.el = Math.random() < .3 ? sec(Object.keys(ELLER)) : null; k.elRenk = yan;
+    k.arkaplan = sec(t.zemin);
+    this.gecmiseEkle(onceki);
+    this.kaydetKarakter();
+    this.yayin("karakter", { rastgele: t.ad });
+    return t.ad;
+  },
+
+  /* --- ayarlar --- */
+  ayarla(anahtar, deger) {
+    this.durum.ayar[anahtar] = deger;
+    if (anahtar === "dil") DIL = deger;
+    this.kaydetAyar();
+    this.yayin("ayar", anahtar);
+  },
+
+  /* --- album --- */
+  albumeEkle(veriUrl) {
+    if (this.durum.album.length >= ALBUM_SINIR) return { ok: false, sebep: "dolu" };
+    const kayit = { id: "f" + Date.now() + "_" + rnd(9999), t: Date.now(), img: veriUrl };
+    this.durum.album.unshift(kayit);
+    if (!this.kaydetAlbum()) {
+      this.durum.album.shift();
+      return { ok: false, sebep: "yer" };
+    }
+    this.yayin("album", { eklendi: kayit.id });
+    return { ok: true, id: kayit.id };
+  },
+  albumdenSil(id) {
+    const i = this.durum.album.findIndex(x => x.id === id);
+    if (i < 0) return false;
+    this.durum.album.splice(i, 1);
+    this.kaydetAlbum();
+    this.yayin("album", { silindi: id });
+    return true;
+  },
+
+  /* --- fotograf sahnesi --- */
+  fotoAyar(y) { Object.assign(this.durum.foto, y); this.kaydetFoto(); this.yayin("foto", y); },
+  cikartmaEkle(tip, x, y) {
+    if (this.durum.foto.cikartmalar.length >= 14) return false;
+    this.durum.foto.cikartmalar.push({ id: "c" + Date.now() + rnd(999), tip: tip, x: x, y: y, r: rnd(40) - 20, s: .85 + Math.random() * .4 });
+    this.kaydetFoto(); this.yayin("foto", { cikartma: 1 });
+    return true;
+  },
+  cikartmaTemizle() { this.durum.foto.cikartmalar = []; this.kaydetFoto(); this.yayin("foto", { temiz: 1 }); }
+};
+
+/* ==========================================================================
+   SES — tamami sentezlenmis, dosya gerektirmez.
+   Ileride SES.dosya["equip"] = "sesler/equip.mp3" atanirsa o calinir.
+   ========================================================================== */
+const SES = {
+  ctx: null, dosya: {}, _muzikZaman: null, _hazir: false,
+  baslat() {
+    if (!this._hazir) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) { try { this.ctx = new AC(); } catch (e) { this.ctx = null; } }
+      this._hazir = true;
+    }
+    if (this.ctx && this.ctx.state === "suspended") { try { this.ctx.resume(); } catch (e) {} }
+  },
+  _nota(f, t0, sure, tip, hacim) {
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = tip || "sine"; o.frequency.setValueAtTime(f, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(hacim || .16, t0 + .012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + sure);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(t0); o.stop(t0 + sure + .04);
+  },
+  cal(olay) {
+    if (!MOTOR.durum.ayar.ses) return;
+    if (this.dosya[olay]) { try { const a = new Audio(this.dosya[olay]); a.play(); } catch (e) {} return; }
+    this.baslat();
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    switch (olay) {
+      case "tap":      this._nota(680, t, .07, "sine", .1); break;
+      case "equip":    this._nota(720, t, .09, "triangle", .13); this._nota(1080, t + .06, .12, "sine", .1); break;
+      case "kategori": this._nota(520, t, .08, "sine", .1); this._nota(660, t + .05, .09, "sine", .08); break;
+      case "sihir":    [660, 830, 990, 1320].forEach((f, i) => this._nota(f, t + i * .055, .18, "triangle", .11)); break;
+      case "kamera":   this._nota(1400, t, .04, "square", .09); this._nota(900, t + .05, .07, "square", .07); break;
+      case "basari":   [523, 659, 784, 1046].forEach((f, i) => this._nota(f, t + i * .075, .22, "sine", .12)); break;
+      case "geri":     this._nota(420, t, .09, "sine", .1); this._nota(320, t + .06, .1, "sine", .08); break;
+      default:         this._nota(600, t, .06, "sine", .09);
+    }
+  },
+  muzikBasla() {
+    if (this._muzikZaman) return;
+    this.baslat();
+    if (!this.ctx) return;
+    const desen = [523.25, 659.25, 783.99, 659.25, 587.33, 783.99, 880, 783.99];
+    let adim = 0;
+    const tik = () => {
+      if (!MOTOR.durum.ayar.muzik || !this.ctx) return;
+      const t = this.ctx.currentTime;
+      this._nota(desen[adim % desen.length] / 2, t, .5, "triangle", .035);
+      this._nota(desen[adim % desen.length], t + .02, .42, "sine", .022);
+      adim++;
+    };
+    tik();
+    this._muzikZaman = setInterval(tik, 620);
+  },
+  muzikDur() { if (this._muzikZaman) { clearInterval(this._muzikZaman); this._muzikZaman = null; } }
+};
+
+/* ==========================================================================
+   ATMOSFER — hafif parcacik katmani
+   ========================================================================== */
+const GOK = {
+  tuval: null, cx: null, parcalar: [], id: null, en: 0, boy: 0,
+  bicimler: ["yildiz", "kalp", "daire", "artis"],
+  kur(tuval) {
+    this.tuval = tuval; this.cx = tuval.getContext ? tuval.getContext("2d") : null;
+    if (!this.cx) return;
+    this.olcekle();
+    const n = Math.min(34, Math.round(window.innerWidth / 22));
+    this.parcalar = [];
+    for (let i = 0; i < n; i++) this.parcalar.push(this.yeni(true));
+    this.calistir();
+    window.addEventListener("resize", () => this.olcekle());
+  },
+  olcekle() {
+    if (!this.tuval || !this.cx) return;
+    const o = Math.min(window.devicePixelRatio || 1, 2);
+    this.en = this.tuval.clientWidth || window.innerWidth;
+    this.boy = this.tuval.clientHeight || window.innerHeight;
+    this.tuval.width = this.en * o; this.tuval.height = this.boy * o;
+    this.cx.setTransform(o, 0, 0, o, 0, 0);
+  },
+  yeni(baslangic) {
+    return {
+      x: Math.random() * (this.en || 400),
+      y: baslangic ? Math.random() * (this.boy || 700) : (this.boy || 700) + 20,
+      r: 4 + Math.random() * 9,
+      h: .12 + Math.random() * .34,
+      s: .18 + Math.random() * .34,
+      a: Math.random() * 6.28,
+      da: (Math.random() - .5) * .02,
+      b: sec(this.bicimler),
+      c: sec(["#FFD9EC", "#FFE9A8", "#CFC0FF", "#B8ECFF", "#FFFFFF"])
+    };
+  },
+  cizP(p) {
+    const c = this.cx;
+    c.save(); c.translate(p.x, p.y); c.rotate(p.a); c.globalAlpha = p.h; c.fillStyle = p.c;
+    const r = p.r;
+    c.beginPath();
+    if (p.b === "daire") c.arc(0, 0, r * .6, 0, 6.283);
+    else if (p.b === "kalp") { c.moveTo(0, r * .5); c.bezierCurveTo(-r, -r * .2, -r * .5, -r, 0, -r * .35); c.bezierCurveTo(r * .5, -r, r, -r * .2, 0, r * .5); }
+    else if (p.b === "artis") { c.moveTo(-r, 0); c.quadraticCurveTo(0, 0, 0, -r); c.quadraticCurveTo(0, 0, r, 0); c.quadraticCurveTo(0, 0, 0, r); c.quadraticCurveTo(0, 0, -r, 0); }
+    else { for (let i = 0; i < 10; i++) { const rr = i % 2 ? r * .42 : r; const t = i * .6283 - 1.57; c[i ? "lineTo" : "moveTo"](Math.cos(t) * rr, Math.sin(t) * rr); } }
+    c.closePath(); c.fill(); c.restore();
+  },
+  calistir() {
+    if (this.id) return;
+    const dongu = () => {
+      if (!this.cx) return;
+      this.cx.clearRect(0, 0, this.en, this.boy);
+      for (let i = 0; i < this.parcalar.length; i++) {
+        const p = this.parcalar[i];
+        p.y -= p.s; p.a += p.da; p.x += Math.sin(p.y / 60) * .22;
+        if (p.y < -30) this.parcalar[i] = this.yeni(false);
+        this.cizP(p);
+      }
+      this.id = requestAnimationFrame(dongu);
+    };
+    this.id = requestAnimationFrame(dongu);
+  },
+  dur() { if (this.id) { cancelAnimationFrame(this.id); this.id = null; } }
+};
+
+/* ==========================================================================
+   LOGO + CIKARTMALAR
+   ========================================================================== */
+function logoSVG() {
+  return `<svg viewBox="0 0 460 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kız Giydirme">
+    <defs>
+      <linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF3D6"/><stop offset=".5" stop-color="#FFD3E4"/><stop offset="1" stop-color="#F9A8CF"/></linearGradient>
+      <linearGradient id="lg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFF3E6"/><stop offset="1" stop-color="#66D9C0"/></linearGradient>
+    </defs>
+    <text x="230" y="98" text-anchor="middle" font-family="ui-rounded,'SF Pro Rounded','Segoe UI Rounded',system-ui,sans-serif"
+      font-size="54" font-weight="900" letter-spacing="-1" fill="url(#lg1)" stroke="#4A2E6B" stroke-width="9" paint-order="stroke" stroke-linejoin="round">Kız Giydirme</text>
+    <g transform="translate(60,34)">
+      <path d="M0 -20 l6 12 13 2 -9.6 9.4 2.3 13.2 -11.7 -6.2 -11.7 6.2 2.3 -13.2 -9.6 -9.4 13 -2z" fill="url(#lg2)" stroke="#4A2E6B" stroke-width="6" paint-order="stroke" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(404,42)">
+      <path d="M0 8 q-11 -13 -20 -2 q-8 11 20 30 q28 -19 20 -30 q-9 -11 -20 2z" fill="#FF9EC4" stroke="#4A2E6B" stroke-width="6" paint-order="stroke" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(378,140)"><circle r="9" fill="#FFD166" stroke="#4A2E6B" stroke-width="5"/></g>
+    <g transform="translate(86,146)"><circle r="7" fill="#A78BFA" stroke="#4A2E6B" stroke-width="5"/></g>
+  </svg>`;
+}
+const CIKARTMA_TIP = {
+  yildiz:  '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 8l12 26 28 3-21 19 6 28-25-14-25 14 6-28-21-19 28-3z" fill="#FFD166" stroke="#E0A32C" stroke-width="4" stroke-linejoin="round"/></svg>',
+  kalp:    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 88C50 88 10 62 10 38A20 20 0 0150 26 20 20 0 0190 38C90 62 50 88 50 88z" fill="#FF7BA9" stroke="#DB4C80" stroke-width="4" stroke-linejoin="round"/></svg>',
+  gokkusagi:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke-width="9" stroke-linecap="round"><path d="M12 76a38 38 0 0176 0" stroke="#FF7B7B"/><path d="M21 76a29 29 0 0158 0" stroke="#FFB44F"/><path d="M30 76a20 20 0 0140 0" stroke="#FFE066"/><path d="M39 76a11 11 0 0122 0" stroke="#66D9A0"/></g><ellipse cx="16" cy="80" rx="13" ry="9" fill="#fff"/><ellipse cx="84" cy="80" rx="13" ry="9" fill="#fff"/></svg>',
+  cicek:   '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="#FF9CC0">' + [0,1,2,3,4].map(i=>`<ellipse cx="${50+Math.cos(i*1.2566-1.57)*24}" cy="${50+Math.sin(i*1.2566-1.57)*24}" rx="17" ry="20" transform="rotate(${i*72} ${50+Math.cos(i*1.2566-1.57)*24} ${50+Math.sin(i*1.2566-1.57)*24})"/>`).join("") + '</g><circle cx="50" cy="50" r="14" fill="#FFD166"/></svg>',
+  bulut:   '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="#fff" stroke="#C9DFF2" stroke-width="3"><ellipse cx="50" cy="52" rx="30" ry="19"/><ellipse cx="28" cy="60" rx="20" ry="14"/><ellipse cx="72" cy="60" rx="21" ry="14"/></g></svg>',
+  parilti: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 6c4 26 14 36 40 44-26 8-36 18-40 44-4-26-14-36-40-44 26-8 36-18 40-44z" fill="#FFF0A8" stroke="#F0C64C" stroke-width="4" stroke-linejoin="round"/></svg>'
+};
+const CIKARTMA_LISTE = Object.keys(CIKARTMA_TIP);
+
+/* ==========================================================================
+   UI
+   ========================================================================== */
+const UI = {
+  ekranAdi: "splash",
+  fotoAraci: null,
+  _tostZaman: null,
+
+  /* ---------- kurulum ---------- */
+  kur() {
+    MOTOR.yukle();
+    this.dilUygula();
+    $("#logoYuva").innerHTML = logoSVG();
+    this.ikonlariDoldur();
+    this.rozetleriDoldur();
+    const tuval = $("#tuvalGok");
+    if (tuval && tuval.getContext) GOK.kur(tuval);
+    this.katSeritCiz();
+    this.grupSeritCiz();
+    this.izgaraCiz();
+    this.karakterCiz();
+    this.menuKarakterCiz();
+    this.sesIkonlari();
+    this.olaylariBagla();
+    MOTOR.abone((tip, veri) => {
+      if (tip === "karakter") { this.karakterCiz(); this.izgaraCiz(); this.menuKarakterCiz(); this.geriAlDurum(); }
+      if (tip === "album") this.albomCiz();
+      if (tip === "foto") this.fotoCiz();
+      if (tip === "ayar" && veri === "dil") { this.dilUygula(); this.katSeritCiz(); this.izgaraCiz(); }
+    });
+    this.geriAlDurum();
+    if (MOTOR.durum.ayar.muzik) { /* ilk dokunusta baslar */ }
+    return this;
+  },
+
+  ikonlariDoldur() {
+    const harita = { "geri": IKON.geri, "muzik": IKON.muzik, "ses": IKON.ses, "ayarlar": IKON.ayar,
+      "geri-al": IKON.geriAl, "yeni-karakter": IKON.yeni, "rastgele": IKON.asa, "cek": IKON.kamera,
+      "nasil": IKON.soru, "dilSec": IKON.kure, "zoom-arti": IKON.arti, "zoom-eksi": IKON.eksi, "cikartma-sil": IKON.supur, "indir": IKON.indir, "sil-sor": IKON.cop };
+    $$("[data-act]").forEach(b => {
+      // Sadece TAMAMEN bos ikon butonlarini doldur; icerigi olanin ustune asla yazma
+      if (b.innerHTML.trim()) return;
+      const s = harita[b.getAttribute("data-act")];
+      if (s) b.innerHTML = s;
+    });
+  },
+  rozetleriDoldur() {
+    const r = { rz1: IKON.kalem, rz2: IKON.elbise, rz3: IKON.kamera, rz4: IKON.resim };
+    Object.keys(r).forEach(id => { const n = document.getElementById(id); if (n) n.innerHTML = r[id]; });
+  },
+
+  /* ---------- dil ---------- */
+  dilUygula() {
+    DIL = MOTOR.durum.ayar.dil;
+    document.documentElement.setAttribute("lang", DIL);
+    document.documentElement.setAttribute("dir", DIL === "ar" ? "rtl" : "ltr");
+    document.documentElement.setAttribute("data-dil", DIL);
+    $$("[data-yazi]").forEach(n => { n.textContent = T(n.getAttribute("data-yazi")); });
+    this.albomSayiGuncelle();
+  },
+
+  /* ---------- ekran gecisi ---------- */
+  ekran(ad) {
+    const hedef = document.getElementById("e-" + ad);
+    if (!hedef) return false;
+    $$(".ekran").forEach(e => e.classList.remove("acik"));
+    hedef.classList.add("acik");
+    this.ekranAdi = ad;
+    MOTOR.durum.ekran = ad;
+    // parcacik katmanini tasi
+    const gok = $("#gokyuzu");
+    if (gok) {
+      if (ad === "splash" || ad === "menu") { hedef.insertBefore(gok, hedef.firstChild); gok.hidden = false; GOK.calistir(); GOK.olcekle(); }
+      else { gok.hidden = true; GOK.dur(); }
+    }
+    if (ad === "foto") this.fotoKur();
+    if (ad === "albom") this.albomCiz();
+    if (ad === "editor") this.karakterCiz();
+    return true;
+  },
+
+  /* ---------- karakter ---------- */
+  karakterCiz(canlandir) {
+    const yuva = $("#karakter");
+    if (!yuva) return;
+    yuva.innerHTML = cizKarakter(MOTOR.durum.karakter, { id: "karakterSvg" });
+    const z = $("#edZemin");
+    if (z) z.innerHTML = cizArkaplan(MOTOR.durum.karakter.arkaplan);
+    if (canlandir !== false) {
+      yuva.classList.remove("pop"); void yuva.offsetWidth; yuva.classList.add("pop");
+    }
+  },
+  menuKarakterCiz() {
+    const n = $("#menuKarakter");
+    if (n) n.innerHTML = cizKarakter(MOTOR.durum.karakter, { viewBox: "6 -30 388 650" });
+  },
+
+  /* ---------- kategori seridi ---------- */
+  katSeritCiz() {
+    const s = $("#katSerit");
+    if (!s) return;
+    s.innerHTML = KATALOG.map(k =>
+      `<button class="kat" role="tab" data-act="kat" data-id="${k.id}" aria-selected="${k.id === MOTOR.durum.kategori}" aria-label="${T(k.ad)}">
+        <span class="ikon">${k.ikon}</span><small>${T(k.ad)}</small></button>`).join("");
+  },
+  grupSeritCiz() {
+    const kat = KATALOG.find(k => k.id === MOTOR.durum.kategori) || KATALOG[0];
+    const gruplar = kat.gruplar.filter(g => !ESLI_PALET[g.id]);
+    const s = $("#altSerit");
+    if (!s) return;
+    if (!gruplar.some(g => g.id === MOTOR.durum.grup)) MOTOR.durum.grup = gruplar[0] ? gruplar[0].id : kat.gruplar[0].id;
+    s.innerHTML = gruplar.length > 1
+      ? gruplar.map(g => `<button class="pil" role="tab" data-act="grup" data-id="${g.id}" aria-selected="${g.id === MOTOR.durum.grup}">${T(g.ad)}</button>`).join("")
+      : "";
+  },
+  /** Aktif grubun renk paletini (varsa) cizer */
+  renkSeritCiz() {
+    const s = $("#renkSerit");
+    if (!s) return;
+    const g = GRUP_BUL[MOTOR.durum.grup];
+    if (!g || !g.paletGrup) { s.innerHTML = ""; return; }
+    const palet = GRUP_BUL[g.paletGrup];
+    if (!palet || !palet.palet) { s.innerHTML = ""; return; }
+    const secili = MOTOR.durum.karakter[palet.alan];
+    s.innerHTML = palet.palet.map(r =>
+      `<button class="balon" role="option" data-act="renk" data-grup="${palet.id}" data-id="${r.id}"
+        style="background:linear-gradient(160deg,${tonla(r.h, 1.22)},${r.h})" aria-selected="${r.id === secili}" aria-label="${r.h}"></button>`).join("");
+  },
+  /* ---------- item izgarasi ---------- */
+  izgaraCiz() {
+    this.grupSeritCiz();
+    this.renkSeritCiz();
+    const kutu = $("#izgara");
+    if (!kutu) return;
+    const g = GRUP_BUL[MOTOR.durum.grup];
+    if (!g) { kutu.innerHTML = ""; return; }
+    const k = MOTOR.durum.karakter;
+    const secili = k[g.alan];
+    let html = "";
+    if (g.tip === "palet") {
+      html = g.palet.map(p => `<button class="item" role="option" data-act="oge" data-grup="${g.id}" data-id="${p.id}" aria-selected="${p.id === secili}" aria-label="${T(g.ad)}">
+        ${this.onizleme(g, p.id)}</button>`).join("");
+    } else if (g.tip === "zemin") {
+      html = g.ogeler.map(o => `<button class="item" role="option" data-act="oge" data-grup="${g.id}" data-id="${o.id}" aria-selected="${o.id === secili}" aria-label="${o.id}">
+        ${cizArkaplan(o.id)}</button>`).join("");
+    } else {
+      if (g.bos) html += `<button class="item yok" role="option" data-act="oge" data-grup="${g.id}" data-id="" aria-selected="${!secili}" aria-label="${T("yok")}">${YOK_TH}</button>`;
+      html += g.ogeler.map(o => `<button class="item" role="option" data-act="oge" data-grup="${g.id}" data-id="${o.id}" aria-selected="${String(o.id) === String(secili)}" aria-label="${T(g.ad)} ${o.id}">
+        ${this.onizleme(g, o.id)}</button>`).join("");
+    }
+    kutu.innerHTML = html;
+  },
+  /** Bir parcanin kirpilmis onizlemesini uretir */
+  onizleme(g, deger) {
+    const k = Object.assign({}, MOTOR.durum.karakter);
+    k[g.alan] = deger;
+    if (g.temizle) g.temizle.forEach(a => { k[a] = null; });
+    if (g.alan === "sacStil" || g.alan === "sacRenk") k.basortu = null; // sac secimi ortunun altinda kaybolmasin
+    return cizKarakter(k, { viewBox: g.kirp, sadece: g.sadece });
+  },
+
+  /* ---------- geri al butonu ---------- */
+  geriAlDurum() {
+    const b = $("#btnGeriAl");
+    if (b) b.disabled = !MOTOR.geriAlinabilir();
+  },
+
+  /* ---------- parilti efekti ---------- */
+  parilti(x, y, adet) {
+    const kap = $("#parilti");
+    if (!kap) return;
+    const n = adet || 12;
+    for (let i = 0; i < n; i++) {
+      const s = el("div", "spark", '<svg viewBox="0 0 24 24"><path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6z" fill="' + sec(["#FFD166", "#FF9EC4", "#A78BFA", "#5FD7BC", "#FFFFFF"]) + '"/></svg>');
+      const a = Math.random() * 6.283, d = 40 + Math.random() * 90;
+      s.style.left = x + "px"; s.style.top = y + "px";
+      s.style.setProperty("--dx", Math.cos(a) * d + "px");
+      s.style.setProperty("--dy", Math.sin(a) * d + "px");
+      s.style.animation = "sparkUc " + (420 + Math.random() * 320) + "ms ease-out forwards";
+      kap.appendChild(s);
+      setTimeout(() => { if (s.parentNode) s.parentNode.removeChild(s); }, 820);
+    }
+  },
+
+  /* ---------- tost ---------- */
+  tost(metin) {
+    const t = $("#tost");
+    if (!t) return;
+    t.textContent = metin;
+    t.classList.add("gor");
+    clearTimeout(this._tostZaman);
+    this._tostZaman = setTimeout(() => t.classList.remove("gor"), 1900);
+  },
+
+  /* ---------- modal ---------- */
+  modal(o) {
+    const ortu = $("#ortu");
+    if (!ortu) return;
+    $("#modalYuz").innerHTML = o.yuz || cizKarakter(MOTOR.durum.karakter, { viewBox: "84 56 232 250", sadece: ["arkaSac", "kafa", "yuz", "onSac"] });
+    $("#modalBaslik").textContent = o.baslik || "";
+    $("#modalMetin").textContent = o.metin || "";
+    $("#modalIcerik").innerHTML = o.icerik || "";
+    const b = $("#modalBtnler");
+    b.innerHTML = "";
+    (o.btnler || [{ ad: T("kapat"), sinif: "hayir" }]).forEach(x => {
+      const d = el("button", "mbtn " + (x.sinif || "hayir"), x.ad);
+      d.addEventListener("click", () => { SES.cal("tap"); this.modalKapat(); if (x.fn) x.fn(); });
+      b.appendChild(d);
+    });
+    ortu.classList.add("acik");
+  },
+  modalKapat() { this.acikModal = null; const o = $("#ortu"); if (o) o.classList.remove("acik"); },
+
+  dilListesiHTML() {
+    return DILLER.map(d => `<button class="dil-btn" data-act="dil" data-id="${d}" aria-selected="${d === DIL}">${DIL_AD[d]}</button>`).join("");
+  },
+  dilModal() {
+    this.acikModal = "dil";
+    this.modal({
+      baslik: T("dil"), metin: "",
+      icerik: `<div class="dil-grup buyuk">${this.dilListesiHTML()}</div>`,
+      btnler: [{ ad: T("kapat"), sinif: "evet" }]
+    });
+  },
+  /** Ilk acilista rehberi bir kez gosterir; gosterildiyse false doner */
+  ilkRehber() {
+    if (Depo.al("nasilGosterildi")) return false;
+    Depo.yaz("nasilGosterildi", 1);
+    setTimeout(() => this.nasilModal(), 620);
+    return true;
+  },
+  nasilModal() {
+    this.acikModal = "nasil";
+    const adim = (ikon, renk, no, bas, met) =>
+      `<li class="nadim"><span class="nrozet" data-renk="${renk}">${ikon}</span>
+        <span class="nmetin"><b>${no}. ${bas}</b><small>${met}</small></span></li>`;
+    this.modal({
+      baslik: T("nasil_baslik"), metin: T("nasil_alt"),
+      icerik: `<ol class="nasil-liste">
+        ${adim(IKON.kalem,  "a", 1, T("olustur"),  T("nasil_1"))}
+        ${adim(IKON.elbise, "b", 2, T("giydir"),   T("nasil_2"))}
+        ${adim(IKON.kamera, "c", 3, T("fotograf"), T("nasil_3"))}
+        ${adim(IKON.resim,  "d", 4, T("albom"),    T("nasil_4"))}
+      </ol>
+      <p class="nasil-ipucu">${IKON.geriAl}<span>${T("nasil_ipucu")}</span></p>`,
+      btnler: [{ ad: T("nasil_basla"), sinif: "evet" }]
+    });
+  },
+  ayarlarModal() {
+    this.acikModal = "ayarlar";
+    const dil = DILLER.map(d => `<button class="dil-btn" data-act="dil" data-id="${d}" aria-selected="${d === DIL}">${DIL_AD[d]}</button>`).join("");
+    this.modal({
+      baslik: T("ayarlar"), metin: "",
+      icerik: `<div class="ayar-satir"><b>${T("dil")}</b></div><div class="dil-grup">${dil}</div>\n        <button class="ayar-baglanti" data-act="nasil">${IKON.soru}<span>${T("nasil_baslik")}</span></button>
+        <div class="surum">Kız Giydirme v${SURUM}</div>`,
+      btnler: [{ ad: T("kapat"), sinif: "evet" }]
+    });
+  },
+
+  sesIkonlari() {
+    const m = $("#btnMuzik"), s = $("#btnSes");
+    if (m) m.classList.toggle("kapali", !MOTOR.durum.ayar.muzik);
+    if (s) s.classList.toggle("kapali", !MOTOR.durum.ayar.ses);
+  },
+
+  /* ==========================================================================
+     FOTOGRAF MODU
+     ========================================================================== */
+  fotoKur() {
+    const f = MOTOR.durum.foto;
+    const z = $("#fotoZeminler");
+    if (z) z.innerHTML = Object.keys(ARKAPLANLAR).map(id =>
+      `<button class="mini" role="option" data-act="fzemin" data-id="${id}" aria-selected="${id === f.zemin}" aria-label="${id}">${cizArkaplan(id)}</button>`).join("");
+    const c = $("#fotoCikartmalar");
+    if (c) c.innerHTML = CIKARTMA_LISTE.map(t =>
+      `<button class="mini cs" role="option" data-act="fcikartma" data-id="${t}" aria-selected="${t === this.fotoAraci}" aria-label="${t}">${CIKARTMA_TIP[t]}</button>`).join("");
+    this.fotoCiz();
+    this.fotoSurukleBagla();
+  },
+  fotoCiz() {
+    const f = MOTOR.durum.foto;
+    const z = $("#fotoZemin");
+    if (z) z.innerHTML = cizArkaplan(f.zemin);
+    const kar = $("#fotoKarakter");
+    if (kar) {
+      kar.innerHTML = cizKarakter(MOTOR.durum.karakter);
+      kar.style.left = (50 + f.x) + "%";
+      kar.style.top = (50 + f.y) + "%";
+      kar.style.transform = "translate(-50%,-50%) scale(" + f.olcek + ")";
+    }
+    const kap = $("#cikartmalar");
+    if (kap) kap.innerHTML = f.cikartmalar.map(c =>
+      `<div class="cikartma" data-cid="${c.id}" style="left:${c.x}%;top:${c.y}%;transform:translate(-50%,-50%) rotate(${c.r}deg) scale(${c.s})">${CIKARTMA_TIP[c.tip] || ""}</div>`).join("");
+    const zn = $("#fotoZeminler");
+    if (zn) $$(".mini", zn).forEach(b => b.setAttribute("aria-selected", b.getAttribute("data-id") === f.zemin));
+    const cn = $("#fotoCikartmalar");
+    if (cn) $$(".mini", cn).forEach(b => b.setAttribute("aria-selected", b.getAttribute("data-id") === this.fotoAraci));
+  },
+  fotoSurukleBagla() {
+    const cerceve = $("#cerceve"), kar = $("#fotoKarakter");
+    if (!cerceve || !kar || cerceve.__bagli) return;
+    cerceve.__bagli = true;
+    let surukle = false, bx = 0, by = 0, ox = 0, oy = 0, kaydi = false;
+    const oran = () => ({ w: cerceve.clientWidth || 1, h: cerceve.clientHeight || 1 });
+    cerceve.addEventListener("pointerdown", e => {
+      const hedef = e.target.closest ? e.target.closest(".foto-karakter") : null;
+      if (hedef) {
+        surukle = true; kaydi = false;
+        bx = e.clientX; by = e.clientY;
+        ox = MOTOR.durum.foto.x; oy = MOTOR.durum.foto.y;
+        if (cerceve.setPointerCapture) { try { cerceve.setPointerCapture(e.pointerId); } catch (er) {} }
+      }
+    });
+    cerceve.addEventListener("pointermove", e => {
+      if (!surukle) return;
+      const o = oran();
+      const nx = kilit(ox + (e.clientX - bx) / o.w * 100, -32, 32);
+      const ny = kilit(oy + (e.clientY - by) / o.h * 100, -32, 32);
+      if (Math.abs(e.clientX - bx) + Math.abs(e.clientY - by) > 6) kaydi = true;
+      MOTOR.durum.foto.x = nx; MOTOR.durum.foto.y = ny;
+      kar.style.left = (50 + nx) + "%"; kar.style.top = (50 + ny) + "%";
+      e.preventDefault();
+    });
+    const bitir = e => {
+      if (surukle) { surukle = false; MOTOR.kaydetFoto(); if (kaydi) return; }
+      if (!this.fotoAraci) return;
+      const r = cerceve.getBoundingClientRect();
+      const x = kilit((e.clientX - r.left) / r.width * 100, 6, 94);
+      const y = kilit((e.clientY - r.top) / r.height * 100, 6, 94);
+      if (MOTOR.cikartmaEkle(this.fotoAraci, x, y)) { SES.cal("equip"); this.parilti(e.clientX, e.clientY, 6); }
+    };
+    cerceve.addEventListener("pointerup", bitir);
+    cerceve.addEventListener("pointercancel", () => { surukle = false; });
+  },
+
+  /** Kompozisyonu tek bir SVG olarak uretir (kare disa aktarim icin) */
+  fotoBesteSVG() {
+    const f = MOTOR.durum.foto, W = 300, H = 400;
+    const cw = 192 * f.olcek, ch = cw * 662 / 428;
+    const cx = (50 + f.x) / 100 * W, cy = (50 + f.y) / 100 * H;
+    const bg = ARKAPLANLAR[f.zemin] || ARKAPLANLAR.bahce;
+    const govde = karakterKatmanlari(MOTOR.durum.karakter).map(x => `<g>${x[1]}</g>`).join("");
+    let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+    s += `<svg x="0" y="0" width="${W}" height="${H}" viewBox="0 0 400 620" preserveAspectRatio="xMidYMid slice">${bg()}</svg>`;
+    s += `<svg x="${(cx - cw / 2).toFixed(2)}" y="${(cy - ch / 2).toFixed(2)}" width="${cw.toFixed(2)}" height="${ch.toFixed(2)}" viewBox="${TAM_KADRAJ}" preserveAspectRatio="xMidYMid meet">${govde}</svg>`;
+    f.cikartmalar.forEach(c => {
+      const w = .14 * W * c.s;
+      const ic = (CIKARTMA_TIP[c.tip] || "").replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+      s += `<g transform="translate(${(c.x / 100 * W).toFixed(2)},${(c.y / 100 * H).toFixed(2)}) rotate(${c.r})"><svg x="${(-w / 2).toFixed(2)}" y="${(-w / 2).toFixed(2)}" width="${w.toFixed(2)}" height="${w.toFixed(2)}" viewBox="0 0 100 100">${ic}</svg></g>`;
+    });
+    return s + "</svg>";
+  },
+
+  cek() {
+    const flash = $("#flash");
+    if (flash) { flash.classList.remove("flash-on"); void flash.offsetWidth; flash.classList.add("flash-on"); }
+    SES.cal("kamera");
+    const svg = this.fotoBesteSVG();
+    if (typeof Image === "undefined" || !document.createElement("canvas").getContext) { this.tost(T("kaydetHata")); return; }
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = 720; c.height = 960;
+      const x = c.getContext("2d");
+      x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
+      x.drawImage(img, 0, 0, c.width, c.height);
+      let veri;
+      try { veri = c.toDataURL("image/jpeg", .82); } catch (e) { this.tost(T("kaydetHata")); return; }
+      const s = MOTOR.albumeEkle(veri);
+      if (s.ok) { SES.cal("basari"); this.tost(T("kaydedildi")); }
+      else this.tost(T("kaydetHata"));
+    };
+    img.onerror = () => this.tost(T("kaydetHata"));
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  },
+
+  /* ==========================================================================
+     ALBUM
+     ========================================================================== */
+  albomSayiGuncelle() {
+    const n = $("#albomSayi");
+    if (n) n.textContent = MOTOR.durum.album.length + " " + T("adet");
+  },
+  albomCiz() {
+    const k = $("#albomIzgara");
+    if (!k) return;
+    this.albomSayiGuncelle();
+    if (!MOTOR.durum.album.length) {
+      k.innerHTML = `<div class="bos-durum">${cizKarakter(MOTOR.durum.karakter, { viewBox: "84 40 232 270", sadece: ["arkaSac", "kafa", "yuz", "onSac"] })}<p>${T("bosAlbom")}</p></div>`;
+      k.style.display = "flex";
+      return;
+    }
+    k.style.display = "grid";
+    k.innerHTML = MOTOR.durum.album.map(f => {
+      const t = new Date(f.t);
+      const g = t.getDate() + "." + (t.getMonth() + 1) + "." + t.getFullYear();
+      return `<button class="polaroid" data-act="foto-ac" data-id="${f.id}" aria-label="${g}"><img src="${f.img}" alt=""><span>${g}</span></button>`;
+    }).join("");
+  },
+  fotoAc(id) {
+    const f = MOTOR.durum.album.find(x => x.id === id);
+    if (!f) return;
+    MOTOR.durum.acikFoto = id;
+    const i = $("#buyutImg");
+    if (i) i.src = f.img;
+    this.ekran("buyut");
+  },
+  indir() {
+    const f = MOTOR.durum.album.find(x => x.id === MOTOR.durum.acikFoto);
+    if (!f) return;
+    const a = document.createElement("a");
+    a.href = f.img; a.download = "minimori-" + f.id + ".jpg";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    this.tost(T("indirildi"));
+  },
+
+  /* ==========================================================================
+     OLAYLAR — tek delegasyon, satir ici onclick yok
+     ========================================================================== */
+  olaylariBagla() {
+    document.addEventListener("click", e => {
+      const b = e.target.closest ? e.target.closest("[data-act]") : null;
+      if (!b) return;
+      const a = b.getAttribute("data-act");
+      this.eylem(a, b, e);
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") { this.modalKapat(); }
+    });
+    window.addEventListener("resize", () => { if (this.ekranAdi === "foto") this.fotoCiz(); });
+  },
+
+  eylem(a, b, e) {
+    const d = MOTOR.durum;
+    switch (a) {
+      case "basla":
+        SES.baslat(); SES.cal("basari");
+        if (d.ayar.muzik) SES.muzikBasla();
+        this.ekran("menu");
+        this.ilkRehber();
+        break;
+      case "git": {
+        const h = b.getAttribute("data-hedef");
+        SES.cal(h === "menu" || h === "albom" ? "geri" : "tap");
+        const kat = b.getAttribute("data-kat");
+        if (kat) { d.kategori = kat; d.grup = (KATALOG.find(x => x.id === kat) || KATALOG[0]).gruplar[0].id; this.katSeritCiz(); this.izgaraCiz(); }
+        this.ekran(h);
+        break;
+      }
+      case "muzik":
+        MOTOR.ayarla("muzik", !d.ayar.muzik);
+        if (d.ayar.muzik) SES.muzikBasla(); else SES.muzikDur();
+        this.sesIkonlari(); SES.cal("tap");
+        break;
+      case "ses":
+        MOTOR.ayarla("ses", !d.ayar.ses);
+        this.sesIkonlari(); if (d.ayar.ses) SES.cal("tap");
+        break;
+      case "ayarlar": SES.cal("tap"); this.ayarlarModal(); break;
+      case "nasil": SES.cal("tap"); this.nasilModal(); break;
+      case "dilSec": SES.cal("tap"); this.dilModal(); break;
+      case "dil": {
+        const nereden = this.acikModal;
+        MOTOR.ayarla("dil", b.getAttribute("data-id"));
+        SES.cal("tap");
+        if (nereden === "dil") this.dilModal(); else this.ayarlarModal();
+        break;
+      }
+      case "kat": {
+        const id = b.getAttribute("data-id");
+        if (d.kategori === id) return;
+        d.kategori = id;
+        const k = KATALOG.find(x => x.id === id);
+        d.grup = k.gruplar[0].id;
+        SES.cal("kategori");
+        this.katSeritCiz(); this.izgaraCiz();
+        break;
+      }
+      case "grup":
+        d.grup = b.getAttribute("data-id");
+        SES.cal("tap");
+        this.izgaraCiz();
+        break;
+      case "oge": {
+        const g = b.getAttribute("data-grup");
+        let v = b.getAttribute("data-id");
+        const grup = GRUP_BUL[g];
+        if (v === "") v = null;
+        else if (grup && grup.ogeler && typeof grup.ogeler[0].id === "number") v = parseInt(v, 10);
+        if (MOTOR.uygula(g, v)) {
+          SES.cal("equip");
+          const r = b.getBoundingClientRect();
+          this.parilti(r.left + r.width / 2, r.top + r.height / 2, 8);
+        }
+        break;
+      }
+      case "renk": {
+        const g = b.getAttribute("data-grup");
+        if (MOTOR.uygula(g, b.getAttribute("data-id"))) SES.cal("equip");
+        break;
+      }
+      case "geri-al":
+        if (MOTOR.geriAl()) { SES.cal("geri"); this.tost(T("geriAlindi")); }
+        else this.tost(T("geriAlYok"));
+        break;
+      case "yeni-karakter":
+        SES.cal("tap");
+        this.modal({
+          baslik: T("yeniBaslik"), metin: T("yeniMetin"),
+          btnler: [{ ad: T("hayir"), sinif: "hayir" }, { ad: T("evet"), sinif: "evet", fn: () => { MOTOR.yeniKarakter(); SES.cal("basari"); } }]
+        });
+        break;
+      case "rastgele": {
+        const s = $("#btnSihir");
+        if (s) { s.classList.remove("donduc"); void s.offsetWidth; s.classList.add("donduc"); }
+        const kar = $("#karakter");
+        if (kar) { kar.classList.remove("zipla"); void kar.offsetWidth; kar.classList.add("zipla"); }
+        MOTOR.rastgele();
+        SES.cal("sihir");
+        const sr = $("#edSahne");
+        if (sr) { const r = sr.getBoundingClientRect(); this.parilti(r.left + r.width / 2, r.top + r.height / 2, 22); }
+        break;
+      }
+      case "cek": this.cek(); break;
+      case "zoom-arti": MOTOR.fotoAyar({ olcek: kilit(+(d.foto.olcek + .12).toFixed(2), .5, 1.7) }); SES.cal("tap"); break;
+      case "zoom-eksi": MOTOR.fotoAyar({ olcek: kilit(+(d.foto.olcek - .12).toFixed(2), .5, 1.7) }); SES.cal("tap"); break;
+      case "fzemin": MOTOR.fotoAyar({ zemin: b.getAttribute("data-id") }); SES.cal("kategori"); break;
+      case "fcikartma": {
+        const t = b.getAttribute("data-id");
+        this.fotoAraci = this.fotoAraci === t ? null : t;
+        SES.cal("tap"); this.fotoCiz();
+        break;
+      }
+      case "cikartma-sil":
+        if (!d.foto.cikartmalar.length) return;
+        MOTOR.cikartmaTemizle(); SES.cal("geri"); this.tost(T("temizlendi"));
+        break;
+      case "foto-ac": SES.cal("tap"); this.fotoAc(b.getAttribute("data-id")); break;
+      case "indir": SES.cal("tap"); this.indir(); break;
+      case "sil-sor":
+        SES.cal("tap");
+        this.modal({
+          baslik: T("silBaslik"), metin: T("silMetin"),
+          btnler: [{ ad: T("hayir"), sinif: "hayir" }, { ad: T("sil"), sinif: "tehlike", fn: () => {
+            MOTOR.albumdenSil(d.acikFoto); this.tost(T("silindi")); this.ekran("albom");
+          } }]
+        });
+        break;
+    }
+  }
+};
+
+/* ---------- Baslangic ---------- */
+function baslat() {
+  UI.kur();
+  UI.ekran("splash");
+  // ilk kullanici dokunusunda ses baglami acilir (mobil politikasi)
+  const ac = () => { SES.baslat(); if (MOTOR.durum.ayar.muzik && UI.ekranAdi !== "splash") SES.muzikBasla(); document.removeEventListener("pointerdown", ac); };
+  document.addEventListener("pointerdown", ac);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) SES.muzikDur(); else if (MOTOR.durum.ayar.muzik && UI.ekranAdi !== "splash") SES.muzikBasla(); });
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", baslat);
+else baslat();
+
+/* ---------- Test kancalari ---------- */
+window.__MOTOR__ = MOTOR;
+window.__UI__ = UI;
+window.__KATALOG__ = KATALOG;
+window.__CIZ__ = { cizKarakter: cizKarakter, cizArkaplan: cizArkaplan, karakterKatmanlari: karakterKatmanlari, tonla: tonla };
+window.__DEPO__ = Depo;
+window.__SOZLUK__ = SOZLUK;
+</script>
+</body>
+</html>
