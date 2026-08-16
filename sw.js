@@ -1,6 +1,6 @@
 /* Oyun Salonu SW — kurulumda TÜM oyunları indirir (internetsiz oynanır),
    internet varken her açılışta sunucudan taze sürüm çeker (güncel kalır) */
-const CACHE = 'oyunlar-v6';
+const CACHE = 'oyunlar-v7';
 
 /* çevrimdışı paket: portal + tüm oyunlar (SW konumuna göre göreli çözülür) */
 const PAKET = ['./', 'manifest.json',
