@@ -11,14 +11,14 @@
     -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
   canvas{display:block}
   #hud{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;display:flex;
-    justify-content:space-between;align-items:flex-start;padding:0 12px;pointer-events:none;z-index:5;gap:8px}
+    justify-content:space-between;align-items:flex-start;padding:0 max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));pointer-events:none;z-index:5;gap:8px}
   .rozet{background:rgba(15,26,12,.8);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;
     padding:7px 12px;font-size:13px;font-weight:900;font-variant-numeric:tabular-nums;
     display:flex;align-items:center;gap:5px;white-space:nowrap;
     box-shadow:0 3px 10px rgba(0,0,0,.3)}
   #paraEl{color:var(--altin)}
   #dengeEl.iyi{color:var(--yesil)} #dengeEl.kotu{color:#ff8a7a}
-  #sagBtnlar{position:fixed;right:12px;top:calc(max(10px,env(safe-area-inset-top)) + 52px);
+  #sagBtnlar{position:fixed;right:max(12px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 52px);
     display:flex;flex-direction:column;gap:10px;z-index:5}
   .yuvarlakBtn{width:54px;height:54px;border-radius:18px;border:2px solid rgba(255,255,255,.35);
     background:rgba(15,26,12,.84);font-size:24px;cursor:pointer;color:var(--ink);

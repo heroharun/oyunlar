@@ -32,7 +32,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 /* ---------- HUD ---------- */
 #hud{
   position:fixed;top:0;left:0;right:0;z-index:20;pointer-events:none;
-  display:flex;align-items:center;gap:7px;padding:calc(7px + var(--safe-t)) 10px 6px;
+  display:flex;align-items:center;gap:7px;padding:calc(7px + var(--safe-t)) max(10px,env(safe-area-inset-right)) 6px max(10px,env(safe-area-inset-left));
 }
 .hudRoz{
   pointer-events:auto;display:flex;align-items:center;gap:5px;

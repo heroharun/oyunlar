@@ -10,7 +10,7 @@
     font-family:"Avenir Next","Futura","Trebuchet MS",system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent}
   canvas{display:block;width:100%;height:100%}
-  #hud{position:fixed;top:0;left:0;right:0;text-align:center;padding:14px;pointer-events:none;z-index:5}
+  #hud{position:fixed;top:0;left:0;right:0;text-align:center;padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 14px max(14px,env(safe-area-inset-left));pointer-events:none;z-index:5}
   .value{font-size:38px;font-weight:900;font-variant-numeric:tabular-nums;color:#fff;
     text-shadow:0 0 18px rgba(240,181,66,.55),0 2px 4px rgba(0,0,0,.6)}
   .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
@@ -411,7 +411,7 @@ resize(); reset(); loop();
 
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
-#mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
+#mpNasilBtn{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
   font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}

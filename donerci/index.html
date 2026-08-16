@@ -51,7 +51,7 @@ button{font-family:inherit; color:inherit; border:0; background:none; cursor:poi
 
 /* ---------- HUD ---------- */
 #hud{position:relative; z-index:30; display:flex; align-items:center; gap:7px;
-  padding:calc(7px + var(--safe-t)) 10px 7px}
+  padding:calc(7px + var(--safe-t)) max(10px,env(safe-area-inset-right)) 7px max(10px,env(safe-area-inset-left))}
 .hud-stat{display:flex; align-items:center; gap:5px; padding:6px 12px; border-radius:var(--r-pill);
   font-size:14px; font-weight:800; background:rgba(0,0,0,.35); color:#ffe4b0;
   border:1px solid rgba(255,220,170,.22); box-shadow:var(--shadow-s); white-space:nowrap}
@@ -72,7 +72,7 @@ button{font-family:inherit; color:inherit; border:0; background:none; cursor:poi
 #cv{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none}
 
 /* ---------- Alt panel: istasyonlar ---------- */
-#panel{position:relative; z-index:20; padding:6px 8px calc(8px + var(--safe-b));
+#panel{position:relative; z-index:20; padding:6px max(8px,env(safe-area-inset-right)) calc(8px + var(--safe-b)) max(8px,env(safe-area-inset-left));
   display:flex; flex-direction:column; gap:6px;
   background:linear-gradient(180deg, rgba(84,57,42,.92), rgba(43,28,20,.97));
   border-top:2px solid rgba(255,205,140,.25); box-shadow:0 -8px 24px rgba(0,0,0,.4)}
@@ -1464,7 +1464,7 @@ window.__DN = {
 
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
-#mpNasilBtn{position:fixed;left:10px;top:64px;z-index:2147483000;
+#mpNasilBtn{position:fixed;left:max(10px,env(safe-area-inset-left));top:64px;z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
   font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}

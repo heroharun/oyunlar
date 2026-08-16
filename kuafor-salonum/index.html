@@ -39,6 +39,8 @@
   --bg-a:#f7efe8; --bg-b:#e9d9d2; --bg-c:#d8c6dd;
   --safe-b:env(safe-area-inset-bottom,0px);
   --safe-t:env(safe-area-inset-top,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+  --safe-r:env(safe-area-inset-right,0px);
 }
 /* Salon temaları */
 body[data-theme="sakura"]{ --bg-a:#fdeef1; --bg-b:#f6d9de; --bg-c:#e7c9dc; --powder:#f4b9c4; --lavender:#e0c4d8; }
@@ -133,7 +135,7 @@ h1,h2,h3{font-family:var(--font-display); font-weight:500; margin:0; letter-spac
 #hud{
   position:relative; z-index:30;
   display:flex; align-items:center; gap:8px;
-  padding:calc(8px + var(--safe-t)) 12px 8px;
+  padding:calc(8px + var(--safe-t)) max(12px,var(--safe-r)) 8px max(12px,var(--safe-l));
 }
 .hud-stat{
   display:flex; align-items:center; gap:6px;
@@ -372,7 +374,7 @@ body[data-theme="midnight"] .chip.sel{color:#2b2436}
 /* Alt bar */
 #bottomBar{
   position:relative; z-index:20;
-  display:flex; align-items:center; gap:8px; padding:8px 12px calc(8px + var(--safe-b));
+  display:flex; align-items:center; gap:8px; padding:8px max(12px,var(--safe-r)) calc(8px + var(--safe-b)) max(12px,var(--safe-l));
 }
 #progWrap{flex:1; min-width:0}
 #progWrap .lbl{display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:var(--ink-soft); margin-bottom:4px}
@@ -518,7 +520,7 @@ body[data-theme="midnight"] #panelHandle::before{background:rgba(255,255,255,.28
 }
 
 @media(max-width:370px){
-  #hud{gap:4px; padding-left:6px; padding-right:6px}
+  #hud{gap:4px; padding-left:max(6px,var(--safe-l)); padding-right:max(6px,var(--safe-r))}
   .hud-stat{padding:4px 6px 4px 5px; font-size:11px; gap:4px}
   .hud-stat .ic{width:13px;height:13px}
   .icon-btn{width:31px; height:31px}
@@ -3399,7 +3401,7 @@ else boot();
 
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
-#mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
+#mpNasilBtn{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
   font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}

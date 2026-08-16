@@ -87,7 +87,7 @@ html[data-motion="0"] *::after{animation-duration:.001s!important;transition-dur
 }
 
 /* ===================== 2. UYGULAMA İSKELETİ ===================== */
-#app{min-height:100dvh;display:flex;flex-direction:column}
+#app{height:100vh;height:100dvh;display:flex;flex-direction:column}
 .screen{display:none;flex:1;flex-direction:column;min-height:0}
 .screen.on{display:flex}
 
@@ -107,7 +107,7 @@ html[data-motion="0"] *::after{animation-duration:.001s!important;transition-dur
 /* ===================== 3. ÜST BİLGİ ÇUBUĞU ===================== */
 #topbar{
   position:sticky;top:0;z-index:60;
-  padding:calc(8px + var(--pad-t)) 10px 8px;
+  padding:calc(8px + var(--pad-t)) max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left));
   background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 88%,var(--cream)));
   border-bottom:1px solid var(--line);
   box-shadow:var(--shadow-sm);
@@ -190,7 +190,7 @@ html[data-night="1"] .region{background:rgba(43,58,53,.9)}
 /* ===================== 5. ALT MENÜ ===================== */
 #dock{
   position:fixed;left:0;right:0;bottom:0;z-index:70;
-  display:flex;gap:2px;padding:5px 6px calc(6px + var(--pad-b));
+  display:flex;gap:2px;padding:5px max(6px,env(safe-area-inset-right)) calc(6px + var(--pad-b)) max(6px,env(safe-area-inset-left));
   background:color-mix(in srgb,var(--surface) 76%,transparent);
   backdrop-filter:blur(16px) saturate(1.5);
   -webkit-backdrop-filter:blur(16px) saturate(1.5);
@@ -409,7 +409,13 @@ html[data-night="1"] .story-item,html[data-night="1"] .region{
 .colorpick.on{border-color:var(--text);transform:scale(1.1)}
 
 /* Onboarding */
-#onboard{background:linear-gradient(180deg,var(--sky),var(--cream) 70%);overflow-y:auto;padding:calc(18px + var(--pad-t)) 16px calc(96px + var(--pad-b))}
+#onboard{background:linear-gradient(180deg,var(--sky),var(--cream) 70%);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(18px + var(--pad-t)) 16px calc(96px + var(--pad-b))}
+@media(max-height:700px){
+  #onboard{padding-top:calc(10px + var(--pad-t))}
+  .ob-card{padding:14px}
+  .ob-card h2{font-size:1.2rem}
+  .ob-card>p.sub{margin:4px 0 10px}
+}
 .ob-card{max-width:520px;margin:0 auto;background:var(--surface);border-radius:var(--r-xl);padding:20px;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
 .ob-card h2{font-size:1.4rem;color:var(--primary-dark);text-align:center}
 .ob-card>p.sub{text-align:center;color:var(--muted);font-size:.88rem;margin:6px 0 16px}
@@ -2578,7 +2584,7 @@ App.boot();
 
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
-#mpNasilBtn{position:fixed;left:10px;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 64px);z-index:2147483000;
+#mpNasilBtn{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 64px);z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
   font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}

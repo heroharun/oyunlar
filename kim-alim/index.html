@@ -77,8 +77,12 @@
   .basamak.gecildi{color:var(--altin)}
   /* ── KARTLAR ── */
   .kart{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:13px;text-align:center;background:rgba(10,14,42,.98);
-    transition:opacity .3s;padding:22px;z-index:10;overflow-y:auto}
+    justify-content:flex-start;gap:13px;text-align:center;background:rgba(10,14,42,.98);
+    transition:opacity .3s;padding:22px 22px max(22px,env(safe-area-inset-bottom));z-index:10;overflow-y:auto;
+    -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  /* içerik kısaysa ortala, uzunsa taşan üst/alt kaydırmayla erişilsin */
+  .kart>:first-child{margin-top:auto}
+  .kart>:last-child{margin-bottom:auto}
   .kart.gizli{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .kart.gizli .btn,.kart.gizli .kat,.kart.gizli .btn2{pointer-events:none}
   .kart h1{font-size:clamp(30px,8vw,50px);font-weight:900;line-height:1.08;transform:rotate(-1.5deg);
@@ -95,6 +99,14 @@
   .kat .ikon{font-size:28px}
   .kat .alt{font-size:10.5px;font-weight:700;color:var(--dim)}
   .kat.genis{grid-column:1/-1}
+  /* kısa ekranlar: kategori kartlarını sıkıştır ki menü sığsın */
+  @media (max-height:700px){
+    .kart{gap:10px}
+    #katlar{gap:8px}
+    .kat{padding:9px 8px;min-height:44px}
+    .kat .ikon{font-size:22px}
+    .kart h1{font-size:clamp(26px,6.5vw,40px)}
+  }
   .btn{font:inherit;font-weight:900;font-size:15.5px;letter-spacing:.05em;text-transform:uppercase;
     color:#1a1206;background:linear-gradient(180deg,#ffe9a8,#f5c542 55%,#e0af1e);border:none;
     border-radius:999px;padding:14px 40px;cursor:pointer;box-shadow:0 5px 0 #8a6a10}

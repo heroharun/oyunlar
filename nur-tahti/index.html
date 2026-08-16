@@ -40,6 +40,7 @@ body{
   font-size:16px;
   line-height:1.55;
   min-height:100vh;
+  min-height:100dvh;
   padding:0 0 90px;
   overflow-x:hidden;
 }
@@ -336,7 +337,19 @@ button:focus-visible,.girdi:focus-visible{outline:2px solid var(--altin);outline
 @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
 
 /* ── mobil: alt bar gizliyken (menü/final) 90px boşluğa gerek yok ── */
-body:has(#alt-bar.gizli){padding-bottom:0}
+body:has(#alt-bar.gizli){padding-bottom:max(16px, env(safe-area-inset-bottom))}
+
+/* kısa ekranlarda giriş sıkışsın, kaydırma rahat olsun */
+@media (max-height:700px){
+  .giris-sahne{margin:8px 0 -12px}
+  .giris-sahne svg{height:104px;width:100%}
+  .giris{padding:12px 6px 6px}
+  .giris .hilal{font-size:2.1rem}
+  h1{font-size:1.5rem}
+  .giris .alt-baslik{font-size:.85rem;margin-top:2px}
+  .giris .soru{margin-top:8px;font-size:.92rem}
+  .ayrac{margin:10px 0}
+}
 </style>
 </head>
 <body>

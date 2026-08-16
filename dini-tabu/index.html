@@ -130,6 +130,21 @@ label{font-size:.9rem;font-weight:600}
 .altmenu .dg{font-size:.95rem;min-height:52px}
 .dipnot{margin-top:auto;padding-top:18px;text-align:center;font-size:.76rem;color:#7A8A80}
 
+/* kısa ekranlarda menü tek ekrana sığsın */
+@media(max-height:700px){
+  .ekran{padding-top:max(8px,env(safe-area-inset-top));padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  .kapak{padding:8px 0 4px}
+  .rozet{width:64px;height:64px;margin-bottom:8px}
+  .rozet b{font-size:1.5rem}
+  .kapak h1{font-size:1.6rem}
+  .kapak .alt{font-size:.78rem;margin-top:2px}
+  .menu{gap:7px;margin-top:12px}
+  .menu .dg{min-height:48px;padding-top:10px;padding-bottom:10px}
+  .altmenu{gap:7px;margin-top:7px}
+  .altmenu .dg{min-height:46px}
+  .dipnot{padding-top:8px}
+}
+
 /* ===================== KURULUM ===================== */
 .adimlar{display:flex;gap:5px;margin-bottom:14px}
 .adimlar i{height:5px;flex:1;background:rgba(16,64,44,.13);border-radius:3px}

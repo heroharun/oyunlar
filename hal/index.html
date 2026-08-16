@@ -47,7 +47,7 @@
 [data-elder="1"]{ --fs:19px; }
 *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
 html{font-size:var(--fs);}
-body{font-family:var(--font-body); background:var(--bg); color:var(--ink); line-height:1.55; min-height:100vh; transition:background .3s,color .3s;}
+body{font-family:var(--font-body); background:var(--bg); color:var(--ink); line-height:1.55; min-height:100vh; min-height:100dvh; transition:background .3s,color .3s;}
 /* Fon: çok silik yaprak/işleme motifi + yumuşak vinyet (içeriğin arkasında) */
 body::before{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.045;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><g fill='none' stroke='%238B8574' stroke-width='1.1' stroke-linecap='round'><path d='M38 22c10 .5 15.5 6.5 15 16-9.5.5-15.5-6-15-16z'/><path d='M40 25c4 3.5 8 7.5 11 11'/><path d='M122 102c-10 .5-15.5 6.5-15 16 9.5.5 15.5-6 15-16z'/><path d='M120 105c-4 3.5-8 7.5-11 11'/><path d='M118 30c0 4.5-3 7.5-7 8 .5-4.5 3-7.5 7-8z'/><path d='M42 128c0 4.5-3 7.5-7 8 .5-4.5 3-7.5 7-8z'/></g></svg>");
@@ -184,7 +184,7 @@ nav.bottom button.on .nvi{color:var(--gold);}
 .pin-pad button{height:60px; border-radius:16px; background:var(--card); border:1px solid var(--line); font-size:1.3rem; font-family:var(--font-disp);}
 
 /* Onboarding */
-#onboard{position:fixed; inset:0; z-index:150; background:var(--bg); overflow:auto; padding:28px 20px 40px;}
+#onboard{position:fixed; inset:0; z-index:150; background:var(--bg); overflow:auto; -webkit-overflow-scrolling:touch; padding:28px 20px max(40px, calc(24px + env(safe-area-inset-bottom)));}
 #onboard .inner{max-width:520px; margin:0 auto;}
 #onboard h1{font-size:2rem; color:var(--ink);}
 #onboard .big-tag{font-family:var(--font-disp); font-style:italic; color:var(--gold); margin:6px 0 22px;}

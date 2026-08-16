@@ -305,6 +305,20 @@ button{font-family:inherit;color:inherit;font-size:inherit;cursor:pointer;border
   .menu-liste .btn{font-size:14.5px;min-height:46px;padding:8px 10px}
   #menu{padding-bottom:10px}
 }
+
+/* ── çok kısa ekranlar: menü tek ekrana yaklaşsın, kalan kısım kaydırılsın ── */
+@media (max-height:700px){
+  #menu{padding-bottom:max(12px, env(safe-area-inset-bottom))}
+  .menu-sahne{padding:6px 12px 0}
+  .menu-baslik h1{font-size:22px}
+  .menu-baslik .alt{font-size:12px}
+  .sahne-resim{min-height:0;margin:2px 0 6px}
+  .sahne-resim svg{max-height:104px;width:auto}
+  .rozet-satiri{margin:6px 0 2px}
+  .sayac{padding:4px 10px;font-size:14px}
+  .menu-liste{grid-template-columns:repeat(2,1fr);gap:7px}
+  .menu-liste .btn{font-size:13px;min-height:44px;padding:6px 8px}
+}
 </style>
 </head>
 <body>

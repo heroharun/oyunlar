@@ -9,7 +9,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>TOPAÇ SUMO — 頂 Arena</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +40,7 @@
   #c{position:fixed;inset:0;display:block}
 
   /* ---------- HUD ---------- */
-  #hud{position:fixed;top:0;left:0;right:0;padding:18px 26px;display:flex;justify-content:space-between;pointer-events:none;z-index:5}
+  #hud{position:fixed;top:0;left:0;right:0;padding:max(18px,env(safe-area-inset-top)) max(26px,env(safe-area-inset-right)) 18px max(26px,env(safe-area-inset-left));display:flex;justify-content:space-between;pointer-events:none;z-index:5}
   .side{width:38%;display:flex;flex-direction:column;gap:6px}
   .side.right{align-items:flex-end}
   .nameline{display:flex;align-items:baseline;gap:12px}
@@ -68,8 +68,14 @@
   #bannerText.show{opacity:1;transform:scale(1) rotate(-4deg);transition:transform .18s cubic-bezier(.2,2.4,.4,1),opacity .1s}
 
   /* ---------- Menü / Son ekran ---------- */
-  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
-    background:rgba(12,16,36,.85);backdrop-filter:blur(4px);z-index:10;transition:opacity .3s;overflow-y:auto}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:20px;
+    background:rgba(12,16,36,.85);backdrop-filter:blur(4px);z-index:10;transition:opacity .3s;overflow-y:auto;
+    -webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+    padding:18px max(12px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+  /* içerik kısaysa ortala, uzunsa taşan üst/alt kaydırmayla erişilsin */
+  .overlay>:first-child{margin-top:auto}
+  .overlay>:last-child{margin-bottom:auto}
+  @media (max-height:700px){ .overlay{gap:12px} }
   .overlay.hidden{opacity:0;pointer-events:none}
   .title{font-family:'Rampart One',cursive;font-size:min(11vw,96px);line-height:.95;text-align:center;color:var(--paper);
     text-shadow:6px 6px 0 var(--aka), 12px 12px 0 rgba(0,0,0,.4)}
@@ -1760,10 +1766,10 @@ requestAnimationFrame(loop);
 .dashTouch{position:absolute;width:88px;height:88px;border-radius:50%;
   pointer-events:auto;touch-action:none;text-align:center;
   user-select:none;-webkit-user-select:none;font:800 14px/88px system-ui;letter-spacing:2px}
-#dashBtn{right:14px;bottom:calc(24px + env(safe-area-inset-bottom));
+#dashBtn{right:max(14px,env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom));
   border:2.5px solid rgba(142,240,168,.55);background:rgba(142,240,168,.14);color:#8ef0a8}
 #dashBtn.basili{background:rgba(142,240,168,.4)}
-#dashBtn2{left:14px;top:calc(24px + env(safe-area-inset-top));display:none;
+#dashBtn2{left:max(14px,env(safe-area-inset-left));top:calc(24px + env(safe-area-inset-top));display:none;
   border:2.5px solid rgba(120,170,255,.55);background:rgba(120,170,255,.14);color:#9cc2f0;
   transform:rotate(180deg)}
 #dashBtn2.basili{background:rgba(120,170,255,.4)}
@@ -1987,7 +1993,7 @@ requestAnimationFrame(loop);
 
 <!-- MasalPark: Nasıl Oynanır katmanı (oyun koduna dokunmaz) -->
 <style>
-#mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
+#mpNasilBtn{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
   font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}
