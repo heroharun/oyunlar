@@ -31,7 +31,8 @@
     15%{opacity:1;transform:translateX(-50%) scale(1.08)}82%{opacity:1}100%{opacity:0}}
   .card{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
     justify-content:center;gap:13px;text-align:center;background:rgba(26,36,22,.95);
-    transition:opacity .3s;padding:24px;z-index:10}
+    transition:opacity .3s;padding:24px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:10;
+    overflow-y:auto;justify-content:safe center}
   .card.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
   .card.hidden .btn{pointer-events:none}
   .card h1{font-size:clamp(32px,8.5vw,64px);font-weight:900;line-height:1;text-wrap:balance;

@@ -134,6 +134,16 @@ h1,h2,h3,h4{font-family:var(--disp);margin:0;font-weight:700;letter-spacing:.01e
 .dil[aria-pressed="true"]{background:linear-gradient(180deg,#F2CE62,#D9A62C);color:#3A2C08;border-color:#B98C1F}
 .menu-alt{font-size:.86rem;color:var(--murekkep3);text-align:center;max-width:560px;line-height:1.6}
 /* Kısa ekranlar: menü sütununu sıkıştır ki tüm düğmeler görünür kalsın */
+@media (max-height:640px) and (max-width:940px){
+  .ust{min-height:44px;padding:5px 8px;gap:6px}
+  .ust .tur{font-size:.8rem;padding:3px 8px}
+  .mevsim{font-size:.78rem;padding:3px 8px}
+  .ust .araclar .btn{min-height:34px;padding:4px 8px;font-size:.82rem}
+  .mobil-bar{gap:5px;padding-top:6px}
+  .mb-kaynak .k{padding:5px 3px;font-size:.84rem}
+  .mb-butonlar .btn{min-height:46px;font-size:.94rem}
+  .mb-kim{font-size:.88rem}
+}
 @media (max-height:700px){
   .menu-wrap{gap:14px;padding:16px 18px calc(16px + var(--sb))}
   .marka .hilal{width:44px;height:44px;margin-bottom:4px}
@@ -3501,7 +3511,7 @@ function boardBoyutla(){
   if(!orta) return;
   const w = orta.clientWidth - 6, h = orta.clientHeight - 6;
   const kucuk = window.innerWidth < 900;
-  const s = Math.max(kucuk ? 320 : 380, Math.min(w, kucuk ? Math.max(h, 330) : h, 800));
+  const s = Math.max(kucuk ? 260 : 380, Math.min(w, h, 800));
   document.documentElement.style.setProperty("--board", Math.floor(s) + "px");
   ui_piyonlariGuncelle();
 }

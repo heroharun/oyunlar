@@ -73,7 +73,7 @@ h1,h2,h3{font-family:var(--fd);font-weight:600;margin:0;letter-spacing:.01em}
 
 /* ---------- brief panel (left) ---------- */
 #brief{position:absolute;top:calc(var(--sat) + 66px);left:calc(var(--sal) + 10px);width:300px;width:min(300px,74vw);
-  z-index:25;padding:14px;max-height:calc(100vh - var(--sat) - 210px);overflow:auto;transition:transform var(--dur),opacity var(--dur)}
+  z-index:25;padding:14px;max-height:calc(100vh - var(--sat) - 210px);max-height:calc(100dvh - var(--sat) - 210px);overflow:auto;transition:transform var(--dur),opacity var(--dur)}
 #brief.min{transform:translateX(calc(-100% - 20px));opacity:0;pointer-events:none}
 #briefText{font:400 13.5px/1.55 var(--fb);color:#D9E4E6;margin:8px 0 4px}
 #briefClient{font-family:var(--fd);font-size:19px;margin-top:4px}
@@ -269,7 +269,7 @@ html[dir=rtl] .req.ok span{text-decoration:line-through}
   .sheet{padding:16px;border-radius:var(--r-l)}
 }
 @media (max-height:520px) and (orientation:landscape){
-  #brief{max-height:calc(100vh - var(--sat) - 150px)}
+  #brief{max-height:calc(100vh - var(--sat) - 150px);max-height:calc(100dvh - var(--sat) - 150px)}
   .item{width:70px}
 }
 </style>
