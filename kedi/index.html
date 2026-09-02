@@ -191,6 +191,12 @@
     <button class="up" id="upHiz"></button>
     <button class="up" id="upMik"></button>
     <button class="up" id="bozdurBtn" style="border-color:rgba(122,208,224,.5);background:rgba(122,208,224,.1)"></button>
+    <div id="bozdurSatir" style="display:flex;gap:8px;align-items:stretch">
+      <input id="bozdurAdet" type="number" min="10" step="10" inputmode="numeric" placeholder="🐟 adet"
+        style="flex:1;min-width:0;background:rgba(122,208,224,.08);border:2px solid rgba(122,208,224,.4);border-radius:12px;color:#e8f4f8;font:inherit;font-weight:700;padding:8px 10px;text-align:center">
+      <button class="up" id="bozdurGirBtn" style="flex:1;border-color:rgba(122,208,224,.5);background:rgba(122,208,224,.1)"></button>
+      <button class="up" id="bozdurTumBtn" style="flex:1.2;border-color:rgba(255,206,84,.5);background:rgba(255,206,84,.08)"></button>
+    </div>
   </div>
   <button class="btn" id="devamKosuBtn" style="display:none;background:linear-gradient(180deg,#8de6a0,#4ec06e);box-shadow:0 5px 0 #2c7a44">▶ Devam Et</button>
   <button class="btn" id="baslaBtn">Maceraya Başla!</button>
@@ -398,7 +404,7 @@ function runBaslat(){
     mik:(60+(S.sev.mik-1)*14)*mikB,
     atisAra:0.8, adet:1, menzil:0.42*menB, yumakBoy:1, patiCarp:patiB,
     zirh:0, balon:0,
-    guc:{hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0}};
+    guc:{hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0}};
   dusmanlar=[]; mermiler=[]; baliklar=[]; parcalar=[]; yazilar=[]; eklentiler=[];
   sure=0; xp=0; xpEsik=5; seviye=1; atisS=0.4; spawnS=1; bossS=120; koaSayac=0;
   kazanilanPati=0; kazanilanBalik=0; mesafeSayac=0; balikEklentiSayac=0;
@@ -467,7 +473,11 @@ const EKLENTI=[
   {id:'ates',ikon:'🔥',ad:'Ateş Patisi!',w:5},
   {id:'balon',ikon:'🎈',ad:'Balon Kalkanı!',w:5},
   {id:'dev',ikon:'👑',ad:'DEV MOD!',w:3},
-  {id:'donZaman',ikon:'🧊',ad:'Buz Nefesi!',w:4}
+  {id:'donZaman',ikon:'🧊',ad:'Buz Nefesi!',w:4},
+  {id:'bomba',ikon:'💣',ad:'Yumak Bombası!',w:4},
+  {id:'roket',ikon:'🚀',ad:'Roket Atış!',w:5},
+  {id:'hayalet',ikon:'👻',ad:'Hayalet Modu!',w:3},
+  {id:'ziyafet',ikon:'🍤',ad:'Balık Ziyafeti!',w:4}
 ];
 /* geç oyunda Kalkan/Kalp ağırlığı yarıya iner (ölümsüzlük kurulamasın) */
 const eklW=e=>(sure>180&&(e.id==='kalp'||e.id==='kalkan'))?e.w*0.5:e.w;
@@ -510,11 +520,28 @@ function eklentiAl(e){
   else if(e.id==='ates')kedi.guc.ates=5;
   else if(e.id==='balon')kedi.balon=1;
   else if(e.id==='dev')kedi.guc.dev=5;
-  else if(e.id==='donZaman'){    /* yakındaki tüm düşmanlar kısa donar */
+  else if(e.id==='donZaman'){    /* 🧊 ekrandaki TÜM düşmanlar donar */
+    let donan=0;
     for(const d of dusmanlar){
       const dx=d.x-kedi.x,dy=d.y-kedi.y;
-      if(dx*dx+dy*dy<BIRIM()*BIRIM()*0.6)d.don=Math.max(d.don||0,2.5);
+      if(dx*dx+dy*dy<BIRIM()*BIRIM()*6.5){ d.don=Math.max(d.don||0,3.5); donan++; parca(d.x,d.y,3,'#aee6ff'); }
     }
+    yaz(kedi.x,kedi.y-42,donan>0?('🧊 '+donan+' düşman dondu!'):'🧊 Buz dalgası!','#aee6ff');
+  }
+  else if(e.id==='bomba'){       /* 💣 alan patlaması */
+    let vur=0;
+    for(const d of dusmanlar){
+      const dx=d.x-kedi.x,dy=d.y-kedi.y;
+      if(dx*dx+dy*dy<BIRIM()*BIRIM()*1.7){ hasarVer(d,kedi.hasar*4); vur++; }
+    }
+    parca(kedi.x,kedi.y,parcaTavan(),'#ffb347',true); buzz([20,40,20]);
+    yaz(kedi.x,kedi.y-42,'💣 BOOM! '+vur+' düşman','#ffb347');
+  }
+  else if(e.id==='roket'){ kedi.guc.roket=6; }
+  else if(e.id==='hayalet'){ kedi.guc.hayalet=5; }
+  else if(e.id==='ziyafet'){     /* 🍤 haritadaki tüm balıklar sana koşar */
+    let n=0; for(const b of baliklar){ if(!b.olu){ b.cek=true; n++; } }
+    yaz(kedi.x,kedi.y-42,'🍤 Ziyafet! '+n+' balık geliyor','#7ad0e0');
   }
 }
 /* performans tavanları */
@@ -1001,7 +1028,7 @@ function guncelle(dt){
     }
   }
   /* ── 🔥 ateş patisi izleri ── */
-  if(kedi.guc.ates>0&&kedi.kosuyor){
+  if(kedi.guc.ates>0){
     izS-=dt;
     if(izS<=0){
       izS=0.12;
@@ -1059,7 +1086,7 @@ function guncelle(dt){
       hedefD[i]=d; hedefM[i]=m2;
     }
     if(hN>0){
-      atisS=kedi.atisAra;
+      atisS=kedi.atisAra*(kedi.guc.roket>0?0.5:1);
       const ssv=gucSv.sacilma||0, yelpaze=ssv?0.5-0.12*(ssv-1):0;
       for(let i=0;i<kedi.adet;i++){
         if(mermiler.length>=MERMI_TAVAN)break;
@@ -1127,7 +1154,7 @@ function guncelle(dt){
     if(L<BIRIM()*(d.r+0.03)*(kedi.guc.dev>0?1.4:1)){
       if(kedi.guc.dev>0){                        /* 👑 dev mod: ezerek geç */
         if((d.ezCd||0)<=0){ d.ezCd=0.4; hasarVer(d,kedi.hasar*3); parca(d.x,d.y,4,'#ffce54',true); buzz(8); }
-      } else if(kedi.invuln<=0&&kedi.guc.kalkan<=0){
+      } else if(kedi.invuln<=0&&kedi.guc.kalkan<=0&&kedi.guc.hayalet<=0){
         if(kedi.balon>0){                        /* 🎈 balon tek vuruş emer */
           kedi.balon=0; kedi.invuln=1;
           sesPuf(); yaz(kedi.x,kedi.y-36,'🎈 POP! kalkan emdi','#7ad0e0');
@@ -1193,7 +1220,7 @@ function kosuGeriYukle(){
   evrimler=(kk.ev||[]).slice();
   sonsuzSv=Object.assign({},kk.ss||{});        /* sonsuz kart sayaçları (eski kayıtta yoksa boş) */
   Object.assign(kedi,kk.k);
-  kedi.guc=Object.assign({hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0},kk.k.guc);
+  kedi.guc=Object.assign({hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0},kk.k.guc);
   kedi.zirh=Math.min(0.3,kk.k.zirh||0); kedi.balon=kk.k.balon||0;   /* eski %40 post kayıtları %30'a törpülenir */
   kedi.invuln=2.5;               /* dönüşte kısa dokunulmazlık */
   buildSeritYaz();
@@ -1673,6 +1700,7 @@ function kediCiz(){
   ctx.translate(W/2,H/2-zip);
   ctx.scale(kedi.yon*devS,devS);
   if(kedi.invuln>0&&Math.floor(performance.now()/90)%2===0)ctx.globalAlpha=0.4;
+  if(kedi.guc.hayalet>0)ctx.globalAlpha=0.45;
   /* kalkan halkası */
   if(kedi.guc&&kedi.guc.kalkan>0){
     ctx.strokeStyle='rgba(122,208,224,'+(0.5+Math.sin(performance.now()/120)*0.3)+')';
@@ -1903,7 +1931,25 @@ function magazaYaz(){
   bb.innerHTML='<span>🔁 Balık Bozdur<small>10 balığı 5 patiye çevir — 🐟'+kisa(S.balik)+' balığın var</small></span>'
     +'<span class="fiyat" style="color:#7ad0e0">🐟10→🐾5</span>';
   bb.disabled=S.balik<10;
+  const gb=document.getElementById('bozdurGirBtn'), tb=document.getElementById('bozdurTumBtn');
+  gb.innerHTML='<span>🔁 Kadarını<small>girilen adedi bozdur</small></span>';
+  gb.disabled=S.balik<10;
+  const tumB=Math.floor(S.balik/10)*10;
+  tb.innerHTML='<span>💰 Hepsini Bozdur<small>🐟'+kisa(tumB)+' → 🐾'+kisa(tumB/2)+'</small></span>';
+  tb.disabled=tumB<10;
 }
+function balikBozdur(adet){
+  adet=Math.floor(adet/10)*10;
+  if(!adet||adet<10||S.balik<adet)return;
+  S.balik-=adet; S.pati+=adet/2;
+  sesBalik(); buzz(8); magazaYaz(); girisHint(); kaydet();
+}
+document.getElementById('bozdurGirBtn').addEventListener('click',()=>{
+  const el=document.getElementById('bozdurAdet');
+  const v=Math.min(S.balik,parseInt(el.value,10)||0);
+  balikBozdur(v);
+});
+document.getElementById('bozdurTumBtn').addEventListener('click',()=>balikBozdur(S.balik));
 document.getElementById('bozdurBtn').addEventListener('click',()=>{
   if(S.balik<10)return;
   S.balik-=10; S.pati+=5;
@@ -2027,8 +2073,8 @@ function hudYaz(id,v){
   hudOnceki[id]=v; document.getElementById(id).textContent=v;
 }
 /* ── güç süre şeritleri (yeni süreli güçler dahil) ── */
-const GUC_MAX={hiz:8,mik:8,hasar:8,kalkan:6,zaman:4,ates:5,dev:5};
-const GUC_IKON={hiz:'⚡',mik:'🧲',hasar:'💪',kalkan:'🛡️',zaman:'⏱️',ates:'🔥',dev:'👑'};
+const GUC_MAX={hiz:8,mik:8,hasar:8,kalkan:6,zaman:4,ates:5,dev:5,roket:6,hayalet:5};
+const GUC_IKON={hiz:'⚡',mik:'🧲',hasar:'💪',kalkan:'🛡️',zaman:'⏱️',ates:'🔥',dev:'👑',roket:'🚀',hayalet:'👻'};
 const gucEl={};
 (function(){
   const kap=document.getElementById('gucSerit');
