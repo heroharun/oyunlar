@@ -386,7 +386,7 @@ let sure, xp, xpEsik, seviye, run, atisS, spawnS, bossS, koaSayac, kazanilanPati
 let kazanilanBalik, mesafeSayac, balikEklentiSayac;
 /* yeni içerik durumu */
 let gucSv={}, evrimler=[], dostlar=[], izler=[], simsekler=[];
-let orbitAci=0, orbitCd=[], dalgaS=0, yenilenS=0, kasirgaS=0, kasirgaAktif=0, kasirgaAtisS=0, izS=0;
+let orbitAci=0, orbitCd=[], dalgaS=0, yenilenS=0, kasirgaS=0, kasirgaAktif=0, kasirgaAtisS=0, izS=0, kamciS=0;
 let combo=0, comboS=0, sarsinti=0, yavasS=0;
 let kadDuyuru={fare:0,tilki:0,robot:0}, bossSayisi=0;
 let sonsuzSv={}, elitDuyuru=0;   /* sonsuz kart sayaçları + elit dalga duyurusu */
@@ -407,12 +407,12 @@ function runBaslat(){
     mik:(60+(S.sev.mik-1)*14)*mikB,
     atisAra:0.8, adet:1, menzil:0.42*menB, yumakBoy:1, patiCarp:patiB,
     zirh:0, balon:0,
-    guc:{hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0}};
+    guc:{hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0}};
   dusmanlar=[]; mermiler=[]; baliklar=[]; parcalar=[]; yazilar=[]; eklentiler=[];
   sure=0; xp=0; xpEsik=5; seviye=1; atisS=0.4; spawnS=1; bossS=120; koaSayac=0;
   kazanilanPati=0; kazanilanBalik=0; mesafeSayac=0; balikEklentiSayac=0;
   gucSv={}; evrimler=[]; dostlar=[]; izler=[]; simsekler=[];
-  orbitAci=0; orbitCd=[0,0,0,0,0]; dalgaS=20; yenilenS=40; kasirgaS=18; kasirgaAktif=0; kasirgaAtisS=0; izS=0;
+  orbitAci=0; orbitCd=[0,0,0,0,0]; dalgaS=20; yenilenS=40; kasirgaS=18; kasirgaAktif=0; kasirgaAtisS=0; izS=0; kamciS=0;
   combo=0; comboS=0; sarsinti=0; yavasS=0;
   kadDuyuru={fare:0,tilki:0,robot:0}; bossSayisi=0;
   sonsuzSv={}; elitDuyuru=0;
@@ -480,7 +480,11 @@ const EKLENTI=[
   {id:'bomba',ikon:'💣',ad:'Yumak Bombası!',w:4},
   {id:'roket',ikon:'🚀',ad:'Roket Atış!',w:5},
   {id:'hayalet',ikon:'👻',ad:'Hayalet Modu!',w:3},
-  {id:'ziyafet',ikon:'🍤',ad:'Balık Ziyafeti!',w:4}
+  {id:'ziyafet',ikon:'🍤',ad:'Balık Ziyafeti!',w:4},
+  {id:'kilcik',ikon:'🐡',ad:'Kılçık Fırtınası!',w:4},
+  {id:'makine',ikon:'🧶',ad:'Yumak Makinesi!',w:4},
+  {id:'kamci',ikon:'🎀',ad:'Kurdele Kamçısı!',w:4},
+  {id:'isin',ikon:'💫',ad:'Işınlanma!',w:3}
 ];
 /* geç oyunda Kalkan/Kalp ağırlığı yarıya iner (ölümsüzlük kurulamasın) */
 const eklW=e=>(sure>180&&(e.id==='kalp'||e.id==='kalkan'))?e.w*0.5:e.w;
@@ -542,6 +546,20 @@ function eklentiAl(e){
   }
   else if(e.id==='roket'){ kedi.guc.roket=6; }
   else if(e.id==='hayalet'){ kedi.guc.hayalet=5; }
+  else if(e.id==='kilcik'){ kedi.guc.kilcik=6; }   /* 🐡 delici hızlı kılçıklar */
+  else if(e.id==='makine'){ kedi.guc.makine=5; }   /* 🧶 taramalı yumak yağmuru */
+  else if(e.id==='kamci'){ kedi.guc.kamci=6; }     /* 🎀 çevrede dönen kamçı savruluşu */
+  else if(e.id==='isin'){                          /* 💫 tehlikeden uzağa ışınlan */
+    parca(kedi.x,kedi.y,14,'#d0a8ff',true);
+    let ux=0,uy=0;
+    for(const d of dusmanlar){ const ddx=kedi.x-d.x,ddy=kedi.y-d.y,l=Math.hypot(ddx,ddy)||1; ux+=ddx/(l*l); uy+=ddy/(l*l); }
+    const ul=Math.hypot(ux,uy);
+    const a2=ul>0.0001?Math.atan2(uy,ux):Math.random()*6.283;
+    kedi.x+=Math.cos(a2)*BIRIM()*1.1; kedi.y+=Math.sin(a2)*BIRIM()*1.1;
+    kedi.invuln=Math.max(kedi.invuln,1);
+    parca(kedi.x,kedi.y,14,'#d0a8ff',true); buzz([10,20,10]);
+    yaz(kedi.x,kedi.y-42,'💫 VIINN!','#d0a8ff');
+  }
   else if(e.id==='ziyafet'){     /* 🍤 haritadaki tüm balıklar sana koşar */
     let n=0; for(const b of baliklar){ if(!b.olu){ b.cek=true; n++; } }
     yaz(kedi.x,kedi.y-42,'🍤 Ziyafet! '+n+' balık geliyor','#7ad0e0');
@@ -1030,6 +1048,19 @@ function guncelle(dt){
       } else dd.atisS=0.3;
     }
   }
+  /* ── 🎀 kurdele kamçısı: yarım saniyede bir çevreyi süpürür ── */
+  if(kedi.guc.kamci>0){
+    kamciS-=dt;
+    if(kamciS<=0){
+      kamciS=0.5;
+      const kR=BIRIM()*0.28, kR2=kR*kR; let kv=0;
+      for(const d of dusmanlar){
+        const dx3=d.x-kedi.x,dy3=d.y-kedi.y;
+        if(dx3*dx3+dy3*dy3<kR2){ hasarVer(d,kedi.hasar*1.3); d.flas=0.15; kv++; }
+      }
+      if(kv>0){ parca(kedi.x,kedi.y,8,'#ff9ad5',true); buzz(6); }
+    }
+  }
   /* ── 🔥 ateş patisi izleri ── */
   if(kedi.guc.ates>0){
     izS-=dt;
@@ -1089,7 +1120,7 @@ function guncelle(dt){
       hedefD[i]=d; hedefM[i]=m2;
     }
     if(hN>0){
-      atisS=kedi.atisAra*(kedi.guc.roket>0?0.5:1);
+      atisS=kedi.atisAra*(kedi.guc.roket>0?0.5:1)*(kedi.guc.makine>0?0.3:1);
       const ssv=gucSv.sacilma||0, yelpaze=ssv?0.5-0.12*(ssv-1):0;
       for(let i=0;i<kedi.adet;i++){
         if(mermiler.length>=MERMI_TAVAN)break;
@@ -1098,10 +1129,11 @@ function guncelle(dt){
         /* 🎏 üçlü saçılma: her atış yelpaze 3 yumak */
         for(let s2=(ssv?-1:0);s2<=(ssv?1:0);s2++){
           if(mermiler.length>=MERMI_TAVAN)break;
-          const a2=a+s2*yelpaze;
-          mermiler.push({x:kedi.x,y:kedi.y,vx:Math.cos(a2)*BIRIM()*0.75,vy:Math.sin(a2)*BIRIM()*0.75,
-            omur:1.1,don:Math.random()*6.28,
-            sek:gucSv.sekme||0,del:gucSv.delici||0});
+          const a2=a+s2*yelpaze+(kedi.guc.makine>0?(Math.random()-0.5)*0.5:0);
+          const mHiz=BIRIM()*(kedi.guc.kilcik>0?1.15:0.75);
+          mermiler.push({x:kedi.x,y:kedi.y,vx:Math.cos(a2)*mHiz,vy:Math.sin(a2)*mHiz,
+            omur:1.1,don:Math.random()*6.28,kilcik:kedi.guc.kilcik>0,
+            sek:gucSv.sekme||0,del:kedi.guc.kilcik>0?99:(gucSv.delici||0)});
         }
       }
       sesAtis();
@@ -1176,13 +1208,14 @@ function guncelle(dt){
   }
   /* balıklar */
   const mikR=kedi.mik*MOLC()*(kedi.guc.mik>0?3:1), mikR2=mikR*mikR,
-    kapR=BIRIM()*0.03, kapR2=kapR*kapR;
+    kapR=BIRIM()*0.06, kapR2=kapR*kapR,
+    bHiz=Math.max(0.75,kedi.hiz*0.32*1.7);   /* balık kediden hep hızlı: kaçamaz */
   for(const b of baliklar){
     const dx=kedi.x-b.x, dy=kedi.y-b.y, L2=dx*dx+dy*dy;
     if(L2<mikR2)b.cek=true;
     if(b.cek){
       const L=Math.sqrt(L2)||1;
-      b.x+=dx/L*BIRIM()*0.75*dt; b.y+=dy/L*BIRIM()*0.75*dt;
+      b.x+=dx/L*BIRIM()*bHiz*dt; b.y+=dy/L*BIRIM()*bHiz*dt;
       if(L2<kapR2){
         b.olu=true; sesBalik();
         kazanilanBalik++;                                 /* balık = kalıcı para */
@@ -1223,7 +1256,7 @@ function kosuGeriYukle(){
   evrimler=(kk.ev||[]).slice();
   sonsuzSv=Object.assign({},kk.ss||{});        /* sonsuz kart sayaçları (eski kayıtta yoksa boş) */
   Object.assign(kedi,kk.k);
-  kedi.guc=Object.assign({hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0},kk.k.guc);
+  kedi.guc=Object.assign({hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0},kk.k.guc);
   kedi.zirh=Math.min(0.3,kk.k.zirh||0); kedi.balon=kk.k.balon||0;   /* eski %40 post kayıtları %30'a törpülenir */
   kedi.invuln=2.5;               /* dönüşte kısa dokunulmazlık */
   buildSeritYaz();
@@ -1833,8 +1866,16 @@ function ciz(){
   for(const m of mermiler){
     const ex=W/2+(m.x-kedi.x), ey=H/2+(m.y-kedi.y);
     if(ex<-40||ex>W+40||ey<-40||ey>H+40)continue;
-    ctx.save(); ctx.translate(ex,ey); ctx.rotate(m.don);
-    ctx.drawImage(SP.yumak.cv,-yb,-yb,yb*2,yb*2);
+    ctx.save(); ctx.translate(ex,ey);
+    if(m.kilcik){                       /* 🐡 kılçık: uçuş yönünde ince ok */
+      ctx.rotate(Math.atan2(m.vy,m.vx));
+      ctx.fillStyle='#f2ece0'; ctx.strokeStyle='#b8ae98'; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.moveTo(yb*1.5,0); ctx.lineTo(-yb,yb*0.45); ctx.lineTo(-yb*0.4,0); ctx.lineTo(-yb,-yb*0.45); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    } else {
+      ctx.rotate(m.don);
+      ctx.drawImage(SP.yumak.cv,-yb,-yb,yb*2,yb*2);
+    }
     ctx.restore();
   }
   /* düşmanlar */
@@ -2076,8 +2117,8 @@ function hudYaz(id,v){
   hudOnceki[id]=v; document.getElementById(id).textContent=v;
 }
 /* ── güç süre şeritleri (yeni süreli güçler dahil) ── */
-const GUC_MAX={hiz:8,mik:8,hasar:8,kalkan:6,zaman:4,ates:5,dev:5,roket:6,hayalet:5};
-const GUC_IKON={hiz:'⚡',mik:'🧲',hasar:'💪',kalkan:'🛡️',zaman:'⏱️',ates:'🔥',dev:'👑',roket:'🚀',hayalet:'👻'};
+const GUC_MAX={hiz:8,mik:8,hasar:8,kalkan:6,zaman:4,ates:5,dev:5,roket:6,hayalet:5,kilcik:6,makine:5,kamci:6};
+const GUC_IKON={hiz:'⚡',mik:'🧲',hasar:'💪',kalkan:'🛡️',zaman:'⏱️',ates:'🔥',dev:'👑',roket:'🚀',hayalet:'👻',kilcik:'🐡',makine:'🧶',kamci:'🎀'};
 const gucEl={};
 (function(){
   const kap=document.getElementById('gucSerit');
