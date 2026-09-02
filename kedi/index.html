@@ -14,7 +14,10 @@
     justify-content:space-between;align-items:center;padding:0 max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));pointer-events:none;z-index:5;gap:8px}
   .rozet{background:rgba(20,26,14,.88);border:1.5px solid rgba(255,255,255,.22);border-radius:14px;
     padding:8px 13px;font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;
-    display:flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+    display:flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.4);
+    min-width:0;overflow:hidden;flex-shrink:1}
+  #canEl{text-overflow:ellipsis}
+  #sureEl,#patiEl,#balikEl{flex-shrink:0}
   #sureEl{color:var(--altin);font-size:16px}
   #patiEl{color:var(--turuncu)}
   /* dar ekran (iPhone SE): rozetler sıkışır, taşma olmasın */
@@ -2165,7 +2168,9 @@ function hud(){
   const dk=Math.floor(sure/60), sn=Math.floor(sure%60);
   /* ⚔️ dalga rozeti: dakika başına artar — zorluk arttıkça oyuncu görsün */
   hudYaz('sureEl','⏱'+dk+':'+(sn<10?'0':'')+sn+' ⚔️'+(dk+1));
-  hudYaz('canEl','❤️'.repeat(Math.max(0,kedi.hp))+'🖤'.repeat(Math.max(0,kedi.maxHp-kedi.hp)));
+  hudYaz('canEl',kedi.maxHp<=5
+    ?'❤️'.repeat(Math.max(0,kedi.hp))+'🖤'.repeat(Math.max(0,kedi.maxHp-kedi.hp))
+    :'❤️ '+Math.max(0,kedi.hp)+'/'+kedi.maxHp);
   hudYaz('patiEl','🐾 '+kisa(S.pati+kazanilanPati));
   hudYaz('balikEl','🐟 '+kisa(S.balik+kazanilanBalik));
   const xpW=Math.round(xp/xpEsik*1000)/10+'%';
