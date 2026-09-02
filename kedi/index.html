@@ -385,7 +385,8 @@ let kedi, dusmanlar, mermiler, baliklar, parcalar, yazilar, eklentiler, dmermile
 let sure, xp, xpEsik, seviye, run, atisS, spawnS, bossS, koaSayac, kazanilanPati;
 let kazanilanBalik, mesafeSayac, balikEklentiSayac;
 /* yeni içerik durumu */
-let gucSv={}, evrimler=[], dostlar=[], izler=[], simsekler=[];
+let gucSv={}, evrimler=[], dostlar=[], izler=[], simsekler=[], halkalar=[];
+function halka(x,y,maxR,renk){ if(halkalar.length<12)halkalar.push({x,y,r:0,maxR,omur:0.55,renk}); }
 let orbitAci=0, orbitCd=[], dalgaS=0, yenilenS=0, kasirgaS=0, kasirgaAktif=0, kasirgaAtisS=0, izS=0, kamciS=0, havaiS=0, ucurtma=null; const sonEkl=[];
 let combo=0, comboS=0, sarsinti=0, yavasS=0;
 let kadDuyuru={fare:0,tilki:0,robot:0}, bossSayisi=0;
@@ -411,7 +412,7 @@ function runBaslat(){
   dusmanlar=[]; mermiler=[]; baliklar=[]; parcalar=[]; yazilar=[]; eklentiler=[]; dmermiler=[];
   sure=0; xp=0; xpEsik=5; seviye=1; atisS=0.4; spawnS=1; bossS=120; koaSayac=0;
   kazanilanPati=0; kazanilanBalik=0; mesafeSayac=0; balikEklentiSayac=0;
-  gucSv={}; evrimler=[]; dostlar=[]; izler=[]; simsekler=[];
+  gucSv={}; evrimler=[]; dostlar=[]; izler=[]; simsekler=[]; halkalar=[];
   orbitAci=0; orbitCd=[0,0,0,0,0]; dalgaS=20; yenilenS=40; kasirgaS=18; kasirgaAktif=0; kasirgaAtisS=0; izS=0; kamciS=0; havaiS=0; ucurtma=null; sonEkl.length=0;
   combo=0; comboS=0; sarsinti=0; yavasS=0;
   kadDuyuru={fare:0,tilki:0,robot:0}; bossSayisi=0;
@@ -551,6 +552,7 @@ function eklentiAl(e){
       const dx=d.x-kedi.x,dy=d.y-kedi.y;
       if(dx*dx+dy*dy<BIRIM()*BIRIM()*6.5){ d.don=Math.max(d.don||0,3.5); donan++; parca(d.x,d.y,3,'#aee6ff'); }
     }
+    halka(kedi.x,kedi.y,BIRIM()*2.4,'#aee6ff');
     yaz(kedi.x,kedi.y-42,donan>0?('🧊 '+donan+' düşman dondu!'):'🧊 Buz dalgası!','#aee6ff');
   }
   else if(e.id==='bomba'){       /* 💣 alan patlaması */
@@ -560,6 +562,7 @@ function eklentiAl(e){
       if(dx*dx+dy*dy<BIRIM()*BIRIM()*1.7){ hasarVer(d,kedi.hasar*4); vur++; }
     }
     parca(kedi.x,kedi.y,parcaTavan(),'#ffb347',true); buzz([20,40,20]);
+    halka(kedi.x,kedi.y,BIRIM()*1.3,'#ffb347'); halka(kedi.x,kedi.y,BIRIM()*0.8,'#fff0c0');
     yaz(kedi.x,kedi.y-42,'💣 BOOM! '+vur+' düşman','#ffb347');
   }
   else if(e.id==='roket'){ kedi.guc.roket=6; novaAt(8,1,false); yaz(kedi.x,kedi.y-58,'🚀 TEMPO 2×!','#ffd27a'); }
@@ -575,7 +578,7 @@ function eklentiAl(e){
     const a2=ul>0.0001?Math.atan2(uy,ux):Math.random()*6.283;
     kedi.x+=Math.cos(a2)*BIRIM()*1.1; kedi.y+=Math.sin(a2)*BIRIM()*1.1;
     kedi.invuln=Math.max(kedi.invuln,1);
-    parca(kedi.x,kedi.y,14,'#d0a8ff',true); buzz([10,20,10]);
+    parca(kedi.x,kedi.y,14,'#d0a8ff',true); buzz([10,20,10]); halka(kedi.x,kedi.y,BIRIM()*0.4,'#d0a8ff');
     yaz(kedi.x,kedi.y-42,'💫 VIINN!','#d0a8ff');
   }
   else if(e.id==='girdap'){      /* 🌪️ düşmanlar çevrende bir halkaya savrulur + sersemler */
@@ -584,12 +587,13 @@ function eklentiAl(e){
       const dx=d.x-kedi.x,dy=d.y-kedi.y,L=Math.hypot(dx,dy)||1;
       if(L<BIRIM()*2.2){ const r2=BIRIM()*0.42; d.x=kedi.x+dx/L*r2; d.y=kedi.y+dy/L*r2; d.don=Math.max(d.don||0,1.2); hasarVer(d,kedi.hasar*0.8); n++; }
     }
-    parca(kedi.x,kedi.y,20,'#9ad0ff',true); buzz([15,25,15]);
+    parca(kedi.x,kedi.y,20,'#9ad0ff',true); buzz([15,25,15]); halka(kedi.x,kedi.y,BIRIM()*0.55,'#9ad0ff');
     yaz(kedi.x,kedi.y-42,'🌪️ '+n+' düşman savruldu!','#9ad0ff');
   }
   else if(e.id==='ucurtma'){     /* 🪁 sahte hedef: düşmanlar 6 sn ona koşar */
     kedi.guc.ucurtma=6;
-    ucurtma={x:kedi.x+(Math.random()<0.5?-1:1)*BIRIM()*0.9,y:kedi.y+(Math.random()-0.5)*BIRIM()*0.8};
+    ucurtma={x:kedi.x+(Math.random()<0.5?-1:1)*BIRIM()*0.4,y:kedi.y+(Math.random()-0.5)*BIRIM()*0.35};
+    halka(ucurtma.x,ucurtma.y,BIRIM()*0.3,'#9ad0ff');
   }
   else if(e.id==='elmas'){ kazanilanPati+=25; yaz(kedi.x,kedi.y-42,'+25 🐾','#ffce54'); }
   else if(e.id==='sut'){ kedi.hp=Math.min(kedi.maxHp,kedi.hp+2); }
@@ -1103,7 +1107,7 @@ function guncelle(dt){
   /* ── 🎆 havai fişek: 0.4 sn arayla nova dalgaları ── */
   if(kedi.guc.havai>0){
     havaiS-=dt;
-    if(havaiS<=0){ havaiS=0.4; novaAt(10,1.2,false); sesPuf&&sesPuf(); parca(kedi.x,kedi.y,10,'#ffd27a',true); }
+    if(havaiS<=0){ havaiS=0.4; novaAt(10,1.2,false); sesPuf&&sesPuf(); parca(kedi.x,kedi.y,10,'#ffd27a',true); halka(kedi.x,kedi.y,BIRIM()*0.5,'#ffd27a'); }
   }
   /* ── 🔥 ateş patisi izleri ── */
   if(kedi.guc.ates>0){
@@ -1111,7 +1115,7 @@ function guncelle(dt){
     if(izS<=0){
       izS=0.12;
       if(izler.length>=34)izler.shift();
-      izler.push({x:kedi.x,y:kedi.y,omur:2.2,tohum:Math.random()*6.28});
+      izler.push({x:kedi.x+(Math.random()-0.5)*40,y:kedi.y+14+(Math.random()-0.5)*24,omur:2.2,tohum:Math.random()*6.28});
     }
   }
   if(izler.length){
@@ -1128,6 +1132,8 @@ function guncelle(dt){
   }
   for(const sm of simsekler)sm.omur-=dt;
   sik(simsekler,tutOmur);
+  for(const hk of halkalar){ hk.omur-=dt; hk.r=hk.maxR*(1-hk.omur/0.55); }
+  sik(halkalar,tutOmur);
   /* 🔫 düşman su saçmaları */
   if(dmermiler.length){
     const vurR=BIRIM()*0.05, vurR2=vurR*vurR;
@@ -1820,15 +1826,17 @@ function kediCiz(){
   }
   /* 🎀 kurdele kamçısı: dönen süpürme yayı */
   if(kedi.guc.kamci>0){
-    const kaci=performance.now()/140, kr=BIRIM()*0.4/devS;
-    for(let q=0;q<3;q++){
-      ctx.strokeStyle='rgba(255,'+(140+q*30)+',213,'+(0.55-q*0.15)+')';
-      ctx.lineWidth=(7-q*2)/devS;
-      ctx.beginPath(); ctx.arc(0,0,kr*(1-q*0.06),kaci,kaci+1.9); ctx.stroke();
+    const kaci=performance.now()/120, kr=BIRIM()*0.4/devS;
+    for(let q=0;q<4;q++){
+      ctx.strokeStyle='rgba(255,'+(130+q*30)+',215,'+(0.85-q*0.18)+')';
+      ctx.lineWidth=(11-q*2.4)/devS;
+      ctx.beginPath(); ctx.arc(0,0,kr*(1-q*0.07),kaci-q*0.25,kaci+1.9-q*0.25); ctx.stroke();
     }
     const ux3=Math.cos(kaci+1.9)*kr, uy3=Math.sin(kaci+1.9)*kr;
     ctx.fillStyle='#fff';
-    ctx.beginPath(); ctx.arc(ux3,uy3,4.5/devS,0,7); ctx.fill();
+    ctx.beginPath(); ctx.arc(ux3,uy3,6/devS,0,7); ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=2.5/devS;
+    ctx.beginPath(); ctx.arc(0,0,kr,kaci+1.75,kaci+1.9); ctx.stroke();
   }
   /* kalkan halkası */
   if(kedi.guc&&kedi.guc.kalkan>0){
@@ -1878,16 +1886,22 @@ function dusmanCiz(d){
     ctx.strokeStyle='rgba(255,206,84,'+(d.parla*0.9)+')'; ctx.lineWidth=3;
     ctx.beginPath(); ctx.arc(ex,ey-zip,b*(1.1+(1-d.parla)*0.5),0,7); ctx.stroke();
   }
-  /* ❄️ donmuş: buz mavisi örtü */
+  /* ❄️ donmuş: parlak buz kaplaması + çerçeve + kar tanesi */
   if((d.don||0)>0){
-    ctx.fillStyle='rgba(122,208,240,.32)';
-    ctx.beginPath(); ctx.ellipse(ex,ey-zip,b*0.75,b*0.68,0,0,7); ctx.fill();
+    ctx.fillStyle='rgba(150,220,250,.48)';
+    ctx.beginPath(); ctx.ellipse(ex,ey-zip,b*0.8,b*0.72,0,0,7); ctx.fill();
+    ctx.strokeStyle='rgba(235,250,255,.85)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.ellipse(ex,ey-zip,b*0.8,b*0.72,0,0,7); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.95)';
+    ctx.font=Math.round(b*0.55)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('❄',ex,ey-zip-b*0.15);
   }
   /* 🔫 nişancı fare: su tabancası */
   if(d.atici){
     ctx.save(); ctx.translate(ex+b*0.72,ey-zip-b*0.1);
     ctx.scale(kedi.x>d.x?1:-1,1);
-    ctx.font=Math.round(b*0.9)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.rotate(-0.25);
+    ctx.font=Math.round(b*1.3)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🔫',0,0);
     ctx.restore();
   }
@@ -1934,7 +1948,7 @@ function ciz(){
     const ex=W/2+(iz.x-kedi.x), ey=H/2+(iz.y-kedi.y);
     if(ex<-30||ex>W+30||ey<-30||ey>H+30)continue;
     const c2=Math.min(1,iz.omur*0.8), tit=Math.sin(performance.now()/70+(iz.tohum||0));
-    const ab=BIRIM()*0.028*(0.7+c2*0.5), yl=ab*(1.5+tit*0.3);
+    const ab=BIRIM()*0.038*(0.7+c2*0.5), yl=ab*(1.6+tit*0.35);
     ctx.globalAlpha=c2*0.9;
     ctx.fillStyle='#ff7a3c';
     ctx.beginPath(); ctx.moveTo(ex,ey-yl); ctx.quadraticCurveTo(ex+ab,ey-yl*0.3,ex,ey+ab*0.5);
@@ -1962,11 +1976,24 @@ function ciz(){
     ctx.globalAlpha=1;
   }
   /* eklentiler (asla kaybolmaz — parlar ve zıplar) */
+  for(const hk of halkalar){
+    const ex=W/2+(hk.x-kedi.x), ey=H/2+(hk.y-kedi.y);
+    const c3=Math.max(0,hk.omur/0.55);
+    ctx.strokeStyle=hk.renk; ctx.globalAlpha=c3*0.85; ctx.lineWidth=3+c3*5;
+    ctx.beginPath(); ctx.arc(ex,ey,hk.r,0,7); ctx.stroke();
+    ctx.globalAlpha=c3*0.35; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(ex,ey,hk.r*0.8,0,7); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
   if(kedi.guc.ucurtma>0&&ucurtma){
     const ux2=W/2+(ucurtma.x-kedi.x), uy2=H/2+(ucurtma.y-kedi.y);
-    const sal=Math.sin(performance.now()/300)*6;
-    ctx.save(); ctx.font='34px sans-serif'; ctx.textAlign='center';
-    ctx.globalAlpha=0.6+Math.sin(performance.now()/200)*0.3;
+    const sal=Math.sin(performance.now()/300)*8;
+    ctx.save();
+    ctx.strokeStyle='rgba(255,255,255,.45)'; ctx.lineWidth=1.5; ctx.setLineDash([5,6]);
+    ctx.beginPath(); ctx.moveTo(W/2,H/2); ctx.quadraticCurveTo((W/2+ux2)/2,(H/2+uy2)/2-30,ux2+sal,uy2+8); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font='42px sans-serif'; ctx.textAlign='center';
+    ctx.globalAlpha=0.75+Math.sin(performance.now()/200)*0.25;
     ctx.fillText('🪁',ux2+sal,uy2);
     ctx.restore();
   }
