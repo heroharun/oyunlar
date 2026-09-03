@@ -16,6 +16,7 @@ html,body{height:100%;overflow:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--lacivert);
   background:linear-gradient(180deg,#bfe8de 0%,var(--nane3) 40%,var(--krem) 100%);touch-action:manipulation}
 #app{position:fixed;inset:0;display:flex;flex-direction:column}
+@supports (height:100dvh){ #app{bottom:auto;height:100dvh} }
 .ekran{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
   overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(14px + var(--st)) 14px calc(18px + var(--sb))}
 .ekran.on{display:flex}

@@ -61,6 +61,7 @@ h1,h2,h3,h4{font-family:var(--disp);margin:0;font-weight:700;letter-spacing:.01e
 
 /* ------------------------------- ekranlar ------------------------------- */
 #app{position:fixed;inset:0;z-index:1}
+@supports (height:100dvh){ #app{bottom:auto;height:100dvh} }
 .screen{position:absolute;inset:0;display:none;overflow:auto;-webkit-overflow-scrolling:touch}
 .screen.on{display:block}
 
@@ -484,7 +485,7 @@ html[dir="rtl"] .o-kart.aktif::before{left:auto;right:0}
     border-radius:var(--r);background:var(--kagit);border:1.5px solid var(--cizgi2);
     box-shadow:0 20px 60px rgba(42,33,21,.35);padding:14px;overflow:auto;animation:yuksel .22s ease}
   .orta{align-items:center;justify-content:flex-start;padding-top:2px}
-  .mobil-bar{grid-area:mobil;display:grid;gap:8px;padding:9px max(9px,env(safe-area-inset-right)) calc(9px + var(--sb)) max(9px,env(safe-area-inset-left));
+  .mobil-bar{grid-area:mobil;display:grid;gap:8px;padding:9px max(9px,env(safe-area-inset-right)) calc(12px + var(--sb)) max(9px,env(safe-area-inset-left));
     background:var(--kagit);border-top:2px solid var(--cizgi);box-shadow:0 -6px 20px rgba(90,74,49,.10)}
   .mb-kaynak{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
   .mb-kaynak .k{justify-content:center;font-size:.9rem;background:var(--kagit2);border:1px solid var(--cizgi);
