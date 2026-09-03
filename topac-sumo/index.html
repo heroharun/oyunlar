@@ -809,6 +809,19 @@ function botThink(p, dt){
   ay += Math.sin(p.wanderA)*D.jitter;
   l = Math.hypot(ax,ay)||1; ax/=l; ay/=l;
 
+  /* 🤝 baskınlık merhameti: bot ezici üstünse rastgele "hafif salaklaşır"
+     — canı/serisi önde olan bot ara ara yavaşlar, sendeler, dash'i unutur */
+  let mer=0;
+  if(foe.lives<p.lives) mer+=0.22*(p.lives-foe.lives);
+  if(foe.hp<40&&p.hp>65) mer+=0.22;
+  if((game.score[1]-game.score[0])>=2) mer+=0.18;
+  mer=Math.min(0.65,mer);
+  p.merT=(p.merT||0)-dt;
+  if(mer>0&&p.merT<=-1.5&&Math.random()<mer*dt*0.9) p.merT=0.5+Math.random()*0.6;
+  const sendele=p.merT>0;
+  if(sendele){ ax=Math.cos(p.wanderA); ay=Math.sin(p.wanderA); }   /* kısa süre amaçsız süzülür */
+  const merHiz=1-mer*0.22-(sendele?0.35:0);
+
   // dash kararı
   let dash=false;
   if(p.dashCd<=0){
@@ -820,8 +833,9 @@ function botThink(p, dt){
     if(mode==='attack' && dF<170 && align>0.88 && foeU>D.dashFoeU && safe) dash=true;
     if(mode==='evade' && u>0.75 && safe) dash=true;
     if(Math.random()<D.randDash*dt && safe) dash=true;
+    if(sendele||(mer>0&&Math.random()<mer*0.6)) dash=false;   /* merhamet: dash'i unutur */
   }
-  return {ax:ax*D.speed, ay:ay*D.speed, dash};
+  return {ax:ax*D.speed*merHiz, ay:ay*D.speed*merHiz, dash};
 }
 
 /* ================= FİZİK ================= */
