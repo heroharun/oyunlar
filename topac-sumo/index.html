@@ -150,10 +150,11 @@
       <h4>TEK KİŞİLİK</h4>
       <p class="mdesc">Bota karşı oyna<br>WASD veya oklar + <kbd>Boşluk</kbd></p>
       <div class="netrow">
+        <button class="btn" id="optBot0">ÇOK KOLAY</button>
         <button class="btn" id="optBot1">KOLAY</button>
         <button class="btn" id="optBot2">ZOR</button>
       </div>
-      <p class="mkey">kısayol: <kbd>1</kbd> <kbd>2</kbd></p>
+      <p class="mkey">kısayol: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></p>
     </div>
     <div class="mode">
       <div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.5" cy="8.2" r="3.1"/><path d="M2.8 19.2c0-3.1 2.6-5.2 5.7-5.2s5.7 2.1 5.7 5.2"/><circle cx="16.6" cy="9.3" r="2.5"/><path d="M15.8 14.6c2.9.3 5.4 2.1 5.4 4.6"/></svg></div>
@@ -478,8 +479,9 @@ addEventListener('keydown', e=>{
   keys[e.key.toLowerCase()] = true;
   if(game.state==='menu' && !net.lock){
     if(e.key===' ') startGame('2p');
-    if(e.key==='1') startGame('bot','easy');
-    if(e.key==='2') startGame('bot','hard');
+    if(e.key==='1') startGame('bot','baby');
+    if(e.key==='2') startGame('bot','easy');
+    if(e.key==='3') startGame('bot','hard');
   }
   if(e.key.toLowerCase()==='r' && game.state==='gameover'){
     if(net.role==='guest'){ try{ net.conn.send({t:'rematch'}); }catch(err){} }
@@ -518,6 +520,7 @@ try{
 for(const el of [nick1El, nick2El, document.getElementById('joinCode')]){
   el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key==='Escape') el.blur(); });
 }
+document.getElementById('optBot0').onclick = ()=>{ if(game.state==='menu' && !net.lock) startGame('bot','baby'); };
 document.getElementById('optBot1').onclick = ()=>{ if(game.state==='menu' && !net.lock) startGame('bot','easy'); };
 document.getElementById('optBot2').onclick = ()=>{ if(game.state==='menu' && !net.lock) startGame('bot','hard'); };
 document.getElementById('opt2p').onclick  = ()=>{ if(game.state==='menu' && !net.lock) startGame('2p'); };
@@ -526,7 +529,8 @@ const P1_KEYS = {up:'w', down:'s', left:'a', right:'d', dash:' '};
 const P2_KEYS = {up:'arrowup', down:'arrowdown', left:'arrowleft', right:'arrowright', dash:'enter'};
 
 const BOT_DIFFS = {
-  easy:{speed:0.72, jitter:0.5, lead:0, edgeStart:0.6, edgeCare:0.85, dashFoeU:0.65, randDash:0.15, dodge:false},
+  baby:{speed:0.42, jitter:1.15, lead:0, edgeStart:0.52, edgeCare:0.55, dashFoeU:0.9, randDash:0.05, dodge:false, uyuklama:2.2, silahIstek:0.35},
+  easy:{speed:0.58, jitter:0.8, lead:0, edgeStart:0.58, edgeCare:0.7, dashFoeU:0.75, randDash:0.1, dodge:false, uyuklama:4.5, silahIstek:0.7},
   hard:{speed:1.0, jitter:0.14, lead:0.16, edgeStart:0.48, edgeCare:1.4, dashFoeU:0.45, randDash:0.05, dodge:true}
 };
 
@@ -701,6 +705,12 @@ function addFloat(x,y,txt,color){
 function botThink(p, dt){
   const foe = players[0];
   const D = p.diffP;
+  /* 😴 kolay botlar ara ara dalar: kısa süre hiç hamle yapmaz */
+  if(D.uyuklama){
+    p.uyukT=(p.uyukT||0)-dt;
+    if(p.uyukT<=-D.uyuklama) p.uyukT=0.7+Math.random()*0.5;   /* dalma süresi */
+    if(p.uyukT>0) return {ax:0, ay:0, dash:false};
+  }
   p.wanderT -= dt;
   if(p.wanderT<=0){ p.wanderA = Math.random()*Math.PI*2; p.wanderT = 0.3+Math.random()*0.5; }
 
@@ -733,7 +743,7 @@ function botThink(p, dt){
     else if(pu.type==='ghost') s = p.ghostT>0?0.3:1.2;
     else s = p.disguiseT>0?0.3:0.8;
     const d = Math.hypot(pu.x-p.x, pu.y-p.y);
-    s = s/(1+d/200);
+    s = s*(D.silahIstek||1)/(1+d/200);
     if(s>bestScore){ bestScore=s; best=pu; }
   }
   const foeArmed = foe.weapon && !p.weapon;
