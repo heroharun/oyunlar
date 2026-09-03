@@ -528,6 +528,17 @@ document.getElementById('opt2p').onclick  = ()=>{ if(game.state==='menu' && !net
 const P1_KEYS = {up:'w', down:'s', left:'a', right:'d', dash:' '};
 const P2_KEYS = {up:'arrowup', down:'arrowdown', left:'arrowleft', right:'arrowright', dash:'enter'};
 
+/* ── ÇOK KOLAY uyarlanır: oyuncu kazandıkça bot azar azar akıllanır (tavan: KOLAY),
+      oyuncu kaybedince hızla geri yumuşar — oyun zevki hep önde ── */
+let bebekSeviye=0;
+try{ bebekSeviye=Math.max(0,Math.min(1,parseFloat(localStorage.getItem('sumo_bebek')||'0')||0)); }catch(e){}
+function bebekKaydet(){ try{ localStorage.setItem('sumo_bebek',bebekSeviye.toFixed(3)); }catch(e){} }
+function bebekDiff(){
+  const t=bebekSeviye, L=(a,b)=>a+(b-a)*t;
+  return {speed:L(0.42,0.58), jitter:L(1.15,0.8), lead:0,
+    edgeStart:L(0.52,0.58), edgeCare:L(0.55,0.7), dashFoeU:L(0.9,0.75),
+    randDash:L(0.05,0.1), dodge:false, uyuklama:L(2.2,4.5), silahIstek:L(0.35,0.7)};
+}
 const BOT_DIFFS = {
   baby:{speed:0.42, jitter:1.15, lead:0, edgeStart:0.52, edgeCare:0.55, dashFoeU:0.9, randDash:0.05, dodge:false, uyuklama:2.2, silahIstek:0.35},
   easy:{speed:0.58, jitter:0.8, lead:0, edgeStart:0.58, edgeCare:0.7, dashFoeU:0.75, randDash:0.1, dodge:false, uyuklama:4.5, silahIstek:0.7},
@@ -604,7 +615,7 @@ function startGame(mode, diff){
   try{ localStorage.setItem('nick1',n1v); localStorage.setItem('nick2',n2v); }catch(e){}
   if(mode==='bot'){
     players[1].bot = true;
-    players[1].diffP = BOT_DIFFS[diff];
+    players[1].diffP = diff==='baby' ? bebekDiff() : BOT_DIFFS[diff];
     game.names = [n1v||'SEN', diff==='hard' ? 'BOT ZOR' : 'BOT'];
     document.getElementById('d2k').textContent='OTO';
   } else if(mode==='online'){
@@ -1117,6 +1128,10 @@ function roundEnd(){
   if(loser.lives<=0){
     const winner = players[loser.i?0:1];
     game.score[winner.i]++; game.games++;
+    if(game.mode==='bot'&&game.diff==='baby'){
+      bebekSeviye=Math.max(0,Math.min(1, bebekSeviye+(winner.i===0?0.06:-0.12)));
+      bebekKaydet();
+    }
     const seriesTxt = game.names[0]+' '+game.score[0]+' — '+game.score[1]+' '+game.names[1]+' · '+game.games+'. oyun';
     const wt = document.getElementById('winTitle');
     const txt = game.names[winner.i]+' KAZANDI! 🏆';
