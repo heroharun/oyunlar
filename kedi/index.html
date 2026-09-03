@@ -1258,11 +1258,16 @@ function guncelle(dt){
     const durMes=d.atici?BIRIM()*0.55:0;
     if(tL>durMes){ d.x+=tdx/tL*BIRIM()*d.hiz*hizC*dt; d.y+=tdy/tL*BIRIM()*d.hiz*hizC*dt; }
     if(d.atici&&(d.don||0)<=0){
-      d.atesS-=dt;
-      if(d.atesS<=0&&tL<BIRIM()*1.1&&dmermiler.length<24){
-        d.atesS=2.2;
-        const av=Math.atan2(kedi.y-d.y,kedi.x-d.x);
-        dmermiler.push({x:d.x,y:d.y,vx:Math.cos(av)*BIRIM()*0.3,vy:Math.sin(av)*BIRIM()*0.3,omur:3});
+      if((d.nisan||0)>0){
+        d.nisan-=dt;
+        if(d.nisan<=0&&dmermiler.length<24){
+          const av=Math.atan2(kedi.y-d.y,kedi.x-d.x);
+          dmermiler.push({x:d.x,y:d.y,vx:Math.cos(av)*BIRIM()*0.3,vy:Math.sin(av)*BIRIM()*0.3,omur:3,faz:Math.random()*6.28});
+          parca(d.x,d.y,3,'#7ad0e0');
+        }
+      } else {
+        d.atesS-=dt;
+        if(d.atesS<=0&&tL<BIRIM()*1.1){ d.atesS=2.2; d.nisan=0.5; }
       }
     }
     const dx=kedi.x-d.x, dy=kedi.y-d.y, L=Math.hypot(dx,dy)||1;
@@ -1896,6 +1901,21 @@ function dusmanCiz(d){
     ctx.font=Math.round(b*0.55)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('❄',ex,ey-zip-b*0.15);
   }
+  /* 🎯 nişan uyarısı: ateşten önce kesikli çizgi */
+  if((d.nisan||0)>0){
+    const yan=Math.floor(performance.now()/90)%2===0;
+    ctx.save();
+    ctx.strokeStyle=yan?'rgba(255,160,60,.85)':'rgba(255,110,40,.5)';
+    ctx.lineWidth=2.5; ctx.setLineDash([7,7]); ctx.lineDashOffset=-performance.now()/30;
+    ctx.beginPath(); ctx.moveTo(ex,ey-zip);
+    const na=Math.atan2(H/2-(ey-zip),W/2-ex), nm=Math.min(Math.hypot(W/2-ex,H/2-(ey-zip)),BIRIM()*1.1);
+    ctx.lineTo(ex+Math.cos(na)*nm,ey-zip+Math.sin(na)*nm); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,160,60,.95)';
+    ctx.font='13px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('❗',ex,ey-zip-b*1.3);
+    ctx.restore();
+  }
   /* 🔫 nişancı fare: su tabancası */
   if(d.atici){
     ctx.save(); ctx.translate(ex+b*0.72,ey-zip-b*0.1);
@@ -1958,14 +1978,28 @@ function ciz(){
     ctx.quadraticCurveTo(ex-ab*0.5,ey-yl*0.15,ex,ey-yl*0.55); ctx.fill();
     ctx.globalAlpha=1;
   }
-  /* 🔫 düşman su saçmaları */
+  /* 🔫 düşman su saçmaları: iri, ışıltılı, kuyruklu — GÖRÜNÜR tehdit */
   for(const dm of dmermiler){
     const ex=W/2+(dm.x-kedi.x), ey=H/2+(dm.y-kedi.y);
-    if(ex<-20||ex>W+20||ey<-20||ey>H+20)continue;
-    ctx.fillStyle='rgba(122,208,224,.9)';
-    ctx.beginPath(); ctx.arc(ex,ey,4.5,0,7); ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.8)';
-    ctx.beginPath(); ctx.arc(ex-1,ey-1,1.8,0,7); ctx.fill();
+    if(ex<-30||ex>W+30||ey<-30||ey>H+30)continue;
+    const na=Math.atan2(dm.vy,dm.vx), nab=Math.sin(performance.now()/70+(dm.faz||0))*0.15+1;
+    ctx.save(); ctx.translate(ex,ey); ctx.rotate(na);
+    /* kuyruk: geriye doğru solan damla izi */
+    for(let q=1;q<=3;q++){
+      ctx.fillStyle='rgba(122,208,224,'+(0.38-q*0.1)+')';
+      ctx.beginPath(); ctx.arc(-q*9,0,6.5-q*1.4,0,7); ctx.fill();
+    }
+    /* dış ışıma halkası */
+    ctx.strokeStyle='rgba(160,230,255,.65)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(0,0,10*nab,0,7); ctx.stroke();
+    /* gövde: parlak su damlası */
+    ctx.fillStyle='#4db8d8';
+    ctx.beginPath(); ctx.ellipse(0,0,8.5,6.5,0,0,7); ctx.fill();
+    ctx.fillStyle='#9fe4f7';
+    ctx.beginPath(); ctx.ellipse(1.5,0,5,3.8,0,0,7); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.95)';
+    ctx.beginPath(); ctx.arc(-1,-2,2.2,0,7); ctx.fill();
+    ctx.restore();
   }
   /* balıklar */
   for(const b of baliklar){
