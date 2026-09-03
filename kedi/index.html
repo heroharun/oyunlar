@@ -350,11 +350,26 @@ const ESYALAR={
 };
 const ETKI_AD={hiz:'hız',menzil:'menzil',pati:'pati',hasar:'hasar',atis:'atış hızı',can:'can',mik:'mıknatıs',balik:'balık',krit:'kritik şansı'};
 function esySv(id){ return S.esyalar.includes(id)?(S.esySev[id]||1):0; }
-function esyBonusYazi(id){
-  const E=ESYALAR[id], sv=Math.max(1,esySv(id)), d=E.deger*sv;
-  return (E.etki==='can'?('+'+d+' can'):('+%'+Math.round(d*100)+' '+ETKI_AD[E.etki]))+(sv>1?' (Sv'+sv+')':'');
+function esyEtkiDeger(E,sv){
+  if(E.etki==='atis')return 1-Math.pow(1-E.deger,sv);          /* bileşik, asla %100 olmaz */
+  if(E.etki==='krit')return Math.min(0.45,E.deger*sv);
+  if(E.etki==='balik')return Math.min(1.5,E.deger*sv);
+  return E.deger*sv;
 }
-function esyGelFiyat(id){ return Math.round(ESYALAR[id].fiyat*(esySv(id)===1?2:4)); }
+function esyBonusYazi(id){
+  const E=ESYALAR[id], sv=Math.max(1,esySv(id)), d=esyEtkiDeger(E,sv);
+  return (E.etki==='can'?('+'+d+' can'):('+%'+Math.round(d*100)+' '+ETKI_AD[E.etki]))+(sv>1?' · Sv'+sv:'');
+}
+function esyGelFiyat(id){ return Math.round(ESYALAR[id].fiyat*Math.pow(2,esySv(id))); }
+/* görsel kademe: 1 normal · 2-3 bronz · 4-6 gümüş · 7-9 altın · 10+ elmas */
+function esyKademe(sv){ return sv>=10?4:sv>=7?3:sv>=4?2:sv>=2?1:0; }
+const KADEMELER=[
+  {ad:'',renk:'rgba(122,208,224,.0)',cerceve:'rgba(255,255,255,.14)'},
+  {ad:'BRONZ',renk:'#d0885a',cerceve:'rgba(208,136,90,.65)'},
+  {ad:'GÜMÜŞ',renk:'#c8d4e0',cerceve:'rgba(200,212,224,.7)'},
+  {ad:'ALTIN',renk:'#ffce54',cerceve:'rgba(255,206,84,.75)'},
+  {ad:'ELMAS',renk:'#8fe3ff',cerceve:'rgba(143,227,255,.85)'}
+];
 const TEMA=()=>KEDILER[S.aktifKedi]||KEDILER.sarman;
 const takiliMi=id=>S.takili[ESYALAR[id].slot]===id;
 
@@ -408,21 +423,22 @@ let kadDuyuru={fare:0,tilki:0,robot:0}, bossSayisi=0;
 let sonsuzSv={}, elitDuyuru=0;   /* sonsuz kart sayaçları + elit dalga duyurusu */
 function runBaslat(){
   /* kostüm bonusları — eşya etkisi × seviye */
-  let hizB=1,hasB=1,menB=1,mikB=1,canB=0,patiB=1,atisB=1,balikB=1,kritB=0;
+  let hizB=1,hasB=1,menB=1,mikB=1,canB=0,patiB=1,atisB=1,balikB=1,kritB=0,susT=0;
   for(const sl in S.takili){
     const id=S.takili[sl]; if(!id||!ESYALAR[id])continue;
-    const E=ESYALAR[id], d=E.deger*Math.max(1,esySv(id));
+    const E=ESYALAR[id], sv=Math.max(1,esySv(id)), d=esyEtkiDeger(E,sv);
     if(E.etki==='hiz')hizB*=1+d; else if(E.etki==='menzil')menB*=1+d;
     else if(E.etki==='pati')patiB*=1+d; else if(E.etki==='hasar')hasB*=1+d;
     else if(E.etki==='can')canB+=d; else if(E.etki==='mik')mikB*=1+d;
     else if(E.etki==='atis')atisB*=1-d; else if(E.etki==='balik')balikB+=d;
     else if(E.etki==='krit')kritB+=d;
+    susT+=sv-1;
   }
   kedi={x:0,y:0,hp:2+S.sev.can+canB,maxHp:2+S.sev.can+canB,yon:1,invuln:0,
     hiz:(1+(S.sev.hiz-1)*0.06)*hizB,
     hasar:(1+(S.sev.hasar-1)*0.25)*hasB,
     mik:(60+(S.sev.mik-1)*14)*mikB,
-    atisAra:0.8*atisB, adet:1, menzil:0.42*menB, yumakBoy:1, patiCarp:patiB, balikCarp:balikB, kritEk:kritB, atesYon:1,
+    atisAra:0.8*atisB, adet:1, menzil:0.42*menB, yumakBoy:1, patiCarp:patiB, balikCarp:balikB, kritEk:kritB, atesYon:1, susSv:susT,
     zirh:0, balon:0,
     guc:{hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0,ucurtma:0,havai:0,cift:0}};
   dusmanlar=[]; mermiler=[]; baliklar=[]; parcalar=[]; yazilar=[]; eklentiler=[]; dmermiler=[];
@@ -1839,6 +1855,21 @@ function kediCiz(){
   ctx.scale(kedi.yon*devS,devS);
   if(kedi.invuln>0&&Math.floor(performance.now()/90)%2===0)ctx.globalAlpha=0.4;
   if(kedi.guc.hayalet>0)ctx.globalAlpha=0.45;
+  /* ✦ ekipman kademesi: kedinin çevresinde dönen ışıltılar (giydirme seviyesi görünür) */
+  if((kedi.susSv||0)>0){
+    const kd2=esyKademe(Math.min(12,1+kedi.susSv)), K2=KADEMELER[Math.max(1,kd2)];
+    const n=Math.min(5,1+Math.floor(kedi.susSv/4)), t2=performance.now()/900;
+    ctx.save(); ctx.scale(kedi.yon,1);           /* ayna etkisini sıfırla */
+    for(let q=0;q<n;q++){
+      const a4=t2+q*6.283/n, rr=b*3.3+Math.sin(t2*2.4+q)*b*0.4;
+      ctx.globalAlpha=0.5+Math.sin(t2*3+q*2)*0.3;
+      ctx.fillStyle=K2.renk;
+      ctx.font=Math.round(b*(0.85+0.12*kd2))+'px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('✦',Math.cos(a4)*rr,Math.sin(a4)*rr*0.72);
+    }
+    ctx.globalAlpha=1; ctx.restore();
+  }
   /* 🧶 yumak makinesi: silah ateş edilen yöne döner */
   if(kedi.guc.makine>0){
     ctx.save(); ctx.scale(kedi.yon,1);           /* gövde aynasını geri al */
@@ -2298,7 +2329,16 @@ function gardropYaz(){
     b.appendChild(bonus);
     b.appendChild(takili?cipYap('✓ TAKILI · çıkar','secili')
       :sahip?cipYap('TAK','sahip'):cipYap('🐟 '+kisa(E.fiyat),'fiyat'));
-    if(sahip&&esySv(id)<3){
+    if(sahip){
+      const kd=esyKademe(esySv(id)), K=KADEMELER[kd];
+      if(kd>0){
+        b.style.borderColor=K.cerceve;
+        b.style.boxShadow=(takili?'0 0 0 2px rgba(95,208,138,.4), ':'')+'0 0 14px '+K.cerceve;
+        const roz=document.createElement('span');
+        roz.textContent='◆ '+K.ad+' Sv'+esySv(id);
+        roz.style.cssText='font-size:9.5px;font-weight:900;letter-spacing:.5px;color:'+K.renk;
+        b.appendChild(roz);
+      }
       const g=document.createElement('span');
       const gf=esyGelFiyat(id);
       g.textContent='⬆ Geliştir 🐟'+kisa(gf);
@@ -2312,10 +2352,6 @@ function gardropYaz(){
         sesSeviye(); buzz([12,20,12]); toast(E.ikon+' '+E.ad+' Sv'+S.esySev[id]+' oldu! '+esyBonusYazi(id));
         kaydet(); gardropYaz();
       });
-      b.appendChild(g);
-    } else if(sahip){
-      const g=document.createElement('span');
-      g.textContent='★ MAKS'; g.style.cssText='font-size:10.5px;font-weight:800;color:#ffce54';
       b.appendChild(g);
     }
     b.addEventListener('click',()=>{
