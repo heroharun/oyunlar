@@ -209,10 +209,12 @@ let trafik=[], yakinlar=new Set();
 let carpma=null, fren=false, surX=null;
 let sallanti=0;
 
-function yolEgrisi(i){ /* segmente göre prosedürel viraj */
-  const b=Math.floor((poz/SEG+i)/90);
+function yolEgrisi(i){ /* kısa bloklar: viraj → düzlük → viraj (yön dengeli) */
+  const b=Math.floor((poz/SEG+i)/34);
   const r=Math.sin(b*127.3)*43758.5453;
-  return (r-Math.floor(r)-0.5)*2*Math.min(3.4,1.2+mesafe/3000);
+  let f=(r-Math.floor(r)-0.5)*2;
+  if(Math.abs(f)<0.45)return 0;                  /* ~%45 düz yol */
+  return f*Math.min(3.0,1.0+mesafe/3500);
 }
 function oyunBaslat(m){
   mod=m; durum='oyun';
@@ -234,14 +236,20 @@ function trafikDog(z){
 }
 
 /* ══════════ EĞİM DİREKSİYONU (sensör) ══════════ */
-let egimAktif=false, egimSifir=null, sonGamma=null;
+let egimAktif=false, egimSifir=null, sonGamma=null, egimOrnek=[];
 function egimOlay(e){
   if(e.gamma==null)return;
-  if(egimSifir===null)egimSifir=e.gamma;        /* başlangıç tutuşu = merkez */
-  sonGamma=e.gamma-egimSifir;
+  if(egimSifir===null){                          /* ilk ~0.5 sn: tutuş ortalaması = merkez */
+    egimOrnek.push(e.gamma);
+    if(egimOrnek.length>=8)egimSifir=egimOrnek.reduce((a,b)=>a+b,0)/egimOrnek.length;
+    return;
+  }
+  let g=e.gamma-egimSifir;
+  if(Math.abs(g)<1.6)g=0;                        /* ölü bölge: mikro titreme sürüklemesin */
+  sonGamma=g;
 }
 async function egimBaslat(){
-  egimSifir=null; sonGamma=null;
+  egimSifir=null; sonGamma=null; egimOrnek=[];
   try{
     if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
       const izin=await DeviceOrientationEvent.requestPermission();   /* iOS: dokunuş bağlamında */
@@ -302,7 +310,9 @@ function guncelle(dt){
   /* viraj: ilerideki segmentlerin eğrisi + merkezkaç */
   hedefEgri=yolEgrisi(8);
   egri+=(hedefEgri-egri)*Math.min(1,dt*2.2);
-  px-=egri*(hiz/A.hiz)*dt*0.55;          /* merkezkaç: virajda dışa savurur */
+  px-=egri*(hiz/A.hiz)*dt*0.22;          /* merkezkaç: hafif dışa savurma */
+  if(surX===null&&(!egimAktif||sonGamma===0||sonGamma===null))
+    px-=px*dt*0.5;                         /* eller serbestken direksiyon kendini toplar */
   px=Math.max(-1.12,Math.min(1.12,px));
   /* yol dışı: çimende yavaşlar + sarsılır */
   if(Math.abs(px)>0.92){ hiz=Math.max(50,hiz-dt*160); sallanti=4; if(Math.random()<dt*8)buzz(6); }
