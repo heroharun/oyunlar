@@ -29,6 +29,23 @@ self.addEventListener('activate', e => {
   })());
 });
 
+/* portaldan 'tazele' gelince paketi yeniden indir (sürüm damgası değişti) */
+self.addEventListener('message', e => {
+  if (e.data && e.data.tip === 'tazele') {
+    e.waitUntil((async () => {
+      const cache = await caches.open(CACHE);
+      await Promise.all(PAKET.map(async u => {
+        try {
+          const r = await fetch(u, { cache: 'no-cache' });
+          if (r && r.ok) await cache.put(u, r);
+        } catch (err) {}
+      }));
+      const cs = await self.clients.matchAll();
+      cs.forEach(c => c.postMessage({ tip: 'tazelendi' }));
+    })());
+  }
+});
+
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;

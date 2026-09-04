@@ -497,6 +497,38 @@
 'use strict';
 if('serviceWorker' in navigator)
   navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* ── iOS PWA tazeliği: uygulama askıdan dönünce sürüm damgasına bak;
+     değiştiyse SW'yi güncelle + paketi indirt + portalı yenile ── */
+(function(){
+  let benimV=null, mesgul=false;
+  async function damga(){
+    try{ const r=await fetch('surum.json?'+Date.now(),{cache:'no-store'});
+      return (await r.json()).v; }catch(e){ return null; }
+  }
+  damga().then(v=>{ benimV=v; });
+  async function kontrol(){
+    if(mesgul||document.hidden)return;
+    const v=await damga();
+    if(!v||!benimV){ benimV=benimV||v; return; }
+    if(v===benimV)return;
+    mesgul=true;
+    try{
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg){ reg.update().catch(()=>{}); reg.active&&reg.active.postMessage({tip:'tazele'}); }
+    }catch(e){}
+    const n=document.createElement('div');
+    n.textContent='✨ Yeni oyunlar ve güncellemeler yükleniyor…';
+    n.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:999;'
+      +'background:#2c5f4f;color:#fff;font-weight:700;padding:10px 18px;border-radius:14px;'
+      +'box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:14px';
+    document.body.appendChild(n);
+    setTimeout(()=>location.reload(),1600);
+  }
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden)setTimeout(kontrol,400); });
+  window.addEventListener('pageshow',e=>{ if(e.persisted)setTimeout(kontrol,400); });
+  setInterval(kontrol,5*60*1000);
+})();
 /* kalıcı depolama: sistem yer açarken oyun kayıtlarını silmesin (tüm origin'i kapsar) */
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
 

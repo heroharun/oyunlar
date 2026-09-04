@@ -8,7 +8,8 @@ cd "$(dirname "$0")/.."
 git stash -q 2>/dev/null || true
 git pull --rebase origin main 2>&1 | tail -1
 git stash pop -q 2>/dev/null || true
-if [ $# -gt 0 ]; then git add "$@"; else git add -A; fi
+echo "{\"v\":\"$(date +%s)\"}" > surum.json
+if [ $# -gt 0 ]; then git add "$@" surum.json; else git add -A; fi
 git commit -q -m "$MESAJ" --author="heroharun <buyuktepe.hhhes@gmail.com>"
 git push -q origin main
 HEDEF=$(git rev-parse --short HEAD); echo "HEDEF=$HEDEF"
