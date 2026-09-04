@@ -294,6 +294,33 @@ for(const [mesh,tip] of [[yildizToz,'yildiz'],[kristal,'kristal']]){
   }
 }
 
+/* ── halka dokusu (içi boş ışık çemberi) ── */
+function halkaDoku(){
+  const c=document.createElement('canvas'); c.width=c.height=128;
+  const g=c.getContext('2d');
+  g.strokeStyle='rgba(255,255,255,1)'; g.lineWidth=7;
+  g.shadowColor='rgba(255,255,255,.9)'; g.shadowBlur=10;
+  g.beginPath(); g.arc(64,64,50,0,7); g.stroke();
+  return new THREE.CanvasTexture(c);
+}
+const halkaTex=halkaDoku();
+
+/* ── NEON TÜNEL: rota merkezini ve derinliği gösteren halkalar ── */
+const tunel=[];
+for(let i=0;i<7;i++){
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:halkaTex,color:0x4fd8e8,
+    transparent:true,opacity:0.16,blending:THREE.AdditiveBlending,depthWrite:false}));
+  s.scale.set(58,58,1); s.position.set(0,0,-90*i-40);
+  sahne.add(s); tunel.push(s);
+}
+
+/* ── TEHDİT İŞARETÇİLERİ: rotana gelen kayada renkli uyarı halkası ── */
+const tehditler=astlar.map(a=>{
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:halkaTex,color:0x4fc3ff,
+    transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+  s.visible=false; sahne.add(s); return s;
+});
+
 /* patlama parçacıkları */
 const PAT_N=90;
 const patGeo=new THREE.BufferGeometry();
@@ -444,6 +471,30 @@ function guncelle(dt){
         sarsinti=Math.max(sarsinti,0.35);
         mesafe+=40*yakinSeri;
       }
+    }
+  }
+  /* neon tünel: kameraya akar, geriye sarılır */
+  for(const s of tunel){
+    s.position.z+=hiz*dt*1.35;
+    if(s.position.z>8)s.position.z-=630;
+    const yakinlik=1-Math.min(1,-s.position.z/630);
+    s.material.opacity=0.05+yakinlik*0.14;
+  }
+  /* tehdit işaretçileri: çarpma rotasındaki kayalar maviden kırmızıya */
+  for(let i=0;i<astlar.length;i++){
+    const a=astlar[i], s=tehditler[i];
+    if(!a.aktif){ s.visible=false; continue; }
+    const z=a.m.position.z;
+    const fark=Math.hypot(a.m.position.x-rx,a.m.position.y-ry);
+    const tehdit=z<-8&&z>-340&&fark<a.r+6.5;
+    s.visible=tehdit;
+    if(tehdit){
+      const t=1-(-z)/340;                       /* 0 uzak → 1 dibinde */
+      s.position.copy(a.m.position);
+      const b2=(a.r+2)*(2+t*1.4);
+      s.scale.set(b2,b2,1);
+      s.material.color.setRGB(0.3+t*0.85,0.75-t*0.45,1-t*0.85);
+      s.material.opacity=0.2+t*0.6;
     }
   }
   /* toplanabilirler */
