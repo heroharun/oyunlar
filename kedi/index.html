@@ -417,7 +417,7 @@ let kazanilanBalik, mesafeSayac, balikEklentiSayac;
 /* yeni içerik durumu */
 let gucSv={}, evrimler=[], dostlar=[], izler=[], simsekler=[], halkalar=[];
 function halka(x,y,maxR,renk){ if(halkalar.length<12)halkalar.push({x,y,r:0,maxR,omur:0.55,renk}); }
-let orbitAci=0, orbitCd=[], dalgaS=0, yenilenS=0, kasirgaS=0, kasirgaAktif=0, kasirgaAtisS=0, izS=0, kamciS=0, havaiS=0, ucurtma=null; const sonEkl=[];
+let orbitAci=0, orbitCd=[], dalgaS=0, yenilenS=0, kasirgaS=0, kasirgaAktif=0, kasirgaAtisS=0, izS=0, kamciS=0, havaiS=0, ucurtma=null, klonSayi=0, supurgeS=0; const sonEkl=[];
 let combo=0, comboS=0, sarsinti=0, yavasS=0;
 let kadDuyuru={fare:0,tilki:0,robot:0}, bossSayisi=0;
 let sonsuzSv={}, elitDuyuru=0;   /* sonsuz kart sayaçları + elit dalga duyurusu */
@@ -440,12 +440,12 @@ function runBaslat(){
     mik:(60+(S.sev.mik-1)*14)*mikB,
     atisAra:0.8*atisB, adet:1, menzil:0.42*menB, yumakBoy:1, patiCarp:patiB, balikCarp:balikB, kritEk:kritB, atesYon:1, susSv:susT,
     zirh:0, balon:0,
-    guc:{hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0,ucurtma:0,havai:0,cift:0}};
+    guc:{hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0,ucurtma:0,havai:0,cift:0,klon:0,supurge:0}};
   dusmanlar=[]; mermiler=[]; baliklar=[]; parcalar=[]; yazilar=[]; eklentiler=[]; dmermiler=[];
   sure=0; xp=0; xpEsik=5; seviye=1; atisS=0.4; spawnS=1; bossS=120; koaSayac=0;
   kazanilanPati=0; kazanilanBalik=0; mesafeSayac=0; balikEklentiSayac=0;
   gucSv={}; evrimler=[]; dostlar=[]; izler=[]; simsekler=[]; halkalar=[];
-  orbitAci=0; orbitCd=[0,0,0,0,0]; dalgaS=20; yenilenS=40; kasirgaS=18; kasirgaAktif=0; kasirgaAtisS=0; izS=0; kamciS=0; havaiS=0; ucurtma=null; sonEkl.length=0;
+  orbitAci=0; orbitCd=[0,0,0,0,0]; dalgaS=20; yenilenS=40; kasirgaS=18; kasirgaAktif=0; kasirgaAtisS=0; izS=0; kamciS=0; havaiS=0; ucurtma=null; klonSayi=0; supurgeS=0; sonEkl.length=0;
   combo=0; comboS=0; sarsinti=0; yavasS=0;
   kadDuyuru={fare:0,tilki:0,robot:0}; bossSayisi=0;
   sonsuzSv={}; elitDuyuru=0;
@@ -525,8 +525,14 @@ const EKLENTI=[
   {id:'elmas',ikon:'💎',ad:'Pati Yağmuru! +25🐾',w:3},
   {id:'sut',ikon:'🥛',ad:'Süt Şişesi! +2 can',w:3},
   {id:'havai',ikon:'🎆',ad:'Havai Fişek!',w:4},
-  {id:'cift',ikon:'🌟',ad:'Çifte Yumak Coşkusu!',w:4}
+  {id:'cift',ikon:'🌟',ad:'Çifte Yumak Coşkusu!',w:4},
+  {id:'klon',ikon:'🐱',ad:'Klon Kedi!',w:4},
+  {id:'supurge',ikon:'🧹',ad:'Süpürge Dansı!',w:4}
 ];
+/* ⚡ SİNERJİ: yerden alınan eklenti, ilgili seviye gücüyle buluşursa süre 1.5× + bonus */
+const SINERJI={hiz:'cevik',hasar:'keskin',mik:'balikMik',ates:'patlama',kilcik:'delici',
+  roket:'hizliAtis',makine:'cifte',kamci:'koca',cift:'cifte',klon:'dost',kalkan:'post',
+  zaman:'buz',hayalet:'yorunge',supurge:'keskin',dev:'kalp'};
 /* geç oyunda Kalkan/Kalp ağırlığı yarıya iner (ölümsüzlük kurulamasın) */
 /* son 4 çıkan eklentinin ağırlığı 1/4'e iner — hep aynıları gelmesin */
 const eklW=e=>{
@@ -556,11 +562,21 @@ function novaAt(adet,carp,buzlu){
       omur:1.1,don:Math.random()*6.28,carp:carp||1,buzlu:!!buzlu});
   }
 }
+function sinerjiDene(id){
+  const g=SINERJI[id]; if(!g||!(gucSv[g]||0))return;
+  if(kedi.guc[id]>0)kedi.guc[id]*=1.5;
+  const G=GUC_BUL[g];
+  yaz(kedi.x,kedi.y-74,'⚡ SİNERJİ: '+(G?G.ad:g)+'!','#ffe98a');
+  parca(kedi.x,kedi.y,12,'#ffe98a',true);
+  if(mermiler.length<MERMI_TAVAN-8)novaAt(6,0.8,false);
+  buzz([8,16,8]);
+}
 function eklentiAl(e){
   e.olu=true;
   yaz(e.x,e.y-20,e.ikon+' '+e.ad,'#ffce54');
   sesSeviye(); buzz([10,16,10]);
   parca(e.x,e.y,10,'#ffce54',true);
+  setTimeout(()=>sinerjiDene(e.id),0);
   if(e.id==='kalp')kedi.hp=Math.min(kedi.maxHp,kedi.hp+1);
   else if(e.id==='hiz')kedi.guc.hiz=8;
   else if(e.id==='mik')kedi.guc.mik=8;
@@ -631,6 +647,13 @@ function eklentiAl(e){
   else if(e.id==='sut'){ kedi.hp=Math.min(kedi.maxHp,kedi.hp+2); }
   else if(e.id==='havai'){ kedi.guc.havai=1.3; }   /* 🎆 3 dalga nova, zamanlayıcı atar */
   else if(e.id==='cift'){ kedi.guc.cift=8; }       /* 🌟 +2 yumak 8 sn */
+  else if(e.id==='klon'){                          /* 🐱 aynı hareketi yapan klon kedi */
+    if(kedi.guc.klon>0&&klonSayi<2){ klonSayi=2; yaz(kedi.x,kedi.y-58,'🐱🐱 ÇİFT KLON!','#d0a8ff'); }
+    else klonSayi=1;
+    kedi.guc.klon=8;
+    parca(kedi.x-40,kedi.y,10,'#d0a8ff',true); parca(kedi.x+40,kedi.y,10,'#d0a8ff',true);
+  }
+  else if(e.id==='supurge'){ kedi.guc.supurge=6; } /* 🧹 önünü süpürür, fareleri savurur */
   else if(e.id==='ziyafet'){     /* 🍤 balık azsa saçar + hepsini çeker */
     let n=0; for(const b of baliklar){ if(!b.olu){ b.cek=true; n++; } }
     if(n<8){ const ekle=12;
@@ -644,6 +667,7 @@ function eklentiAl(e){
 const MERMI_TAVAN=120, YAZI_TAVAN=30, DUSMAN_TAVAN=150;
 const parcaTavan=()=>hafif?60:160;
 function parca(x,y,n,renk,yildiz){
+  if(mermiler&&mermiler.length>32)n=Math.ceil(n/2);   /* kalabalıkta görsel gürültüyü kıs */
   for(let i=0;i<n;i++){
     if(parcalar.length>=parcaTavan())return;    /* doluysa yeni parça üretme */
     const a=Math.random()*6.28,h=40+Math.random()*90;
@@ -1123,6 +1147,24 @@ function guncelle(dt){
       } else dd.atisS=0.3;
     }
   }
+  /* ── 🧹 süpürge dansı: önündeki yaramazları döver ve savurur ── */
+  if(kedi.guc.supurge>0){
+    supurgeS-=dt;
+    if(supurgeS<=0){
+      supurgeS=0.55;
+      const sR=BIRIM()*0.42, sR2=sR*sR; let sv=0;
+      for(const d of dusmanlar){
+        const dx4=d.x-kedi.x,dy4=d.y-kedi.y;
+        if(dx4*dx4+dy4*dy4<sR2&&dx4*kedi.yon>-BIRIM()*0.05){
+          hasarVer(d,kedi.hasar*1.5);
+          const L4=Math.hypot(dx4,dy4)||1;
+          d.x+=dx4/L4*BIRIM()*0.22; d.y+=dy4/L4*BIRIM()*0.22;   /* savrulma */
+          d.don=Math.max(d.don||0,0.4); sv++;
+        }
+      }
+      if(sv>0){ parca(kedi.x+kedi.yon*BIRIM()*0.2,kedi.y,10,'#d8b48e',true); buzz(7); sesPuf(); }
+    }
+  }
   /* ── 🎀 kurdele kamçısı: yarım saniyede bir çevreyi süpürür ── */
   if(kedi.guc.kamci>0){
     kamciS-=dt;
@@ -1221,8 +1263,10 @@ function guncelle(dt){
     }
     if(hN>0){
       atisS=kedi.atisAra*(kedi.guc.roket>0?0.5:1)*(kedi.guc.makine>0?0.3:1);
+      var klonAtes=(kedi.guc.klon>0&&klonSayi>0);
       const ssv=gucSv.sacilma||0, yelpaze=ssv?0.5-0.12*(ssv-1):0;
       const adet2=kedi.adet+(kedi.guc.cift>0?2:0);
+      const yaylimAci=[];
       for(let i=0;i<adet2;i++){
         if(i===0&&hN>0)kedi.atesYon=Math.atan2(hedefD[0].y-kedi.y,hedefD[0].x-kedi.x);
         if(mermiler.length>=MERMI_TAVAN)break;
@@ -1236,7 +1280,21 @@ function guncelle(dt){
           mermiler.push({x:kedi.x,y:kedi.y,vx:Math.cos(a2)*mHiz,vy:Math.sin(a2)*mHiz,
             omur:1.1,don:Math.random()*6.28,kilcik:kedi.guc.kilcik>0,roketli:kedi.guc.roket>0,
             sek:gucSv.sekme||0,del:kedi.guc.kilcik>0?99:(gucSv.delici||0)});
+          yaylimAci.push(a2);
           if(kedi.guc.makine>0||kedi.guc.roket>0)parca(kedi.x,kedi.y,1,'#ffe9a0',true);
+        }
+      }
+      /* 🐱 klonlar aynı yaylımı kendi konumlarından atar */
+      if(klonAtes){
+        for(let ki=0;ki<klonSayi;ki++){
+          const off=klonOffset(ki);
+          for(const a3 of yaylimAci){
+            if(mermiler.length>=MERMI_TAVAN)break;
+            const mH2=BIRIM()*(kedi.guc.kilcik>0?1.15:0.75);
+            mermiler.push({x:kedi.x+off.x,y:kedi.y+off.y,vx:Math.cos(a3)*mH2,vy:Math.sin(a3)*mH2,
+              omur:1.1,don:Math.random()*6.28,kilcik:kedi.guc.kilcik>0,
+              sek:0,del:kedi.guc.kilcik>0?99:0});
+          }
         }
       }
       sesAtis();
@@ -1374,7 +1432,7 @@ function kosuGeriYukle(){
   evrimler=(kk.ev||[]).slice();
   sonsuzSv=Object.assign({},kk.ss||{});        /* sonsuz kart sayaçları (eski kayıtta yoksa boş) */
   Object.assign(kedi,kk.k);
-  kedi.guc=Object.assign({hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0,ucurtma:0,havai:0,cift:0},kk.k.guc);
+  kedi.guc=Object.assign({hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0,ucurtma:0,havai:0,cift:0,klon:0,supurge:0},kk.k.guc);
   kedi.zirh=Math.min(0.3,kk.k.zirh||0); kedi.balon=kk.k.balon||0;   /* eski %40 post kayıtları %30'a törpülenir */
   kedi.invuln=2.5;               /* dönüşte kısa dokunulmazlık */
   buildSeritYaz();
@@ -1847,6 +1905,10 @@ function spriteleriKur(){
 }
 spriteleriKur(); spriteInit=true;
 
+function klonOffset(ki){
+  const t=performance.now()/700, r=BIRIM()*0.26;
+  return {x:(ki===0?-1:1)*r+Math.sin(t+ki*2)*6, y:Math.sin(t*1.3+ki*2.5)*r*0.22};
+}
 function kediCiz(){
   const b=BIRIM()*0.05, zip=kedi.kosuyor?Math.abs(Math.sin(performance.now()/90))*4:0;
   const devS=kedi.guc.dev>0?1.5:1;      /* 👑 dev mod: 1.5× büyür */
@@ -1855,6 +1917,14 @@ function kediCiz(){
   ctx.scale(kedi.yon*devS,devS);
   if(kedi.invuln>0&&Math.floor(performance.now()/90)%2===0)ctx.globalAlpha=0.4;
   if(kedi.guc.hayalet>0)ctx.globalAlpha=0.45;
+  /* 🧹 süpürge: elinde salınır */
+  if(kedi.guc.supurge>0){
+    ctx.save(); ctx.translate(b*2.2,b*0.4);
+    ctx.rotate(Math.sin(performance.now()/140)*0.9+0.4);
+    ctx.font=Math.round(b*2.6)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🧹',0,0);
+    ctx.restore();
+  }
   /* ✦ ekipman kademesi: kedinin çevresinde dönen ışıltılar (giydirme seviyesi görünür) */
   if((kedi.susSv||0)>0){
     const kd2=esyKademe(Math.min(12,1+kedi.susSv)), K2=KADEMELER[Math.max(1,kd2)];
@@ -2100,10 +2170,12 @@ function ciz(){
   }
   /* mermiler (yumaklar) — sprite, yumakBoy ölçeğiyle */
   const yb=SP.yumak.boy*kedi.yumakBoy;
+  const mermiYogun=mermiler.length>32;
   for(const m of mermiler){
     const ex=W/2+(m.x-kedi.x), ey=H/2+(m.y-kedi.y);
     if(ex<-40||ex>W+40||ey<-40||ey>H+40)continue;
     ctx.save(); ctx.translate(ex,ey);
+    if(mermiYogun){ ctx.globalAlpha=0.62; ctx.scale(0.82,0.82); }   /* 🧘 kalabalıkta sadelik */
     if(m.kilcik){                       /* 🐡 parlayan saçma: iz + çekirdek */
       ctx.rotate(Math.atan2(m.vy,m.vx));
       const gr=ctx.createLinearGradient(-yb*3,0,yb*0.8,0);
@@ -2149,6 +2221,21 @@ function ciz(){
     ctx.restore();
   }
   /* kedi */
+  /* 🐱 klon kediler: yarı saydam, morumsu ışıltıyla */
+  if(kedi.guc.klon>0&&klonSayi>0){
+    const kare2=Math.floor(performance.now()/160/6.283*6)%6;
+    for(let ki=0;ki<klonSayi;ki++){
+      const off=klonOffset(ki);
+      const ex2=W/2+off.x, ey2=H/2+off.y-(kedi.kosuyor?Math.abs(Math.sin(performance.now()/90+ki))*4:0);
+      ctx.save(); ctx.translate(ex2,ey2); ctx.scale(kedi.yon,1);
+      ctx.globalAlpha=0.55+Math.sin(performance.now()/200+ki*3)*0.1;
+      spriteBas(SP.kedi[kare2],0,0);
+      ctx.globalAlpha=0.5;
+      ctx.strokeStyle='#d0a8ff'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(0,0,BIRIM()*0.05*1.4,0,7); ctx.stroke();
+      ctx.restore();
+    }
+  }
   kediCiz();
   /* 🌀 yörünge patileri */
   const osvC=gucSv.yorunge||0;
@@ -2394,8 +2481,8 @@ function hudYaz(id,v){
   hudOnceki[id]=v; document.getElementById(id).textContent=v;
 }
 /* ── güç süre şeritleri (yeni süreli güçler dahil) ── */
-const GUC_MAX={hiz:8,mik:8,hasar:8,kalkan:6,zaman:4,ates:5,dev:5,roket:6,hayalet:5,kilcik:6,makine:5,kamci:6,ucurtma:6,cift:8};
-const GUC_IKON={hiz:'⚡',mik:'🧲',hasar:'💪',kalkan:'🛡️',zaman:'⏱️',ates:'🔥',dev:'👑',roket:'🚀',hayalet:'👻',kilcik:'🐡',makine:'🧶',kamci:'🎀',ucurtma:'🪁',cift:'🌟'};
+const GUC_MAX={hiz:8,mik:8,hasar:8,kalkan:6,zaman:4,ates:5,dev:5,roket:6,hayalet:5,kilcik:6,makine:5,kamci:6,ucurtma:6,cift:8,klon:8,supurge:6};
+const GUC_IKON={hiz:'⚡',mik:'🧲',hasar:'💪',kalkan:'🛡️',zaman:'⏱️',ates:'🔥',dev:'👑',roket:'🚀',hayalet:'👻',kilcik:'🐡',makine:'🧶',kamci:'🎀',ucurtma:'🪁',cift:'🌟',klon:'🐱',supurge:'🧹'};
 const gucEl={};
 (function(){
   const kap=document.getElementById('gucSerit');
