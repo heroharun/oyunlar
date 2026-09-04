@@ -94,6 +94,7 @@ h1 small{display:block;font-size:.85rem;-webkit-text-fill-color:#bcd2ff;color:#b
     <button class="btn mavi" id="tersBtn">⚠️ Ters Şerit</button>
     <h3 style="color:#bcd2ff;font-size:.9rem;letter-spacing:.08em">🏎️ GARAJ — arabanı seç</h3>
     <div id="garajListe"></div>
+    <button class="btn sade" id="egimBtn">🎛️ Eğim direksiyonu: Kapalı</button>
     <button class="btn sade" id="nasilBtn">❓ Nasıl Oynanır</button>
   </div>
 </section>
@@ -131,7 +132,7 @@ function boyutla(){ DPR=Math.min(devicePixelRatio||1,2);
 boyutla(); addEventListener('resize',boyutla);
 
 /* ══════════ KAYIT ══════════ */
-let K={para:0,rekor:0,rekorTers:0,arabalar:['pancar'],secili:'pancar',ses:true,toplamKm:0,nasil:false};
+let K={para:0,rekor:0,rekorTers:0,arabalar:['pancar'],secili:'pancar',ses:true,toplamKm:0,nasil:false,egim:false};
 try{ K=Object.assign(K,JSON.parse(localStorage.getItem('hizustasi_v1')||'{}')); }catch(e){}
 const kaydet=()=>{ try{localStorage.setItem('hizustasi_v1',JSON.stringify(K));}catch(e){} };
 
@@ -221,6 +222,7 @@ function oyunBaslat(m){
   document.querySelectorAll('.ekran').forEach(e=>e.classList.remove('on'));
   $('#hud').classList.add('on'); $('#frenBtn').classList.add('on'); $('#durBtn').classList.add('on');
   motorBasla();
+  if(K.egim)egimBaslat(); else egimDurdur();
 }
 function trafikDog(z){
   const serit=[-0.72,-0.24,0.24,0.72][Math.floor(Math.random()*4)];
@@ -230,6 +232,27 @@ function trafikDog(z){
     v:ters?-(90+Math.random()*50):(55+Math.random()*70),
     renk:r[0], renk2:r[1], id:Math.random()});
 }
+
+/* ══════════ EĞİM DİREKSİYONU (sensör) ══════════ */
+let egimAktif=false, egimSifir=null, sonGamma=null;
+function egimOlay(e){
+  if(e.gamma==null)return;
+  if(egimSifir===null)egimSifir=e.gamma;        /* başlangıç tutuşu = merkez */
+  sonGamma=e.gamma-egimSifir;
+}
+async function egimBaslat(){
+  egimSifir=null; sonGamma=null;
+  try{
+    if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+      const izin=await DeviceOrientationEvent.requestPermission();   /* iOS: dokunuş bağlamında */
+      if(izin!=='granted'){ egimAktif=false; K.egim=false; kaydet(); egimYaz(); komboGoster('🎛️ Sensör izni verilmedi — dokunmatik açık'); return; }
+    }
+    addEventListener('deviceorientation',egimOlay);
+    egimAktif=true;
+  }catch(e2){ egimAktif=false; }
+}
+function egimDurdur(){ removeEventListener('deviceorientation',egimOlay); egimAktif=false; }
+function egimYaz(){ $('#egimBtn').textContent='🎛️ Eğim direksiyonu: '+(K.egim?'Açık':'Kapalı'); }
 
 /* ══════════ GİRDİ ══════════ */
 addEventListener('pointerdown',e=>{
@@ -264,6 +287,11 @@ function guncelle(dt){
     carpma.t-=dt; hiz=Math.max(0,hiz-dt*300);
     if(carpma.t<=0)yarisBitir();
     return;
+  }
+  /* 🎛️ eğim direksiyonu: telefonu yatır — dokunmatik her zaman yedek */
+  if(egimAktif&&sonGamma!==null&&surX===null){
+    const hedefPx=Math.max(-1.1,Math.min(1.1,sonGamma/16*A.dir));
+    px+=(hedefPx-px)*Math.min(1,dt*7);
   }
   /* hız: otomatik gaz */
   const maks=A.hiz*(mod==='ters'?0.94:1);
@@ -320,7 +348,7 @@ function komboGoster(m){
   clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('gorun'),900);
 }
 function yarisBitir(){
-  durum='son'; motorDur();
+  durum='son'; motorDur(); egimDurdur();
   $('#hud').classList.remove('on'); $('#frenBtn').classList.remove('on'); $('#durBtn').classList.remove('on');
   const p=Math.floor(para);
   K.para+=p; K.toplamKm+=mesafe/1000;
@@ -519,6 +547,11 @@ $('#sonsuzBtn').addEventListener('click',()=>{ ac();
 $('#tersBtn').addEventListener('click',()=>{ ac();
   if(K.rekor<2000){ komboGoster('🔒 Önce Sonsuz modda 2 km rekor yap!'); return; }
   oyunBaslat('ters'); });
+$('#egimBtn').addEventListener('click',()=>{
+  ac(); K.egim=!K.egim; kaydet(); egimYaz();
+  tik(K.egim?700:400,0.08,'triangle',0.1);
+  if(K.egim)komboGoster('🎛️ Telefonu hafifçe sağa-sola yatırarak sür!');
+});
 $('#nasilBtn').addEventListener('click',()=>menuGizle('#nasilEkran'));
 $('#nasilKapatBtn').addEventListener('click',()=>{
   if(window._sonraBasla){ const m=window._sonraBasla; window._sonraBasla=null; oyunBaslat(m); }
@@ -526,7 +559,7 @@ $('#nasilKapatBtn').addEventListener('click',()=>{
 $('#tekrarBtn').addEventListener('click',()=>oyunBaslat(mod));
 $('#sonMenuBtn').addEventListener('click',()=>{ menuGizle('#menu'); garajYaz(); istatYaz(); });
 function menuGizle(id){ document.querySelectorAll('.ekran').forEach(e=>e.classList.remove('on')); $(id).classList.add('on'); }
-garajYaz(); istatYaz();
+garajYaz(); istatYaz(); egimYaz();
 </script>
 </body>
 </html>
