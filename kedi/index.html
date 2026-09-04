@@ -417,7 +417,7 @@ let kazanilanBalik, mesafeSayac, balikEklentiSayac;
 /* yeni içerik durumu */
 let gucSv={}, evrimler=[], dostlar=[], izler=[], simsekler=[], halkalar=[];
 function halka(x,y,maxR,renk){ if(halkalar.length<12)halkalar.push({x,y,r:0,maxR,omur:0.55,renk}); }
-let orbitAci=0, orbitCd=[], dalgaS=0, yenilenS=0, kasirgaS=0, kasirgaAktif=0, kasirgaAtisS=0, izS=0, kamciS=0, havaiS=0, ucurtma=null, klonSayi=0, supurgeS=0; const sonEkl=[];
+let orbitAci=0, orbitCd=[], dalgaS=0, yenilenS=0, kasirgaS=0, kasirgaAktif=0, kasirgaAtisS=0, izS=0, kamciS=0, havaiS=0, ucurtma=null, klonSayi=0, supurgeS=0, barikat=null; const sonEkl=[];
 let combo=0, comboS=0, sarsinti=0, yavasS=0;
 let kadDuyuru={fare:0,tilki:0,robot:0}, bossSayisi=0;
 let sonsuzSv={}, elitDuyuru=0;   /* sonsuz kart sayaçları + elit dalga duyurusu */
@@ -440,12 +440,12 @@ function runBaslat(){
     mik:(60+(S.sev.mik-1)*14)*mikB,
     atisAra:0.8*atisB, adet:1, menzil:0.42*menB, yumakBoy:1, patiCarp:patiB, balikCarp:balikB, kritEk:kritB, atesYon:1, susSv:susT,
     zirh:0, balon:0,
-    guc:{hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0,ucurtma:0,havai:0,cift:0,klon:0,supurge:0}};
+    guc:{hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0,ucurtma:0,havai:0,cift:0,klon:0,supurge:0,barikat:0}};
   dusmanlar=[]; mermiler=[]; baliklar=[]; parcalar=[]; yazilar=[]; eklentiler=[]; dmermiler=[];
   sure=0; xp=0; xpEsik=5; seviye=1; atisS=0.4; spawnS=1; bossS=120; koaSayac=0;
   kazanilanPati=0; kazanilanBalik=0; mesafeSayac=0; balikEklentiSayac=0;
   gucSv={}; evrimler=[]; dostlar=[]; izler=[]; simsekler=[]; halkalar=[];
-  orbitAci=0; orbitCd=[0,0,0,0,0]; dalgaS=20; yenilenS=40; kasirgaS=18; kasirgaAktif=0; kasirgaAtisS=0; izS=0; kamciS=0; havaiS=0; ucurtma=null; klonSayi=0; supurgeS=0; sonEkl.length=0;
+  orbitAci=0; orbitCd=[0,0,0,0,0]; dalgaS=20; yenilenS=40; kasirgaS=18; kasirgaAktif=0; kasirgaAtisS=0; izS=0; kamciS=0; havaiS=0; ucurtma=null; klonSayi=0; supurgeS=0; barikat=null; sonEkl.length=0;
   combo=0; comboS=0; sarsinti=0; yavasS=0;
   kadDuyuru={fare:0,tilki:0,robot:0}; bossSayisi=0;
   sonsuzSv={}; elitDuyuru=0;
@@ -527,7 +527,8 @@ const EKLENTI=[
   {id:'havai',ikon:'🎆',ad:'Havai Fişek!',w:4},
   {id:'cift',ikon:'🌟',ad:'Çifte Yumak Coşkusu!',w:4},
   {id:'klon',ikon:'🐱',ad:'Klon Kedi!',w:4},
-  {id:'supurge',ikon:'🧹',ad:'Süpürge Dansı!',w:4}
+  {id:'supurge',ikon:'🧹',ad:'Süpürge Dansı!',w:4},
+  {id:'barikat',ikon:'🚧',ad:'Barikat!',w:4}
 ];
 /* ⚡ SİNERJİ: yerden alınan eklenti, ilgili seviye gücüyle buluşursa süre 1.5× + bonus */
 const SINERJI={hiz:'cevik',hasar:'keskin',mik:'balikMik',ates:'patlama',kilcik:'delici',
@@ -654,6 +655,15 @@ function eklentiAl(e){
     parca(kedi.x-40,kedi.y,10,'#d0a8ff',true); parca(kedi.x+40,kedi.y,10,'#d0a8ff',true);
   }
   else if(e.id==='supurge'){ kedi.guc.supurge=6; } /* 🧹 önünü süpürür, fareleri savurur */
+  else if(e.id==='barikat'){                        /* 🚧 önüne geçici çit: düşman dolaşmak zorunda */
+    kedi.guc.barikat=7;
+    const aB=kedi.atesYon||0;
+    barikat={bx:kedi.x+Math.cos(aB)*BIRIM()*0.34, by:kedi.y+Math.sin(aB)*BIRIM()*0.34,
+      nx:Math.cos(aB), ny:Math.sin(aB),               /* duvar normali (kediden dışarı) */
+      wx:-Math.sin(aB), wy:Math.cos(aB)};             /* duvar ekseni */
+    halka(barikat.bx,barikat.by,BIRIM()*0.3,'#ffce54');
+    yaz(barikat.bx,barikat.by-30,'🚧 Barikat kuruldu!','#ffce54');
+  }
   else if(e.id==='ziyafet'){     /* 🍤 balık azsa saçar + hepsini çeker */
     let n=0; for(const b of baliklar){ if(!b.olu){ b.cek=true; n++; } }
     if(n<8){ const ekle=12;
@@ -1213,6 +1223,12 @@ function guncelle(dt){
     const vurR=BIRIM()*0.05, vurR2=vurR*vurR;
     for(const dm of dmermiler){
       dm.x+=dm.vx*dt; dm.y+=dm.vy*dt; dm.omur-=dt;
+      if(barikat&&kedi.guc.barikat>0){
+        const rx=dm.x-barikat.bx, ry=dm.y-barikat.by;
+        if(Math.abs(rx*barikat.wx+ry*barikat.wy)<BIRIM()*0.3&&Math.abs(rx*barikat.nx+ry*barikat.ny)<BIRIM()*0.05){
+          dm.omur=0; parca(dm.x,dm.y,4,'#7ad0e0'); continue;   /* 💦 çite çarpıp sönür */
+        }
+      }
       const dxk=kedi.x-dm.x, dyk=kedi.y-dm.y;
       if(dxk*dxk+dyk*dyk<vurR2){
         dm.omur=0;
@@ -1361,6 +1377,17 @@ function guncelle(dt){
         if(d.atesS<=0&&tL<BIRIM()*1.1){ d.atesS=2.2; d.nisan=0.5; }
       }
     }
+    /* 🚧 barikat: içine giren düşman duvar dışına itilir (kenardan dolaşır) */
+    if(barikat&&kedi.guc.barikat>0){
+      const rx=d.x-barikat.bx, ry=d.y-barikat.by;
+      const boyu=rx*barikat.wx+ry*barikat.wy;         /* duvar ekseni boyunca */
+      const derin=rx*barikat.nx+ry*barikat.ny;        /* duvara dikey */
+      const yariBoy=BIRIM()*0.3, kal=BIRIM()*0.045+BIRIM()*d.r*0.6;
+      if(Math.abs(boyu)<yariBoy&&Math.abs(derin)<kal){
+        const it=(derin>=0?kal:-kal)-derin;
+        d.x+=barikat.nx*it; d.y+=barikat.ny*it;
+      }
+    }
     const dx=kedi.x-d.x, dy=kedi.y-d.y, L=Math.hypot(dx,dy)||1;
     if(L<BIRIM()*(d.r+0.03)*(kedi.guc.dev>0?1.4:1)){
       if(kedi.guc.dev>0){                        /* 👑 dev mod: ezerek geç */
@@ -1432,7 +1459,7 @@ function kosuGeriYukle(){
   evrimler=(kk.ev||[]).slice();
   sonsuzSv=Object.assign({},kk.ss||{});        /* sonsuz kart sayaçları (eski kayıtta yoksa boş) */
   Object.assign(kedi,kk.k);
-  kedi.guc=Object.assign({hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0,ucurtma:0,havai:0,cift:0,klon:0,supurge:0},kk.k.guc);
+  kedi.guc=Object.assign({hiz:0,mik:0,hasar:0,kalkan:0,zaman:0,ates:0,dev:0,roket:0,hayalet:0,kilcik:0,makine:0,kamci:0,ucurtma:0,havai:0,cift:0,klon:0,supurge:0,barikat:0},kk.k.guc);
   kedi.zirh=Math.min(0.3,kk.k.zirh||0); kedi.balon=kk.k.balon||0;   /* eski %40 post kayıtları %30'a törpülenir */
   kedi.invuln=2.5;               /* dönüşte kısa dokunulmazlık */
   buildSeritYaz();
@@ -1919,8 +1946,8 @@ function kediCiz(){
   if(kedi.guc.hayalet>0)ctx.globalAlpha=0.45;
   /* 🧹 süpürge: elinde salınır */
   if(kedi.guc.supurge>0){
-    ctx.save(); ctx.translate(b*2.2,b*0.4);
-    ctx.rotate(Math.sin(performance.now()/140)*0.9+0.4);
+    ctx.save(); ctx.translate(b*2.9,b*0.4);
+    ctx.rotate(Math.sin(performance.now()/140)*0.7-2.1);   /* 🧹 kıl ucu düşmana uzanır */
     ctx.font=Math.round(b*2.6)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🧹',0,0);
     ctx.restore();
@@ -2139,6 +2166,25 @@ function ciz(){
     ctx.globalAlpha=c3*0.35; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.arc(ex,ey,hk.r*0.8,0,7); ctx.stroke();
     ctx.globalAlpha=1;
+  }
+  /* 🚧 barikat: tahta çit */
+  if(barikat&&kedi.guc.barikat>0){
+    const ex3=W/2+(barikat.bx-kedi.x), ey3=H/2+(barikat.by-kedi.y);
+    const yb2=BIRIM()*0.3, son=kedi.guc.barikat<1.6;
+    ctx.save(); ctx.translate(ex3,ey3); ctx.rotate(Math.atan2(barikat.wy,barikat.wx));
+    if(son)ctx.globalAlpha=0.35+Math.abs(Math.sin(performance.now()/110))*0.6;
+    /* yatay kalaslar */
+    for(const yy of [-7,5]){
+      ctx.fillStyle='#c9974f'; ctx.strokeStyle='#7a5230'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.roundRect(-yb2,yy-4,yb2*2,9,4); ctx.fill(); ctx.stroke();
+    }
+    /* dikey kazıklar */
+    for(let px=-yb2+8;px<=yb2-8;px+=yb2*0.5){
+      ctx.fillStyle='#a9825d'; ctx.strokeStyle='#7a5230';
+      ctx.beginPath(); ctx.roundRect(px-4,-16,9,32,3); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px-4,-16); ctx.lineTo(px+0.5,-22); ctx.lineTo(px+5,-16); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
   }
   if(kedi.guc.ucurtma>0&&ucurtma){
     const ux2=W/2+(ucurtma.x-kedi.x), uy2=H/2+(ucurtma.y-kedi.y);
@@ -2481,8 +2527,8 @@ function hudYaz(id,v){
   hudOnceki[id]=v; document.getElementById(id).textContent=v;
 }
 /* ── güç süre şeritleri (yeni süreli güçler dahil) ── */
-const GUC_MAX={hiz:8,mik:8,hasar:8,kalkan:6,zaman:4,ates:5,dev:5,roket:6,hayalet:5,kilcik:6,makine:5,kamci:6,ucurtma:6,cift:8,klon:8,supurge:6};
-const GUC_IKON={hiz:'⚡',mik:'🧲',hasar:'💪',kalkan:'🛡️',zaman:'⏱️',ates:'🔥',dev:'👑',roket:'🚀',hayalet:'👻',kilcik:'🐡',makine:'🧶',kamci:'🎀',ucurtma:'🪁',cift:'🌟',klon:'🐱',supurge:'🧹'};
+const GUC_MAX={hiz:8,mik:8,hasar:8,kalkan:6,zaman:4,ates:5,dev:5,roket:6,hayalet:5,kilcik:6,makine:5,kamci:6,ucurtma:6,cift:8,klon:8,supurge:6,barikat:7};
+const GUC_IKON={hiz:'⚡',mik:'🧲',hasar:'💪',kalkan:'🛡️',zaman:'⏱️',ates:'🔥',dev:'👑',roket:'🚀',hayalet:'👻',kilcik:'🐡',makine:'🧶',kamci:'🎀',ucurtma:'🪁',cift:'🌟',klon:'🐱',supurge:'🧹',barikat:'🚧'};
 const gucEl={};
 (function(){
   const kap=document.getElementById('gucSerit');
