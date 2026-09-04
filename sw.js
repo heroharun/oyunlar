@@ -1,11 +1,11 @@
 /* Oyun Salonu SW — kurulumda TÜM oyunları indirir (internetsiz oynanır),
    internet varken her açılışta sunucudan taze sürüm çeker (güncel kalır) */
-const CACHE = 'oyunlar-v11';
+const CACHE = 'oyunlar-v12';
 
 /* çevrimdışı paket: portal + tüm oyunlar (SW konumuna göre göreli çözülür) */
 const PAKET = ['./', 'manifest.json',
   'ikon/icon-192.png', 'ikon/icon-512.png', 'ikon/apple-touch-icon.png',
-  '2048/', '2248/', 'aklin-ters-kosesi/', 'anka/', 'arkeolog/', 'ates-su/', 'ayna-araba/', 'bedesten/', 'bereket/', 'bit-pazari/', 'blok-yagmuru/', 'boltbloom/', 'boyama/', 'buz-kule/', 'cop-basket/', 'denge-ustasi/', 'dini-tabu/', 'dondurmaci/', 'donerci/', 'duble-yol/', 'fatihin-toplari/', 'gokyuzu-kartali/', 'hafizlik-ajandasi/', 'hal/', 'hikmet-yolculari/', 'hiz-ustasi/', 'hokey/', 'isikli-hafiza/', 'itfaiye-komutani/', 'iyilik-adasi/', 'kedi/', 'kelime-bahcesi/', 'kelime-yorungesi/', 'kelime/', 'kim-alim/', 'kiz-giydirme/', 'kos-zipla/', 'kuafor-salonum/', 'kuafor/', 'kule/', 'kutlu-yolculuk/', 'maden/', 'mangala/', 'mayin/', 'mekan/', 'meyve/', 'minik-asci/', 'minik-cicekci/', 'minik-modaci/', 'minik-nalbur/', 'minik-sifaci/', 'minik-veteriner/', 'namaz-vakti/', 'nur-bahcesi/', 'nur-tahti/', 'ormanci/', 'park/', 'penalti/', 'piyano/', 'postane/', 'renk-tuzagi/', 'sekerci-bizim/', 'sesli-masallar/', 'sikke-sirala/', 'sudoku/', 'taktak/', 'tava-tabak/', 'tesettur-butigi/', 'teskilat/dist/', 'topac-sumo/', 'tugla-kiran/', 'usta-sofor/', 'yikim/', 'yilan/', 'yorunge/', 'yumurta/'];
+  '2048/', '2248/', 'aklin-ters-kosesi/', 'anka/', 'arkeolog/', 'ates-su/', 'ayna-araba/', 'bedesten/', 'bereket/', 'bit-pazari/', 'blok-yagmuru/', 'boltbloom/', 'boyama/', 'buz-kule/', 'cop-basket/', 'denge-ustasi/', 'dini-tabu/', 'dondurmaci/', 'donerci/', 'duble-yol/', 'fatihin-toplari/', 'gokyuzu-kartali/', 'gunes-yolcusu/', 'hafizlik-ajandasi/', 'hal/', 'hikmet-yolculari/', 'hiz-ustasi/', 'hokey/', 'isikli-hafiza/', 'itfaiye-komutani/', 'iyilik-adasi/', 'kedi/', 'kelime-bahcesi/', 'kelime-yorungesi/', 'kelime/', 'kim-alim/', 'kiz-giydirme/', 'kos-zipla/', 'kuafor-salonum/', 'kuafor/', 'kule/', 'kutlu-yolculuk/', 'maden/', 'mangala/', 'mayin/', 'mekan/', 'meyve/', 'minik-asci/', 'minik-cicekci/', 'minik-modaci/', 'minik-nalbur/', 'minik-sifaci/', 'minik-veteriner/', 'namaz-vakti/', 'nur-bahcesi/', 'nur-tahti/', 'ormanci/', 'park/', 'penalti/', 'piyano/', 'postane/', 'renk-tuzagi/', 'sekerci-bizim/', 'sesli-masallar/', 'sikke-sirala/', 'sudoku/', 'taktak/', 'tava-tabak/', 'tesettur-butigi/', 'teskilat/dist/', 'topac-sumo/', 'tugla-kiran/', 'usta-sofor/', 'yikim/', 'yilan/', 'yorunge/', 'yumurta/'];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
