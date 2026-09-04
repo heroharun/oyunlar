@@ -208,6 +208,8 @@ let egri=0, hedefEgri=0, egriS=0;
 let trafik=[], yakinlar=new Set();
 let carpma=null, fren=false, surX=null;
 let sallanti=0;
+/* direksiyon modeli: girdi hedefi (pxHedef) oynatır, araba ona yay-sönümle yaklaşır */
+let pxHedef=0, pxVel=0, direksiyon=0, tusSol=false, tusSag=false;
 
 function yolEgrisi(i){ /* kısa bloklar: viraj → düzlük → viraj (yön dengeli) */
   const b=Math.floor((poz/SEG+i)/34);
@@ -220,6 +222,7 @@ function oyunBaslat(m){
   mod=m; durum='oyun';
   hiz=0; poz=0; px=0; mesafe=0; para=0; kombo=0; komboS=0; egri=0;
   trafik=[]; yakinlar=new Set(); carpma=null; sallanti=0;
+  pxHedef=0; pxVel=0; direksiyon=0; tusSol=false; tusSag=false;
   for(let i=0;i<10;i++)trafikDog(1400+i*900);
   document.querySelectorAll('.ekran').forEach(e=>e.classList.remove('on'));
   $('#hud').classList.add('on'); $('#frenBtn').classList.add('on'); $('#durBtn').classList.add('on');
@@ -271,18 +274,23 @@ addEventListener('pointerdown',e=>{
 addEventListener('pointermove',e=>{
   if(durum!=='oyun'||surX===null)return;
   const A=ARABALAR[K.secili];
-  px+=(e.clientX-surX)/W*3.4*A.dir;
-  px=Math.max(-1.05,Math.min(1.05,px));
+  pxHedef+=(e.clientX-surX)/W*3.0*A.dir;
+  pxHedef=Math.max(-1.05,Math.min(1.05,pxHedef));
   surX=e.clientX;
 });
 addEventListener('pointerup',()=>{ surX=null; });
 addEventListener('keydown',e=>{
   if(durum!=='oyun')return;
-  if(e.key==='ArrowLeft')px=Math.max(-1.05,px-0.12);
-  if(e.key==='ArrowRight')px=Math.min(1.05,px+0.12);
-  if(e.key==='ArrowDown')fren=true;
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')tusSol=true;
+  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')tusSag=true;
+  if(e.key==='ArrowDown'||e.key===' ')fren=true;
 });
-addEventListener('keyup',e=>{ if(e.key==='ArrowDown')fren=false; });
+addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')tusSol=false;
+  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')tusSag=false;
+  if(e.key==='ArrowDown'||e.key===' ')fren=false;
+});
+addEventListener('blur',()=>{ tusSol=tusSag=false; fren=false; surX=null; });
 $('#frenBtn').addEventListener('pointerdown',e=>{ e.preventDefault(); fren=true; });
 $('#frenBtn').addEventListener('pointerup',()=>fren=false);
 $('#frenBtn').addEventListener('pointerleave',()=>fren=false);
@@ -296,24 +304,38 @@ function guncelle(dt){
     if(carpma.t<=0)yarisBitir();
     return;
   }
+  /* ⌨️ klavye: tuş basılı kaldıkça direksiyon yavaşça dolar, bırakınca boşalır */
+  const tusYon=(tusSag?1:0)-(tusSol?1:0);
+  direksiyon+=(tusYon-direksiyon)*Math.min(1,dt*(tusYon?9:14));
+  if(Math.abs(direksiyon)<0.01)direksiyon=0;
+  const klavyeAktif=tusYon!==0;
+  if(klavyeAktif)pxHedef+=direksiyon*dt*2.2*A.dir;
   /* 🎛️ eğim direksiyonu: telefonu yatır — dokunmatik her zaman yedek */
-  if(egimAktif&&sonGamma!==null&&surX===null){
+  const egimGirdi=egimAktif&&sonGamma!==null&&sonGamma!==0&&surX===null&&!klavyeAktif;
+  if(egimGirdi){
     const hedefPx=Math.max(-1.1,Math.min(1.1,sonGamma/16*A.dir));
-    px+=(hedefPx-px)*Math.min(1,dt*7);
+    pxHedef+=(hedefPx-pxHedef)*Math.min(1,dt*8);
   }
-  /* hız: otomatik gaz */
+  /* hız: otomatik gaz — hız arttıkça ivme yumuşakça azalır, fren hızla orantılı */
   const maks=A.hiz*(mod==='ters'?0.94:1);
-  if(fren)hiz=Math.max(40,hiz-dt*220);
-  else hiz=Math.min(maks,hiz+dt*(hiz<80?70:34));
+  if(fren)hiz=Math.max(40,hiz-dt*(110+hiz*0.7));
+  else hiz=Math.min(maks,hiz+dt*Math.max(20,95-hiz*0.32));
   poz+=hiz*dt*8;
   mesafe+=hiz*dt/3.6;
   /* viraj: ilerideki segmentlerin eğrisi + merkezkaç */
   hedefEgri=yolEgrisi(8);
   egri+=(hedefEgri-egri)*Math.min(1,dt*2.2);
-  px-=egri*(hiz/A.hiz)*dt*0.22;          /* merkezkaç: hafif dışa savurma */
-  if(surX===null&&(!egimAktif||sonGamma===0||sonGamma===null))
-    px-=px*dt*0.5;                         /* eller serbestken direksiyon kendini toplar */
-  px=Math.max(-1.12,Math.min(1.12,px));
+  pxHedef-=egri*(hiz/A.hiz)*dt*0.22;      /* merkezkaç: hafif dışa savurma */
+  if(surX===null&&!klavyeAktif&&!egimGirdi)
+    pxHedef-=pxHedef*dt*0.5;               /* eller serbestken direksiyon kendini toplar */
+  pxHedef=Math.max(-1.12,Math.min(1.12,pxHedef));
+  /* araba hedefe yay-sönümle gider: ani zıplama yok, ağırlık hissi var */
+  const yay=70, sonum=2*Math.sqrt(yay)*0.95;
+  pxVel+=((pxHedef-px)*yay-pxVel*sonum)*dt;
+  const azamiYanHiz=1.6+1.2*Math.min(1,hiz/A.hiz);   /* yavaşken şerit değişimi daha ağır */
+  pxVel=Math.max(-azamiYanHiz,Math.min(azamiYanHiz,pxVel));
+  px+=pxVel*dt;
+  if(Math.abs(px)>1.12){ px=Math.max(-1.12,Math.min(1.12,px)); pxVel*=0.3; }
   /* yol dışı: çimende yavaşlar + sarsılır */
   if(Math.abs(px)>0.92){ hiz=Math.max(50,hiz-dt*160); sallanti=4; if(Math.random()<dt*8)buzz(6); }
   else sallanti=Math.max(0,sallanti-dt*10);
@@ -377,8 +399,9 @@ function yarisBitir(){
 }
 
 /* ══════════ ÇİZİM ══════════ */
+const ZMIN=SEG*0.3;      /* kameraya bu kadar yaklaşan segment burada kesilir */
 function proje(z){
-  const zz=Math.max(SEG*0.55,z);
+  const zz=Math.max(ZMIN,z);
   const o=SEG/zz;                                   /* z=SEG'de o=1 (en yakın) */
   return { o, y:H*0.42+(H*0.46)*o, w:W*0.62*o };    /* w = yol YARI genişliği */
 }
@@ -405,15 +428,19 @@ function ciz(){
   for(let i=1;i<=GORUS;i++){ dxg+=yolEgrisi(i)*3; exArr.push(exArr[i-1]+dxg); }
   const seriler=[];
   for(let i=0;i<GORUS;i++){
-    const z1=i*SEG-(poz%SEG)+SEG*0.6, z2=z1+SEG;
-    if(z2<SEG*0.6)continue;
+    let z1=i*SEG-(poz%SEG)+SEG*0.6, ex1=exArr[i];
+    const z2=z1+SEG, ex2=exArr[i+1];
+    if(z2<=ZMIN)continue;
+    /* kameranın altından geçen segment: donmuş nokta yerine ZMIN düzlemindeki gerçek kesit alınır,
+       böylece yakın kenar ekran dışında doğru yerde kalır ve şerit çizgileri düz, perspektife uygun çıkar */
+    if(z1<ZMIN){ const t=(ZMIN-z1)/SEG; ex1+=(ex2-ex1)*t; z1=ZMIN; }
     const p1=proje(z1), p2=proje(z2);
-    seriler.push({i,y1:Math.min(H,p1.y),y2:p2.y,o1:p1.o,o2:p2.o,w1:p1.w,w2:p2.w,ex1:exArr[i],ex2:exArr[i+1]});
+    seriler.push({i,y1:p1.y,y2:p2.y,o1:p1.o,o2:p2.o,w1:p1.w,w2:p2.w,ex1,ex2});
   }
   for(let s=seriler.length-1;s>=0;s--){
     const q=seriler[s], gi=tabanSeg+q.i;
     const w1=q.w1, w2=q.w2;
-    const x1=W/2+q.ex1*q.o1-px*0, x2=W/2+q.ex2*q.o2;
+    const x1=W/2+q.ex1*q.o1, x2=W/2+q.ex2*q.o2;
     if(q.y2>=q.y1)continue;
     /* çim şeridi ton değişimi */
     ctx.fillStyle=(gi%2)?'#4f8f4a':'#579a52';
@@ -467,7 +494,7 @@ function ciz(){
     const ay=H*0.8+(Math.random()-0.5)*sallanti;
     ctx.save();
     if(carpma){ carpma.aci+=0.25; ctx.translate(ax,ay); ctx.rotate(Math.sin(carpma.aci*3)*0.35); ctx.translate(-ax,-ay); }
-    else { ctx.save(); ctx.translate(ax,ay); ctx.rotate(egri*0.05+(px*0.06)); ctx.translate(-ax,-ay); }
+    else { ctx.save(); ctx.translate(ax,ay); ctx.rotate(egri*0.05+px*0.03+pxVel*0.11);   /* yana hızlandıkça araba yatar */ ctx.translate(-ax,-ay); }
     arabaCiz(ctx,ax,ay,aw,A.renk,A.renk2,false);
     if(!carpma)ctx.restore();
     ctx.restore();
