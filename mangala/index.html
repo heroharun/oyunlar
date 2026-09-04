@@ -100,9 +100,7 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
   min-width:40px;text-align:center;font-size:1.35rem;font-weight:900;color:var(--pirinc2);
   background:rgba(20,10,4,.75);border:1.5px solid rgba(217,164,65,.55);border-radius:12px;padding:3px 8px;
   text-shadow:0 1px 2px #000;font-variant-numeric:tabular-nums;transition:transform .18s}
-.hazne .sayi.zipla{transform:translateY(-50%) scale(1.35)}
 .hazne.rakipH .sayi{transform:translateY(-50%) rotate(180deg)}
-.hazne.rakipH .sayi.zipla{transform:translateY(-50%) rotate(180deg) scale(1.35)}
 .kuyular{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(6,1fr);gap:3%;padding:0 1%;position:relative}
 .kuyular::before{content:"";position:absolute;left:50%;top:2%;bottom:2%;width:2px;transform:translateX(-50%);
   background:linear-gradient(180deg,transparent,rgba(217,164,65,.5) 12%,rgba(217,164,65,.5) 88%,transparent);
@@ -117,7 +115,22 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
   cursor:pointer;transition:box-shadow .2s, transform .12s}
 .kuyu.oynanir{box-shadow:inset 0 7px 14px rgba(0,0,0,.8), 0 0 0 2.5px var(--pirinc), 0 0 20px rgba(217,164,65,.45)}
 .kuyu.oynanir:active{transform:scale(.94)}
-.kuyu.hedef-onizle{box-shadow:inset 0 7px 14px rgba(0,0,0,.8), 0 0 0 2.5px #7ad0e0, 0 0 18px rgba(122,208,224,.55)}
+.kuyu.secili{box-shadow:inset 0 7px 14px rgba(0,0,0,.8), 0 0 0 3px #fff, 0 0 22px rgba(255,255,255,.55);transform:scale(1.05)}
+.kuyu.yol,.hazne.yol{box-shadow:inset 0 7px 14px rgba(0,0,0,.8), 0 0 0 2.5px rgba(122,208,224,.7), 0 0 14px rgba(122,208,224,.35)}
+.kuyu.hedef-onizle,.hazne.hedef-onizle{box-shadow:inset 0 7px 14px rgba(0,0,0,.8), 0 0 0 3px #7ad0e0, 0 0 26px rgba(122,208,224,.85);animation:hedefNabiz 1s ease-in-out infinite}
+@keyframes hedefNabiz{50%{box-shadow:inset 0 7px 14px rgba(0,0,0,.8), 0 0 0 4px #b8f0ff, 0 0 34px rgba(122,208,224,1)}}
+.kuyu.kap-onizle{box-shadow:inset 0 7px 14px rgba(0,0,0,.8), 0 0 0 3px #ffb347, 0 0 24px rgba(255,179,71,.8);animation:hedefNabiz 1s ease-in-out infinite}
+.rozetArti{position:absolute;left:50%;top:-9px;transform:translateX(-50%);z-index:6;background:#7ad0e0;color:#0a2a30;
+  font-weight:900;font-size:.78rem;line-height:1;padding:4px 7px;border-radius:99px;box-shadow:0 2px 6px rgba(0,0,0,.5);pointer-events:none;
+  animation:artiGel .18s ease-out}
+.rakipK .rozetArti{top:auto;bottom:-9px;transform:translateX(-50%) rotate(180deg)}
+.hazne .rozetArti{left:auto;right:9px;top:8px;transform:none}
+.hazne.rakipH .rozetArti{right:auto;left:9px;top:auto;bottom:8px;transform:rotate(180deg)}
+@keyframes artiGel{from{opacity:0;scale:.6}}
+.sayi.zipla{animation:sayiZip .28s ease-out}
+@keyframes sayiZip{40%{scale:1.45;background:#fff;color:#3a2408}}
+#ipucu{text-align:center;font-size:.86rem;font-weight:700;color:#b8f0ff;min-height:1.3em;opacity:0;transition:opacity .2s;padding:2px 10px}
+#ipucu.gorun{opacity:.95}
 .kuyu.son-dusen{animation:sonDus .5s ease}
 @keyframes sonDus{0%{box-shadow:inset 0 7px 14px rgba(0,0,0,.8), 0 0 0 4px #fff, 0 0 30px rgba(255,255,255,.7)}100%{}}
 .kuyu .sayi{position:absolute;right:-3px;bottom:-3px;z-index:4;min-width:22px;height:22px;
@@ -221,6 +234,7 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
     <div id="ucan-kat"></div>
     <div id="mesaj"></div>
   </div>
+  <div id="ipucu"></div>
   <div class="altbar">
     <button class="btn sade" id="nasilBtn2">❓ Kurallar</button>
     <button class="btn ikincil" id="yeniBtn">🔄 Yeni Oyun</button>
@@ -239,7 +253,7 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
     <div class="kural"><span class="no">4</span><p>Son taş <b>rakibin kuyusuna</b> düşer ve oradaki taş sayısı <b>çift</b> olursa (2, 4, 6…), o kuyudaki bütün taşlar senin haznene gelir! 🎉</p></div>
     <div class="kural"><span class="no">5</span><p>Son taş <b>kendi boş kuyuna</b> düşerse ve tam <b>karşısındaki rakip kuyusunda</b> taş varsa, hem o taşlar hem seninki haznene gider.</p></div>
     <div class="kural"><span class="no">6</span><p>Bir oyuncunun kuyuları boşalınca oyun biter. <b>Taşları ilk biten</b>, rakibin kuyularında kalan taşları da alır. Haznesi kalabalık olan kazanır! 🏆</p></div>
-    <p style="text-align:center;font-size:.9rem;opacity:.8">💡 İpucu: Kuyuya basılı tutunca son taşın nereye düşeceği <span style="color:#7ad0e0">mavi</span> ışıkla gösterilir.</p>
+    <p style="text-align:center;font-size:.9rem;opacity:.8">💡 İpucu: Kuyuya bir kez dokununca taşların gideceği yol <span style="color:#7ad0e0">mavi</span> ışıkla, son taşın düşeceği yer yanıp sönerek gösterilir. Oynamak için aynı kuyuya <b>bir daha dokun</b>.</p>
     <button class="btn" id="nasilKapatBtn">Anladım! 👍</button>
   </div>
 </div>
@@ -307,30 +321,42 @@ function tahtaKur(){
       k.id='kuyu'+idx;
       k.style.gridColumn=rakip?1:2; k.style.gridRow=r+1;
       k.innerHTML='<span class="sayi">4</span>';
-      k.addEventListener('pointerdown',()=>kuyuBasili(idx));
-      k.addEventListener('pointerup',()=>kuyuBirak(idx));
-      k.addEventListener('pointerleave',()=>onizleTemizle());
+      k.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse')kuyuUzerinde(idx); });
+      k.addEventListener('pointerleave',e=>{ if(e.pointerType==='mouse')kuyuUzerindenCik(idx); });
+      k.addEventListener('click',e=>{ e.stopPropagation(); kuyuDokun(idx); });
       kuyuEl[idx]=k; kap.appendChild(k);
     }
   }
   kuyuEl[6]=$('#hazne6'); kuyuEl[13]=$('#hazne13');
 }
+function tasOlustur(el,i,idx){
+  const hazne=idx===6||idx===13;
+  const W=el.clientWidth, H=el.clientHeight;
+  const t=document.createElement('div'); t.className='tas';
+  const boy=hazne?Math.max(10,Math.min(16,W*0.09)):Math.max(9,W*0.17);
+  t.style.width=boy+'px'; t.style.height=boy+'px';
+  t.style.background='radial-gradient(circle at 35% 28%, #ffffff, '+TASRENK[(idx*3+i)%4]+' 55%, rgba(0,0,0,.35) 130%)';
+  /* deterministik organik dağılım */
+  const a=(i*2.399963)+idx*0.7, rr=(hazne?0.36:0.30)*Math.sqrt((i%9+1)/9);
+  const cx=0.5+Math.cos(a)*rr*(hazne?1.35:1), cy=0.5+Math.sin(a)*rr*(hazne?0.72:1);
+  t.style.left=(cx*W-boy/2)+'px'; t.style.top=(cy*H-boy/2)+'px';
+  el.appendChild(t);
+}
 function tasDiz(el,adet,idx){
   el.querySelectorAll('.tas').forEach(t=>t.remove());
-  const hazne=idx===6||idx===13;
-  const gorunen=Math.min(adet,hazne?24:12);
-  const W=el.clientWidth, H=el.clientHeight;
-  for(let i=0;i<gorunen;i++){
-    const t=document.createElement('div'); t.className='tas';
-    const boy=hazne?Math.max(10,Math.min(16,W*0.09)):Math.max(9,W*0.17);
-    t.style.width=boy+'px'; t.style.height=boy+'px';
-    t.style.background='radial-gradient(circle at 35% 28%, #ffffff, '+TASRENK[(idx*3+i)%4]+' 55%, rgba(0,0,0,.35) 130%)';
-    /* deterministik organik dağılım */
-    const a=(i*2.399963)+idx*0.7, rr=(hazne?0.36:0.30)*Math.sqrt((i%9+1)/9);
-    const cx=0.5+Math.cos(a)*rr*(hazne?1.35:1), cy=0.5+Math.sin(a)*rr*(hazne?0.72:1);
-    t.style.left=(cx*W-boy/2)+'px'; t.style.top=(cy*H-boy/2)+'px';
-    el.appendChild(t);
-  }
+  const gorunen=Math.min(adet,(idx===6||idx===13)?24:12);
+  for(let i=0;i<gorunen;i++)tasOlustur(el,i,idx);
+}
+/* tek kuyunun sayısını ve taşlarını gerçek duruma getirir; sayı değiştiyse zıplatır */
+function kuyuGuncelle(idx,tekTasEkle){
+  const el=kuyuEl[idx], s=el.querySelector('.sayi');
+  const eski=+s.textContent;
+  s.textContent=tahta[idx];
+  if(tekTasEkle&&tahta[idx]===eski+1){
+    const gorunen=el.querySelectorAll('.tas').length;
+    if(gorunen<((idx===6||idx===13)?24:12))tasOlustur(el,gorunen,idx);
+  }else tasDiz(el,tahta[idx],idx);
+  if(eski!==tahta[idx]){ s.classList.remove('zipla'); void s.offsetWidth; s.classList.add('zipla'); }
 }
 function ciz(){
   for(let i=0;i<14;i++){
@@ -411,47 +437,52 @@ async function hamleOynat(p,i){
   const once=tahta.slice();
   const sonuc=hamleyiUygula(tahta,p,i);
   const adimlar=hamleAdimlar(once,p,i);
-  /* elde taşları kaldır (kaynak kuyuda 1 kalır ya da 0) */
+  const kat=$('#ucan-kat');
+  /* 1) taşlar ele alınır: kaynak kuyuda 1 kalır ya da 0 */
   tahta=once.slice();
   tahta[i]=once[i]===1?0:1;
-  ciz();
-  const kat=$('#ucan-kat');
-  const bas=merkez(i);
-  let g=0;
+  kuyuGuncelle(i,false);
+  kuyuEl[i].classList.add('secili');
+  /* gidilecek yol baştan işaretlenir: taş düştükçe işaret kalkar */
+  for(const ad of adimlar)kuyuEl[ad.to].classList.add('yol');
+  /* 2) taşlar tek tek, kuyudan kuyuya elden bırakılır; her düşüşte sayı o anda artar */
+  const sure=Math.max(90,Math.min(200,230-adimlar.length*6));
+  const boy=Math.max(11,Math.min(15,kuyuEl[i].clientWidth*0.2));
+  let onceki=i, g=0;
   for(const ad of adimlar){
-    if(ad.to===null)continue;
+    const bas=merkez(onceki), hedef=merkez(ad.to);
     const t2=document.createElement('div'); t2.className='ucan tas';
-    const boy=13;
     t2.style.width=boy+'px'; t2.style.height=boy+'px';
+    t2.style.transitionDuration=sure+'ms';
     t2.style.background='radial-gradient(circle at 35% 28%, #fff, '+TASRENK[g%4]+' 55%)';
     t2.style.left=(bas.x-boy/2)+'px'; t2.style.top=(bas.y-boy/2)+'px';
     kat.appendChild(t2);
-    const hedef=merkez(ad.to);
-    await bekle(30);
+    await kareBekle();
     t2.style.left=(hedef.x-boy/2)+'px'; t2.style.top=(hedef.y-boy/2)+'px';
-    const kalici=ad.to;
-    setTimeout(()=>{
-      t2.remove();
-      tahta[kalici]++;
-      const el2=kuyuEl[kalici];
-      el2.querySelector('.sayi').textContent=tahta[kalici];
-      tasDiz(el2,tahta[kalici],kalici);
-      if(kalici===6||kalici===13){ const s=el2.querySelector('.sayi'); s.classList.add('zipla'); setTimeout(()=>s.classList.remove('zipla'),200); }
-      sesTas(g);
-    },165);
-    await bekle(115); g++;
+    await bekle(sure);
+    t2.remove();
+    tahta[ad.to]++;
+    kuyuGuncelle(ad.to,true);
+    kuyuEl[ad.to].classList.remove('yol');
+    if(ad.to===6||ad.to===13)sesHazne(); else sesTas(g);
+    onceki=ad.to; g++;
+    await bekle(40);
   }
-  await bekle(220);
-  /* son kuyu vurgusu */
+  kuyuEl[i].classList.remove('secili');
+  await bekle(160);
+  /* 3) son kuyu vurgusu */
   const sonEl=kuyuEl[sonuc.sonIdx];
   sonEl.classList.add('son-dusen'); setTimeout(()=>sonEl.classList.remove('son-dusen'),520);
-  /* kapma animasyonu */
+  /* 4) kapma: önce kuyular boşalır, taşlar hazneye uçar, hazne sayısı taşlar varınca artar */
   if(sonuc.kap>0){
     sesKap(); buzz([15,30,15]);
     const hi=hazneIdx(p);
     const kaynaklar=[sonuc.sonIdx]; if(benimAlan(p,sonuc.sonIdx))kaynaklar.push(karsi(sonuc.sonIdx));
+    let enSon=0;
     for(const ki of kaynaklar){
-      const bm=merkez(ki), hm=merkez(hi), n=Math.min(tahta[ki]||6,8);
+      const adet=tahta[ki];
+      kuyuEl[ki].classList.add('kap-onizle');
+      const bm=merkez(ki), hm=merkez(hi), n=Math.min(adet,8);
       for(let q=0;q<n;q++){
         const t3=document.createElement('div'); t3.className='ucan tas';
         t3.style.width='12px'; t3.style.height='12px';
@@ -461,10 +492,15 @@ async function hamleOynat(p,i){
         kat.appendChild(t3);
         requestAnimationFrame(()=>requestAnimationFrame(()=>{ t3.style.left=(hm.x-6)+'px'; t3.style.top=(hm.y-6)+'px'; }));
         setTimeout(()=>t3.remove(),520+q*35);
+        enSon=Math.max(enSon,400+q*35);
       }
+      tahta[ki]=0; kuyuGuncelle(ki,false);
     }
     mesajGoster((p===0?'🎉 ':'🤖 ')+sonuc.kap+' taş kaptın!');
-    await bekle(620);
+    await bekle(enSon+60);
+    tahta[hi]+=sonuc.kap; kuyuGuncelle(hi,false);
+    for(const ki of kaynaklar)kuyuEl[ki].classList.remove('kap-onizle');
+    await bekle(260);
   }
   tahta=sonuc.t; ciz();
   if(sonuc.bitti){ oyunuBitir(); return; }
@@ -477,32 +513,62 @@ async function hamleOynat(p,i){
   sira=1-p; kilit=false; oynanirIsaretle();
   if(sira===1&&mod==='bot')setTimeout(botOyna,750);
 }
+const kareBekle=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
 const bekle=ms=>new Promise(r=>setTimeout(r,ms));
 function mesajGoster(m){
   const el=$('#mesaj'); el.textContent=m; el.classList.add('gorun');
   clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('gorun'),1300);
 }
 
-/* ══════════════ ÖNİZLEME (basılı tut) ══════════════ */
-let basiliIdx=null;
-function kuyuBasili(i){
-  if(kilit||oyunBitti)return;
-  if(!(sira===0&&i<6)&&!(sira===1&&mod==='iki'&&i>=7&&i<13))return;
-  if(tahta[i]===0)return;
-  basiliIdx=i;
-  const p=i<6?0:1;
-  const sonuc=hamleyiUygula(tahta,p,i);
-  if(sonuc)kuyuEl[sonuc.sonIdx].classList.add('hedef-onizle');
+/* ══════════════ ÖNİZLEME & SEÇİM ══════════════
+   1. dokunuş: kuyuyu seçer, taşların gideceği yol (+1 rozetleri) ve son taşın yeri gösterilir
+   2. dokunuş (aynı kuyu): hamle oynanır — fare ile üzerine gelince de yol gösterilir */
+let seciliIdx=null;
+function oynanabilir(i){
+  if(kilit||oyunBitti||tahta[i]===0)return false;
+  return (sira===0&&i<6)||(sira===1&&mod==='iki'&&i>=7&&i<13);
 }
-function onizleTemizle(){ document.querySelectorAll('.hedef-onizle').forEach(e=>e.classList.remove('hedef-onizle')); }
-function kuyuBirak(i){
+function ipucuYaz(m){ const el=$('#ipucu'); el.textContent=m; el.classList.toggle('gorun',!!m); }
+function onizleGoster(i){
   onizleTemizle();
-  if(basiliIdx!==i){ basiliIdx=null; return; }
-  basiliIdx=null;
-  if(kilit||oyunBitti)return;
-  if(sira===0&&i<6&&tahta[i]>0){ ac(); hamleOynat(0,i); }
-  else if(sira===1&&mod==='iki'&&i>=7&&i<13&&tahta[i]>0){ ac(); hamleOynat(1,i); }
+  const p=i<6?0:1;
+  const sonuc=hamleyiUygula(tahta,p,i); if(!sonuc)return;
+  const adimlar=hamleAdimlar(tahta,p,i);
+  const sayac={};
+  for(const ad of adimlar)sayac[ad.to]=(sayac[ad.to]||0)+1;
+  for(const k in sayac){
+    const el=kuyuEl[k]; el.classList.add('yol');
+    const r=document.createElement('span'); r.className='rozetArti'; r.textContent='+'+sayac[k]; el.appendChild(r);
+  }
+  kuyuEl[sonuc.sonIdx].classList.add('hedef-onizle');
+  let not='';
+  if(sonuc.tekrar) not='✨ Son taş haznene düşer: bir daha oynarsın!';
+  else if(sonuc.kap>0){
+    not='🎉 Son taş kapma yapar: '+sonuc.kap+' taş haznene gelir!';
+    kuyuEl[sonuc.sonIdx].classList.add('kap-onizle');
+    if(benimAlan(p,sonuc.sonIdx))kuyuEl[karsi(sonuc.sonIdx)].classList.add('kap-onizle');
+  }
+  else not=(tahta[i]===1?'Tek taş yandaki kuyuya geçer.':(tahta[i]-1)+' taş dağıtılır, son taş yanıp sönen kuyuya düşer.');
+  ipucuYaz(not+(seciliIdx===i?'  →  Oynamak için tekrar dokun.':''));
 }
+function onizleTemizle(){
+  document.querySelectorAll('.hedef-onizle,.yol,.kap-onizle').forEach(e=>e.classList.remove('hedef-onizle','yol','kap-onizle'));
+  document.querySelectorAll('.rozetArti').forEach(e=>e.remove());
+  ipucuYaz('');
+}
+function secimiBirak(){
+  if(seciliIdx!==null)kuyuEl[seciliIdx].classList.remove('secili');
+  seciliIdx=null; onizleTemizle();
+}
+function kuyuUzerinde(i){ if(seciliIdx!==null||!oynanabilir(i))return; onizleGoster(i); }
+function kuyuUzerindenCik(i){ if(seciliIdx===null)onizleTemizle(); }
+function kuyuDokun(i){
+  if(!oynanabilir(i)){ secimiBirak(); return; }
+  if(seciliIdx===i){ const idx=i; secimiBirak(); ac(); hamleOynat(idx<6?0:1,idx); return; }
+  if(seciliIdx!==null)kuyuEl[seciliIdx].classList.remove('secili');
+  seciliIdx=i; kuyuEl[i].classList.add('secili'); onizleGoster(i); buzz(6);
+}
+$('#tahta-kutu').addEventListener('click',()=>secimiBirak());
 
 /* ══════════════ BOT: BİLGE DEDE ══════════════ */
 function gecerliHamleler(t,p){ const L=[]; const b=p===0?0:7; for(let i=b;i<b+6;i++)if(t[i]>0)L.push(i); return L; }
@@ -621,8 +687,8 @@ document.querySelectorAll('.zorluk').forEach(b=>b.addEventListener('click',()=>{
 $('#botBaslaBtn').addEventListener('click',()=>{ ac(); oyunaBasla('bot'); });
 $('#ikiBaslaBtn').addEventListener('click',()=>{ ac(); oyunaBasla('iki'); });
 $('#geriBtn').addEventListener('click',()=>ekran('#menu'));
-$('#yeniBtn').addEventListener('click',()=>{ if(kilit)return; yeniTahta(); sira=0; oyunBitti=false; $('#sonPerde').classList.remove('on'); ciz(); });
-$('#tekrarBtn').addEventListener('click',()=>{ $('#sonPerde').classList.remove('on'); yeniTahta(); sira=0; oyunBitti=false; ciz(); });
+$('#yeniBtn').addEventListener('click',()=>{ if(kilit)return; secimiBirak(); yeniTahta(); sira=0; oyunBitti=false; $('#sonPerde').classList.remove('on'); ciz(); });
+$('#tekrarBtn').addEventListener('click',()=>{ $('#sonPerde').classList.remove('on'); secimiBirak(); yeniTahta(); sira=0; oyunBitti=false; ciz(); });
 $('#sonMenuBtn').addEventListener('click',()=>{ $('#sonPerde').classList.remove('on'); ekran('#menu'); });
 $('#sesBtn').addEventListener('click',()=>{ sesAcik=!sesAcik; $('#sesBtn').textContent=sesAcik?'🔊':'🔇'; try{localStorage.setItem('mangalaSes',sesAcik?'1':'0');}catch(e){} });
 for(const id of ['#nasilBtn','#nasilBtn2'])$(id).addEventListener('click',()=>{ $('#nasilPerde').classList.add('on'); demoDurdur=demoKur(); });
