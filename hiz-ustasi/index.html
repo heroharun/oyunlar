@@ -489,7 +489,9 @@ function ciz(){
   /* oyuncu arabası */
   if(durum==='oyun'||durum==='dur'||carpma){
     const A=ARABALAR[K.secili];
-    const aw=Math.min(W*0.34,150);
+    /* trafikle aynı ölçek: arabanın durduğu derinlikteki (y=0.8H) yol genişliğinden türetilir */
+    const oyuncuO=(0.8-0.42)/0.46;
+    const aw=W*0.62*oyuncuO*0.36;
     const ax=W/2+px*W*0.5+(Math.random()-0.5)*sallanti;   /* şerit matematiğiyle hizalı */
     const ay=H*0.8+(Math.random()-0.5)*sallanti;
     ctx.save();
