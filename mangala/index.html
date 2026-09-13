@@ -81,8 +81,7 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
 /* tahta */
 #tahta-kutu{position:relative;width:min(460px,100%);flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
 #tahta{
-  position:relative;width:100%;max-height:100%;aspect-ratio:0.62;max-width:calc((100dvh - 210px) * 0.62);
-  border-radius:26px;padding:10px;
+  position:relative;width:min(560px,100%);border-radius:26px;padding:12px 10px;
   background:
     radial-gradient(120% 80% at 30% 15%, rgba(255,220,160,.16), transparent 55%),
     repeating-linear-gradient(96deg, rgba(0,0,0,.08) 0 3px, transparent 3px 11px),
@@ -90,26 +89,27 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
     linear-gradient(165deg, var(--ceviz2) 0%, var(--ceviz1) 55%, var(--ceviz3) 100%);
   box-shadow:0 22px 50px rgba(0,0,0,.55), inset 0 3px 4px rgba(255,255,255,.22), inset 0 -8px 18px rgba(0,0,0,.45);
   border:3px solid #2e1c0e; outline:1.5px solid rgba(217,164,65,.5); outline-offset:-7px;
-  display:grid; grid-template-rows:minmax(54px,1fr) 4.4fr minmax(54px,1fr); gap:2.4%;
+  display:grid; grid-template-columns:minmax(46px,60px) 1fr minmax(46px,60px); gap:2.4%;
+  align-items:stretch;
 }
 .hazne{position:relative;border-radius:18px;
   background:radial-gradient(130% 150% at 50% 8%, rgba(0,0,0,.55), rgba(0,0,0,.28) 60%, rgba(0,0,0,.4)),
     linear-gradient(180deg, var(--ceviz3), var(--ceviz1));
   box-shadow:inset 0 6px 16px rgba(0,0,0,.75), inset 0 -2px 3px rgba(255,255,255,.12);
   display:flex;align-items:center;justify-content:center;overflow:hidden}
-.hazne .sayi{position:absolute;right:9px;top:50%;transform:translateY(-50%);z-index:4;
+.hazne .sayi{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);z-index:4;
   min-width:40px;text-align:center;font-size:1.35rem;font-weight:900;color:var(--pirinc2);
   background:rgba(20,10,4,.75);border:1.5px solid rgba(217,164,65,.55);border-radius:12px;padding:3px 8px;
   text-shadow:0 1px 2px #000;font-variant-numeric:tabular-nums;transition:transform .18s}
-.hazne.rakipH .sayi{transform:translateY(-50%) rotate(180deg)}
-.kuyular{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(6,1fr);gap:3%;padding:0 1%;position:relative}
-.kuyular::before{content:"";position:absolute;left:50%;top:2%;bottom:2%;width:2px;transform:translateX(-50%);
-  background:linear-gradient(180deg,transparent,rgba(217,164,65,.5) 12%,rgba(217,164,65,.5) 88%,transparent);
+body.mod-iki .hazne.rakipH .sayi{bottom:auto;top:7px;transform:translateX(-50%) rotate(180deg)}
+.kuyular{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(2,1fr);gap:4% 2.5%;padding:2% 0;position:relative}
+.kuyular::before{content:"";position:absolute;top:50%;left:2%;right:2%;height:2px;transform:translateY(-50%);
+  background:linear-gradient(90deg,transparent,rgba(217,164,65,.5) 12%,rgba(217,164,65,.5) 88%,transparent);
   box-shadow:0 0 6px rgba(217,164,65,.3)}
 .kuyular::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:12px;transform:translate(-50%,-50%) rotate(45deg);
   background:var(--pirinc);box-shadow:0 0 10px rgba(217,164,65,.6);border-radius:2px}
 .kuyu{position:relative;border-radius:50%;aspect-ratio:1;align-self:center;justify-self:center;
-  height:min(100%,96px);width:auto;max-width:100%;
+  width:min(100%,72px);height:auto;
   background:radial-gradient(circle at 50% 30%, rgba(0,0,0,.62), rgba(0,0,0,.34) 55%, rgba(0,0,0,.5)),
     radial-gradient(circle at 50% 120%, var(--ceviz4), var(--ceviz3) 70%);
   box-shadow:inset 0 7px 14px rgba(0,0,0,.8), inset 0 -3px 5px rgba(255,255,255,.13), 0 1px 0 rgba(255,255,255,.1);
@@ -139,7 +139,8 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
   font-size:.78rem;font-weight:900;color:var(--krem);text-shadow:0 1px 2px #000;
   background:rgba(20,10,4,.85);border:1.5px solid rgba(217,164,65,.5);border-radius:999px;padding:0 5px;
   font-variant-numeric:tabular-nums;pointer-events:none}
-.kuyu.rakipK .sayi{right:auto;bottom:auto;left:-3px;top:-3px;transform:rotate(180deg)}
+.kuyu.rakipK .sayi{right:auto;bottom:auto;left:-3px;top:-3px}
+body.mod-iki .kuyu.rakipK .sayi{transform:rotate(180deg)}
 .tas{position:absolute;border-radius:50%;pointer-events:none;
   box-shadow:0 2px 4px rgba(0,0,0,.55), inset 0 -2px 3px rgba(0,0,0,.3), inset 0 2px 3px rgba(255,255,255,.75)}
 .tas::after{content:"";position:absolute;left:22%;top:14%;width:32%;height:24%;border-radius:50%;
@@ -391,13 +392,13 @@ const kuyuEl={};
 function tahtaKur(){
   const kap=$('#kuyular'); kap.innerHTML='';
   /* grid satırları: her satırda [rakip, benim] — rakip 12 üstte, benim 5 üstte */
-  for(let r=0;r<6;r++){
-    const rIdx=12-r, bIdx=5-r;
+  for(let c=0;c<6;c++){
+    const rIdx=12-c, bIdx=c;      /* üst: 12..7 → benim haznenin (sağ) yanından 7 başlar; alt: 0..5 */
     for(const [idx,rakip] of [[rIdx,true],[bIdx,false]]){
       const k=document.createElement('div');
       k.className='kuyu'+(rakip?' rakipK':'');
       k.id='kuyu'+idx;
-      k.style.gridColumn=rakip?1:2; k.style.gridRow=r+1;
+      k.style.gridColumn=c+1; k.style.gridRow=rakip?1:2;
       k.innerHTML='<span class="sayi">4</span>';
       k.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse')kuyuUzerinde(idx); });
       k.addEventListener('pointerleave',e=>{ if(e.pointerType==='mouse')kuyuUzerindenCik(idx); });
@@ -411,12 +412,12 @@ function tasOlustur(el,i,idx){
   const hazne=idx===6||idx===13;
   const W=el.clientWidth, H=el.clientHeight;
   const t=document.createElement('div'); t.className='tas';
-  const boy=hazne?Math.max(10,Math.min(16,W*0.09)):Math.max(9,W*0.17);
+  const boy=hazne?Math.max(10,Math.min(15,W*0.24)):Math.max(9,W*0.17);
   t.style.width=boy+'px'; t.style.height=boy+'px';
   t.style.background='radial-gradient(circle at 35% 28%, #ffffff, '+TASRENK[(idx*3+i)%4]+' 55%, rgba(0,0,0,.35) 130%)';
   /* deterministik organik dağılım */
   const a=(i*2.399963)+idx*0.7, rr=(hazne?0.36:0.30)*Math.sqrt((i%9+1)/9);
-  const cx=0.5+Math.cos(a)*rr*(hazne?1.35:1), cy=0.5+Math.sin(a)*rr*(hazne?0.72:1);
+  const cx=0.5+Math.cos(a)*rr*(hazne?0.6:1), cy=0.5+Math.sin(a)*rr*(hazne?1.5:1);
   t.style.left=(cx*W-boy/2)+'px'; t.style.top=(cy*H-boy/2)+'px';
   el.appendChild(t);
 }
@@ -757,7 +758,8 @@ let demoDurdur=null;
 /* ══════════════ AKIŞ ══════════════ */
 function ekran(id){ document.querySelectorAll('.ekran').forEach(e=>e.classList.remove('on')); $(id).classList.add('on'); }
 function oyunaBasla(m){
-  mod=m; yeniTahta(); sira=(m==='online'&&net.rol==='guest')?1:0; oyunBitti=false; kilit=false;
+  mod=m; document.body.classList.toggle('mod-iki',m==='iki');
+  yeniTahta(); sira=(m==='online'&&net.rol==='guest')?1:0; oyunBitti=false; kilit=false;
   $('#emojiler').classList.toggle('on',m==='online');
   $('#odaCip').classList.toggle('on',m==='online');
   $('#yeniBtn').style.display=m==='online'?'none':'';
