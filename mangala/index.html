@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <meta name="theme-color" content="#123430">
 <title>Mangala — MasalPark</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{
   --ceviz1:#5b3a22; --ceviz2:#7a5230; --ceviz3:#3f2716; --ceviz4:#8f6440;
@@ -186,6 +187,36 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
 #konfeti-kat{position:fixed;inset:0;pointer-events:none;z-index:120}
 .konf{position:absolute;width:9px;height:13px;top:-16px;animation:konfDus linear forwards}
 @keyframes konfDus{to{transform:translateY(110vh) rotate(720deg)}}
+/* ── ONLINE ODA ── */
+.sekmeler{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(0,0,0,.25);border-radius:14px;padding:4px}
+.sekme{min-height:42px;border:none;border-radius:11px;background:transparent;color:var(--krem);font-family:inherit;font-weight:800;font-size:.95rem;cursor:pointer;opacity:.7}
+.sekme.on{background:rgba(217,164,65,.22);color:var(--pirinc2);opacity:1;box-shadow:inset 0 0 0 1.5px rgba(217,164,65,.5)}
+.alan{display:flex;flex-direction:column;gap:5px;text-align:left}
+.alan label{font-size:.78rem;font-weight:700;color:var(--pirinc2);letter-spacing:.06em;text-transform:uppercase;opacity:.9}
+.alan input{min-height:48px;border-radius:12px;border:1.5px solid rgba(217,164,65,.4);background:rgba(0,0,0,.3);color:var(--krem);
+  font-family:inherit;font-size:1.05rem;font-weight:700;padding:0 14px;outline:none}
+.alan input:focus{border-color:var(--pirinc2);box-shadow:0 0 0 3px rgba(217,164,65,.2)}
+.alan input.kod{letter-spacing:.35em;text-transform:uppercase;text-align:center;font-size:1.4rem}
+.lobi-not{font-size:.85rem;opacity:.8;line-height:1.45}
+.lobi-hata{color:#ffb3a7;font-size:.86rem;font-weight:700;min-height:1.2em}
+.oda-cip{display:none;align-items:center;gap:6px;font-size:.8rem;font-weight:800;color:var(--pirinc2);background:rgba(0,0,0,.35);
+  border:1.5px solid rgba(217,164,65,.45);border-radius:99px;padding:4px 10px;cursor:pointer;letter-spacing:.15em}
+.oda-cip.on{display:inline-flex}
+.oda-cip i{width:8px;height:8px;border-radius:50%;background:#888;flex:none;letter-spacing:0}
+.oda-cip.canli i{background:#5ce08a;box-shadow:0 0 8px #5ce08a}
+.oda-cip.kopuk i{background:#ff7a5c;box-shadow:0 0 8px #ff7a5c}
+.buyuk-kod{font-size:2.6rem;letter-spacing:.4em;text-align:center;color:var(--pirinc2);font-weight:900;text-indent:.4em;
+  background:rgba(0,0,0,.3);border-radius:16px;padding:10px;border:1.5px dashed rgba(217,164,65,.5)}
+.yanyana{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bekle-nokta::after{content:"…";animation:nokta 1.2s steps(4) infinite}
+@keyframes nokta{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.emojiler{display:none;justify-content:center;gap:6px;padding:2px 0}
+.emojiler.on{display:flex}
+.emojiler button{width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(217,164,65,.35);background:rgba(0,0,0,.25);font-size:1.35rem;cursor:pointer;transition:transform .1s}
+.emojiler button:active{transform:scale(.9)}
+.emoji-ucan{position:absolute;font-size:2.6rem;pointer-events:none;z-index:60;animation:emojiUc 1.9s ease-out forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6))}
+@keyframes emojiUc{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.25)}100%{opacity:0;transform:translate(-50%,-190%) scale(1)}}
+.btn:disabled{opacity:.55;cursor:default;transform:none}
 @media (max-height:640px){
   h1{font-size:2rem} .tugra{width:58px;height:58px}
   .mkart{padding:13px;gap:8px} .btn{min-height:50px}
@@ -215,6 +246,23 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
     <h3>👥 Arkadaşınla aynı cihazda</h3>
     <button class="btn ikincil" id="ikiBaslaBtn">🤝 Karşılıklı Oyna</button>
   </div>
+  <div class="mkart">
+    <h3>🌐 Arkadaşınla online oyna</h3>
+    <div class="sekmeler">
+      <button class="sekme on" data-sekme="kur">Oda Kur</button>
+      <button class="sekme" data-sekme="katil">Odaya Katıl</button>
+    </div>
+    <div class="alan"><label for="adGir">Adın</label><input id="adGir" maxlength="14" placeholder="Takma adın" autocomplete="nickname"></div>
+    <div id="sekmeKur">
+      <p class="lobi-not">Oda kur, çıkan <b>4 haneli kodu</b> arkadaşına yolla. O kodu girince tahta açılır.</p>
+      <button class="btn ikincil" id="odaKurBtn" style="margin-top:8px">🏠 Oda Kur</button>
+    </div>
+    <div id="sekmeKatil" hidden>
+      <div class="alan"><label for="kodGir">Oda kodu</label><input id="kodGir" class="kod" maxlength="4" placeholder="ABCD" autocapitalize="characters" autocomplete="off"></div>
+      <button class="btn ikincil" id="odaKatilBtn" style="margin-top:8px">🔗 Katıl</button>
+    </div>
+    <div class="lobi-hata" id="lobiHata"></div>
+  </div>
   <button class="btn sade" id="nasilBtn" style="width:min(420px,100%)">❓ Nasıl Oynanır</button>
 </section>
 
@@ -223,6 +271,7 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
   <div class="ustbar">
     <button class="kucukbtn" id="geriBtn" aria-label="Menüye dön">⬅</button>
     <div class="sira-rozet" id="siraRozet">…</div>
+    <button class="oda-cip" id="odaCip" title="Kodu kopyala"><i></i><span id="odaKod">----</span></button>
     <button class="kucukbtn" id="sesBtn" aria-label="Ses">🔊</button>
   </div>
   <div id="tahta-kutu">
@@ -235,6 +284,10 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
     <div id="mesaj"></div>
   </div>
   <div id="ipucu"></div>
+  <div class="emojiler" id="emojiler">
+    <button data-e="👏">👏</button><button data-e="🔥">🔥</button><button data-e="😅">😅</button>
+    <button data-e="🤔">🤔</button><button data-e="🧿">🧿</button><button data-e="☕">☕</button>
+  </div>
   <div class="altbar">
     <button class="btn sade" id="nasilBtn2">❓ Kurallar</button>
     <button class="btn ikincil" id="yeniBtn">🔄 Yeni Oyun</button>
@@ -253,6 +306,7 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
     <div class="kural"><span class="no">4</span><p>Son taş <b>rakibin kuyusuna</b> düşer ve oradaki taş sayısı <b>çift</b> olursa (2, 4, 6…), o kuyudaki bütün taşlar senin haznene gelir! 🎉</p></div>
     <div class="kural"><span class="no">5</span><p>Son taş <b>kendi boş kuyuna</b> düşerse ve tam <b>karşısındaki rakip kuyusunda</b> taş varsa, hem o taşlar hem seninki haznene gider.</p></div>
     <div class="kural"><span class="no">6</span><p>Bir oyuncunun kuyuları boşalınca oyun biter. <b>Taşları ilk biten</b>, rakibin kuyularında kalan taşları da alır. Haznesi kalabalık olan kazanır! 🏆</p></div>
+    <p style="text-align:center;font-size:.9rem;opacity:.8">🌐 Online: Biriniz <b>Oda Kur</b> deyip 4 haneli kodu paylaşır, diğeri <b>Odaya Katıl</b> ile girer. Odayı kuran ilk hamleyi yapar.</p>
     <p style="text-align:center;font-size:.9rem;opacity:.8">💡 İpucu: Kuyuya bir kez dokununca taşların gideceği yol <span style="color:#7ad0e0">mavi</span> ışıkla, son taşın düşeceği yer yanıp sönerek gösterilir. Oynamak için aynı kuyuya <b>bir daha dokun</b>.</p>
     <button class="btn" id="nasilKapatBtn">Anladım! 👍</button>
   </div>
@@ -271,6 +325,30 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
     <p id="sonNot" style="text-align:center;opacity:.85;font-size:.95rem"></p>
     <button class="btn" id="tekrarBtn">🔄 Bir Daha!</button>
     <button class="btn sade" id="sonMenuBtn">🏠 Ana Menü</button>
+  </div>
+</div>
+<!-- ONLINE: RAKİP BEKLENİYOR -->
+<div class="perde" id="beklePerde">
+  <div class="modal">
+    <div class="buyuk">⏳</div>
+    <h2>Arkadaşını bekliyoruz</h2>
+    <p style="text-align:center;opacity:.85">Bu kodu ona ilet:</p>
+    <div class="buyuk-kod" id="buyukKod">----</div>
+    <div class="yanyana">
+      <button class="btn sade" id="kodKopyaBtn">📋 Kodu kopyala</button>
+      <button class="btn sade" id="linkKopyaBtn">🔗 Bağlantıyı kopyala</button>
+    </div>
+    <p class="lobi-not bekle-nokta" id="bekleNot" style="text-align:center">Rakip odaya girince tahta açılacak</p>
+    <button class="btn sade" id="bekleIptalBtn">⬅ Vazgeç</button>
+  </div>
+</div>
+<!-- ONLINE: BAĞLANTI KOPTU -->
+<div class="perde" id="koptuPerde">
+  <div class="modal">
+    <div class="buyuk">⌁</div>
+    <h2 id="koptuBaslik">Bağlantı koptu</h2>
+    <p style="text-align:center;opacity:.85" id="koptuNot">Rakibin odadan ayrıldı. Yeni bir oda kurabilirsin.</p>
+    <button class="btn" id="koptuMenuBtn">🏠 Lobiye dön</button>
   </div>
 </div>
 <div id="konfeti-kat"></div>
@@ -371,8 +449,8 @@ function oynanirIsaretle(){
   for(let i=7;i<13;i++)kuyuEl[i].classList.toggle('oynanir',!kilit&&!oyunBitti&&sira===1&&mod==='iki'&&tahta[i]>0);
   const r=$('#siraRozet');
   if(oyunBitti){ r.textContent='Oyun bitti'; r.className='sira-rozet'; return; }
-  if(sira===0){ r.textContent=mod==='bot'?'✨ Sıra sende!':'✨ Alt oyuncu (altın)'; r.className='sira-rozet benim'; }
-  else{ r.textContent=mod==='bot'?'🤖 Bilge Dede düşünüyor…':'✨ Üst oyuncu (turkuaz)'; r.className='sira-rozet rakip'; }
+  if(sira===0){ r.textContent=mod==='iki'?'✨ Alt oyuncu (altın)':'✨ Sıra sende!'; r.className='sira-rozet benim'; }
+  else{ r.textContent=mod==='bot'?'🤖 Bilge Dede düşünüyor…':mod==='online'?('🌐 '+net.rakipAd+' düşünüyor…'):'✨ Üst oyuncu (turkuaz)'; r.className='sira-rozet rakip'; }
 }
 
 /* ══════════════ KURAL MOTORU ══════════════ */
@@ -526,6 +604,7 @@ function mesajGoster(m){
 let seciliIdx=null;
 function oynanabilir(i){
   if(kilit||oyunBitti||tahta[i]===0)return false;
+  if(mod==='online'&&!net.conn)return false;
   return (sira===0&&i<6)||(sira===1&&mod==='iki'&&i>=7&&i<13);
 }
 function ipucuYaz(m){ const el=$('#ipucu'); el.textContent=m; el.classList.toggle('gorun',!!m); }
@@ -564,7 +643,7 @@ function kuyuUzerinde(i){ if(seciliIdx!==null||!oynanabilir(i))return; onizleGos
 function kuyuUzerindenCik(i){ if(seciliIdx===null)onizleTemizle(); }
 function kuyuDokun(i){
   if(!oynanabilir(i)){ secimiBirak(); return; }
-  if(seciliIdx===i){ const idx=i; secimiBirak(); ac(); hamleOynat(idx<6?0:1,idx); return; }
+  if(seciliIdx===i){ const idx=i; secimiBirak(); ac(); if(mod==='online')netGonder({t:'move',pit:idx}); hamleOynat(idx<6?0:1,idx); return; }
   if(seciliIdx!==null)kuyuEl[seciliIdx].classList.remove('secili');
   seciliIdx=i; kuyuEl[i].classList.add('secili'); onizleGoster(i); buzz(6);
 }
@@ -618,19 +697,21 @@ function oyunuBitir(){
   const benKazandi=ben>rakip, berabere=ben===rakip;
   setTimeout(()=>{
     $('#sonSkorA').textContent=ben; $('#sonSkorB').textContent=rakip;
-    $('#sonKimA').textContent=mod==='bot'?'Sen':'Alt oyuncu';
-    $('#sonKimB').textContent=mod==='bot'?'Bilge Dede':'Üst oyuncu';
+    $('#sonKimA').textContent=mod==='iki'?'Alt oyuncu':(mod==='online'?net.benAd:'Sen');
+    $('#sonKimB').textContent=mod==='bot'?'Bilge Dede':mod==='online'?net.rakipAd:'Üst oyuncu';
     if(berabere){ $('#sonIkon').textContent='🤝'; $('#sonBaslik').textContent='Berabere!'; $('#sonNot').textContent='İkiniz de çok iyiydiniz.'; }
     else if(benKazandi){
-      $('#sonIkon').textContent='🏆'; $('#sonBaslik').textContent=mod==='bot'?'Kazandın!':'Alt oyuncu kazandı!';
-      $('#sonNot').textContent=mod==='bot'?['Bilge Dede şapka çıkardı! 🎩','Harika strateji!','Taş toplama ustası! ✨'][Math.floor(Math.random()*3)]:'Tebrikler! 🎉';
+      $('#sonIkon').textContent='🏆'; $('#sonBaslik').textContent=mod==='iki'?'Alt oyuncu kazandı!':'Kazandın!';
+      $('#sonNot').textContent=mod==='bot'?['Bilge Dede şapka çıkardı! 🎩','Harika strateji!','Taş toplama ustası! ✨'][Math.floor(Math.random()*3)]:mod==='online'?(net.rakipAd+' şapka çıkardı! 🎩'):'Tebrikler! 🎉';
       sesKazan(); buzz([30,50,30,50,60]); konfeti();
       if(mod==='bot'){ seri.ben++; seriKaydet(); }
     } else {
-      $('#sonIkon').textContent='🌙'; $('#sonBaslik').textContent=mod==='bot'?'Bu sefer olmadı':'Üst oyuncu kazandı!';
-      $('#sonNot').textContent=mod==='bot'?'Bilge Dede tecrübeli çıktı — bir daha dene!':'Tebrikler! 🎉';
-      if(mod==='bot'){ sesKaybet(); seri.bot++; seriKaydet(); } else { sesKazan(); konfeti(); }
+      $('#sonIkon').textContent='🌙'; $('#sonBaslik').textContent=mod==='iki'?'Üst oyuncu kazandı!':'Bu sefer olmadı';
+      $('#sonNot').textContent=mod==='bot'?'Bilge Dede tecrübeli çıktı — bir daha dene!':mod==='online'?(net.rakipAd+' bu eli aldı — rövanş iste!'):'Tebrikler! 🎉';
+      if(mod==='bot'){ sesKaybet(); seri.bot++; seriKaydet(); } else if(mod==='online'){ sesKaybet(); } else { sesKazan(); konfeti(); }
     }
+    if(mod==='online'){ net.rovans={ben:false,rakip:false}; rovansYaz(); $('#tekrarBtn').disabled=false; }
+    else{ $('#tekrarBtn').textContent='🔄 Bir Daha!'; $('#tekrarBtn').disabled=false; }
     $('#sonPerde').classList.add('on');
   },700);
 }
@@ -676,7 +757,10 @@ let demoDurdur=null;
 /* ══════════════ AKIŞ ══════════════ */
 function ekran(id){ document.querySelectorAll('.ekran').forEach(e=>e.classList.remove('on')); $(id).classList.add('on'); }
 function oyunaBasla(m){
-  mod=m; yeniTahta(); sira=0; oyunBitti=false; kilit=false;
+  mod=m; yeniTahta(); sira=(m==='online'&&net.rol==='guest')?1:0; oyunBitti=false; kilit=false;
+  $('#emojiler').classList.toggle('on',m==='online');
+  $('#odaCip').classList.toggle('on',m==='online');
+  $('#yeniBtn').style.display=m==='online'?'none':'';
   ekran('#oyun');
   requestAnimationFrame(()=>{ tahtaKur(); ciz(); });
 }
@@ -686,16 +770,196 @@ document.querySelectorAll('.zorluk').forEach(b=>b.addEventListener('click',()=>{
 }));
 $('#botBaslaBtn').addEventListener('click',()=>{ ac(); oyunaBasla('bot'); });
 $('#ikiBaslaBtn').addEventListener('click',()=>{ ac(); oyunaBasla('iki'); });
-$('#geriBtn').addEventListener('click',()=>ekran('#menu'));
+$('#geriBtn').addEventListener('click',()=>{ if(mod==='online'){ netAyril(); } ekran('#menu'); });
 $('#yeniBtn').addEventListener('click',()=>{ if(kilit)return; secimiBirak(); yeniTahta(); sira=0; oyunBitti=false; $('#sonPerde').classList.remove('on'); ciz(); });
-$('#tekrarBtn').addEventListener('click',()=>{ $('#sonPerde').classList.remove('on'); secimiBirak(); yeniTahta(); sira=0; oyunBitti=false; ciz(); });
-$('#sonMenuBtn').addEventListener('click',()=>{ $('#sonPerde').classList.remove('on'); ekran('#menu'); });
+$('#tekrarBtn').addEventListener('click',()=>{
+  if(mod==='online'){ net.rovans.ben=true; netGonder({t:'rematch'}); rovansYaz(); rovansKontrol(); return; }
+  $('#sonPerde').classList.remove('on'); secimiBirak(); yeniTahta(); sira=0; oyunBitti=false; ciz();
+});
+$('#sonMenuBtn').addEventListener('click',()=>{ $('#sonPerde').classList.remove('on'); if(mod==='online')netAyril(); ekran('#menu'); });
 $('#sesBtn').addEventListener('click',()=>{ sesAcik=!sesAcik; $('#sesBtn').textContent=sesAcik?'🔊':'🔇'; try{localStorage.setItem('mangalaSes',sesAcik?'1':'0');}catch(e){} });
 for(const id of ['#nasilBtn','#nasilBtn2'])$(id).addEventListener('click',()=>{ $('#nasilPerde').classList.add('on'); demoDurdur=demoKur(); });
 $('#nasilKapatBtn').addEventListener('click',()=>{ $('#nasilPerde').classList.remove('on'); demoDurdur&&demoDurdur(); });
 window.addEventListener('resize',()=>{ if($('#oyun').classList.contains('on'))ciz(); });
 $('#sesBtn').textContent=sesAcik?'🔊':'🔇';
 seriYaz();
+
+/* ══════════════ ONLINE: ODA KODUYLA OYNA (PeerJS) ══════════════
+   İki taraf da aynı kural motorunu çalıştırır; ağdan sadece oynanan kuyu gider.
+   Her oyuncu kendi tahtasında 0-5'i "ben" görür: karşıdan gelen kuyu (i+7)%14 ile çevrilir. */
+const PEER_ONEK='masalpark-mangala-';
+const RTC_CONFIG={iceTransportPolicy:'all',iceServers:[
+  {urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},
+  {urls:'turn:89.167.89.99:3478',username:'sumo',credential:'topacSumoTurn2026'},
+  {urls:'turn:89.167.89.99:3478?transport=tcp',username:'sumo',credential:'topacSumoTurn2026'}
+]};
+const net={peer:null,conn:null,rol:null,kod:null,benAd:'Sen',rakipAd:'Rakip',rovans:{ben:false,rakip:false},kilit:false,kapandi:false};
+let baglantiZaman=null;
+function kodUret(){ const A='ABCDEFGHJKLMNPRSTUVYZ23456789'; let k=''; for(let i=0;i<4;i++)k+=A[Math.floor(Math.random()*A.length)]; return k; }
+function lobiHata(m){ $('#lobiHata').textContent=m||''; }
+function adOku(){ const a=($('#adGir').value||'').trim().slice(0,14); try{ if(a)localStorage.setItem('mangalaAd',a); }catch(e){} return a||'Sen'; }
+function cipDurum(d){ const c=$('#odaCip'); c.classList.remove('canli','kopuk'); if(d)c.classList.add(d); }
+function netGonder(m){ try{ if(net.conn&&net.conn.open)net.conn.send(m); }catch(e){} }
+function netTemizle(){
+  clearTimeout(baglantiZaman);
+  try{ net.conn&&net.conn.close(); }catch(e){}
+  try{ net.peer&&net.peer.destroy(); }catch(e){}
+  net.peer=null; net.conn=null; net.kilit=false; net.rol=null; net.kod=null; net.kapandi=false;
+  cipDurum(''); $('#beklePerde').classList.remove('on'); $('#koptuPerde').classList.remove('on');
+}
+function netAyril(){ netGonder({t:'leave'}); netTemizle(); history.replaceState(null,'',location.pathname); }
+function odaGirildi(){
+  $('#odaKod').textContent=net.kod; $('#buyukKod').textContent=net.kod;
+  history.replaceState(null,'',location.pathname+'?r='+net.kod);
+}
+function baglantiHazirla(c){
+  net.conn=c;
+  c.on('data',netVeri);
+  c.on('close',()=>netKoptu('Bağlantı koptu',net.rakipAd+' odadan ayrıldı. Yeni bir oda kurabilirsin.'));
+  c.on('error',()=>netKoptu('Bağlantı hatası','Bağlantı kurulamadı. Tekrar dene, mümkünse ikiniz de Wi-Fi kullanın.'));
+}
+function netKoptu(baslik,not){
+  if(net.kapandi||mod!=='online')return;
+  net.kapandi=true; cipDurum('kopuk');
+  if(oyunBitti&&$('#sonPerde').classList.contains('on'))$('#sonPerde').classList.remove('on');
+  $('#beklePerde').classList.remove('on');
+  $('#koptuBaslik').textContent=baslik; $('#koptuNot').textContent=not;
+  $('#koptuPerde').classList.add('on');
+}
+/* Sinyal sunucusu (PeerJS bulutu) kopsa da oyuncular arası P2P bağlantı yaşar:
+   oyun başladıysa 'network'/'disconnected' hatalarını yut, sessizce yeniden bağlan. */
+function peerHatasiZararsiz(e){
+  const t=e&&e.type;
+  if(net.conn&&net.conn.open&&(t==='network'||t==='disconnected'||t==='socket-error'||t==='socket-closed'||t==='server-error')){
+    try{ net.peer&&!net.peer.destroyed&&net.peer.reconnect(); }catch(x){}
+    return true;
+  }
+  return false;
+}
+function peerDinle(){
+  net.peer.on('disconnected',()=>{ if(net.conn&&net.conn.open){ try{ net.peer.reconnect(); }catch(x){} } });
+}
+function baglantiZamanAsimi(ms){
+  clearTimeout(baglantiZaman);
+  baglantiZaman=setTimeout(()=>{ if(net.conn&&net.conn.open)return; netTemizle(); lobiHata('Bağlantı kurulamadı — kodu kontrol et, sayfayı yenileyip tekrar dene.'); },ms);
+}
+function oyunuAc(){
+  clearTimeout(baglantiZaman); net.kilit=false; cipDurum('canli');
+  lobiHata(''); $('#beklePerde').classList.remove('on');
+  netGonder({t:'hello',name:net.benAd});
+  oyunaBasla('online'); odaGirildi();
+  sesTekrar(); buzz(20);
+}
+function netVeri(d){
+  if(!d||typeof d!=='object')return;
+  if(d.t==='hello'){ net.rakipAd=(String(d.name||'')).slice(0,14)||'Rakip'; oynanirIsaretle(); return; }
+  if(d.t==='move'){
+    const i=(+d.pit+7)%14;
+    if(sira!==1||kilit||oyunBitti||!(i>=7&&i<13)||tahta[i]===0)return;
+    secimiBirak(); hamleOynat(1,i); return;
+  }
+  if(d.t==='emote'){ emojiUcur(String(d.e).slice(0,4),false); return; }
+  if(d.t==='rematch'){ net.rovans.rakip=true; rovansYaz(); rovansKontrol(); return; }
+  if(d.t==='leave'){ netKoptu('Rakip ayrıldı',net.rakipAd+' odadan çıktı. Yeni bir oda kurabilirsin.'); return; }
+}
+function rovansYaz(){
+  const b=$('#tekrarBtn');
+  if(net.rovans.ben){ b.textContent='⏳ Rakip bekleniyor…'; b.disabled=true; }
+  else if(net.rovans.rakip){ b.textContent='🔥 Rövanşı kabul et'; b.disabled=false; }
+  else{ b.textContent='🔄 Rövanş'; b.disabled=false; }
+  $('#sonNot').textContent=net.rovans.rakip&&!net.rovans.ben?(net.rakipAd+' rövanş istiyor!'):$('#sonNot').textContent;
+}
+function rovansKontrol(){
+  if(!(net.rovans.ben&&net.rovans.rakip))return;
+  net.rovans={ben:false,rakip:false};
+  $('#sonPerde').classList.remove('on'); secimiBirak();
+  yeniTahta(); sira=net.rol==='guest'?1:0; oyunBitti=false; kilit=false; ciz();
+}
+function emojiUcur(e,benden){
+  const kat=$('#tahta-kutu'), el=document.createElement('div');
+  el.className='emoji-ucan'; el.textContent=e;
+  el.style.left=(benden?68:32)+'%'; el.style.top=(benden?72:28)+'%';
+  kat.appendChild(el); setTimeout(()=>el.remove(),1900);
+}
+/* — Oda kur (host = alt oyuncu, ilk hamle onun) — */
+$('#odaKurBtn').addEventListener('click',()=>{
+  if(!window.Peer){ lobiHata('Bağlantı kütüphanesi yüklenemedi — internet gerekli.'); return; }
+  if(net.kilit)return; net.kilit=true; lobiHata(''); ac();
+  netTemizle(); net.kilit=true;
+  net.benAd=adOku(); net.kod=kodUret(); net.rol='host';
+  $('#odaKurBtn').disabled=true;
+  net.peer=new Peer(PEER_ONEK+net.kod,{config:RTC_CONFIG});
+  peerDinle();
+  let acildi=false; /* reconnect sonrası 'open' tekrar gelir: bir kez işle */
+  net.peer.on('open',()=>{ if(acildi)return; acildi=true; $('#odaKurBtn').disabled=false; odaGirildi(); $('#beklePerde').classList.add('on'); });
+  net.peer.on('connection',c=>{
+    if(net.conn&&net.conn.open){ try{c.close();}catch(e){} return; }
+    $('#bekleNot').textContent='Rakip geldi, bağlantı kuruluyor';
+    baglantiHazirla(c); baglantiZamanAsimi(20000);
+    c.on('open',oyunuAc);
+  });
+  net.peer.on('error',e=>{
+    if(peerHatasiZararsiz(e))return;
+    $('#odaKurBtn').disabled=false;
+    if(e.type==='unavailable-id'){ netTemizle(); $('#odaKurBtn').click(); return; }
+    netTemizle(); lobiHata('Oda kurulamadı ('+e.type+'). Tekrar dene.');
+  });
+});
+/* — Odaya katıl (guest = üst oyuncu) — */
+$('#odaKatilBtn').addEventListener('click',()=>{
+  if(!window.Peer){ lobiHata('Bağlantı kütüphanesi yüklenemedi — internet gerekli.'); return; }
+  const kod=($('#kodGir').value||'').trim().toUpperCase();
+  if(kod.length!==4){ lobiHata('4 haneli oda kodunu gir.'); return; }
+  if(net.kilit)return; lobiHata(''); ac();
+  netTemizle(); net.kilit=true;
+  net.benAd=adOku(); net.kod=kod; net.rol='guest';
+  $('#odaKatilBtn').disabled=true; $('#odaKatilBtn').textContent='⏳ Bağlanıyor…';
+  const btnSifirla=()=>{ $('#odaKatilBtn').disabled=false; $('#odaKatilBtn').textContent='🔗 Katıl'; };
+  baglantiZamanAsimi(25000);
+  net.peer=new Peer({config:RTC_CONFIG});
+  peerDinle();
+  let acildi=false; /* reconnect sonrası 'open' tekrar gelir: ikinci bağlantı açma */
+  net.peer.on('open',()=>{
+    if(acildi)return; acildi=true;
+    const c=net.peer.connect(PEER_ONEK+kod,{reliable:true});
+    baglantiHazirla(c);
+    c.on('open',()=>{ btnSifirla(); oyunuAc(); });
+  });
+  net.peer.on('error',e=>{
+    if(peerHatasiZararsiz(e))return;
+    btnSifirla(); netTemizle();
+    lobiHata(e.type==='peer-unavailable'?'Bu kodla açık bir oda yok. Kodu kontrol et.':'Bağlanılamadı ('+e.type+'). Tekrar dene.');
+  });
+});
+/* — lobi UI — */
+document.querySelectorAll('.sekme').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.sekme').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  $('#sekmeKur').hidden=b.dataset.sekme!=='kur'; $('#sekmeKatil').hidden=b.dataset.sekme!=='katil'; lobiHata('');
+}));
+$('#kodGir').addEventListener('input',e=>{ e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4); });
+$('#kodGir').addEventListener('keydown',e=>{ if(e.key==='Enter')$('#odaKatilBtn').click(); });
+$('#adGir').addEventListener('keydown',e=>{ if(e.key==='Enter')($('#sekmeKatil').hidden?$('#odaKurBtn'):$('#odaKatilBtn')).click(); });
+try{ $('#adGir').value=localStorage.getItem('mangalaAd')||''; }catch(e){}
+function kopyala(metin,btn,ok){
+  const bitti=()=>{ if(!btn)return; const eski=btn.textContent; btn.textContent=ok||'Kopyalandı ✓'; setTimeout(()=>btn.textContent=eski,1400); };
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(metin).then(bitti,bitti);
+  else{ const ta=document.createElement('textarea'); ta.value=metin; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} ta.remove(); bitti(); }
+}
+const odaLink=()=>location.origin+location.pathname+'?r='+net.kod;
+$('#kodKopyaBtn').addEventListener('click',e=>kopyala(net.kod,e.currentTarget));
+$('#linkKopyaBtn').addEventListener('click',e=>kopyala(odaLink(),e.currentTarget));
+$('#odaCip').addEventListener('click',()=>{ kopyala(odaLink()); mesajGoster('🔗 Bağlantı kopyalandı'); });
+$('#bekleIptalBtn').addEventListener('click',()=>{ netTemizle(); history.replaceState(null,'',location.pathname); });
+$('#koptuMenuBtn').addEventListener('click',()=>{ netTemizle(); $('#sonPerde').classList.remove('on'); history.replaceState(null,'',location.pathname); ekran('#menu'); });
+document.querySelectorAll('#emojiler button').forEach(b=>b.addEventListener('click',()=>{ emojiUcur(b.dataset.e,true); netGonder({t:'emote',e:b.dataset.e}); }));
+window.addEventListener('beforeunload',()=>{ if(mod==='online')netGonder({t:'leave'}); });
+/* ?r=KOD ile gelen: katıl sekmesi açılır, kod dolar */
+(function(){
+  const r=new URLSearchParams(location.search).get('r'); if(!r)return;
+  $('#kodGir').value=r.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
+  document.querySelector('.sekme[data-sekme="katil"]').click();
+  $('#adGir').focus();
+})();
 </script>
 </body>
 </html>
