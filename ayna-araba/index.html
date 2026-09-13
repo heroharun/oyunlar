@@ -598,4 +598,31 @@ loop();
 navigator.wakeLock.request('screen').then(function(l){wl=l;}).catch(function(){});}catch(e){}}
 document.addEventListener('visibilitychange',function(){if(!document.hidden)al();});
 document.addEventListener('pointerdown',al,{once:true});al();})();</script>
+<script>
+/* MasalPark tazelik (sessiz): uygulama öne gelince sürüm damgasına bak;
+   değiştiyse SW'ye paketi arka planda indirt — oyun AKIŞI BOZULMAZ, reload yok;
+   bir sonraki açılış güncel olur. */
+(function(){
+  if(!('serviceWorker' in navigator))return;
+  var benimV=null,son=0;
+  function damga(cb){ fetch('../surum.json?'+Date.now(),{cache:'no-store'})
+    .then(function(r){return r.json();}).then(function(j){cb(j.v);}).catch(function(){}); }
+  damga(function(v){benimV=v;});
+  function kontrol(){
+    if(document.hidden||Date.now()-son<60000)return;
+    son=Date.now();
+    damga(function(v){
+      if(!benimV){benimV=v;return;}
+      if(v===benimV)return;
+      benimV=v;
+      navigator.serviceWorker.getRegistration().then(function(reg){
+        if(reg){ reg.update()['catch'](function(){});
+          if(reg.active)reg.active.postMessage({tip:'tazele'}); }
+      })['catch'](function(){});
+    });
+  }
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden)setTimeout(kontrol,500); });
+  window.addEventListener('pageshow',function(e){ if(e.persisted)setTimeout(kontrol,500); });
+})();
+</script>
 </html>
