@@ -49,6 +49,11 @@ self.addEventListener('message', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;
+  /* sürüm damgası DAİMA ağdan: önbelleğe asla girmez, tazelik kontrolü gecikmez */
+  if (new URL(req.url).pathname.endsWith('/surum.json')) {
+    e.respondWith(fetch(req).catch(() => new Response('{"v":"0"}', { headers: { 'Content-Type': 'application/json' } })));
+    return;
+  }
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
     /* ÖNBELLEKTEN ANINDA AÇ + arka planda tazele:
