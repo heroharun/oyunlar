@@ -150,6 +150,11 @@
     border-radius:0 8px 8px 0;box-shadow:0 2px 8px rgba(156,74,40,.35);z-index:2}
   .yeniRozet::before{content:"";position:absolute;left:0;top:-6px;border:3.5px solid transparent;
     border-bottom-color:#7E3A1F;border-right-color:#7E3A1F}
+  .gncRozet{position:absolute;top:10px;left:-7px;background:linear-gradient(90deg,#3E7D5B,#2C6247);
+    color:#EAF7EF;font-size:9px;font-weight:900;letter-spacing:.12em;padding:4px 9px 4px 11px;
+    border-radius:0 8px 8px 0;box-shadow:0 2px 8px rgba(44,98,71,.35);z-index:2}
+  .gncRozet::before{content:"";position:absolute;left:0;top:-6px;border:3.5px solid transparent;
+    border-bottom-color:#1E4632;border-right-color:#1E4632}
   #favBolum h2{color:var(--yildiz)} #yeniBolum h2{color:var(--pembe)}
   /* ── BÖLÜMLER: masal serif başlıklar, sarmaşık süsü ── */
   section.kategori{display:flex;flex-direction:column;gap:14px;scroll-margin-top:72px}
@@ -266,6 +271,11 @@
   <div class="grid" id="yeniGrid"></div>
   </section>
 
+  <section class="kategori" id="guncelBolum" hidden>
+  <h2 class="yesil">🔄 YENİ GÜNCELLENENLER <span class="adet">son 7 gün</span></h2>
+  <div class="grid" id="guncelGrid"></div>
+  </section>
+
   <section class="kategori" id="egitici">
   <h2 class="yesil">İSLAMİ &amp; EĞİTİCİ <span class="adet">17 oyun</span></h2>
   <div class="grid">
@@ -368,7 +378,7 @@
     <a class="game" href="mayin/"><span class="emoji">💣</span><span class="name">Mayın Tarlası</span>
       <span class="desc">Sayıları oku, mayınları işaretle. İlk dokunuş hep güvenli.</span><span class="tag">Bulmaca</span></a>
     <a class="game" href="kelime/"><span class="emoji">🔤</span><span class="name">Kelime Avı</span>
-      <span class="desc">5 harfli Türkçe kelimeyi 6 denemede bul. Seri yap!</span><span class="tag">Kelime</span></a>
+      <span class="desc">Gizli Türkçe kelimeyi 6 denemede bul — 4, 5, 6 ya da 7 harf seç, ya da 🪜 Merdiven modunda 4'ten 7'ye tırman! Seri yap, rekoru büyüt.</span><span class="tag">Kelime</span></a>
     <a class="game" href="blok-yagmuru/"><span class="emoji">🟦</span><span class="name">Blok Yağmuru</span>
       <span class="desc">Düşen blokları döndür, satırları sil. Otomatik kayıt.</span><span class="tag">Bulmaca</span></a>
   </div>
@@ -711,10 +721,14 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
     'postane':'2026-07-31','arkeolog':'2026-07-31','minik-nalbur':'2026-07-30','minik-cicekci':'2026-07-30',
     'topac-sumo':'2026-07-28'
   };
+  /* Oyun güncelleyince tarihi buraya işle → kart '🔄 GÜNCEL' rozeti alır ve vitrine çıkar */
+  const GUNCELLEME={'kelime':'2026-09-27',
+    'mangala':'2026-09-13','gunes-yolcusu':'2026-09-13','hiz-ustasi':'2026-09-13','kedi':'2026-09-05',
+    'topac-sumo':'2026-09-04','kim-alim':'2026-09-04','bereket':'2026-09-03','minik-veteriner':'2026-09-04'};
   const YENI_GUN=7, MS=864e5;
   const klasor=a=>(a.getAttribute('href')||'').replace(/\/.*$/,'').replace(/\/$/,'');
   const kartlar=[...document.querySelectorAll('section.kategori a.game')]
-    .filter(a=>!a.closest('#favBolum,#yeniBolum'));
+    .filter(a=>!a.closest('#favBolum,#yeniBolum,#guncelBolum'));
 
   /* — yeni gelenler — */
   const simdi=Date.now();
@@ -728,6 +742,19 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
       a.insertAdjacentHTML('afterbegin','<span class="yeniRozet">YENİ</span>');
       grid.appendChild(a.cloneNode(true));
     }
+  }
+  /* — yeni güncellenenler: taze eklenmişler hariç — */
+  const gunceller=kartlar.filter(a=>{
+    const k=klasor(a), d=GUNCELLEME[k];
+    return d&&(simdi-new Date(d+'T00:00:00').getTime())<YENI_GUN*MS&&!yeniler.includes(a);
+  }).sort((a,b)=>GUNCELLEME[klasor(b)].localeCompare(GUNCELLEME[klasor(a)]));
+  if(gunceller.length){
+    const gg=document.getElementById('guncelGrid');
+    for(const a of gunceller){
+      a.insertAdjacentHTML('afterbegin','<span class="gncRozet">GÜNCEL</span>');
+      gg.appendChild(a.cloneNode(true));
+    }
+    document.getElementById('guncelBolum').hidden=false;
     document.getElementById('yeniBolum').hidden=false;
   }
 
@@ -800,7 +827,7 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
 (function(){
   const el=document.getElementById('oyunSayac'); if(!el)return;
   const say=new Set([...document.querySelectorAll('section.kategori a.game')]
-    .filter(a=>!a.closest('#favBolum,#yeniBolum'))
+    .filter(a=>!a.closest('#favBolum,#yeniBolum,#guncelBolum'))
     .map(a=>(a.getAttribute('href')||'').replace(/\/.*$/,''))).size;
   if(say>0)el.textContent=say;
 })();
@@ -821,7 +848,7 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
    'usta-sofor':'park_prog','yilan':'yilan_','yorunge':'yorunge_','yumurta':'yumurta_'};
   const klasor=a=>(a.getAttribute('href')||'').replace(/\/.*$/,'').replace(/\/$/,'');
   const kartlar=[...document.querySelectorAll('section.kategori a.game')]
-    .filter(a=>!a.closest('#favBolum,#yeniBolum'));
+    .filter(a=>!a.closest('#favBolum,#yeniBolum,#guncelBolum'));
   const OYN=()=>{ try{ return JSON.parse(localStorage.getItem('mp_oynanan')||'[]'); }catch(e){ return []; } };
   function oynandiKaydet(id){ const o=OYN(); if(!o.includes(id)){ o.push(id);
     try{ localStorage.setItem('mp_oynanan',JSON.stringify(o)); }catch(e){} } }
