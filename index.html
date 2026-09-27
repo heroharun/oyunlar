@@ -742,6 +742,7 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
       a.insertAdjacentHTML('afterbegin','<span class="yeniRozet">YENİ</span>');
       grid.appendChild(a.cloneNode(true));
     }
+    document.getElementById('yeniBolum').hidden=false;
   }
   /* — yeni güncellenenler: taze eklenmişler hariç — */
   const gunceller=kartlar.filter(a=>{
@@ -755,7 +756,6 @@ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catc
       gg.appendChild(a.cloneNode(true));
     }
     document.getElementById('guncelBolum').hidden=false;
-    document.getElementById('yeniBolum').hidden=false;
   }
 
   /* — favoriler — */

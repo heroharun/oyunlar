@@ -200,7 +200,9 @@ document.addEventListener('DOMContentLoaded',function(){
       ?'Merdiven: sırayla 3×4, 3×5, 2×6 ve 1×7 harfli kelime — sonra başa döner!'
       :'Gizli '+modS+' harfli Türkçe kelimeyi 6 denemede bul.';
   }
-  btns.forEach(function(b){ b.addEventListener('click',function(){ modS=b.dataset.m; modKaydet(); ciz2(); }); });
+  btns.forEach(function(b){ b.addEventListener('click',function(){
+    if(b.dataset.m==='m'&&modS!=='m')merdivenIdx=0;   /* merdivene yeni giriş: 4 harften başla */
+    modS=b.dataset.m; modKaydet(); ciz2(); }); });
   ciz2();
 });
 const WORDS=('kalem kitap masal bahar deniz yürek şeker duvar bulut güneş araba bacak bahçe balık '+
@@ -272,7 +274,7 @@ function updStats(){
     modEtiketi()+` · oyun ${stats.played} · kazanma %${stats.played?Math.round(stats.won/stats.played*100):0} · seri ${stats.streak} (rekor ${stats.maxStreak})`;
 }
 function save(){
-  try{ localStorage.setItem('kelime_save',JSON.stringify({target,guesses,state})); }catch(e){}
+  try{ localStorage.setItem('kelime_save',JSON.stringify({target,guesses,state,mod:modS})); }catch(e){}
 }
 function saveStats(){ try{ localStorage.setItem('kelime_stats',JSON.stringify(stats)); }catch(e){} }
 
@@ -378,7 +380,7 @@ document.getElementById('againBtn').addEventListener('click',newGame);
 let resumed=false;
 try{ const s=JSON.parse(localStorage.getItem('kelime_save'));
   if(s&&s.state==='play'&&s.target){ target=s.target; N=[...target].length; gridEl.style.setProperty('--kolon',N); guesses=s.guesses||[]; cur=''; state='play';
-    resumed=true; } }catch(e){}
+    resumed=true; window._kayitMod=s.mod||String(N); } }catch(e){}
 buildDom();
 if(resumed){ render(); updStats(); } else newGame();
 
@@ -388,7 +390,13 @@ if(resumed){ render(); updStats(); } else newGame();
   document.getElementById('wOyun').textContent=stats.played;
   document.getElementById('wOran').textContent='%'+(stats.played?Math.round(stats.won/stats.played*100):0);
   document.getElementById('wSeri').textContent=stats.streak;
-  document.getElementById('startBtn').addEventListener('click',()=>w.classList.add('hidden'));
+  document.getElementById('startBtn').addEventListener('click',()=>{
+    w.classList.add('hidden');
+    const uyum=state==='play'&&guesses!==undefined&&window._kayitMod!==undefined
+      ? (modS==='m' ? window._kayitMod==='m' : String(N)===modS&&window._kayitMod!=='m')
+      : true;
+    if(!uyum||state!=='play')newGame();
+  });
 })();
 function vKonfeti(){
   const renk=['#46c473','#e9b458','#eec14a','#f3ecdd','#7a5cc4','#e2703a'];
@@ -434,7 +442,20 @@ function vKonfeti(){
 (function(){
   var btn=document.getElementById('mpNasilBtn'),
       kap=document.getElementById('mpNasilKap');
-  document.querySelector('#mpNasilKart p').textContent='1️⃣ Gizli Türkçe kelimeyi 6 denemede bul (4-7 harf, modu girişten seç; Merdiven modu 4→5→6→7 sırayla gider).\n2️⃣ 🟩 yeşil: harf doğru ve yerinde.\n3️⃣ 🟨 sarı: harf var ama başka yerde.\n4️⃣ ⬜ gri: harf kelimede yok.\n💡 İlk tahminde çok sesli harfli bir kelime dene.';
+  document.querySelector('#mpNasilKart p').innerHTML=
+    '<style>.nk{display:inline-flex;width:34px;height:34px;border-radius:7px;align-items:center;justify-content:center;'+
+    'font-weight:900;font-size:17px;margin:2px;color:#fff;vertical-align:middle}'+
+    '.nkg{background:#46c473}.nky{background:#e9b458}.nkx{background:#9aa0b5}.nkb{background:#eef0f6;color:#26283a;border:1.5px solid #cdd2e0}</style>'+
+    '<b>Gizli kelimeyi 6 denemede bul!</b> Her tahminden sonra kutular renklenir:<br><br>'+
+    '<span class="nk nkg">K</span><span class="nk nkb">A</span><span class="nk nkb">L</span><span class="nk nkb">E</span> '+
+    '→ 🟩 <b>K</b> doğru harf, doğru yerde<br>'+
+    '<span class="nk nkb">M</span><span class="nk nky">A</span><span class="nk nkb">S</span><span class="nk nkb">A</span> '+
+    '→ 🟨 <b>A</b> kelimede var ama başka yerde<br>'+
+    '<span class="nk nkb">O</span><span class="nk nkb">Y</span><span class="nk nkx">U</span><span class="nk nkb">N</span> '+
+    '→ ⬜ <b>U</b> kelimede hiç yok<br><br>'+
+    '<b>Modlar:</b> girişte 4, 5, 6 ya da 7 harf seç.<br>'+
+    '🪜 <b>Merdiven:</b> 4-4-4 → 5-5-5 → 6-6 → 7, sonra başa döner. Her oyun bir basamaktır!<br><br>'+
+    '💡 İpucu: ilk tahminde bol sesli harfli bir kelime dene (KALEM, ARABA gibi).';
   function ac(e){ if(e){e.preventDefault();e.stopPropagation();} kap.classList.add('mpAcik'); }
   function kapat(e){ if(e){e.preventDefault();e.stopPropagation();} kap.classList.remove('mpAcik'); }
   btn.addEventListener('click',ac); btn.addEventListener('touchend',ac);
