@@ -33,6 +33,18 @@
     background:linear-gradient(180deg,#ffd97a,#ff9d5c);border:none;border-radius:12px;
     padding:8px 10px;cursor:pointer;pointer-events:auto;white-space:nowrap;
     box-shadow:0 3px 8px rgba(0,0,0,.4)}
+  #basariBtn{font:inherit;font-weight:900;font-size:12px;color:var(--ink);pointer-events:auto;
+    background:rgba(32,24,14,.88);border:1.5px solid rgba(255,215,122,.55);border-radius:12px;
+    padding:8px 10px;cursor:pointer;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+  #basariBtn.tam{background:linear-gradient(180deg,#ffd97a,#ff9d5c);color:#2a2018;animation:nabiz 1.2s infinite}
+  .rozetListe{display:flex;flex-direction:column;gap:8px;width:min(92vw,420px)}
+  .rozetSatir{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);
+    border:1.5px solid rgba(255,255,255,.18);border-radius:14px;padding:9px 12px;text-align:left}
+  .rozetSatir.acik{border-color:var(--altin)}
+  .rozetSatir .ik{font-size:24px;width:32px;text-align:center;flex:none}
+  .rozetSatir b{font-size:14px;display:block}
+  .rozetSatir small{font-size:12px;color:var(--dim)}
+  .rozetSatir .d{margin-left:auto;font-size:18px;flex:none}
   #ipucu{position:fixed;left:0;top:0;z-index:9;pointer-events:none;display:none;
     flex-direction:column;align-items:center;gap:4px;transform:translate(-50%,-100%)}
   #ipucuEl{font-size:40px;animation:elSalla 1s ease-in-out infinite;filter:drop-shadow(0 3px 6px rgba(0,0,0,.7))}
@@ -97,6 +109,7 @@ button{min-width:44px;min-height:44px}
   <div class="rozet" id="paraEl">💰 0</div>
   <div style="display:flex;gap:7px;align-items:center">
     <button id="ciftliklerBtn">🚜 ÇİFTLİKLER</button>
+    <button id="basariBtn" aria-label="Rozetler">🏆 0/8</button>
     <div class="rozet" id="tavukEl">🐔 0</div>
   </div>
 </div>
@@ -145,7 +158,9 @@ button{min-width:44px;min-height:44px}
 
 6️⃣ Tavukların ve piston sen yokken de çalışır — dönünce biriken parayı al 😴💰
 
-7️⃣ Zenginleşince 🚜 YENİ ÇİFTLİK: makine ve tavuklar sıfırdan başlar ama PARAN CEBİNDE KALIR ve yumurta fiyatı 4 katına çıkar. Eski çiftlikler kapanmaz — 🚜 ÇİFTLİKLER düğmesinden istediğin an geri dönersin; sen yokken hepsi birden çalışır! Yumurtadan süte, kesimden tarıma — sonsuza kadar!</p>
+7️⃣ 🏆 ROZETLER: her çiftlikte 8 rozet var (ilk yavru, otomatik piston, kaliteli ürün, hızlı bant, verimli yem, dolu barınak, altın dokunuş, dolu kasa). Yeni çiftlik ancak o çiftliğin bütün rozetleri toplanınca açılır. Toplam 7 çiftlik var; yedincisinde bütün rozetleri toplayan FABRİKAYI TAMAMLAR!
+
+8️⃣ Rozetler tamamlanınca 🚜 YENİ ÇİFTLİK: makine ve tavuklar sıfırdan başlar ama PARAN CEBİNDE KALIR ve yumurta fiyatı 4 katına çıkar. Eski çiftlikler kapanmaz — 🚜 ÇİFTLİKLER düğmesinden istediğin an geri dönersin; sen yokken hepsi birden çalışır! Yumurtadan süte, kesimden tarıma — sonsuza kadar!</p>
   <button class="btn" id="nasilKapatBtn">Anladım</button>
 </div>
 
@@ -164,6 +179,21 @@ button{min-width:44px;min-height:44px}
   <button class="btn2" id="ciftliklerKapat">Kapat</button>
 </div>
 
+<div class="kart gizli" id="basariKart">
+  <h1 style="font-size:26px">🏆 ROZETLER</h1>
+  <p id="basariYazi"></p>
+  <div class="rozetListe" id="rozetListe"></div>
+  <button class="btn2" id="basariKapat">Kapat</button>
+</div>
+
+<div class="kart gizli" id="bitisKart">
+  <h1 style="font-size:30px">🏆 FABRİKA TAMAMLANDI!</h1>
+  <p>Yedi çiftliğin hepsini kurdun, bütün rozetleri topladın. Dedenin garajındaki tuhaf makine artık koca bir fabrika! 🎉</p>
+  <div class="buyuk" id="bitisToplam"></div>
+  <p>Çiftliklerin çalışmaya devam eder; istersen oynamayı sürdürebilirsin.</p>
+  <button class="btn" id="bitisDevam">Harika!</button>
+</div>
+
 <div class="kart gizli" id="ciftlikKart">
   <h1 style="font-size:28px">🚜 YENİ ÇİFTLİK!</h1>
   <p id="ciftlikYazi"></p>
@@ -178,10 +208,10 @@ button{min-width:44px;min-height:44px}
 const bosCiftlik=()=>({tavuk:0,sev:{deger:1,tik:1,piston:0,bant:1,verim:1,kulucka:1,altin:0}});
 const VARS={para:0, ciftlik:1, ciftlikler:null, tavuk:0,
   sev:{deger:1,tik:1,piston:0,bant:1,verim:1,kulucka:1,altin:0},
-  toplamKazanc:0, ses:true, sonZaman:0, yardim:0};
+  toplamKazanc:0, ses:true, sonZaman:0, yardim:0, rozet:{}, bitti:false};
 let S;
 try{ S=Object.assign({},VARS,JSON.parse(localStorage.getItem('yumurta_v1')||'{}'));
-  S.sev=Object.assign({},VARS.sev,S.sev||{});
+  S.sev=Object.assign({},VARS.sev,S.sev||{}); S.rozet=S.rozet||{};
 }catch(e){ S=JSON.parse(JSON.stringify(VARS)); }
 /* eski kayıtlar: her çiftlik için ayrı durum listesi kur (para ortak cüzdan) */
 if(!Array.isArray(S.ciftlikler)||S.ciftlikler.length<S.ciftlik){
@@ -275,6 +305,49 @@ const F={
   altin:()=>Math.round(80*Math.pow(2.2,S.sev.altin))
 };
 const CIFTLIK_ESIK=()=>15000*Math.pow(18,S.ciftlik-1);
+/* ══════════ ROZETLER: her çiftlikte toplanır; yeni çiftlik ancak hepsi açılınca ══════════ */
+const SON_CIFTLIK=CIFTLIKLER.length;
+const BASARILAR=[
+  {id:'yavru', ikon:'🐣', ad:'İlk Yavru',        ipucu:'Kuluçkadan 1 yavru çıkar',          kosul:m=>m.tavuk>=1},
+  {id:'piston',ikon:'⚙️', ad:'Otomatik Fabrika', ipucu:'Markette Otomatik Piston tak',       kosul:m=>m.sev.piston>=1},
+  {id:'kalite',ikon:'⭐', ad:'Kaliteli Ürün',    ipucu:'Ürün Kalitesi seviye 6',             kosul:m=>m.sev.deger>=6},
+  {id:'bant',  ikon:'📦', ad:'Hızlı Bant',       ipucu:'Bant Hızı seviye 5',                 kosul:m=>m.sev.bant>=5},
+  {id:'yem',   ikon:'🌾', ad:'Verimli Yem',      ipucu:'Yem seviye 5',                       kosul:m=>m.sev.verim>=5},
+  {id:'suru',  ikon:'🏠', ad:'Dolu Barınak',     ipucu:'Barınakta 8 hayvan',                 kosul:m=>m.tavuk>=8},
+  {id:'altin', ikon:'✨', ad:'Altın Dokunuş',    ipucu:'Altın Ürün seviye 3',                kosul:m=>m.sev.altin>=3},
+  {id:'kasa',  ikon:'💰', ad:'Dolu Kasa',        ipucu:()=>'Toplam 💰'+kisa(CIFTLIK_ESIK())+' kazan', kosul:()=>S.toplamKazanc>=CIFTLIK_ESIK()}
+];
+const aktifM=()=>({tavuk:S.tavuk,sev:S.sev});
+function basariAcik(b){ try{ return !!b.kosul(aktifM()); }catch(e){ return false; } }
+function basariSayi(){ return BASARILAR.filter(basariAcik).length; }
+function basariTam(){ return basariSayi()===BASARILAR.length; }
+const yeniCiftlikHazir=()=>S.ciftlik===S.ciftlikler.length&&S.ciftlik<SON_CIFTLIK&&basariTam();
+function basariKontrol(){
+  const k=String(S.ciftlik); S.rozet[k]=S.rozet[k]||[];
+  for(const b of BASARILAR){
+    if(S.rozet[k].includes(b.id)||!basariAcik(b))continue;
+    S.rozet[k].push(b.id); toast('🏆 '+b.ad+' rozeti!'); sesFanfar(); buzz([12,20,12]); kaydet();
+  }
+  if(S.ciftlik===SON_CIFTLIK&&basariTam()&&!S.bitti){
+    S.bitti=true; kaydet();
+    document.getElementById('bitisToplam').textContent='💰 '+kisa(S.toplamKazanc)+' toplam kazanç';
+    document.getElementById('bitisKart').classList.remove('gizli'); sesFanfar();
+  }
+}
+function basariPanelAc(){
+  const kap=document.getElementById('rozetListe'); kap.innerHTML='';
+  for(const b of BASARILAR){
+    const acik=basariAcik(b), satir=document.createElement('div');
+    satir.className='rozetSatir'+(acik?' acik':'');
+    const ip=typeof b.ipucu==='function'?b.ipucu():b.ipucu;
+    satir.innerHTML='<span class="ik">'+b.ikon+'</span><div><b>'+b.ad+'</b><small>'+ip+'</small></div><span class="d">'+(acik?'✅':'🔒')+'</span>';
+    kap.append(satir);
+  }
+  document.getElementById('basariYazi').textContent=
+    S.ciftlik<SON_CIFTLIK
+      ? CIFTLIK_AD()+' · '+basariSayi()+'/'+BASARILAR.length+' rozet. Bir sonraki çiftlik, bu çiftliğin bütün rozetleri toplanınca açılır.'
+      : CIFTLIK_AD()+' son çiftlik! Bütün rozetleri toplayınca fabrikan tamamlanır. '+basariSayi()+'/'+BASARILAR.length+' rozet.';
+}
 function kisa(n){
   if(n<1000)return Math.floor(n)+'';
   const B=['K','M','B','T','q','Q'];
@@ -1168,7 +1241,7 @@ document.getElementById('ciftlikBtn').addEventListener('click',()=>{
   document.getElementById('ciftlikKart').classList.remove('gizli');
 });
 document.getElementById('ciftlikEvet').addEventListener('click',()=>{
-  if(S.ciftlik!==S.ciftlikler.length)return;   /* yeni çiftlik yalnızca en yeniden açılır */
+  if(!yeniCiftlikHazir())return;   /* yeni çiftlik yalnızca en yeniden ve tüm rozetlerle açılır */
   S.ciftlikler.push(null);
   ciftlikYukle(S.ciftlikler.length);
   document.getElementById('ciftlikKart').classList.add('gizli');
@@ -1177,6 +1250,14 @@ document.getElementById('ciftlikEvet').addEventListener('click',()=>{
 });
 document.getElementById('ciftlikHayir').addEventListener('click',()=>
   document.getElementById('ciftlikKart').classList.add('gizli'));
+document.getElementById('basariBtn').addEventListener('click',()=>{
+  audio(); basariPanelAc(); document.getElementById('basariKart').classList.remove('gizli');
+});
+document.getElementById('basariKapat').addEventListener('click',()=>
+  document.getElementById('basariKart').classList.add('gizli'));
+document.getElementById('bitisDevam').addEventListener('click',()=>{
+  audio(); document.getElementById('bitisKart').classList.add('gizli');
+});
 
 /* ══════════ ÇİFTLİKLERİM PANELİ ══════════ */
 function ciftlikPanelAc(){
@@ -1244,8 +1325,9 @@ document.getElementById('offlineAl').addEventListener('click',()=>{
 function hud(){
   document.getElementById('paraEl').textContent='💰 '+kisa(S.para);
   document.getElementById('tavukEl').textContent=TEMA().hIkon+' '+S.tavuk+' · '+CIFTLIK_AD();
-  document.getElementById('ciftlikBtn').style.display=
-    (S.ciftlik===S.ciftlikler.length&&S.toplamKazanc>=CIFTLIK_ESIK())?'block':'none';
+  document.getElementById('ciftlikBtn').style.display=yeniCiftlikHazir()?'block':'none';
+  const bb=document.getElementById('basariBtn'), bs=basariSayi();
+  bb.textContent='🏆 '+bs+'/'+BASARILAR.length; bb.classList.toggle('tam',bs===BASARILAR.length&&S.ciftlik<SON_CIFTLIK);
   document.getElementById('ciftliklerBtn').style.display=S.ciftlikler.length>1?'block':'none';
 }
 document.getElementById('sesBtn').addEventListener('click',()=>{
@@ -1261,18 +1343,21 @@ document.getElementById('nasilKapatBtn').addEventListener('click',()=>
   document.getElementById('nasil').classList.add('gizli'));
 document.getElementById('sesBtn').textContent=S.ses?'🔊':'🔇';
 document.getElementById('kayitHint').textContent=S.toplamKazanc>0
-  ?'Kayıtlı fabrikan hazır — '+CIFTLIK_AD()+'!':'üret · kuluçkala · otomatikleştir · sonsuz';
+  ?'Kayıtlı fabrikan hazır — '+CIFTLIK_AD()+'!':'üret · kuluçkala · rozetleri topla · 7 çiftlik';
 if(S.toplamKazanc>0)document.getElementById('baslaBtn').textContent='Devam Et';
 
-let sonTs=performance.now(), kayitS=0;
+let sonTs=performance.now(), kayitS=0, rozetS=0;
 function dongu(ts){
   const dt=Math.min(0.05,(ts-sonTs)/1000); sonTs=ts;
   const oynuyor=document.getElementById('giris').classList.contains('gizli')
     &&document.getElementById('market').classList.contains('gizli')
     &&document.getElementById('offlineKart').classList.contains('gizli')
     &&document.getElementById('ciftlikKart').classList.contains('gizli')
-    &&document.getElementById('ciftliklerKart').classList.contains('gizli');
+    &&document.getElementById('ciftliklerKart').classList.contains('gizli')
+    &&document.getElementById('basariKart').classList.contains('gizli')
+    &&document.getElementById('bitisKart').classList.contains('gizli');
   if(oynuyor)guncelle(dt);
+  if((rozetS+=dt)>0.6){ rozetS=0; basariKontrol(); }
   ciz(); hud();
   if(oynuyor)ipucuKontrol(); else document.getElementById('ipucu').style.display='none';
   if((kayitS+=dt)>5){ kayitS=0; kaydet(); }
