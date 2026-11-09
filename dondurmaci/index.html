@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#ffe9f0">
+<link rel="icon" href="../ikon/icon-192.png">
 <title>Dondurmacı — MasalPark</title>
 <meta name="description" content="Kendi dondurma tezgahını işlet! Müşterilerin siparişini doğru sırayla hazırla, para kazan, yeni çeşitler aç. Reklamsız, üyeliksiz, çevrimdışı çalışır.">
 <meta property="og:type" content="website">
@@ -40,7 +41,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   background:var(--cam);box-shadow:0 3px 10px rgba(90,50,70,.16);border:1.5px solid rgba(255,255,255,.9);
   white-space:nowrap;
 }
-.hudRoz small{font-weight:700;opacity:.55;font-size:10px}
+.hudRoz small{font-weight:700;opacity:.55;font-size:12px}
 #hudBosluk{flex:1}
 #btnMarket{
   pointer-events:auto;padding:9px 16px;border-radius:999px;font-size:14px;font-weight:900;
@@ -100,7 +101,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   display:flex;align-items:center;justify-content:center;font-size:21px}
 .mBilgi{flex:1;min-width:0}
 .mBilgi b{display:block;font-size:14.5px}
-.mBilgi small{font-size:11px;color:#96707f;font-weight:700}
+.mBilgi small{font-size:12px;color:#96707f;font-weight:700}
 .mAl{
   padding:9px 14px;border-radius:999px;font-size:13px;font-weight:900;flex:none;
   background:linear-gradient(135deg,#ffd66b,#f2a53d);color:#5c3a10;
@@ -125,6 +126,17 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 }
 @keyframes kocDur{0%,100%{margin-top:0}50%{margin-top:12px}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001s !important;transition-duration:.06s !important}}
+
+/* Mobil yerleşim: güvenli alan, okunabilirlik ve dokunma hedefleri. */
+button{min-width:44px;min-height:44px}
+[hidden]{display:none!important}
+
+#hud{display:flex;flex-wrap:wrap;gap:5px}
+.hudRoz{padding:6px 8px;font-size:13px;min-width:0}.hudRoz small{font-size:12px}
+#hudBosluk{display:none}#btnMarket{margin-left:auto;flex-shrink:0;padding:8px 12px}
+.mBilgi small{display:block;line-height:1.4;min-height:2.8em}
+@media(max-width:420px){#btnMarket{font-size:20px;width:44px;padding:8px}.market-label{display:none}}
+
 </style>
 </head>
 <body>
@@ -135,7 +147,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   <div class="hudRoz"><small>SATIŞ</small> <span id="hudSatis">0</span></div>
   <div class="hudRoz"><small>MUTLU</small> 😊 <span id="hudMutlu">0</span></div>
   <div id="hudBosluk"></div>
-  <button id="btnMarket">🛒 Market</button>
+  <button id="btnMarket" aria-label="Market"><span aria-hidden="true">🛒</span><span class="market-label"> Market</span></button>
 </header>
 
 <div id="kocEl">👆</div>
@@ -325,7 +337,7 @@ var Ses={
    Bölüm 3: sahne durumu — müşteriler, külah, parçacıklar
    ============================================================ */
 var canvas=$('#oyunCanvas'), ctx=canvas.getContext('2d');
-var W=0,H=0,DPR=1;
+var W=0,H=0,DPR=1,safeBottom=0;
 var oyunda=false, duraklat=true, zaman=0;
 var kulah=[];            // eldeki külah (lezzet id dizisi)
 var askiKulah=null;      // askıya park edilen külah
@@ -441,6 +453,7 @@ function verDene(){
    Bölüm 4: çizim
    ============================================================ */
 function boyutla(){
+  safeBottom=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-b'))||0;
   DPR=Math.min(2,window.devicePixelRatio||1);
   W=window.innerWidth; H=window.innerHeight;
   canvas.width=Math.round(W*DPR); canvas.height=Math.round(H*DPR);
@@ -774,14 +787,14 @@ function tezgahCiz(){
 
   var minK=Math.min(W,H);
   /* eldeki külah — tezgah ortası */
-  var elX=W*0.5, elY=H*0.665, elR=minK*0.045;
+  var elX=W*0.5, elY=H*0.665, elR=minK*0.055;
   // külah standı
   ctx.fillStyle='rgba(122,66,38,0.25)';
   ctx.beginPath(); ctx.ellipse(elX,elY+4,elR*1.7,elR*0.35,0,0,7); ctx.fill();
   kulahCiz(elX,elY,elR,kulah,1,true);
   if(!kulah.length){
     ctx.fillStyle='rgba(255,250,240,0.8)';
-    ctx.font='700 '+Math.round(minK*0.026)+'px sans-serif'; ctx.textAlign='center';
+    ctx.font='700 '+Math.max(12,Math.round(minK*0.026))+'px sans-serif'; ctx.textAlign='center';
     ctx.fillText('kazanlara dokun ↓',elX,elY-elR*3.1);
   }
 
@@ -824,12 +837,12 @@ function tezgahCiz(){
   yuvarlakKutu(cx2-cw2*0.06,cy2-cw2*0.16,cw2*1.12,cw2*0.18,4); ctx.fill();
   ctx.fillStyle='rgba(255,255,255,0.55)';
   ctx.fillRect(cx2-cw2*0.02,cy2-cw2*0.15,cw2*1.04,2);
-  ctx.font='700 '+Math.round(minK*0.02)+'px sans-serif'; ctx.textAlign='center'; ctx.fillStyle='rgba(255,250,240,0.9)';
+  ctx.font='700 '+Math.max(12,Math.round(minK*0.02))+'px sans-serif'; ctx.textAlign='center'; ctx.fillStyle='rgba(255,250,240,0.9)';
   ctx.fillText('ÇÖP',cx2+cw2/2,cy2+cw2*1.35);
   ctx.restore();
 
   /* VER düğmesi — sağ */
-  var vw=minK*0.15,vh=minK*0.075, vx=W*0.86-vw/2, vy=elY-vh*1.25;
+  var vw=Math.max(78,minK*0.15),vh=Math.max(56,minK*0.075), vx=Math.min(W*0.86-vw/2,W-vw-12), vy=elY-vh;
   verKutu={x:vx-6,y:vy-6,w:vw+12,h:vh+12};
   var aktif=kulah.length>0;
   var nabiz=aktif?1+0.03*Math.sin(zaman*5):1;
@@ -851,7 +864,7 @@ function tezgahCiz(){
   ctx.fillStyle='rgba(255,255,255,0.38)';
   yuvarlakKutu(vx+vh*0.18,vy+vh*0.1,vw-vh*0.36,vh*0.4,vh*0.2); ctx.fill();
   ctx.fillStyle='#fff';
-  ctx.font='900 '+Math.round(vh*0.42)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font='900 '+Math.min(18,Math.round(vh*0.42))+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.shadowColor='rgba(30,80,50,0.35)'; ctx.shadowBlur=0; ctx.shadowOffsetY=1.5;
   ctx.fillText('VER ✅',vx+vw/2,vy+vh/2+1);
   ctx.restore(); ctx.textBaseline='alphabetic';
@@ -866,7 +879,7 @@ function tezgahCiz(){
     if(askiKulah) kulahCiz(ax,ay,ar,askiKulah,1,false);
     else{
       ctx.fillStyle='rgba(255,250,240,0.7)';
-      ctx.font='700 '+Math.round(minK*0.018)+'px sans-serif'; ctx.textAlign='center';
+      ctx.font='700 '+Math.max(12,Math.round(minK*0.018))+'px sans-serif'; ctx.textAlign='center';
       ctx.fillText('ASKI',ax,ay-ar*0.8);
     }
   } else askiKutu=null;
@@ -877,7 +890,7 @@ function tezgahCiz(){
   var sutun=acikL.length<=4?acikL.length:(acikL.length<=6?3:(acikL.length<=8?4:5));
   if(W>H&&acikL.length>4) sutun=Math.min(acikL.length,5);
   var satir=Math.ceil(acikL.length/sutun);
-  var alanY=H*0.755, alanH=H-alanY-Math.max(10,H*0.015);
+  var alanY=H*0.71, alanH=H-alanY-Math.max(10,H*0.015,safeBottom);
   var hucW=Math.min(W*0.96/sutun, minK*0.24), hucH=alanH/satir;
   var izgW=hucW*sutun;
   for(var k=0;k<acikL.length;k++){
@@ -919,7 +932,7 @@ function tezgahCiz(){
     var etW=Math.min(hucW*0.86,kr*3), etH=Math.max(15,minK*0.023);
     yuvarlakKutu(kx-etW/2,by+hucH*0.66,etW,etH,etH/2); ctx.fill();
     ctx.fillStyle='#5c4050';
-    ctx.font='800 '+Math.round(etH*0.62)+'px sans-serif'; ctx.textAlign='center';
+    ctx.font='800 '+Math.max(12,Math.round(etH*0.62))+'px sans-serif'; ctx.textAlign='center';
     ctx.fillText(L.emoji+' '+L.ad,kx,by+hucH*0.66+etH*0.72);
   }
 }

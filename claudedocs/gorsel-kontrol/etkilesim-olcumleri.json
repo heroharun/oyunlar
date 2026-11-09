@@ -1,0 +1,42 @@
+[
+  {
+    "name": "story-safe",
+    "pass": true
+  },
+  {
+    "name": "boyama-safe",
+    "pass": true
+  },
+  {
+    "name": "mangala-offline",
+    "pass": true
+  },
+  {
+    "name": "mangala-network-failure",
+    "pass": true
+  },
+  {
+    "name": "kelime-seven-safe",
+    "pass": true
+  },
+  {
+    "name": "namaz-question-safe",
+    "pass": true
+  },
+  {
+    "name": "kim-help-answer",
+    "pass": true
+  },
+  {
+    "name": "dress-help-landscape",
+    "pass": true
+  },
+  {
+    "name": "icecream-safe",
+    "pass": true
+  },
+  {
+    "name": "fire-controls",
+    "pass": true
+  }
+]

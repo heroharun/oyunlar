@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <meta name="theme-color" content="#123430">
+<link rel="icon" href="../ikon/icon-192.png">
 <title>Mangala — MasalPark</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
 <style>
 :root{
   --ceviz1:#5b3a22; --ceviz2:#7a5230; --ceviz3:#3f2716; --ceviz4:#8f6440;
@@ -79,9 +80,9 @@ h1{font-size:2.5rem;letter-spacing:.14em;color:var(--pirinc2);font-weight:900;
 .sira-rozet.rakip{border-color:#7ad0e0;color:#7ad0e0;box-shadow:0 0 16px rgba(122,208,224,.25)}
 
 /* tahta */
-#tahta-kutu{position:relative;width:min(460px,100%);flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#tahta-kutu{position:relative;width:min(700px,100%);flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
 #tahta{
-  position:relative;width:min(560px,100%);border-radius:26px;padding:12px 10px;
+  position:relative;width:min(700px,100%);border-radius:26px;padding:12px 10px;
   background:
     radial-gradient(120% 80% at 30% 15%, rgba(255,220,160,.16), transparent 55%),
     repeating-linear-gradient(96deg, rgba(0,0,0,.08) 0 3px, transparent 3px 11px),
@@ -190,7 +191,7 @@ body.mod-iki .kuyu.rakipK .sayi{transform:rotate(180deg)}
 @keyframes konfDus{to{transform:translateY(110vh) rotate(720deg)}}
 /* ── ONLINE ODA ── */
 .sekmeler{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(0,0,0,.25);border-radius:14px;padding:4px}
-.sekme{min-height:42px;border:none;border-radius:11px;background:transparent;color:var(--krem);font-family:inherit;font-weight:800;font-size:.95rem;cursor:pointer;opacity:.7}
+.sekme{min-height:44px;border:none;border-radius:11px;background:transparent;color:var(--krem);font-family:inherit;font-weight:800;font-size:.95rem;cursor:pointer;opacity:.7}
 .sekme.on{background:rgba(217,164,65,.22);color:var(--pirinc2);opacity:1;box-shadow:inset 0 0 0 1.5px rgba(217,164,65,.5)}
 .alan{display:flex;flex-direction:column;gap:5px;text-align:left}
 .alan label{font-size:.78rem;font-weight:700;color:var(--pirinc2);letter-spacing:.06em;text-transform:uppercase;opacity:.9}
@@ -223,6 +224,33 @@ body.mod-iki .kuyu.rakipK .sayi{transform:rotate(180deg)}
   .mkart{padding:13px;gap:8px} .btn{min-height:50px}
 }
 @media (prefers-reduced-motion:reduce){ *{animation-duration:.01s!important;transition-duration:.01s!important} }
+
+/* Mobil yerleşim: güvenli alan, okunabilirlik ve dokunma hedefleri. */
+button{min-width:44px;min-height:44px}
+[hidden]{display:none!important}
+
+#menu{justify-content:flex-start}#menu>*{flex-shrink:0}#menu>:first-child{margin-top:auto}#menu>:last-child{margin-bottom:auto}
+.zorluk small{font-size:12px}
+.kuyular{padding:24px 0;gap:22px 2.5%}
+.kuyu .sayi{right:50%;bottom:-23px;transform:translateX(50%)}
+.kuyu.rakipK .sayi{left:50%;top:-23px;bottom:auto;transform:translateX(-50%)}
+body.mod-iki .kuyu.rakipK .sayi{transform:translateX(-50%) rotate(180deg)}
+@media(orientation:portrait){
+ #oyun{overflow-y:auto;justify-content:flex-start}
+ #oyun>*{flex-shrink:0}
+ #tahta-kutu{flex:1 0 auto;min-height:472px;width:min(100%,340px)}
+ #tahta{width:100%;grid-template-columns:1fr;grid-template-rows:44px 1fr 44px;padding:12px 30px;gap:8px}
+ #hazne6{grid-row:1}#hazne13{grid-row:3}.kuyular{grid-row:2}
+ .hazne{min-height:44px}.hazne .sayi{bottom:7px}
+ .kuyular{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(6,56px);padding:0;gap:8px 40px}
+ .kuyu{width:56px;grid-column:2!important;grid-row:calc(6 - var(--pit-column))!important}
+ .kuyu.rakipK{grid-column:1!important;grid-row:calc(6 - var(--pit-column))!important}
+ .kuyular::before{top:2%;bottom:2%;left:50%;width:2px;height:auto;right:auto}
+ .kuyu .sayi{right:-26px;bottom:50%;transform:translateY(50%)}
+ .kuyu.rakipK .sayi{left:-26px;top:50%;transform:translateY(-50%)}
+ body.mod-iki .kuyu.rakipK .sayi{transform:translateY(-50%) rotate(180deg)}
+}
+
 </style>
 </head>
 <body>
@@ -398,7 +426,7 @@ function tahtaKur(){
       const k=document.createElement('div');
       k.className='kuyu'+(rakip?' rakipK':'');
       k.id='kuyu'+idx;
-      k.style.gridColumn=c+1; k.style.gridRow=rakip?1:2;
+      k.style.setProperty('--pit-column',c); k.style.gridColumn=c+1; k.style.gridRow=rakip?1:2;
       k.innerHTML='<span class="sayi">4</span>';
       k.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse')kuyuUzerinde(idx); });
       k.addEventListener('pointerleave',e=>{ if(e.pointerType==='mouse')kuyuUzerindenCik(idx); });
@@ -883,9 +911,25 @@ function emojiUcur(e,benden){
   el.style.left=(benden?68:32)+'%'; el.style.top=(benden?72:28)+'%';
   kat.appendChild(el); setTimeout(()=>el.remove(),1900);
 }
+// Load networking only after an online action; solo play stays offline.
+let peerLoading;
+function loadPeer(){
+  if(window.Peer)return Promise.resolve();
+  if(peerLoading)return peerLoading;
+  peerLoading=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+    const timer=setTimeout(()=>failed(),12000);
+    function failed(){clearTimeout(timer);script.remove();peerLoading=null;reject(new Error('peer-load'));}
+    script.onload=()=>{clearTimeout(timer);if(window.Peer)resolve();else failed();};
+    script.onerror=failed;document.head.appendChild(script);
+  });
+  return peerLoading;
+}
 /* — Oda kur (host = alt oyuncu, ilk hamle onun) — */
-$('#odaKurBtn').addEventListener('click',()=>{
-  if(!window.Peer){ lobiHata('Bağlantı kütüphanesi yüklenemedi — internet gerekli.'); return; }
+$('#odaKurBtn').addEventListener('click',async()=>{
+  const loadButton=$('#odaKurBtn'); loadButton.disabled=true;
+  try{await loadPeer();}catch(e){lobiHata('Bağlantı kütüphanesi yüklenemedi — internet gerekli.');return;}finally{loadButton.disabled=false;}
   if(net.kilit)return; net.kilit=true; lobiHata(''); ac();
   netTemizle(); net.kilit=true;
   net.benAd=adOku(); net.kod=kodUret(); net.rol='host';
@@ -908,8 +952,9 @@ $('#odaKurBtn').addEventListener('click',()=>{
   });
 });
 /* — Odaya katıl (guest = üst oyuncu) — */
-$('#odaKatilBtn').addEventListener('click',()=>{
-  if(!window.Peer){ lobiHata('Bağlantı kütüphanesi yüklenemedi — internet gerekli.'); return; }
+$('#odaKatilBtn').addEventListener('click',async()=>{
+  const loadButton=$('#odaKatilBtn'); loadButton.disabled=true;
+  try{await loadPeer();}catch(e){lobiHata('Bağlantı kütüphanesi yüklenemedi — internet gerekli.');return;}finally{loadButton.disabled=false;}
   const kod=($('#kodGir').value||'').trim().toUpperCase();
   if(kod.length!==4){ lobiHata('4 haneli oda kodunu gir.'); return; }
   if(net.kilit)return; lobiHata(''); ac();
