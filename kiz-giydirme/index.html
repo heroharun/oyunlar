@@ -553,8 +553,17 @@ button{min-width:44px;min-height:44px}
 [hidden]{display:none!important}
 
 #e-menu{padding-top:max(12px,var(--ust))}
-.modal{max-height:calc(100dvh - max(24px,var(--ust)) - max(24px,var(--alt)));overflow-y:auto;touch-action:pan-y}
-.modal-kaydir{max-height:none;overflow:visible}
+.modal{max-height:calc(100dvh - max(24px,var(--ust)) - max(24px,var(--alt)));display:flex;flex-direction:column;overflow:hidden;touch-action:pan-y}
+.modal .yuz,.modal h3,.modal p,.modal-btnler{flex:0 0 auto}
+.modal-kaydir{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;padding-bottom:4px;
+  mask-image:linear-gradient(180deg,#000 calc(100% - 22px),transparent);-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 22px),transparent)}
+.modal-btnler{padding-top:12px}
+@media(max-height:620px){
+  .modal{padding:16px 16px 14px}
+  .modal .yuz{width:56px;height:56px;margin-bottom:6px}
+  .modal h3{font-size:18px}.modal p{margin-bottom:10px;font-size:13.5px}
+  .nasil-liste{gap:8px}.mbtn{min-height:48px}
+}
 .mkart{max-height:120px;padding:12px 10px;gap:6px}
 .mkart .rozet{width:52px}
 @media(max-width:560px) and (orientation:portrait){
