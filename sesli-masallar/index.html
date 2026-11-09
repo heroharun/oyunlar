@@ -307,6 +307,16 @@ button{min-width:44px;min-height:44px}
 
 </style>
 </head>
+<style>
+.lib{display:flex;gap:10px;width:100%;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+.lib::-webkit-scrollbar{display:none}
+.lib button{flex:none;width:96px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.14);border-radius:16px;padding:6px;
+  color:inherit;font:inherit;cursor:pointer;text-align:center;scroll-snap-align:start;min-height:44px}
+.lib button[aria-selected="true"]{border-color:#e5b549;background:rgba(229,181,73,.14)}
+.lib img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:11px;background:rgba(255,255,255,.06)}
+.lib span{display:block;margin-top:5px;font-size:12px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib .yeni{display:inline-block;margin-top:3px;font-size:10px;font-weight:800;letter-spacing:.06em;color:#12102a;background:#e5b549;border-radius:999px;padding:1px 7px}
+</style>
 <body>
 
 <div id="app">
@@ -326,6 +336,8 @@ button{min-width:44px;min-height:44px}
         <button type="button" data-act="lang" data-lang="ar" lang="ar">عربي</button>
         <button type="button" data-act="lang" data-lang="fr" lang="fr">FR</button>
       </div>
+
+      <div class="lib" id="lib" role="tablist" aria-label="Masallar" hidden></div>
 
       <div class="cover-art"><img id="coverImg" src="" alt="" width="706" height="1254"></div>
 
@@ -593,6 +605,7 @@ button{min-width:44px;min-height:44px}
 })();
 
 </script>
+<script src="masal/kulkedisi/veri.js"></script>
 
 <script>
 (function () {
@@ -709,8 +722,35 @@ var LS = {
   set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 };
 
-var story = (window.MasalPark && window.MasalPark.stories && window.MasalPark.stories[0]) || null;
-var N = story ? story.scenes.length : 0;
+var stories = (window.MasalPark && window.MasalPark.stories) || [];
+var story = stories[0] || null, N = story ? story.scenes.length : 0;
+function masalIndex(slug) { for (var i = 0; i < stories.length; i++) if (stories[i].slug === slug) return i; return 0; }
+function secMasal(i, silent) {
+  story = stories[i] || stories[0] || null;
+  N = story ? story.scenes.length : 0;
+  state.scene = 0; state.completed = false;
+  if (story) LS.set('mp.sesli.masal', story.slug);
+  if (!silent) { renderCover(); buildThread(); }
+  renderLib();
+}
+function renderLib() {
+  var el = $('lib'); if (!el) return;
+  el.hidden = stories.length < 2;
+  if (el.hidden) return;
+  var html = '';
+  for (var i = 0; i < stories.length; i++) {
+    var s = stories[i], on = s === story;
+    html += '<button type="button" role="tab" data-act="masal" data-i="' + i + '" aria-selected="' + on + '">' +
+      '<img src="' + s.base + (s.thumb || s.cover) + '" alt="" loading="lazy">' +
+      '<span>' + txt(s.title) + '</span>' + (s.yeni ? '<i class="yeni">YENİ</i>' : '') + '</button>';
+  }
+  el.innerHTML = html;
+}
+/* masalın bu dilde metni yoksa metin de ses de Türkçeye düşer */
+function dil() {
+  var sc = story && story.scenes[0];
+  return (sc && sc.narration && sc.narration[state.lang]) ? state.lang : 'tr';
+}
 
 var state = {
   lang: 'tr',
@@ -892,7 +932,7 @@ function startNarration(token) {
   if (state.muted) { runTimer(token, estimate(state.scene)); return; }
 
   var sc = story.scenes[state.scene];
-  var url = sc.audio ? story.base + sc.audio.replace('{lang}', state.lang) : '';
+  var url = sc.audio ? story.base + sc.audio.replace('{lang}', dil()) : '';
   if (!url) { speakOrTimer(token); return; }
 
   var settled = false;
@@ -928,7 +968,7 @@ preloader.preload = 'auto';
 function preloadNext(i) {
   var sc = story.scenes[i];
   if (!sc || !sc.audio) return;
-  var url = story.base + sc.audio.replace('{lang}', state.lang);
+  var url = story.base + sc.audio.replace('{lang}', dil());
   if (preloader.src && preloader.src.indexOf(url) > -1) return;
   try { preloader.src = url; preloader.load(); } catch (e) {}
 }
@@ -939,8 +979,8 @@ function speakOrTimer(token) {
   if (!('speechSynthesis' in window) || state.muted || !text) { runTimer(token, estimate(state.scene)); return; }
   try {
     var u = new SpeechSynthesisUtterance(text);
-    u.lang = I18N[state.lang].voice;
-    u.rate = state.lang === 'ar' ? 0.9 : 0.94;
+    u.lang = I18N[dil()].voice;
+    u.rate = dil() === 'ar' ? 0.9 : 0.94;
     u.pitch = 1.03;
     var v = pickVoice(u.lang);
     if (v) u.voice = v;
@@ -1180,6 +1220,12 @@ document.addEventListener('click', function (ev) {
       setLang(el.getAttribute('data-lang'));
       break;
 
+    case 'masal':
+      stopNarration();
+      secMasal(parseInt(el.getAttribute('data-i'), 10) || 0);
+      buzz(6);
+      break;
+
     case 'start':
       openPlayer(0);
       buzz(8);
@@ -1299,6 +1345,7 @@ function boot() {
     return;
   }
   buildThread();
+  secMasal(masalIndex(LS.get('mp.sesli.masal', '')), true);
   setLang(LS.get('mp.sesli.lang', 'tr'), true);
   paintThread();
   /* bir sonraki sahne için ön yükleme, kaydırmayı akıcı tutar */

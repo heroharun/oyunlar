@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /* Sesli Masallar anlatımlarını Gemini TTS ile seslendirir → sesli-masallar/ses/{dil}/{nn}.mp3
-   Kullanım: node arac/sesli-masal-seslendir.mjs [--dil tr,en,ar,fr] [--ses Sulafat] [--sahne 1,2] [--cikti DIZIN] [--zorla]
+   Kullanım: node arac/sesli-masal-seslendir.mjs [--masal sesli-masallar/masal/X/veri.js] [--dil tr,en,ar,fr] [--ses Sulafat] [--sahne 1,2] [--cikti DIZIN] [--zorla]
+   --masal verilmezse index.html içindeki ilk masal; yalnız metni olan diller üretilir.
    Anahtar: ~/.config/gcloud-keys/gemini-reels.key   Gerekli: ffmpeg (libmp3lame)
    Çıktı: 24 kHz mono MP3 ~40 kb/s (bir masal, dört dil ≈ 4 MB). Var olan dosyalar --zorla yoksa atlanır. */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync, unlinkSync } from 'node:fs';
@@ -9,20 +10,25 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > -1 ? (process.argv[i + 1] ?? true) : d; };
-const DILLER = String(arg('dil', 'tr,en,ar,fr')).split(',');
 const SES = arg('ses', 'Sulafat');
 const SAHNE = arg('sahne', '') ? String(arg('sahne')).split(',').map(Number) : null;
-const CIKTI = arg('cikti', 'sesli-masallar/ses');
 const ZORLA = process.argv.includes('--zorla');
 const MODEL = process.env.TTS_MODEL || 'gemini-3.8-flash-tts';
 const KEY = readFileSync(join(homedir(), '.config/gcloud-keys/gemini-reels.key'), 'utf8').trim();
 
-/* anlatım metinlerini index.html içindeki veri bloğundan çek */
-const html = readFileSync('sesli-masallar/index.html', 'utf8');
-const i = html.indexOf('Masal Park — Sesli Masal verisi');
-const code = html.slice(html.indexOf('>', html.lastIndexOf('<script', i)) + 1, html.indexOf('</script>', i));
+/* anlatım metinlerini veri dosyasından ya da index.html içindeki veri bloğundan çek */
+let code;
+if (arg('masal', '')) code = readFileSync(String(arg('masal')), 'utf8');
+else {
+  const html = readFileSync('sesli-masallar/index.html', 'utf8');
+  const i = html.indexOf('Masal Park — Sesli Masal verisi');
+  code = html.slice(html.indexOf('>', html.lastIndexOf('<script', i)) + 1, html.indexOf('</script>', i));
+}
 const win = {}; new Function('window', code)(win);
-const masal = win.MasalPark.stories[0];
+const masal = win.MasalPark.stories[win.MasalPark.stories.length - 1];
+const DILLER = String(arg('dil', 'tr,en,ar,fr')).split(',').filter(d => masal.scenes[0].narration[d]);
+const CIKTI = arg('cikti', 'sesli-masallar/' + (masal.base || '') + 'ses');
+console.log('masal:', masal.slug, '| diller:', DILLER.join(','), '| çıktı:', CIKTI);
 
 const STIL = {
   tr: 'Türkçe. Çocuklara masal anlatan sıcak, şefkatli ve öğretici bir kadın anaokulu öğretmeni gibi konuş. Sakin, net, biraz yavaş tempo; her cümle anlaşılır. Karakterlerin konuşmalarını hafifçe canlandır ama abartma. Doğal insan sesi, robotik değil.',
