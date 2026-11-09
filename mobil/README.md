@@ -19,8 +19,20 @@ uygulamaya özel küçük düzeltmeleri uygular (`scripts/www-hazirla.mjs`):
 | `npm run android` | sync + Android Studio'da açar |
 | `npm run android:debug` | sync + debug APK (`android/app/build/outputs/apk/debug/`) |
 
-Android derlemesi için Android Studio'nun JDK'sı kullanılır:
-`export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
+Android derlemesi için JDK 24 kullanılır (Android Studio'nun JDK'sı 25, Gradle 8.14 Groovy betiklerinde sorun çıkarıyor):
+`export JAVA_HOME=$(/usr/libexec/java_home -v 24)`
+
+## Release (mağaza) paketi
+
+- **Android**: `npm run sync && cd android && ./gradlew bundleRelease` →
+  `android/app/build/outputs/bundle/release/app-release.aab` (Play Console'a bu yüklenir).
+  İmza anahtarı depo dışında: `~/.masalpark/android-imza/` (keystore + keystore.properties).
+  **Bu klasörü yedekle** (parola dosyanın içinde). Google Play App Signing kullanıldığı için bu yalnızca
+  yükleme anahtarıdır; kaybolursa Play Console'dan sıfırlatılabilir ama vakit kaybettirir.
+- **iOS**: Apple Developer hesabı gerekir. Xcode → Signing & Capabilities → takım seç →
+  Product → Archive → Distribute (TestFlight / App Store).
+- Her yeni yüklemede `versionCode` (android/app/build.gradle) ve `CURRENT_PROJECT_VERSION` (Xcode) bir artar;
+  `versionName` / `MARKETING_VERSION` kullanıcıya görünen sürümdür (şu an 1.0.0).
 
 Komut satırından iOS simülatör derlemesi:
 `cd ios/App && xcodebuild -project App.xcodeproj -scheme App -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build`
@@ -43,6 +55,4 @@ Portal bağlantı kalıbı (`href="oyun/"`) değişirse `www-hazirla.mjs` hata v
 1. Google Play Console hesabı (25 $), kimlik doğrulaması, 12 kişilik kapalı test (14 gün).
 2. Apple Developer Program (99 $/yıl), Xcode'da Signing & Capabilities altında takım seçimi.
 3. Gizlilik politikası sayfası (masalpark.com/gizlilik), mağaza formları.
-4. Aile Paketi uygulama içi satın alma: RevenueCat Capacitor eklentisi; ürün kimlikleri
-   App Store Connect ve Play Console'da oluşturulduktan sonra eklenir.
-5. Android imzalama anahtarı (`*.keystore`, depoya girmez) ve `bundleRelease` (AAB).
+4. Satış modeli: ücretli uygulama (uygulama içi satın alma yok). Fiyat her iki konsolda belirlenir.
