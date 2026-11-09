@@ -69,3 +69,9 @@ try {
 } catch(Exception e) {
     logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
 }
+
+/* Firebase: mobil/firebase/google-services.json varsa (www-hazirla kopyalar) Analytics + Crashlytics etkin */
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+    apply plugin: 'com.google.firebase.crashlytics'
+}

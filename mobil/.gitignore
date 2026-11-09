@@ -24,3 +24,7 @@ android/capacitor-cordova-android-plugins/
 *.keystore
 *.jks
 .DS_Store
+# Firebase yapılandırması (depo herkese açık; bu dosyalar mobil/firebase/ altında tutulur)
+firebase/
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist

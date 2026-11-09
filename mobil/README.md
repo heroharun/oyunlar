@@ -37,6 +37,34 @@ Android derlemesi için JDK 24 kullanılır (Android Studio'nun JDK'sı 25, Grad
 Komut satırından iOS simülatör derlemesi:
 `cd ios/App && xcodebuild -project App.xcodeproj -scheme App -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build`
 
+## Uygulama katmanı (web'e girmez)
+
+- `web/mobil.js`: 10 ücretsiz oyun dışındakiler kilitli (🔒), dokununca **Aile Paketi** ekranı; RevenueCat ile
+  tek seferlik satın alma + "geri yükle"; Firebase Analytics olayları (`portal_acildi`, `oyun_acildi`,
+  `aile_paketi_goruntulendi`, `satin_alma_tamam`, `geri_yukleme`) ve JS hatalarını Crashlytics'e bildirir.
+  Ücretsiz liste ve RevenueCat anahtarları dosyanın başındaki `AYAR` içinde.
+- `web/mobil-izle.js`: her oyun sayfasına eklenir, `ekran` olayı + JS hataları.
+- `capacitor.js`: `@capacitor/core` tarayıcı paketi; bundler olmadığı için `Capacitor.registerPlugin` buradan gelir.
+- Portal kaynağında `html.mobil` sınıfı: `.web-only` gizlenir, `.mobil-only` görünür (`index.html` içinde işaretli).
+
+### Firebase kurulumu (bir kere)
+
+1. console.firebase.google.com → proje oluştur (Analytics açık).
+2. Android uygulaması ekle: paket `com.masalpark.app` → `google-services.json` indir → `mobil/firebase/` içine koy.
+3. iOS uygulaması ekle: bundle `com.masalpark.app` → `GoogleService-Info.plist` indir → `mobil/firebase/` içine koy,
+   ardından Xcode'da App hedefine sürükle (Copy items, target App işaretli). `npm run www` Android dosyasını kendisi kopyalar.
+4. Crashlytics'i konsolda etkinleştir. İlk çökme raporu için uygulamanın bir kez yeniden açılması gerekir.
+5. Çocuk hedefli kullanım: Firebase konsolunda Analytics → veri toplama ayarlarında reklam kimliği kapalı tutulur;
+   mağaza veri güvenliği formlarında "uygulama etkileşimi, çökme günlükleri, cihaz tanımlayıcı" beyan edilir.
+
+### RevenueCat kurulumu (mağaza hesapları açılınca)
+
+1. app.revenuecat.com → proje → iOS ve Android uygulamaları (bundle/paket `com.masalpark.app`).
+2. App Store Connect ve Play Console'da **non-consumable** ürün: kimlik `aile_paketi`.
+3. RevenueCat'te entitlement `aile_paketi`, offering "default" içinde tek paket, ürünü bağla.
+4. Public SDK anahtarlarını `web/mobil.js` → `AYAR.revenuecat.ios / .android` alanlarına yaz, `npm run sync`.
+5. Test: iOS Sandbox hesabı, Android lisans test kullanıcısı (kapalı test kanalında).
+
 ## Kimlikler
 
 - Paket / bundle kimliği: `com.masalpark.app` (mağazaya yüklendikten sonra değiştirilemez)
@@ -55,4 +83,5 @@ Portal bağlantı kalıbı (`href="oyun/"`) değişirse `www-hazirla.mjs` hata v
 1. Google Play Console hesabı (25 $), kimlik doğrulaması, 12 kişilik kapalı test (14 gün).
 2. Apple Developer Program (99 $/yıl), Xcode'da Signing & Capabilities altında takım seçimi.
 3. Gizlilik politikası sayfası (masalpark.com/gizlilik), mağaza formları.
-4. Satış modeli: ücretli uygulama (uygulama içi satın alma yok). Fiyat her iki konsolda belirlenir.
+4. Satış modeli: ücretsiz indirme, 10 oyun açık, Aile Paketi tek seferlik satın alma (yukarıdaki RevenueCat adımları).
+5. Firebase dosyaları (yukarıdaki adımlar) — şu an ikisi de yok, uygulama onlarsız da çalışır, yalnız ölçüm kapalı.

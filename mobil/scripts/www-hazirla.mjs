@@ -72,6 +72,48 @@ if (existsSync(hafizlik)) {
   writeFileSync(hafizlik, readFileSync(hafizlik, 'utf8').replace('href="/manifest.json"', 'href="../manifest.json"'));
 }
 
+/* --- uygulama katmanı: html.mobil işareti (en başta), kilit/satın alma/ölçüm betikleri, Cloudflare beacon'ı sök --- */
+const WEB = join(MOBIL, 'web');
+cpSync(join(WEB, 'mobil.js'), join(WWW, 'mobil.js'));
+cpSync(join(WEB, 'mobil-izle.js'), join(WWW, 'mobil-izle.js'));
+/* Capacitor çalışma zamanı (registerPlugin): yerel köprü tek başına vermez, bundler olmadığı için tarayıcı paketi eklenir */
+cpSync(join(MOBIL, 'node_modules/@capacitor/core/dist/capacitor.js'), join(WWW, 'capacitor.js'));
+const BEACON = /\s*<script[^>]*static\.cloudflareinsights\.com[^>]*><\/script>/g;
+let beacon = 0, sayfa = 0;
+(function htmlGez(d) {
+  for (const ad of readdirSync(d)) {
+    const yol = join(d, ad);
+    if (statSync(yol).isDirectory()) { htmlGez(yol); continue; }
+    if (!/\.html?$/.test(ad)) continue;
+    let h = readFileSync(yol, 'utf8');
+    const once = h;
+    h = h.replace(BEACON, () => { beacon++; return ''; });
+    if (yol === portalYol) {
+      h = h.replace('<meta charset="utf-8">',
+        '<meta charset="utf-8">\n<script>window.MASALPARK_MOBIL=true;document.documentElement.classList.add(\'mobil\');</script>');
+      if (!h.includes("classList.add('mobil')")) throw new Error('portalda <meta charset> bulunamadı');
+      h += '\n<script src="/capacitor.js"></script>\n<script src="/mobil.js"></script>\n';
+    } else {
+      h += '\n<script src="/capacitor.js"></script>\n<script src="/mobil-izle.js"></script>\n';
+    }
+    if (h !== once) { writeFileSync(yol, h); sayfa++; }
+  }
+})(WWW);
+console.log(`uygulama katmanı: ${sayfa} sayfa işlendi, ${beacon} Cloudflare beacon söküldü`);
+
+/* --- RevenueCat anahtarları boşsa uyar (mağaza yayını öncesi doldurulmalı) --- */
+const mobilJs = readFileSync(join(WEB, 'mobil.js'), 'utf8');
+if (/revenuecat:\s*\{\s*ios:\s*'',\s*android:\s*''\s*\}/.test(mobilJs))
+  console.warn('UYARI: web/mobil.js içinde RevenueCat anahtarları boş — satın alma kapalı, mağaza yayını öncesi doldur.');
+
+/* --- Firebase yapılandırma dosyaları (mobil/firebase/, depoya girmez) --- */
+const FB = join(MOBIL, 'firebase');
+const gs = join(FB, 'google-services.json');
+if (existsSync(gs)) { cpSync(gs, join(MOBIL, 'android/app/google-services.json')); console.log('Firebase Android: google-services.json kopyalandı'); }
+else console.warn('UYARI: mobil/firebase/google-services.json yok — Android\'de Firebase kapalı');
+if (!existsSync(join(MOBIL, 'ios/App/App/GoogleService-Info.plist')))
+  console.warn('UYARI: ios/App/App/GoogleService-Info.plist yok — iOS\'ta Firebase kapalı (Xcode hedefine eklenmeli)');
+
 /* özet */
 let adet = 0, boyut = 0;
 function gez(d) {
