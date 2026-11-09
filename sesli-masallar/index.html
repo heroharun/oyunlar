@@ -316,6 +316,25 @@ button{min-width:44px;min-height:44px}
 .lib img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:11px;background:rgba(255,255,255,.06)}
 .lib span{display:block;margin-top:5px;font-size:12px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lib .yeni{display:inline-block;margin-top:3px;font-size:10px;font-weight:800;letter-spacing:.06em;color:#12102a;background:#e5b549;border-radius:999px;padding:1px 7px}
+/* kapak tek ekrana sığar: kapak görseli kalan yüksekliğe göre küçülür, düğmeler hep görünür */
+.cover-in{height:100%;min-height:0;overflow:auto;box-sizing:border-box}
+.cover-in>*{flex:none}
+.cover-art{flex:1 1 auto;min-height:96px;width:auto;max-width:min(80%,300px);display:flex;justify-content:center;align-items:center;overflow:hidden}
+.cover-art img{width:auto;height:100%;max-width:100%;max-height:100%;aspect-ratio:auto;object-fit:contain;display:block}
+.cover-art::after{display:none}
+.desc{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.lib{flex:none}
+.cover-in .actions{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;width:100%;padding-top:8px;margin-top:0}
+.cover-in .actions .btn{flex:1 1 140px;min-height:48px;padding-top:0;padding-bottom:0}
+.cover-in .actions #resumeBtn{flex-basis:100%}
+@media(max-height:740px){
+  .cover-in{gap:7px;padding-top:calc(var(--top) + 4px)}
+  .brandbar{display:none}
+  .lib button{width:72px;padding:4px;border-radius:12px}.lib span{font-size:11px;margin-top:3px}
+  .desc{display:none}
+  .meta .chip{font-size:11px;padding:4px 9px}
+  .cover-in h1{font-size:26px;margin:0}.cover-in .sub{margin:0;font-size:14px}
+}
 </style>
 <body>
 
