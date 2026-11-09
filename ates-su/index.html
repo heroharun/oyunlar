@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="tr">
 <meta charset="utf-8">
+<link rel="icon" href="../ikon/icon-192.png">
 <title>ATEŞ & SU — İki Kişilik Macera</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
@@ -13,7 +14,7 @@
   canvas{display:block;width:100%;height:100%}
   #hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;
     padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 12px max(16px,env(safe-area-inset-left));pointer-events:none;color:var(--ink)}
-  .label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .label{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
   .value{font-size:20px;font-weight:800;line-height:1.1}
   #pauseBtn{position:fixed;top:max(10px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:5;font-size:14px;
     color:var(--dim);background:rgba(245,236,255,.06);border:1.5px solid rgba(245,236,255,.2);
@@ -56,10 +57,25 @@
     font:inherit;font-size:19px;font-weight:800;color:var(--ink);cursor:pointer;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
   .lvl:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.18)}
-  .lvl .st{font-size:10px;letter-spacing:2px;color:var(--gold);
+  .lvl .st{font-size:12px;letter-spacing:2px;color:var(--gold);
     text-shadow:0 0 6px rgba(255,209,102,.6)}
   .lvl .st.dim{color:rgba(245,236,255,.28);text-shadow:none}
   .lvl.lock{opacity:.35;pointer-events:none;background:rgba(245,236,255,.05);box-shadow:none}
+
+/* Mobil yerleşim: güvenli alan, okunabilirlik ve dokunma hedefleri. */
+button{min-width:44px;min-height:44px}
+[hidden]{display:none!important}
+
+#hud{gap:140px}.label{font-size:12px;letter-spacing:0;display:block}
+#pauseBtn{left:calc(50% - 26px);padding:8px 10px}
+.card{overflow-y:auto;justify-content:flex-start;touch-action:pan-y;padding-top:calc(68px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+.card>*{flex-shrink:0}.card>:first-child{margin-top:auto}.card>:last-child{margin-bottom:auto}
+.lvl.lock{pointer-events:auto}.lvl.lock.shake{animation:lockedShake .3s}
+@keyframes lockedShake{25%,75%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+#orientationHint{display:none;font-size:12px;color:var(--gold)}
+@media(orientation:portrait){#orientationHint{display:block}}
+@media(prefers-reduced-motion:reduce){.lvl.lock.shake{animation:none}}
+
 </style>
 
 <canvas id="cv"></canvas>
@@ -86,6 +102,8 @@
   <h1><span class="f">ATEŞ</span> & <span class="w">SU</span></h1>
   <p>İki kahraman, tek ekran. 🔥 Ateş lavda yüzer ama suya giremez; 💧 Su tam tersi. Yeşil zehire ikisi de dokunamaz. Elmasları toplayın, İKİNİZ DE kendi kapınıza ulaşın!</p>
   <p id="ctlHint" style="font-size:12px;letter-spacing:.06em"></p>
+  <p id="orientationHint">📱 Yatay tutmanız önerilir.</p>
+  <p id="levelHint" role="status" style="min-height:1.5em;font-size:12px"></p>
   <div class="lvlrow" id="lvlRow"></div>
 </div>
 
@@ -548,7 +566,13 @@ function buildLvlRow(){
       st.className='st'+(done?'':' dim'); st.textContent=done?'★★★':'☆☆☆';
       b.appendChild(n); b.appendChild(st);
     }
-    tap(b,()=>{ try{audio();}catch(e){} startLevel(i); });
+    tap(b,()=>{
+      if(i>prog.unlocked){
+        document.getElementById('levelHint').textContent='Önce '+(i-1)+'. bölümü bitir.';
+        b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');return;
+      }
+      try{audio();}catch(e){} startLevel(i);
+    });
     row.appendChild(b);
   }
   drawHeroes();
@@ -563,7 +587,7 @@ buildLvlRow(); loop();
 #mpNasilBtn{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
-  font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}
+  font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s;left:calc(50% + 24px);top:max(10px,env(safe-area-inset-top));bottom:auto;}
 #mpNasilBtn.mpGizli{opacity:0;pointer-events:none}
 #mpNasilKap{position:fixed;inset:0;z-index:2147483001;display:none;align-items:center;justify-content:center;
   background:rgba(10,12,26,.82);padding:20px}
@@ -595,12 +619,7 @@ buildLvlRow(); loop();
   document.getElementById('mpNasilTamam').addEventListener('click',kapat);
   document.getElementById('mpNasilTamam').addEventListener('touchend',kapat);
   kap.addEventListener('click',function(e){ if(e.target===kap) kapat(e); });
-  /* oyun başlayınca düğme kaybolsun: butona/modala olmayan 2. dokunuştan sonra */
-  var sayac=0;
-  document.addEventListener('pointerdown',function(e){
-    if(e.target.closest('#mpNasilBtn,#mpNasilKap')) return;
-    if(++sayac>=2) setTimeout(function(){ btn.classList.add('mpGizli'); },400);
-  },true);
+
 })();
 </script>
 <script>/* MasalPark: oyun sirasinda ekran uykuya gecmesin */

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="tr">
 <meta charset="utf-8">
+<link rel="icon" href="../ikon/icon-192.png">
 <title>BOYAMA KİTABI — Rengarenk Dünya</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
@@ -74,6 +75,28 @@
   @keyframes confFall{to{transform:translateY(112vh) rotate(720deg)}}
   .conf{position:fixed;top:-16px;width:10px;height:14px;z-index:55;pointer-events:none;border-radius:3px;
     animation:confFall linear forwards}
+
+/* Mobil yerleşim: güvenli alan, okunabilirlik ve dokunma hedefleri. */
+button{min-width:44px;min-height:44px}
+[hidden]{display:none!important}
+
+#wrap{padding-bottom:max(10px,env(safe-area-inset-bottom));gap:8px}
+header{display:grid;grid-template-columns:1fr 44px;width:min(100%,480px);flex-shrink:0;gap:6px}
+h1{font-size:20px;white-space:nowrap}
+.pick{grid-row:2;grid-column:1/-1;width:100%;scroll-snap-type:x mandatory;padding:5px 4px 7px;mask-image:linear-gradient(to right,#000 94%,transparent)}
+.pickbtn{scroll-snap-align:start}
+#svgbox{width:min(100%,480px);min-height:45dvh;padding:6px}
+#palette{width:min(100%,480px);flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;gap:8px;padding:7px 4px;flex-shrink:0;mask-image:linear-gradient(to right,#000 94%,transparent)}
+.swatch{width:44px;height:44px;flex:0 0 44px}.swatch.on{transform:scale(1.08)}
+#tools{display:grid;grid-template-columns:1.35fr 1fr .8fr 1fr;gap:4px;width:min(100%,480px);flex-shrink:0}
+.tool{padding:6px 4px;gap:3px;font-size:12px;letter-spacing:0;justify-content:center;white-space:nowrap}
+#picName{font-size:12px!important;flex-shrink:0}
+@media(orientation:landscape) and (max-height:600px){
+ #wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,1fr);grid-template-rows:auto 1fr auto auto;align-items:stretch}
+ header{grid-column:2;grid-row:1}#svgbox{grid-column:1;grid-row:1/5;width:100%;height:100%;min-height:0}
+ #palette{grid-column:2;grid-row:2;align-self:end}#picName{grid-column:2;grid-row:3;text-align:center}#tools{grid-column:2;grid-row:4}
+}
+
 </style>
 
 <div id="wrap">
@@ -1330,7 +1353,7 @@ if(!opened) loadPic('kedi');
 #mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
-  font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}
+  font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s;position:static;grid-column:2;grid-row:1;}
 #mpNasilBtn.mpGizli{opacity:0;pointer-events:none}
 #mpNasilKap{position:fixed;inset:0;z-index:2147483001;display:none;align-items:center;justify-content:center;
   background:rgba(10,12,26,.82);padding:20px}
@@ -1353,6 +1376,7 @@ if(!opened) loadPic('kedi');
 </div>
 <script>
 (function(){
+  document.querySelector('header').appendChild(document.getElementById('mpNasilBtn'));
   var btn=document.getElementById('mpNasilBtn'),
       kap=document.getElementById('mpNasilKap');
   document.querySelector('#mpNasilKart p').textContent='1️⃣ Bir şablon seç (veya 🎲 rastgele getir).\n2️⃣ Paletten renk seç, boyamak istediğin bölgeye dokun.\n3️⃣ Arka planı da boyayabilirsin!\n4️⃣ 📥 İndir ile resmini telefonuna kaydet.\n💡 Boyaman otomatik kaydedilir, sonra devam edebilirsin.';
@@ -1362,12 +1386,7 @@ if(!opened) loadPic('kedi');
   document.getElementById('mpNasilTamam').addEventListener('click',kapat);
   document.getElementById('mpNasilTamam').addEventListener('touchend',kapat);
   kap.addEventListener('click',function(e){ if(e.target===kap) kapat(e); });
-  /* oyun başlayınca düğme kaybolsun: butona/modala olmayan 2. dokunuştan sonra */
-  var sayac=0;
-  document.addEventListener('pointerdown',function(e){
-    if(e.target.closest('#mpNasilBtn,#mpNasilKap')) return;
-    if(++sayac>=2) setTimeout(function(){ btn.classList.add('mpGizli'); },400);
-  },true);
+
 })();
 </script>
 <script>/* MasalPark: oyun sirasinda ekran uykuya gecmesin */

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="tr">
 <meta charset="utf-8">
+<link rel="icon" href="../ikon/icon-192.png">
 <title>KELİME AVI — 5 Harf, 6 Hak</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
@@ -36,7 +37,7 @@
   header h1::before,header h1::after{content:'✦';font-size:.5em;color:var(--gold);
     vertical-align:.35em;margin:0 .6em;opacity:.8}
   header h1 span{color:var(--gold)}
-  #stats{font-size:11px;color:var(--dim);letter-spacing:.09em;margin-top:2px}
+  #stats{font-size:12px;color:var(--dim);letter-spacing:.09em;margin-top:2px}
   #grid{--kolon:5;flex:1;display:flex;flex-direction:column;gap:6px;justify-content:center;perspective:700px}
   .row{display:flex;gap:6px}
   .tile{width:min(calc((100vw - 44px)/var(--kolon) - 6px),58px);height:min(calc((100vw - 44px)/var(--kolon) - 6px),58px);border:1.5px solid var(--border);border-radius:9px;
@@ -74,7 +75,7 @@
     background:linear-gradient(180deg,#7c6236,#54401f);color:#ffe0a3;
     box-shadow:0 3px 0 #33270f,inset 0 1px 0 rgba(255,255,255,.18)}
   .key.wide:active{box-shadow:0 1px 0 #33270f}
-  .key.wide span{font-size:9.5px;letter-spacing:.06em}
+  .key.wide span{font-size:12px;letter-spacing:.06em}
   .key.wide svg{display:block}
   .key.g{background:linear-gradient(180deg,#46c473,#1e8a4a);color:#fff;box-shadow:0 3px 0 #12522c,inset 0 1px 0 rgba(255,255,255,.22)}
   .key.y{background:linear-gradient(180deg,#eec14a,#b3831c);color:#fff;box-shadow:0 3px 0 #6d4e0e,inset 0 1px 0 rgba(255,255,255,.25)}
@@ -106,7 +107,7 @@
   .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #12522c}
   .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
   /* — karşılama kartı — */
-  #welcome .eyebrow{font-size:10.5px;font-weight:800;letter-spacing:.34em;color:var(--gold);
+  #welcome .eyebrow{font-size:12px;font-weight:800;letter-spacing:.34em;color:var(--gold);
     text-transform:uppercase}
   #welcome h2 span{color:var(--gold)}
   #welcome .wline{width:64px;height:1px;
@@ -115,14 +116,14 @@
   #wStats div{flex:1;max-width:92px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);
     border-radius:12px;padding:9px 4px 7px}
   #wStats b{display:block;font-family:var(--serif);font-size:21px;color:var(--gold)}
-  #wStats small{font-size:9.5px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+  #wStats small{font-size:12px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
   /* — konfeti — */
   .kf{position:fixed;top:-14px;width:9px;height:14px;border-radius:2px;z-index:30;pointer-events:none;
     animation:kfall 2.6s linear both}
   @keyframes kfall{0%{transform:translateY(-4vh) rotate(0)}
     100%{transform:translateY(108vh) rotate(660deg);opacity:.6}}
   @media (max-width:360px){
-    #stats{font-size:9.5px;letter-spacing:.03em}
+    #stats{font-size:12px;letter-spacing:.03em}
     header{padding:4px 40px 6px}}
   @media (max-height:620px){
     .tile{width:min(calc((100vw - 40px)/var(--kolon) - 5px),46px);height:min(calc((100vw - 40px)/var(--kolon) - 5px),46px);font-size:22px;border-radius:8px}
@@ -131,6 +132,24 @@
     header h1{font-size:clamp(18px,5.6vw,22px)}}
   @media (prefers-reduced-motion:reduce){
     .tile.rv,.tile.wv,.row.shake,.panel,.kf,.tile.fill{animation:none!important}}
+
+/* Mobil yerleşim: güvenli alan, okunabilirlik ve dokunma hedefleri. */
+button{min-width:44px;min-height:44px}
+[hidden]{display:none!important}
+
+#wrap{gap:8px;padding-left:4px;padding-right:4px}
+header{padding-inline:48px}#stats{font-size:12px;letter-spacing:0;line-height:1.4}
+#grid{min-height:0;gap:5px}.row{gap:5px}
+.tile{width:min(calc((100vw - 32px)/var(--kolon) - 5px),calc((100dvh - 330px - env(safe-area-inset-top) - env(safe-area-inset-bottom))/6),58px);height:auto;aspect-ratio:1;font-size:24px}
+#kb{flex-shrink:0;gap:5px;max-width:520px}.krow{gap:3px}
+.key{flex:1;min-width:44px;max-width:62px;height:48px}.key.wide{flex:1;max-width:62px}.key.wide span{font-size:12px}
+.panel{max-height:calc(100dvh - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto}.panel>*{flex-shrink:0}
+@media(orientation:landscape) and (max-height:600px){
+ #wrap{display:grid;grid-template-columns:minmax(0,2fr) minmax(373px,3fr);grid-template-rows:auto 1fr;align-items:center;padding-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right))}
+ header{grid-column:1/-1}#grid{align-items:center}#kb{width:100%}
+ .tile{width:min(42px,calc((100dvh - 130px)/6),calc((40vw - 32px)/var(--kolon) - 5px))}.key{height:44px;min-width:44px}
+}
+
 </style>
 
 <div id="scene" aria-hidden="true">
@@ -179,7 +198,7 @@
       <button class="modBtn" data-m="m">🪜 Merdiven</button>
     </div>
     <style>.modBtn{font-family:inherit;font-weight:800;font-size:13px;padding:9px 12px;border-radius:11px;
-      border:1.5px solid var(--border);background:transparent;color:inherit;cursor:pointer;min-height:40px}
+      border:1.5px solid var(--border);background:transparent;color:inherit;cursor:pointer;min-height:44px}
       .modBtn.on{border-color:#46c473;background:rgba(70,196,115,.16);box-shadow:0 0 0 1.5px rgba(70,196,115,.4)}</style>
     <div id="wStats">
       <div><b id="wOyun">0</b><small>oyun</small></div>
@@ -239,7 +258,7 @@ let modS='5', merdivenIdx=0;
 try{ const m=JSON.parse(localStorage.getItem('kelime_mod')); if(m){ modS=m.mod||'5'; merdivenIdx=m.idx||0; } }catch(e){}
 function modKaydet(){ try{ localStorage.setItem('kelime_mod',JSON.stringify({mod:modS,idx:merdivenIdx})); }catch(e){} }
 let N=5;
-const ROWS=['ertyuıopğü','asdfghjklşi','zcvbnmöç'];
+const ROWS=['ertyuıop','ğüasdfgh','jklşizcv','bnmöç'];
 const lower=s=>s.toLocaleLowerCase('tr');
 
 let target, guesses, cur, state, stats={played:0,won:0,streak:0,maxStreak:0};
@@ -255,11 +274,11 @@ function buildDom(){
   kbEl.innerHTML='';
   ROWS.forEach((r,ri)=>{
     const row=document.createElement('div'); row.className='krow';
-    if(ri===2){ const e=mkKey('SİL','wide'); e.dataset.k='back';
+    if(ri===ROWS.length-1){ const e=mkKey('SİL','wide'); e.dataset.k='back';
       e.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7 6-7z"/><path d="M13 10l4 4m0-4l-4 4"/></svg><span>SİL</span>';
       row.appendChild(e); }
     for(const ch of r){ const k=mkKey(ch); k.dataset.k=ch; row.appendChild(k); }
-    if(ri===2){ const e=mkKey('DENE','wide'); e.dataset.k='enter';
+    if(ri===ROWS.length-1){ const e=mkKey('DENE','wide'); e.dataset.k='enter';
       e.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span>DENE</span>';
       row.appendChild(e); }
     kbEl.appendChild(row);

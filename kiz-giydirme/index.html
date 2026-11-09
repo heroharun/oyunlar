@@ -8,6 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Kız Giydirme — çocuklar için chibi karakter oluşturma ve giydirme oyunu">
+<link rel="icon" href="../ikon/icon-192.png">
 <title>Kız Giydirme</title>
 <style>
 /* ============ TOKENLAR ============ */
@@ -71,7 +72,7 @@ html[dir="rtl"] body{direction:rtl}
 @keyframes logoGir{from{opacity:0;transform:translateY(28px) scale(.82)}to{opacity:1;transform:none}}
 .logo svg{width:min(76vw,420px);height:auto;filter:drop-shadow(0 14px 0 rgba(30,24,64,.45)) drop-shadow(0 26px 40px rgba(0,0,0,.4))}
 .logo-alt{
-  color:#F3E8FF;font-size:clamp(11px,2.6vw,15px);letter-spacing:.34em;
+  color:#F3E8FF;font-size:clamp(12px,2.6vw,15px);letter-spacing:.34em;
   text-transform:uppercase;font-weight:800;opacity:.72;margin-top:-6px;
 }
 html[dir="rtl"] .logo-alt{letter-spacing:normal}
@@ -241,7 +242,7 @@ html[dir="rtl"] .logo-alt{letter-spacing:normal}
   transition:transform .18s var(--gecis), box-shadow .18s ease, background .25s ease;
 }
 .kat .ikon svg{width:30px;height:30px}
-.kat small{font-size:9.5px;font-weight:900;letter-spacing:.03em;color:var(--murekkep2);
+.kat small{font-size:12px;font-weight:900;letter-spacing:.03em;color:var(--murekkep2);
   max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase}
 .kat:active{transform:scale(.93)}
 .kat[aria-selected="true"] .ikon{
@@ -259,7 +260,7 @@ html[dir="rtl"] .logo-alt{letter-spacing:normal}
 .alt-serit::-webkit-scrollbar{display:none}
 .alt-serit:empty{display:none}
 .pil{
-  flex:0 0 auto;min-height:36px;padding:0 16px;border-radius:999px;
+  flex:0 0 auto;min-height:44px;padding:0 16px;border-radius:999px;
   background:#EDE4F7;color:var(--murekkep2);font-size:12.5px;font-weight:900;
   display:inline-flex;align-items:center;transition:transform .15s var(--gecis),background .2s,color .2s;
 }
@@ -407,7 +408,7 @@ html[dir="rtl"] .logo-alt{letter-spacing:normal}
 .polaroid img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:3px;background:#EEE;display:block}
 .polaroid span{
   position:absolute;bottom:8px;left:0;right:0;text-align:center;
-  font-size:11px;font-weight:900;color:var(--murekkep2);
+  font-size:12px;font-weight:900;color:var(--murekkep2);
 }
 .bos-durum{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:20px;
@@ -471,7 +472,7 @@ html[dir="rtl"] .logo-alt{letter-spacing:normal}
 .ayar-baglanti svg{flex:none;width:23px;height:23px;color:var(--mor)}
 .ayar-baglanti span{font-size:14.5px;font-weight:900;color:var(--murekkep)}
 .ayar-baglanti:active{transform:scale(.98)}
-.surum{margin-top:12px;font-size:11.5px;font-weight:800;letter-spacing:.06em;color:var(--murekkep2);opacity:.55}
+.surum{margin-top:12px;font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--murekkep2);opacity:.55}
 .dil-grup.buyuk .dil-btn{min-height:56px;min-width:104px;font-size:16px}
 
 /* Ayar satırları */
@@ -526,7 +527,7 @@ html[dir="rtl"] .logo-alt{letter-spacing:normal}
   :root{--panel-h:42dvh}
   .izgara{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px}
   .kat{width:76px}.kat .ikon{width:64px;height:64px;border-radius:24px}
-  .kat .ikon svg{width:36px;height:36px}.kat small{font-size:11px;max-width:76px}
+  .kat .ikon svg{width:36px;height:36px}.kat small{font-size:12px;max-width:76px}
   .balon{width:48px;height:48px}
 }
 /* Menü dar ekranda dikey */
@@ -546,6 +547,22 @@ html[dir="rtl"] .logo-alt{letter-spacing:normal}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   #gokyuzu{display:none}
 }
+
+/* Mobil yerleşim: güvenli alan, okunabilirlik ve dokunma hedefleri. */
+button{min-width:44px;min-height:44px}
+[hidden]{display:none!important}
+
+#e-menu{padding-top:max(12px,var(--ust))}
+.modal{max-height:calc(100dvh - max(24px,var(--ust)) - max(24px,var(--alt)));overflow-y:auto;touch-action:pan-y}
+.modal-kaydir{max-height:none;overflow:visible}
+.mkart{max-height:120px;padding:12px 10px;gap:6px}
+.mkart .rozet{width:52px}
+@media(max-width:560px) and (orientation:portrait){
+ .menu-kartlar{flex:0 0 auto;width:100%}
+ .menu-vitrin{flex:1;min-height:0;width:min(64vw,280px)}
+ .menu-vitrin svg{height:100%;max-height:44dvh}
+}
+
 </style>
 </head>
 <body>

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0d1630">
+<link rel="icon" href="../ikon/icon-192.png">
 <title>Namaz Vakti — Koş ve Öğren</title>
 <style>
 :root{
@@ -30,7 +31,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
   pointer-events:none;
 }
 .vk{
-  flex:1;text-align:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  flex:1;text-align:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
   color:#7f88a3;padding:5px 0;border-top:2px solid #2a3358;transition:.35s;
 }
 .vk.on{color:var(--altin);border-top-color:var(--altin)}
@@ -39,13 +40,13 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
   text-align:right;line-height:1.35;pointer-events:none;
 }
 #skor{font-size:22px;font-weight:800;letter-spacing:.06em;font-variant-numeric:tabular-nums}
-#rekor{font-size:11px;color:var(--duman);letter-spacing:.1em}
+#rekor{font-size:12px;color:var(--duman);letter-spacing:.1em}
 #menzil{
   position:absolute;top:calc(40px + env(safe-area-inset-top,0px));left:12px;z-index:5;
-  font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--turkuaz-ac);
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--turkuaz-ac);
   pointer-events:none;
 }
-#menzil b{display:block;font-size:9px;color:var(--duman);letter-spacing:.16em;margin-top:2px}
+#menzil b{display:block;font-size:12px;color:var(--duman);letter-spacing:.16em;margin-top:2px}
 
 /* ---- perde (menü / duraklat) ---- */
 .perde{
@@ -72,10 +73,10 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 }
 .hbaslik{
   display:flex;align-items:center;justify-content:center;gap:8px;
-  font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--altin);margin-bottom:12px;
+  font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--altin);margin-bottom:12px;
 }
 #hmetin{font-size:clamp(14px,3.6vw,17px);line-height:1.62;margin:0 0 10px}
-#hkaynak{font-size:11px;color:var(--duman);letter-spacing:.06em;margin:0}
+#hkaynak{font-size:12px;color:var(--duman);letter-spacing:.06em;margin:0}
 #halka{position:absolute;top:14px;right:14px;width:18px;height:18px;transform:rotate(-90deg)}
 #halka circle{fill:none;stroke-width:2.5}
 .hka{stroke:#2c3a6e} .hkb{stroke:var(--altin);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
@@ -96,7 +97,7 @@ button{font-family:inherit;cursor:pointer;border:0}
 .ipuc{color:#6e7796;font-size:12px;margin:0;line-height:1.7}
 .ipuc kbd{
   background:#1c2750;border:1px solid #36426f;border-bottom-width:2px;
-  border-radius:5px;padding:1px 7px;font-family:inherit;font-size:11px;color:#c3cbe4;
+  border-radius:5px;padding:1px 7px;font-family:inherit;font-size:12px;color:#c3cbe4;
 }
 #istatistik{display:flex;gap:22px;justify-content:center;color:var(--duman);font-size:12px}
 #istatistik b{display:block;font-size:19px;color:var(--fildisi);font-variant-numeric:tabular-nums}
@@ -114,7 +115,7 @@ button{font-family:inherit;cursor:pointer;border:0}
 }
 #soruust{
   display:flex;justify-content:space-between;align-items:center;
-  font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--turkuaz-ac);margin-bottom:6px;
+  font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--turkuaz-ac);margin-bottom:6px;
 }
 #soruust em{font-style:normal;color:var(--duman)}
 #cubuk{height:3px;background:#26305a;border-radius:2px;overflow:hidden;margin-bottom:16px}
@@ -191,6 +192,20 @@ body.dokunmatik #tuslar{display:flex}
   color:#6e7796;font-size:12px;text-decoration:none;letter-spacing:.1em;
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Mobil yerleşim: güvenli alan, okunabilirlik ve dokunma hedefleri. */
+button{min-width:44px;min-height:44px}
+[hidden]{display:none!important}
+
+#serit{padding:calc(8px + env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left))}
+.vk{letter-spacing:0}
+#geribildirim:empty{display:none}
+#sahne:has(#soruperde:not(.gizli)) #tuslar{visibility:hidden;pointer-events:none}
+.perde{overflow-y:auto;justify-content:flex-start;padding-top:calc(24px + env(safe-area-inset-top));padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+.perde>*{flex-shrink:0}.perde>:first-child{margin-top:auto}.perde>:last-child{margin-bottom:auto}
+#soruperde{padding:calc(90px + env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom))}
+#geri{display:flex;align-items:center;min-height:44px}
+
 </style>
 </head>
 <body>
@@ -1235,7 +1250,7 @@ requestAnimationFrame(function(t){ sonZaman=t; requestAnimationFrame(dongu); });
 #mpNasilBtn{position:fixed;left:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483000;
   width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;
   background:rgba(20,22,40,.78);color:#ffc94d;font-size:22px;font-weight:900;
-  font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s}
+  font-family:system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:opacity .4s;left:calc(50% - 23px);top:calc(40px + env(safe-area-inset-top));bottom:auto;}
 #mpNasilBtn.mpGizli{opacity:0;pointer-events:none}
 #mpNasilKap{position:fixed;inset:0;z-index:2147483001;display:none;align-items:center;justify-content:center;
   background:rgba(10,12,26,.82);padding:20px}
@@ -1267,12 +1282,7 @@ requestAnimationFrame(function(t){ sonZaman=t; requestAnimationFrame(dongu); });
   document.getElementById('mpNasilTamam').addEventListener('click',kapat);
   document.getElementById('mpNasilTamam').addEventListener('touchend',kapat);
   kap.addEventListener('click',function(e){ if(e.target===kap) kapat(e); });
-  /* oyun başlayınca düğme kaybolsun: butona/modala olmayan 2. dokunuştan sonra */
-  var sayac=0;
-  document.addEventListener('pointerdown',function(e){
-    if(e.target.closest('#mpNasilBtn,#mpNasilKap')) return;
-    if(++sayac>=2) setTimeout(function(){ btn.classList.add('mpGizli'); },400);
-  },true);
+
 })();
 </script>
 <script>/* MasalPark: oyun sirasinda ekran uykuya gecmesin */
