@@ -255,22 +255,34 @@ const GUEST_SELF  = 1;      // misafir her zaman 1 numaralı topaç
 const PREDICT     = true;   // misafir kendi topacını lokal tahmin eder (gecikme hissini yok eder)
 
 /* --- AĞ ALTYAPISI ---------------------------------------------------------
- * SIGNAL boş ise PeerJS'in ücretsiz public bulutu kullanılır (rate-limitli,
- * SLA'sız — "arada yavaş/kopuk"un bir sebebi). Kendi PeerServer'ını çalıştırıp
- * host/port/path'i buraya yaz → bağlantı kurulumu bize ait, hızlı ve stabil.
- * Örn: { host:'sumo.ornek.com', port:443, secure:true, path:'/peer' }         */
-const SIGNAL = null;   // ← kendi PeerServer bilgini gir (server/ klasörü + README)
-
-/* STUN + kendi TURN sunucumuz (coturn) — NAT/CGNAT arkasında relay garantisi.
- * ÖNEMLİ: iceTransportPolicy 'all' → önce doğrudan (P2P) dener, olmazsa TURN.
- * Doğrudan bağlantı relay'den düşük gecikmelidir; TURN yalnızca gerektiğinde. */
-const RTC_CONFIG = { iceTransportPolicy:'all', iceServers: [
-  {urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},
-  {urls:'turn:89.167.89.99:3478',               username:'sumo', credential:'topacSumoTurn2026'},
-  {urls:'turn:89.167.89.99:3478?transport=tcp', username:'sumo', credential:'topacSumoTurn2026'}
+ * Sinyal (PeerServer) ve STUN/TURN ayarları açılışta api.masalpark.com'dan çekilir
+ * (GET /v1/rtc). Böylece sunucu/IP/parola değişince oyunun yeni sürümü gerekmez.
+ * API'ye ulaşılamazsa: PeerJS public bulutu + yalnız STUN (en azından aynı ağda çalışır). */
+const AG_API = 'https://api.masalpark.com/v1/rtc';
+let SIGNAL = null;
+let RTC_CONFIG = { iceTransportPolicy:'all', iceServers: [
+  {urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']}
 ]};
+let agSoz = null, agZaman = 0;
+function agAyar(){
+  /* TURN kimlik bilgileri süreli (ttl) → her oda kurma/katılmada tazele, 3 sn'de cevap gelmezse varsayılanla devam */
+  if(agSoz && Date.now() < agZaman) return agSoz;
+  const ctrl = window.AbortController ? new AbortController() : null;
+  if(ctrl) setTimeout(()=>ctrl.abort(), 3000);
+  agSoz = fetch(AG_API, {cache:'no-store', signal: ctrl && ctrl.signal})
+    .then(r=>r.ok ? r.json() : null)
+    .then(a=>{
+      if(!a || !Array.isArray(a.iceServers)) return;
+      RTC_CONFIG = { iceTransportPolicy:'all', iceServers: a.iceServers };
+      SIGNAL = a.signal && a.signal.host ? a.signal : null;
+      agZaman = Date.now() + Math.max(60, Math.min(a.ttl||600, 3600) - 60) * 1000;
+    })
+    .catch(()=>{});
+  return agSoz;
+}
+agAyar();
 /* Peer seçenekleri: SIGNAL varsa kendi sunucumuz, yoksa public bulut */
-const peerOpts = (id) => SIGNAL ? {...SIGNAL, config:RTC_CONFIG, ...(id?{}:{})} : {config:RTC_CONFIG};
+const peerOpts = (id) => SIGNAL ? {...SIGNAL, config:RTC_CONFIG} : {config:RTC_CONFIG};
 
 let connectTimer = null;
 function armConnectTimeout(ms){
@@ -293,12 +305,13 @@ function watchIce(c, label){
   }, 500);
 }
 
-document.getElementById('btnHost').onclick = ()=>{
+document.getElementById('btnHost').onclick = async ()=>{
   if(!window.Peer){ netMsg('PeerJS yüklenemedi — internet gerekli', true); return; }
   if(net.lock) return;
   net.lock = true;
   const code = randCode();
   netMsg('oda açılıyor…');
+  await agAyar();
   net.peer = new Peer(PEER_PREFIX + code, peerOpts(true));
   net.peer.on('open', ()=> netMsg('KOD: <span class="code">'+code+'</span><br>rakip bekleniyor…'));
   net.peer.on('connection', c=>{
@@ -322,7 +335,7 @@ document.getElementById('btnHost').onclick = ()=>{
   });
   net.peer.on('error', e=>{ netMsg('hata: '+e.type, true); net.lock=false; });
 };
-document.getElementById('btnJoin').onclick = ()=>{
+document.getElementById('btnJoin').onclick = async ()=>{
   if(!window.Peer){ netMsg('PeerJS yüklenemedi — internet gerekli', true); return; }
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   if(code.length!==4){ netMsg('4 harfli kodu gir', true); return; }
@@ -330,6 +343,7 @@ document.getElementById('btnJoin').onclick = ()=>{
   net.lock = true;
   netMsg('sinyal sunucusuna bağlanılıyor…');
   armConnectTimeout(25000);
+  await agAyar();
   net.peer = new Peer(peerOpts(false));
   net.peer.on('open', ()=>{
     netMsg('odaya bağlanılıyor…');

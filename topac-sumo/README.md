@@ -36,23 +36,13 @@ python3 -m http.server 8080     # → http://localhost:8080
 ```
 Tek makinede test için: bir sekmede **ODA KUR**, koddan diğer sekmede/cihazda **KATIL**.
 
-## Deploy (prod, "düzgün")
-```bash
-docker compose up -d
-#  web  → :8080  (oyun)
-#  peer → :9000/peer  (kendi sinyal sunucumuz)
-```
-Sonra:
-1. **PeerServer'ı bağla** — `index.html` içinde:
-   ```js
-   const SIGNAL = { host:'sumo.ornek.com', port:443, secure:true, path:'/peer' };
-   ```
-   (443'ü Caddy/Nginx ile TLS terminate edip `/peer`'i 9000'e proxy'le; WebSocket upgrade açık.)
-2. **TURN'ü kur** — `coturn/turnserver.conf`'u bir VPS'e koy (`/etc/turnserver.conf`),
-   `external-ip` ve `realm`'i kendi sunucuna göre ayarla, `systemctl enable --now coturn`.
-   `index.html` `RTC_CONFIG` içindeki `turn:` adres/kullanıcı/parola bununla eşleşmeli.
-3. **peerjs.js'i self-host et** (opsiyonel ama önerilir) — şu an `unpkg.com` CDN'inden
-   yükleniyor; kendi sunucuna kopyalayıp `<script src>`'i değiştir (dış bağımlılık kalmasın).
+## Deploy (prod) — MasalPark altyapısı (11 Kasım 2026)
+Oyun, sinyal ve TURN ayarlarını açılışta **`https://api.masalpark.com/v1/rtc`** adresinden çeker
+(`agAyar()`); API'ye ulaşılamazsa PeerJS public bulutu + yalnız STUN ile devam eder.
+- Sinyal: `wss://api.masalpark.com/peer` → `sunucu/peer/` (PeerServer konteyneri, Caddy `handle /peer/*`).
+- TURN: Hetzner sunucusunda coturn, süreli kimlik (API üretir). Sunucu/IP değişince yalnız sunucu `.env`
+  ve `/etc/turnserver.conf` güncellenir; oyun ve mobil uygulama için yeni sürüm gerekmez.
+- Bu klasördeki `docker-compose.yml`, `server/`, `coturn/` eski bağımsız kurulum içindir; canlı kurulum `sunucu/` altındadır.
 
 ## Dosyalar
 ```
